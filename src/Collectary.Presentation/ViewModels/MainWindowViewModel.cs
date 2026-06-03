@@ -31,6 +31,25 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial ViewModelBase? ContentViewModel { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsSidebarOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNarrow { get; set; }
+
+    [ObservableProperty]
+    public partial double SidebarWidth { get; set; } = 260;
+
+    public HomeViewModel? SidebarViewModel { get; private set; }
+
+    [RelayCommand]
+    private void ToggleSidebar()
+    {
+        IsSidebarOpen = !IsSidebarOpen;
+        var prefs = AppPreferences.Load();
+        AppPreferences.Save(prefs with { SidebarOpen = IsSidebarOpen });
+    }
+
     [RelayCommand]
     private async Task NavigateHome() => await NavigateToHomeAsync();
 
@@ -88,11 +107,12 @@ public partial class MainWindowViewModel : ViewModelBase
         Breadcrumbs.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasBreadcrumbs));
     }
 
-    public async Task InitializeAsync() => await NavigateToHomeAsync();
-
-    private async Task NavigateToHomeAsync()
+    public async Task InitializeAsync()
     {
-        AppLogger.Log.Debug("Navigate: Home");
+        var prefs = AppPreferences.Load();
+        SidebarWidth = prefs.SidebarWidth > 0 ? prefs.SidebarWidth : 260;
+        IsSidebarOpen = prefs.SidebarOpen;
+
         var home = new HomeViewModel(_presetUseCase, _itemUseCase, _dialogService);
         home.OnNavigateToPreset = NavigateToPreset;
         home.OnCreatePreset = () => NavigateToPresetEditor(null);
@@ -101,11 +121,29 @@ public partial class MainWindowViewModel : ViewModelBase
         home.OnDeletePreset = async (preset) =>
         {
             await _presetUseCase.DeletePresetAsync(preset.Id);
-            await NavigateToHomeAsync();
+            SidebarViewModel?.ClearSelection();
+            await SidebarViewModel!.LoadAsync();
+            ContentViewModel = new WelcomeViewModel();
+            Breadcrumbs.Clear();
         };
-        Breadcrumbs.Clear();
-        ContentViewModel = home;
+        SidebarViewModel = home;
+        OnPropertyChanged(nameof(SidebarViewModel));
+
+        ContentViewModel = new WelcomeViewModel();
         await home.LoadAsync();
+    }
+
+    private async Task NavigateToHomeAsync()
+    {
+        AppLogger.Log.Debug("Navigate: Home");
+        Breadcrumbs.Clear();
+        ContentViewModel = new WelcomeViewModel();
+        SidebarViewModel?.ClearSelection();
+        IsSidebarOpen = true;
+        var prefs = AppPreferences.Load();
+        AppPreferences.Save(prefs with { SidebarOpen = true });
+        if (SidebarViewModel is not null)
+            await SidebarViewModel.LoadAsync();
     }
 
     private void NavigateToPreset(Preset preset)
@@ -125,6 +163,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
         ResetBreadcrumb(preset.Name, vm);
         _ = vm.LoadAsync();
+
+        if (IsNarrow)
+        {
+            IsSidebarOpen = false;
+            var prefs = AppPreferences.Load();
+            AppPreferences.Save(prefs with { SidebarOpen = false });
+        }
     }
 
     private void NavigateToPresetEditor(Preset? existing)

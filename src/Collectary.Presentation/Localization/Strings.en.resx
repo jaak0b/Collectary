@@ -161,4 +161,6 @@
   <data name="AddSystemField" xml:space="preserve"><value>＋ Add System Field</value></data>
   <data name="EditInSystemFields" xml:space="preserve"><value>This is a System Field. To edit its configuration, go to System Fields from the home screen.</value></data>
   <data name="Done" xml:space="preserve"><value>Done</value></data>
+  <data name="ToggleSidebar" xml:space="preserve"><value>Toggle sidebar</value></data>
+  <data name="SelectCollectionPrompt" xml:space="preserve"><value>Select a collection to get started</value></data>
 </root>

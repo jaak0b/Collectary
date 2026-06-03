@@ -22,14 +22,20 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:PresetRowViewModel">
                             <Border BorderBrush="{DynamicResource BorderBrush}"
-                                    BorderThickness="0,0,0,1">
+                                    BorderThickness="0,0,0,1"
+                                    Classes.selected="{Binding IsSelected}">
+                                <Border.Styles>
+                                    <Style Selector="Border.selected">
+                                        <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
+                                    </Style>
+                                </Border.Styles>
                                 <Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="{Binding [Edit], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding EditCommand}"/>
                                         <MenuItem Header="{Binding [Delete], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding DeleteCommand}"/>
                                     </ContextMenu>
                                 </Border.ContextMenu>
-                                <Grid ColumnDefinitions="Auto,*">
+                                <Grid ColumnDefinitions="Auto,*" Margin="8,0,0,0">
                                     <TextBlock Grid.Column="0"
                                                Text="⠿"
                                                Tag="DragHandle"
@@ -37,7 +43,7 @@
                                                Cursor="SizeAll"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
-                                               Padding="16,12,8,12"
+                                               Padding="0,12,10,12"
                                                FontSize="16"/>
                                 <Button Grid.Column="1"
                                         Command="{Binding NavigateCommand}"
@@ -45,8 +51,8 @@
                                         BorderThickness="0"
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
-                                        Padding="0,12,16,12">
-                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        Padding="12,12,12,12">
+                                    <Grid ColumnDefinitions="*,Auto">
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Preset.Name}"
                                                        FontSize="15"
@@ -68,12 +74,6 @@
                                                 </MenuFlyout>
                                             </Button.Flyout>
                                         </Button>
-                                        <TextBlock Grid.Column="2"
-                                                   Text="›"
-                                                   FontSize="18"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   VerticalAlignment="Center"
-                                                   Margin="8,0,0,0"/>
                                     </Grid>
                                 </Button>
                                 </Grid>
@@ -89,14 +89,16 @@
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="16,12">
-            <StackPanel Orientation="Horizontal" Spacing="8">
+            <WrapPanel Orientation="Horizontal" ItemWidth="NaN" HorizontalAlignment="Center">
                 <Button Command="{Binding CreatePresetCommand}"
                         Content="{Binding [NewCollection], Source={x:Static loc:LocalizationService.Instance}}"
+                        Margin="0,0,8,4"
                         Padding="12,6"/>
                 <Button Command="{Binding NavigateToSystemFieldsCommand}"
                         Content="{Binding [SystemFields], Source={x:Static loc:LocalizationService.Instance}}"
+                        Margin="0,0,0,4"
                         Padding="12,6"/>
-            </StackPanel>
+            </WrapPanel>
         </Border>
 
     </Grid>

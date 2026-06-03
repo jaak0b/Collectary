@@ -38,16 +38,21 @@ public partial class HomeViewModel : ViewModelBase
             {
                 var items = await _itemUseCase.GetItemsForPresetAsync(preset.Id);
                 var captured = preset;
-                Rows.Add(new PresetRowViewModel(
+                var row = new PresetRowViewModel(
                     preset: captured,
                     itemCount: items.Count,
-                    onNavigate: () => OnNavigateToPreset?.Invoke(captured),
+                    onNavigate: () =>
+                    {
+                        SelectRow(Rows.FirstOrDefault(r => r.Preset.Id == captured.Id));
+                        OnNavigateToPreset?.Invoke(captured);
+                    },
                     onEdit: () => OnEditPreset?.Invoke(captured),
                     onDelete: async () =>
                     {
                         if (!await _dialogService.ConfirmDeleteAsync(captured.Name)) return;
                         if (OnDeletePreset is not null) await OnDeletePreset(captured);
-                    }));
+                    });
+                Rows.Add(row);
             }
         }
         catch (Exception ex)
@@ -55,6 +60,18 @@ public partial class HomeViewModel : ViewModelBase
             AppLogger.Log.Error(ex, "Failed to load presets");
             await _dialogService.ShowMessageAsync(LocalizationService.Instance["CouldNotLoad"], LocalizationService.Instance["CouldNotLoad"]);
         }
+    }
+
+    public void SelectRow(PresetRowViewModel? row)
+    {
+        foreach (var r in Rows)
+            r.IsSelected = r == row;
+    }
+
+    public void ClearSelection()
+    {
+        foreach (var r in Rows)
+            r.IsSelected = false;
     }
 
     public async Task SavePresetOrderAsync()

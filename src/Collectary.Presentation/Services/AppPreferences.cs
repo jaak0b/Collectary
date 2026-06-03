@@ -6,7 +6,9 @@ namespace Collectary.UI.Services;
 public record AppPreferencesData(
     AppTheme Theme = AppTheme.Light,
     string Language = "en",
-    double FieldPaneRatio = 0.4);
+    double FieldPaneRatio = 0.4,
+    bool SidebarOpen = true,
+    double SidebarWidth = 260);
 
 public static class AppPreferences
 {

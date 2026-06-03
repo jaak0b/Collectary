@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 
@@ -7,6 +8,9 @@ public partial class PresetRowViewModel : ViewModelBase
 {
     public Preset Preset { get; }
     public int ItemCount { get; }
+
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
 
     public IRelayCommand NavigateCommand { get; }
     public IRelayCommand EditCommand { get; }

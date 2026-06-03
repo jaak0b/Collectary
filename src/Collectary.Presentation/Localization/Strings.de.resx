@@ -161,4 +161,6 @@
   <data name="AddSystemField" xml:space="preserve"><value>＋ Systemfeld hinzufügen</value></data>
   <data name="EditInSystemFields" xml:space="preserve"><value>Dies ist ein Systemfeld. Um es zu bearbeiten, öffne Systemfelder auf dem Startbildschirm.</value></data>
   <data name="Done" xml:space="preserve"><value>Fertig</value></data>
+  <data name="ToggleSidebar" xml:space="preserve"><value>Seitenleiste umschalten</value></data>
+  <data name="SelectCollectionPrompt" xml:space="preserve"><value>Sammlung auswählen zum Starten</value></data>
 </root>

@@ -11,10 +11,21 @@
                 Background="{DynamicResource SurfaceBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*" Margin="4,0">
+            <Grid ColumnDefinitions="Auto,Auto,*" Margin="4,0">
 
-                <!-- Left: settings entry point -->
+                <!-- Sidebar toggle -->
                 <Button Grid.Column="0"
+                        Command="{Binding ToggleSidebarCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="10,0"
+                        ToolTip.Tip="{Binding [ToggleSidebar], Source={x:Static loc:LocalizationService.Instance}}"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="☰" FontSize="18" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </Button>
+
+                <!-- Settings -->
+                <Button Grid.Column="1"
                         Command="{Binding NavigateToSettingsCommand}"
                         Background="Transparent"
                         BorderThickness="0"
@@ -28,8 +39,8 @@
                           Stretch="Uniform"/>
                 </Button>
 
-                <!-- Right: breadcrumb trail -->
-                <StackPanel Grid.Column="1"
+                <!-- Breadcrumb trail -->
+                <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Spacing="0">
@@ -75,7 +86,36 @@
             </Grid>
         </Border>
 
-        <ContentControl Grid.Row="1" Content="{Binding ContentViewModel}"/>
+        <!-- Body: sidebar + content -->
+        <Grid Grid.Row="1" x:Name="BodyGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260" MinWidth="180" MaxWidth="480"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar -->
+            <Border Grid.Column="0"
+                    IsVisible="{Binding IsSidebarOpen}"
+                    Background="{DynamicResource SidebarBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,1,0">
+                <ContentControl Content="{Binding SidebarViewModel}"/>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+                          x:Name="SidebarSplitter"
+                          Width="4"
+                          IsVisible="{Binding IsSidebarOpen}"
+                          Background="Transparent"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Columns"/>
+
+            <!-- Main content -->
+            <ContentControl Grid.Column="2" Content="{Binding ContentViewModel}"/>
+
+        </Grid>
 
     </Grid>
 </UserControl>

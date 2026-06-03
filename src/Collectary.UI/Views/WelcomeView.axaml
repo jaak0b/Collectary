@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             x:Class="Collectary.UI.Views.WelcomeView"
+             x:DataType="vm:WelcomeViewModel">
+
+    <TextBlock Text="{Binding [SelectCollectionPrompt], Source={x:Static loc:LocalizationService.Instance}}"
+               Foreground="{DynamicResource TextSecondaryBrush}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               FontSize="15"/>
+
+</UserControl>
