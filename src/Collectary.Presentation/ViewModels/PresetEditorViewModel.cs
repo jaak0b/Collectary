@@ -23,6 +23,9 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial int ColumnCount { get; set; } = 1;
+
+    [ObservableProperty]
     public partial ObservableCollection<Preset> AvailableParents { get; set; } = new();
 
     [ObservableProperty]
@@ -31,6 +34,12 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     private readonly ObservableCollection<IEditorNode> _rootRows = new();
 
     public ObservableCollection<SystemFieldRowViewModel> AvailableSystemFields { get; } = new();
+
+    partial void OnColumnCountChanged(int value)
+    {
+        foreach (var field in _rootRows.OfType<FieldDefinitionRowViewModel>())
+            field.SetParentColumnCount(value);
+    }
 
     public PresetEditorViewModel(
         IPresetUseCase presetUseCase,
@@ -53,6 +62,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         if (existing is not null)
         {
             Name = existing.Name;
+            ColumnCount = existing.ColumnCount;
             foreach (var g in existing.Groups)
                 groupNodes.Add(new FieldGroupRowViewModel(g));
 
@@ -77,6 +87,9 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         foreach (var node in tree) _rootRows.Add(node);
         foreach (var root in groupNodes.Where(g => g.ParentGroupId is null))
             root.ApplyListGate(true);
+
+        foreach (var field in _rootRows.OfType<FieldDefinitionRowViewModel>())
+            field.SetParentColumnCount(ColumnCount);
 
         InitRoot(LocalizationService.Instance["Collection"], _rootRows, supportsGroups: true);
     }
@@ -135,6 +148,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     {
         var preset = _existing ?? new Preset { CreatedAt = DateTime.UtcNow };
         preset.Name = Name.Trim();
+        preset.ColumnCount = ColumnCount;
         preset.ParentPresetId = SelectedParent?.Id;
 
         var flat = new EditorNodeTreeBuilder().Flatten(_rootRows);

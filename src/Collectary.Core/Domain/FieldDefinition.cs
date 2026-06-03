@@ -9,6 +9,7 @@ public abstract class FieldDefinition : DomainObject
     public string Label { get; set; } = string.Empty;
     public bool IsRequired { get; set; }
     public int DisplayOrder { get; set; }
+    public int ColumnSpan { get; set; } = 1;
 
     public abstract Type ValueType { get; }
     public abstract FieldValue CreateEmptyValue();

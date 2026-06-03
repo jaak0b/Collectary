@@ -4,6 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("🔗")]
 public class UrlFieldDefinition : FieldDefinition<UrlFieldValue>, IListDisplayable
 {
+    public UrlFieldDefinition() => ColumnSpan = 2;
     public bool ShowInList { get; set; }
 }
 

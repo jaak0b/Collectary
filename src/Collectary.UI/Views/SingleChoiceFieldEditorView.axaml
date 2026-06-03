@@ -4,19 +4,25 @@
              x:Class="Collectary.UI.Views.SingleChoiceFieldEditorView"
              x:DataType="vm:SingleChoiceFieldEditorViewModel">
 
-    <StackPanel Spacing="4">
-        <StackPanel Orientation="Horizontal" Spacing="4">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                    VerticalAlignment="Top" Margin="0,4,16,0">
             <TextBlock Text="{Binding Definition.Label}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       VerticalAlignment="Center"/>
+                       MaxWidth="160" TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
             <TextBlock Text="*"
                        Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"
-                       VerticalAlignment="Center"/>
+                       IsVisible="{Binding Definition.IsRequired}"/>
         </StackPanel>
-        <ComboBox ItemsSource="{Binding Choices}"
+        <ComboBox Grid.Column="1"
+                  ItemsSource="{Binding Choices}"
                   SelectedItem="{Binding Selected}"
                   PlaceholderText="— select —"
-                  HorizontalAlignment="Stretch"/>
-    </StackPanel>
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Top"/>
+    </Grid>
 </UserControl>

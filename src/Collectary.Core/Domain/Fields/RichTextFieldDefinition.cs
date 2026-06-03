@@ -4,6 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("📝")]
 public class RichTextFieldDefinition : FieldDefinition<RichTextFieldValue>, IListDisplayable
 {
+    public RichTextFieldDefinition() => ColumnSpan = 2;
     public bool ShowInList { get; set; }
 }
 

@@ -12,6 +12,7 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
 {
     private readonly ListEntry _entry;
     private readonly ItemEditingContext _context;
+    private readonly int _ungroupedColumnCount;
 
     public Guid EntryId => _entry.Id;
 
@@ -22,6 +23,8 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
     public string EntryLabel => $"{LocalizationService.Instance["Entry"]} {EntryNumber}";
 
     public ObservableCollection<FieldEditorViewModelBase> FieldEditors { get; } = new();
+
+    public int UngroupedColumnCount => _ungroupedColumnCount;
 
     public ObservableCollection<FieldEditorViewModelBase> UngroupedEditors { get; } = new();
 
@@ -38,6 +41,7 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
         _entry = entry;
         EntryNumber = entryNumber;
         _context = context;
+        _ungroupedColumnCount = definition.ColumnCount;
 
         LocalizationService.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(EntryLabel));
 

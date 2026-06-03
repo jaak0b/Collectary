@@ -4,6 +4,8 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("▤")]
 public class ListFieldDefinition : FieldDefinition<ListFieldValue>
 {
+    public ListFieldDefinition() => ColumnSpan = 2;
+    public int ColumnCount { get; set; } = 1;
     public List<FieldDefinition> SubFields { get; set; } = new();
     public List<FieldGroup> Groups { get; set; } = new();
     public List<ListSystemField> SystemFieldRefs { get; set; } = new();

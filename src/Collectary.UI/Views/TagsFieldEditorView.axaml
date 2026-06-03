@@ -4,53 +4,57 @@
              x:Class="Collectary.UI.Views.TagsFieldEditorView"
              x:DataType="vm:TagsFieldEditorViewModel">
 
-    <StackPanel Spacing="8">
-        <StackPanel Orientation="Horizontal" Spacing="4">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                    VerticalAlignment="Top" Margin="0,4,16,0">
             <TextBlock Text="{Binding Definition.Label}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       VerticalAlignment="Center"/>
+                       MaxWidth="160" TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
             <TextBlock Text="*"
                        Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"
-                       VerticalAlignment="Center"/>
+                       IsVisible="{Binding Definition.IsRequired}"/>
         </StackPanel>
-
-        <ItemsControl ItemsSource="{Binding Tags}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <Border Background="{DynamicResource PrimaryBrush}"
-                            CornerRadius="12"
-                            Margin="0,0,4,4"
-                            Padding="8,3">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="{Binding}"
-                                       Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                       VerticalAlignment="Center"
-                                       FontSize="12"/>
-                            <Button Content="✕"
-                                    Padding="2,0"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                    FontSize="10"
-                                    Command="{Binding $parent[ItemsControl].((vm:TagsFieldEditorViewModel)DataContext).RemoveTagCommand}"
-                                    CommandParameter="{Binding}"/>
-                        </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <TextBox Text="{Binding NewTag}"
-                 PlaceholderText="Add tag, press Enter">
-            <TextBox.KeyBindings>
-                <KeyBinding Gesture="Enter" Command="{Binding AddTagCommand}"/>
-            </TextBox.KeyBindings>
-        </TextBox>
-    </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Top">
+            <ItemsControl ItemsSource="{Binding Tags}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Border Background="{DynamicResource PrimaryBrush}"
+                                CornerRadius="12"
+                                Margin="0,0,4,4"
+                                Padding="8,3">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="{Binding}"
+                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"/>
+                                <Button Content="✕"
+                                        Padding="2,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                        FontSize="10"
+                                        Command="{Binding $parent[ItemsControl].((vm:TagsFieldEditorViewModel)DataContext).RemoveTagCommand}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBox Text="{Binding NewTag}"
+                     PlaceholderText="Add tag, press Enter">
+                <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding AddTagCommand}"/>
+                </TextBox.KeyBindings>
+            </TextBox>
+        </StackPanel>
+    </Grid>
 </UserControl>

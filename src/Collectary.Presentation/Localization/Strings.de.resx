@@ -116,6 +116,13 @@
   <data name="AddGroup" xml:space="preserve"><value>+ Gruppe</value></data>
   <data name="Group" xml:space="preserve"><value>Gruppe</value></data>
   <data name="GroupDisplayMode" xml:space="preserve"><value>Anzeigen als</value></data>
+  <data name="ColumnCount" xml:space="preserve"><value>Spalten</value></data>
+  <data name="FieldWidth" xml:space="preserve"><value>Feldbreite</value></data>
+  <data name="ColumnSpan_1" xml:space="preserve"><value>1 Spalte</value></data>
+  <data name="ColumnSpan_N" xml:space="preserve"><value>{0} Spalten</value></data>
+  <data name="SectionField" xml:space="preserve"><value>Feld</value></data>
+  <data name="SectionTypeSettings" xml:space="preserve"><value>Typ-Einstellungen</value></data>
+  <data name="MaxStars" xml:space="preserve"><value>Max. Sterne</value></data>
   <data name="GroupCollapsedByDefault" xml:space="preserve"><value>Standardmäßig eingeklappt</value></data>
   <data name="Ungrouped" xml:space="preserve"><value>— Ohne Gruppe —</value></data>
   <data name="GroupShowFieldsInList" xml:space="preserve"><value>Felder in Liste anzeigen</value></data>

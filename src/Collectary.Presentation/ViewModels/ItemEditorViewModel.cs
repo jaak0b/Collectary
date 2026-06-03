@@ -24,6 +24,8 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost
     [ObservableProperty]
     public partial ObservableCollection<FieldEditorViewModelBase> FieldEditors { get; set; } = new();
 
+    public int UngroupedColumnCount => _preset.ColumnCount;
+
     public ObservableCollection<FieldEditorViewModelBase> UngroupedEditors { get; private set; } = new();
 
     public ObservableCollection<ViewModelBase> LayoutRegions { get; private set; } = new();

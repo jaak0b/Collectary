@@ -3,6 +3,7 @@ using System;
 using Collectary.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Collectary.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260603210147_AddLayoutColumnConfig")]
+    partial class AddLayoutColumnConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.16");
@@ -201,9 +204,6 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("ColumnCount")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -394,9 +394,6 @@ namespace Collectary.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ListFieldDefinition", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
-
-                    b.Property<int>("ColumnCount")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("InlineStyle")
                         .HasColumnType("INTEGER");

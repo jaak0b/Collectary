@@ -25,7 +25,19 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
     [ObservableProperty]
     public partial bool PrefixColumnHeaders { get; set; }
 
+    [ObservableProperty]
+    public partial int ColumnCount { get; set; } = 1;
+
     public Guid? ParentGroupId { get; set; }
+
+    partial void OnColumnCountChanged(int value)
+    {
+        foreach (var field in ChildNodes.OfType<FieldDefinitionRowViewModel>())
+        {
+            field.NotifyColumnSpanOptionsChanged();
+            if (field.ColumnSpan > value) field.ColumnSpan = value;
+        }
+    }
 
     public int DisplayOrder { get; set; }
 
@@ -51,6 +63,7 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
         DefaultCollapsed = group.DefaultCollapsed;
         ShowInList = group.ShowInList;
         PrefixColumnHeaders = group.PrefixColumnHeaders;
+        ColumnCount = group.ColumnCount;
         ParentGroupId = group.ParentGroupId;
         DisplayOrder = group.DisplayOrder;
     }
@@ -89,6 +102,7 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
         Name = Name.Trim(),
         DisplayOrder = displayOrder,
         DisplayMode = DisplayMode,
+        ColumnCount = ColumnCount,
         DefaultCollapsed = DefaultCollapsed,
         ShowInList = ShowInList,
         PrefixColumnHeaders = PrefixColumnHeaders,

@@ -1,12 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:controls="using:Collectary.UI.Controls"
              x:Class="Collectary.UI.Controls.GroupedFieldsView"
              x:DataType="vm:IGroupedFieldHost">
 
     <StackPanel Spacing="4">
 
-        <ItemsControl ItemsSource="{Binding UngroupedEditors}">
+        <ItemsControl ItemsSource="{Binding UngroupedEditors}" Grid.IsSharedSizeScope="True">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <controls:FieldGridPanel ColumnCount="{Binding $parent[controls:GroupedFieldsView].UngroupedColumnCount}" MinColumnWidth="200"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <ContentControl Content="{Binding}" Margin="0,4"/>

@@ -4,6 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("☰")]
 public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable
 {
+    public MultiChoiceFieldDefinition() => ColumnSpan = 2;
     public List<ChoiceOption> Choices { get; set; } = new();
     public bool ShowInList { get; set; }
 }

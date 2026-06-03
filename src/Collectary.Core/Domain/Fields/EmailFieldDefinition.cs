@@ -4,6 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("✉️")]
 public class EmailFieldDefinition : FieldDefinition<EmailFieldValue>, IListDisplayable
 {
+    public EmailFieldDefinition() => ColumnSpan = 2;
     public bool ShowInList { get; set; }
 }
 

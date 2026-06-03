@@ -58,12 +58,18 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
             if (value is null)
             {
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ColumnSpanOptions));
+                OnPropertyChanged(nameof(IsInMultiColumnContext));
+                if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
                 return;
             }
             if (value.Id == AssignedGroupId) return;
             if (GroupMoveRequested is { } move) move(this, value);
             else AssignedGroupId = value.Id;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ColumnSpanOptions));
+            OnPropertyChanged(nameof(IsInMultiColumnContext));
+            if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
         }
     }
 
@@ -84,6 +90,8 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public bool IsPicture => _definition is ImageFieldDefinition;
     public bool IsList => _definition is ListFieldDefinition;
     public bool IsCurrency => _definition is CurrencyFieldDefinition;
+    public bool IsRating => _definition is RatingFieldDefinition;
+    public bool HasTypeSettings => IsCurrency || IsColor || IsRating || IsPicture || HasChoices || IsList;
     public bool IsGridInline => IsList && InlineStyle == ListInlineStyle.Grid;
     public IReadOnlyList<ColorFormat> ColorFormats { get; } = Enum.GetValues<ColorFormat>();
     public IReadOnlyList<ListInlineStyle> InlineStyles { get; } = Enum.GetValues<ListInlineStyle>();
@@ -109,6 +117,38 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     [ObservableProperty]
     public partial string CurrencySymbol { get; set; } = "€";
 
+    [ObservableProperty]
+    public partial int ColumnSpan { get; set; } = 1;
+
+    [ObservableProperty]
+    public partial int ListColumnCount { get; set; } = 1;
+
+    private int _parentColumnCount = 1;
+
+    private int EffectiveColumnCount => SelectedGroup?.ColumnCount ?? _parentColumnCount;
+
+    public IReadOnlyList<int> ColumnSpanOptions =>
+        Enumerable.Range(1, EffectiveColumnCount).ToList();
+
+    public bool IsInMultiColumnContext => EffectiveColumnCount > 1;
+
+    public void SetParentColumnCount(int count)
+    {
+        _parentColumnCount = count;
+        OnPropertyChanged(nameof(ColumnSpanOptions));
+        OnPropertyChanged(nameof(IsInMultiColumnContext));
+        if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
+    }
+
+    internal void NotifyColumnSpanOptionsChanged()
+    {
+        OnPropertyChanged(nameof(ColumnSpanOptions));
+        OnPropertyChanged(nameof(IsInMultiColumnContext));
+    }
+
+    [ObservableProperty]
+    public partial int MaxStars { get; set; } = 5;
+
     public FieldDefinitionRowViewModel(
         FieldDefinition definition,
         bool isSystemField = false)
@@ -125,6 +165,9 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         DisplayHeight = (_definition as ImageFieldDefinition)?.DisplayHeight ?? 200;
         ImageSizeMode = (_definition as ImageFieldDefinition)?.SizeMode ?? ImageSizeMode.Fixed;
         CurrencySymbol = (_definition as CurrencyFieldDefinition)?.CurrencySymbol ?? "€";
+        ColumnSpan = definition.ColumnSpan;
+        MaxStars = (_definition as RatingFieldDefinition)?.MaxStars ?? 5;
+        ListColumnCount = (_definition as ListFieldDefinition)?.ColumnCount ?? 1;
 
         SubFieldRows.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SubFieldCount));
         AvailableGroups.CollectionChanged += (_, _) =>
@@ -151,11 +194,20 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         {
             var groupNodes = lfd.Groups.Select(g => new FieldGroupRowViewModel(g)).ToList();
             var fieldRows = lfd.SubFields.Select(sub => new FieldDefinitionRowViewModel(sub)).ToList();
+            foreach (var row in fieldRows.Where(r => r.AssignedGroupId == null))
+                row.SetParentColumnCount(lfd.ColumnCount);
             var tree = new EditorNodeTreeBuilder().Build(groupNodes, fieldRows);
             foreach (var node in tree) SubFieldRows.Add(node);
             foreach (var root in groupNodes.Where(g => g.ParentGroupId is null))
                 root.ApplyListGate(true);
         }
+    }
+
+    partial void OnListColumnCountChanged(int value)
+    {
+        foreach (var field in SubFieldRows.OfType<FieldDefinitionRowViewModel>()
+            .Where(f => f.AssignedGroupId == null))
+            field.SetParentColumnCount(value);
     }
 
     [RelayCommand]
@@ -179,6 +231,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         if (!IsDisplayName)
             _definition.Label = Label;
         _definition.IsRequired = IsRequired;
+        _definition.ColumnSpan = ColumnSpan;
         _definition.GroupId = IsDisplayName ? null : AssignedGroupId;
         if (_definition is IListDisplayable ld)
             ld.ShowInList = IsShownInList;
@@ -192,6 +245,10 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         }
         if (_definition is CurrencyFieldDefinition currDef)
             currDef.CurrencySymbol = CurrencySymbol;
+        if (_definition is RatingFieldDefinition ratingDef)
+            ratingDef.MaxStars = MaxStars;
+        if (_definition is ListFieldDefinition listDef)
+            listDef.ColumnCount = ListColumnCount;
 
         var options = ChoiceItems
             .Select((item, index) => new ChoiceOption { Value = item.Value, DisplayOrder = index })

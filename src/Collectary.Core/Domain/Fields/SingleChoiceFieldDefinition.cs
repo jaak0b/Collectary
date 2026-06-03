@@ -4,6 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("◉")]
 public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValue>, IListDisplayable
 {
+    public SingleChoiceFieldDefinition() => ColumnSpan = 2;
     public List<ChoiceOption> Choices { get; set; } = new();
     public bool ShowInList { get; set; }
 }

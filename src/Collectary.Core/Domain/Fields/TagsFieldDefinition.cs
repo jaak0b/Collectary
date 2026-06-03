@@ -4,6 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("🔖")]
 public class TagsFieldDefinition : FieldDefinition<TagsFieldValue>, IListDisplayable
 {
+    public TagsFieldDefinition() => ColumnSpan = 2;
     public bool ShowInList { get; set; }
 }
 

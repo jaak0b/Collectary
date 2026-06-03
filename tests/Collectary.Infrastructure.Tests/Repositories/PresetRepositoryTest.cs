@@ -585,4 +585,50 @@ public class PresetRepositoryTest : DbIntegrationTestBase
 
         Assert.That(children.Select(c => c.Name), Is.EqualTo(new[] { "ChildA", "ChildB" }));
     }
+
+    [Test]
+    public async Task UpdateAsync_PersistsColumnCount()
+    {
+        var preset = new Preset { Name = "P", ColumnCount = 1 };
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        loaded!.ColumnCount = 3;
+        await _sut.UpdateAsync(loaded);
+
+        var reloaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(reloaded!.ColumnCount, Is.EqualTo(3));
+    }
+
+    [Test]
+    public async Task UpdateAsync_PersistsGroupColumnCount()
+    {
+        var preset = MakePreset();
+        var group = new FieldGroup { Name = "G", PresetId = preset.Id, DisplayOrder = 0, ColumnCount = 1 };
+        preset.Groups.Add(group);
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        loaded!.Groups[0].ColumnCount = 4;
+        await _sut.UpdateAsync(loaded);
+
+        var reloaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(reloaded!.Groups[0].ColumnCount, Is.EqualTo(4));
+    }
+
+    [Test]
+    public async Task UpdateAsync_PersistsFieldColumnSpan()
+    {
+        var preset = MakePreset();
+        var field = new TextFieldDefinition { Label = "F", PresetId = preset.Id, ColumnSpan = 1 };
+        preset.Fields.Add(field);
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        loaded!.Fields[0].ColumnSpan = 3;
+        await _sut.UpdateAsync(loaded);
+
+        var reloaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(reloaded!.Fields[0].ColumnSpan, Is.EqualTo(3));
+    }
 }

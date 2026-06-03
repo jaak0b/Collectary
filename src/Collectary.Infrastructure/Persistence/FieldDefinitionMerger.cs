@@ -18,6 +18,7 @@ public class FieldDefinitionMerger : IFieldDefinitionMerger
     {
         existing.Label = updated.Label;
         existing.IsRequired = updated.IsRequired;
+        existing.ColumnSpan = updated.ColumnSpan;
         existing.GroupId = updated.GroupId;
 
         if (existing is IListDisplayable existingLd && updated is IListDisplayable updatedLd)
@@ -35,10 +36,19 @@ public class FieldDefinitionMerger : IFieldDefinitionMerger
 
         if (existing is SingleChoiceFieldDefinition existingSc && updated is SingleChoiceFieldDefinition updatedSc)
             ReplaceChoices(existingSc.Choices, updatedSc.Choices);
-        else if (existing is MultiChoiceFieldDefinition existingMc && updated is MultiChoiceFieldDefinition updatedMc)
+
+        if (existing is MultiChoiceFieldDefinition existingMc && updated is MultiChoiceFieldDefinition updatedMc)
             ReplaceChoices(existingMc.Choices, updatedMc.Choices);
-        else if (existing is ListFieldDefinition existingList && updated is ListFieldDefinition updatedList)
+
+        if (existing is CurrencyFieldDefinition existingCurr && updated is CurrencyFieldDefinition updatedCurr)
+            existingCurr.CurrencySymbol = updatedCurr.CurrencySymbol;
+
+        if (existing is RatingFieldDefinition existingRating && updated is RatingFieldDefinition updatedRating)
+            existingRating.MaxStars = updatedRating.MaxStars;
+
+        if (existing is ListFieldDefinition existingList && updated is ListFieldDefinition updatedList)
         {
+            existingList.ColumnCount = updatedList.ColumnCount;
             existingList.InlineStyle = updatedList.InlineStyle;
             SyncSubFields(db, existingList, updatedList);
         }
@@ -104,6 +114,7 @@ public class FieldDefinitionMerger : IFieldDefinitionMerger
                 existingGroup.Name = updatedGroup.Name;
                 existingGroup.DisplayOrder = updatedGroup.DisplayOrder;
                 existingGroup.DisplayMode = updatedGroup.DisplayMode;
+                existingGroup.ColumnCount = updatedGroup.ColumnCount;
                 existingGroup.DefaultCollapsed = updatedGroup.DefaultCollapsed;
                 existingGroup.ParentGroupId = updatedGroup.ParentGroupId;
                 existingGroup.ShowInList = updatedGroup.ShowInList;

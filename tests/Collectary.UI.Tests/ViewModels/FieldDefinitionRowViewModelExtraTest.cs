@@ -247,4 +247,92 @@ public class FieldDefinitionRowViewModelExtraTest
         Assert.That(result.Choices[1].DisplayOrder, Is.EqualTo(1));
         Assert.That(result.Choices[1].Value, Is.EqualTo("second"));
     }
+
+    [Test]
+    public void ColumnSpanOptions_DefaultParentCount1_ReturnsOnly1()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        Assert.That(sut.ColumnSpanOptions, Is.EqualTo(new[] { 1 }));
+    }
+
+    [Test]
+    public void ColumnSpanOptions_AfterSetParentColumnCount3_Returns1To3()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut.SetParentColumnCount(3);
+        Assert.That(sut.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }));
+    }
+
+    [Test]
+    public void SetParentColumnCount_ClampsExistingSpanAboveNewLimit()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition()) { ColumnSpan = 1 };
+        sut.SetParentColumnCount(4);
+        sut.ColumnSpan = 4;
+        sut.SetParentColumnCount(2);
+        Assert.That(sut.ColumnSpan, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void SetParentColumnCount_DoesNotReduceSpanWithinNewLimit()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut.SetParentColumnCount(3);
+        sut.ColumnSpan = 2;
+        sut.SetParentColumnCount(4);
+        Assert.That(sut.ColumnSpan, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void IsInMultiColumnContext_FalseWhenParentCount1()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        Assert.That(sut.IsInMultiColumnContext, Is.False);
+    }
+
+    [Test]
+    public void IsInMultiColumnContext_TrueAfterSetParentColumnCount2()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut.SetParentColumnCount(2);
+        Assert.That(sut.IsInMultiColumnContext, Is.True);
+    }
+
+    [Test]
+    public void IsInMultiColumnContext_TrueWhenAssignedGroupHasMultipleColumns()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        var group = new FieldGroupRowViewModel(new FieldGroup { ColumnCount = 3 });
+        sut.AvailableGroups.Add(group);
+        sut.AssignedGroupId = group.Id;
+        Assert.That(sut.IsInMultiColumnContext, Is.True);
+    }
+
+    [Test]
+    public void ColumnSpanOptions_GroupColumnCountTakesPriorityOverParent()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut.SetParentColumnCount(1);
+        var group = new FieldGroupRowViewModel(new FieldGroup { ColumnCount = 4 });
+        sut.AvailableGroups.Add(group);
+        sut.AssignedGroupId = group.Id;
+        Assert.That(sut.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3, 4 }));
+    }
+
+    [Test]
+    public void BuildDefinition_WritesListColumnCountToDefinition()
+    {
+        var def = new ListFieldDefinition();
+        var sut = new FieldDefinitionRowViewModel(def) { ListColumnCount = 3 };
+        var result = (ListFieldDefinition)sut.BuildDefinition();
+        Assert.That(result.ColumnCount, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void Constructor_LoadsListColumnCountFromDefinition()
+    {
+        var def = new ListFieldDefinition { ColumnCount = 4 };
+        var sut = new FieldDefinitionRowViewModel(def);
+        Assert.That(sut.ListColumnCount, Is.EqualTo(4));
+    }
 }

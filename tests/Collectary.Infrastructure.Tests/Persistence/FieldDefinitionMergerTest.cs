@@ -242,6 +242,67 @@ public class FieldDefinitionMergerTest : DbIntegrationTestBase
     }
 
     [Test]
+    public void Apply_CopiesColumnSpan()
+    {
+        using var db = DbFactory();
+        var existing = new TextFieldDefinition { ColumnSpan = 1 };
+        var updated = new TextFieldDefinition { ColumnSpan = 3 };
+
+        _sut.Apply(db, existing, updated);
+
+        Assert.That(existing.ColumnSpan, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void Apply_RatingField_CopiesMaxStars()
+    {
+        using var db = DbFactory();
+        var existing = new RatingFieldDefinition { MaxStars = 5 };
+        var updated = new RatingFieldDefinition { MaxStars = 10 };
+
+        _sut.Apply(db, existing, updated);
+
+        Assert.That(existing.MaxStars, Is.EqualTo(10));
+    }
+
+    [Test]
+    public void Apply_CurrencyField_CopiesCurrencySymbol()
+    {
+        using var db = DbFactory();
+        var existing = new CurrencyFieldDefinition { CurrencySymbol = "€" };
+        var updated = new CurrencyFieldDefinition { CurrencySymbol = "$" };
+
+        _sut.Apply(db, existing, updated);
+
+        Assert.That(existing.CurrencySymbol, Is.EqualTo("$"));
+    }
+
+    [Test]
+    public void Apply_ListField_CopiesColumnCount()
+    {
+        using var db = DbFactory();
+        var existing = new ListFieldDefinition { ColumnCount = 1, SubFields = [], Groups = [] };
+        var updated = new ListFieldDefinition { ColumnCount = 3, SubFields = [], Groups = [] };
+
+        _sut.Apply(db, existing, updated);
+
+        Assert.That(existing.ColumnCount, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void SyncGroups_CopiesColumnCount()
+    {
+        using var db = DbFactory();
+        var id = Guid.NewGuid();
+        var existing = new List<FieldGroup> { new() { Id = id, Name = "G", ColumnCount = 1 } };
+        var updated = new List<FieldGroup> { new() { Id = id, Name = "G", ColumnCount = 4 } };
+
+        _sut.SyncGroups(db, existing, updated, _ => { });
+
+        Assert.That(existing.Single().ColumnCount, Is.EqualTo(4));
+    }
+
+    [Test]
     public void Apply_ListField_SyncsSubFieldsAndGroups()
     {
         using var db = DbFactory();

@@ -12,7 +12,7 @@
 
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{Binding TypeIcon}"
-                                               FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji" FontSize="16" VerticalAlignment="Center"/>
+                           FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji" FontSize="16" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding [FieldSettings], Source={x:Static loc:LocalizationService.Instance}}"
                            FontWeight="SemiBold"
                            FontSize="15"
@@ -22,6 +22,13 @@
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
+
+            <!-- ── Field section ── -->
+            <TextBlock Text="{Binding [SectionField], Source={x:Static loc:LocalizationService.Instance}}"
+                       FontSize="11" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,4,0,0"/>
+            <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,0"/>
 
             <!-- Label -->
             <StackPanel Spacing="4">
@@ -44,6 +51,22 @@
                 <CheckBox IsChecked="{Binding IsShownInList}"
                           Content="{Binding [InList], Source={x:Static loc:LocalizationService.Instance}}"
                           IsVisible="{Binding ShowInListCheckboxVisible}"/>
+            </StackPanel>
+
+            <!-- Field width (hidden only when explicitly in a single-column group) -->
+            <StackPanel IsVisible="{Binding IsInMultiColumnContext}" Spacing="4">
+                <TextBlock Text="{Binding [FieldWidth], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <ComboBox ItemsSource="{Binding ColumnSpanOptions}"
+                          SelectedItem="{Binding ColumnSpan}"
+                          MinWidth="120">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="x:Int32">
+                            <TextBlock Text="{Binding Converter={x:Static converters:ColumnSpanConverter.Instance}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </StackPanel>
 
             <!-- Group assignment -->
@@ -70,107 +93,142 @@
                 </Grid>
             </StackPanel>
 
-            <!-- Currency symbol -->
-            <StackPanel IsVisible="{Binding IsCurrency}" Spacing="4">
-                <TextBlock Text="{Binding [CurrencySymbol], Source={x:Static loc:LocalizationService.Instance}}"
+            <!-- ── Type settings section ── -->
+            <StackPanel IsVisible="{Binding HasTypeSettings}" Spacing="0">
+                <TextBlock Text="{Binding [SectionTypeSettings], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontSize="11" FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="12"/>
-                <TextBox Text="{Binding CurrencySymbol}"
-                         MaxLength="4"
-                         MinWidth="80"
-                         HorizontalAlignment="Left"/>
-            </StackPanel>
+                           Margin="0,8,0,4"/>
+                <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,12"/>
 
-            <!-- Color format -->
-            <StackPanel IsVisible="{Binding IsColor}" Spacing="4">
-                <TextBlock Text="{Binding [Format], Source={x:Static loc:LocalizationService.Instance}}"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="12"/>
-                <ComboBox ItemsSource="{Binding ColorFormats}"
-                          SelectedItem="{Binding ColorFormat}"
-                          MinWidth="160"/>
-            </StackPanel>
+                <StackPanel Spacing="12">
 
-            <!-- Picture sizing -->
-            <StackPanel IsVisible="{Binding IsPicture}" Spacing="8">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [SizeMode], Source={x:Static loc:LocalizationService.Instance}}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               FontSize="12"/>
-                    <ComboBox ItemsSource="{Binding ImageSizeModes}"
-                              SelectedItem="{Binding ImageSizeMode}"
-                              MinWidth="160">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Converter={x:Static converters:ImageSizeModeConverter.Instance}}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                    <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="{Binding [DisplayWidth], Source={x:Static loc:LocalizationService.Instance}}"
+                    <!-- Currency symbol -->
+                    <StackPanel IsVisible="{Binding IsCurrency}" Spacing="4">
+                        <TextBlock Text="{Binding [CurrencySymbol], Source={x:Static loc:LocalizationService.Instance}}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontSize="12"/>
-                        <NumericUpDown Value="{Binding DisplayWidth}" Minimum="50" Maximum="2000"/>
+                        <TextBox Text="{Binding CurrencySymbol}"
+                                 MaxLength="4"
+                                 MinWidth="80"
+                                 HorizontalAlignment="Left"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock Text="{Binding [DisplayHeight], Source={x:Static loc:LocalizationService.Instance}}"
+
+                    <!-- Color format -->
+                    <StackPanel IsVisible="{Binding IsColor}" Spacing="4">
+                        <TextBlock Text="{Binding [Format], Source={x:Static loc:LocalizationService.Instance}}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontSize="12"/>
-                        <NumericUpDown Value="{Binding DisplayHeight}" Minimum="50" Maximum="2000"/>
+                        <ComboBox ItemsSource="{Binding ColorFormats}"
+                                  SelectedItem="{Binding ColorFormat}"
+                                  MinWidth="160"/>
                     </StackPanel>
-                </Grid>
-            </StackPanel>
 
-            <!-- Choices -->
-            <StackPanel IsVisible="{Binding HasChoices}" Spacing="4">
-                <TextBlock Text="{Binding [Options], Source={x:Static loc:LocalizationService.Instance}}"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="12"/>
-                <ItemsControl ItemsSource="{Binding ChoiceItems}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:ChoiceOptionRowViewModel">
-                            <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                                <TextBox Grid.Column="0"
-                                         Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                         PlaceholderText="{Binding [OptionLabelWatermark], Source={x:Static loc:LocalizationService.Instance}}"/>
-                                <Button Grid.Column="1"
-                                        Content="✕"
-                                        Padding="6,2"
-                                        Margin="4,0,0,0"
-                                        Command="{Binding $parent[ItemsControl].((vm:FieldDefinitionRowViewModel)DataContext).RemoveChoiceCommand}"
-                                        CommandParameter="{Binding}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <Button Content="{Binding [AddOption], Source={x:Static loc:LocalizationService.Instance}}"
-                        Command="{Binding AddChoiceCommand}"
-                        Padding="8,3"
-                        Margin="0,2,0,0"/>
-            </StackPanel>
+                    <!-- Max stars (Rating) -->
+                    <StackPanel IsVisible="{Binding IsRating}" Spacing="4">
+                        <TextBlock Text="{Binding [MaxStars], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <NumericUpDown Value="{Binding MaxStars}"
+                                       Minimum="1"
+                                       Maximum="10"
+                                       HorizontalAlignment="Left"
+                                       MinWidth="80"/>
+                    </StackPanel>
 
-            <!-- List config -->
-            <StackPanel IsVisible="{Binding IsList}" Spacing="8">
-                <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding [InlineStyle], Source={x:Static loc:LocalizationService.Instance}}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               FontSize="12"/>
-                    <ComboBox ItemsSource="{Binding InlineStyles}"
-                              SelectedItem="{Binding InlineStyle}"
-                              MinWidth="160"/>
+                    <!-- Picture sizing -->
+                    <StackPanel IsVisible="{Binding IsPicture}" Spacing="8">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding [SizeMode], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <ComboBox ItemsSource="{Binding ImageSizeModes}"
+                                      SelectedItem="{Binding ImageSizeMode}"
+                                      MinWidth="160">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={x:Static converters:ImageSizeModeConverter.Instance}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <StackPanel Grid.Column="0" Spacing="4">
+                                <TextBlock Text="{Binding [DisplayWidth], Source={x:Static loc:LocalizationService.Instance}}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="12"/>
+                                <NumericUpDown Value="{Binding DisplayWidth}" Minimum="50" Maximum="2000"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="{Binding [DisplayHeight], Source={x:Static loc:LocalizationService.Instance}}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="12"/>
+                                <NumericUpDown Value="{Binding DisplayHeight}" Minimum="50" Maximum="2000"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Choices -->
+                    <StackPanel IsVisible="{Binding HasChoices}" Spacing="4">
+                        <TextBlock Text="{Binding [Options], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <ItemsControl ItemsSource="{Binding ChoiceItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceOptionRowViewModel">
+                                    <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                        <TextBox Grid.Column="0"
+                                                 Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                 PlaceholderText="{Binding [OptionLabelWatermark], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                        <Button Grid.Column="1"
+                                                Content="✕"
+                                                Padding="6,2"
+                                                Margin="4,0,0,0"
+                                                Command="{Binding $parent[ItemsControl].((vm:FieldDefinitionRowViewModel)DataContext).RemoveChoiceCommand}"
+                                                CommandParameter="{Binding}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="{Binding [AddOption], Source={x:Static loc:LocalizationService.Instance}}"
+                                Command="{Binding AddChoiceCommand}"
+                                Padding="8,3"
+                                Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- List config -->
+                    <StackPanel IsVisible="{Binding IsList}" Spacing="8">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <NumericUpDown Value="{Binding ListColumnCount}"
+                                           Minimum="1"
+                                           Maximum="24"
+                                           HorizontalAlignment="Left"
+                                           MinWidth="80"/>
+                        </StackPanel>
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding [InlineStyle], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <ComboBox ItemsSource="{Binding InlineStyles}"
+                                      SelectedItem="{Binding InlineStyle}"
+                                      MinWidth="160"/>
+                        </StackPanel>
+                        <Button Command="{Binding $parent[controls:FieldDetailEditor].DrillCommand}"
+                                CommandParameter="{Binding}"
+                                Padding="10,6"
+                                HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding [ConfigureSubFields], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                <TextBlock Text="{Binding SubFieldCount, StringFormat='({0})'}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
                 </StackPanel>
-                <Button Command="{Binding $parent[controls:FieldDetailEditor].DrillCommand}"
-                        CommandParameter="{Binding}"
-                        Padding="10,6"
-                        HorizontalAlignment="Left">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{Binding [ConfigureSubFields], Source={x:Static loc:LocalizationService.Instance}}"/>
-                        <TextBlock Text="{Binding SubFieldCount, StringFormat='({0})'}"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    </StackPanel>
-                </Button>
             </StackPanel>
 
         </StackPanel>

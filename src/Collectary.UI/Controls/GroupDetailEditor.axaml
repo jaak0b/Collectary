@@ -36,6 +36,18 @@
                           MinWidth="160"/>
             </StackPanel>
 
+            <!-- Column count -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <NumericUpDown Value="{Binding ColumnCount}"
+                               Minimum="1"
+                               Maximum="24"
+                               HorizontalAlignment="Left"
+                               MinWidth="80"/>
+            </StackPanel>
+
             <!-- Flags -->
             <CheckBox IsChecked="{Binding DefaultCollapsed}"
                       Content="{Binding [GroupCollapsedByDefault], Source={x:Static loc:LocalizationService.Instance}}"/>

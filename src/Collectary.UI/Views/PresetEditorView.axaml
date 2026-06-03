@@ -17,7 +17,7 @@
                        FontWeight="Bold"
                        Foreground="{DynamicResource TextPrimaryBrush}"/>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="16">
                 <StackPanel Grid.Column="0" Spacing="4">
                     <TextBlock Text="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"
                                Foreground="{DynamicResource TextSecondaryBrush}"/>
@@ -37,6 +37,15 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="4">
+                    <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <NumericUpDown Value="{Binding ColumnCount}"
+                                   Minimum="1"
+                                   Maximum="24"
+                                   HorizontalAlignment="Left"
+                                   MinWidth="80"/>
                 </StackPanel>
             </Grid>
 

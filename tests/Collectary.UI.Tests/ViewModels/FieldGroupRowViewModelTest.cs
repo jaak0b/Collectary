@@ -91,4 +91,66 @@ public class FieldGroupRowViewModelTest
         Assert.That(child.EffectiveListAllowed, Is.False);
         Assert.That(field.ListColumnSuppressed, Is.True);
     }
+
+    [Test]
+    public void GroupConstructor_LoadsColumnCount()
+    {
+        var group = new FieldGroup { Name = "G", ColumnCount = 5 };
+        var row = new FieldGroupRowViewModel(group);
+        Assert.That(row.ColumnCount, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void Build_PreservesColumnCount()
+    {
+        var row = new FieldGroupRowViewModel("G") { ColumnCount = 3 };
+        Assert.That(row.Build(0).ColumnCount, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void OnColumnCountChanged_ClampsChildSpanAboveNewLimit()
+    {
+        var group = new FieldGroupRowViewModel("G") { ColumnCount = 4 };
+        var field = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        field.SetParentColumnCount(4);
+        field.ColumnSpan = 4;
+        group.ChildNodes.Add(field);
+
+        group.ColumnCount = 2;
+
+        Assert.That(field.ColumnSpan, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void OnColumnCountChanged_DoesNotReduceSpanWithinNewLimit()
+    {
+        var group = new FieldGroupRowViewModel("G") { ColumnCount = 4 };
+        var field = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        field.SetParentColumnCount(4);
+        field.ColumnSpan = 2;
+        group.ChildNodes.Add(field);
+
+        group.ColumnCount = 4;
+
+        Assert.That(field.ColumnSpan, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void OnColumnCountChanged_UpdatesChildColumnSpanOptions()
+    {
+        var group = new FieldGroupRowViewModel("G") { ColumnCount = 1 };
+        var field = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        group.ChildNodes.Add(field);
+        sut_SetGroupOnField(field, group);
+
+        group.ColumnCount = 3;
+
+        Assert.That(field.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }));
+    }
+
+    private static void sut_SetGroupOnField(FieldDefinitionRowViewModel field, FieldGroupRowViewModel group)
+    {
+        field.AvailableGroups.Add(group);
+        field.AssignedGroupId = group.Id;
+    }
 }

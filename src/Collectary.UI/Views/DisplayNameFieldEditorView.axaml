@@ -4,16 +4,23 @@
              x:Class="Collectary.UI.Views.DisplayNameFieldEditorView"
              x:DataType="vm:DisplayNameFieldEditorViewModel">
 
-    <StackPanel Spacing="4">
-        <StackPanel Orientation="Horizontal" Spacing="4">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                    VerticalAlignment="Top" Margin="0,4,16,0">
             <TextBlock Text="{Binding Label}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       VerticalAlignment="Center"/>
+                       MaxWidth="160" TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
             <TextBlock Text="*"
                        Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"
-                       VerticalAlignment="Center"/>
+                       IsVisible="{Binding Definition.IsRequired}"/>
         </StackPanel>
-        <TextBox Text="{Binding Text}" PlaceholderText="{Binding Label}"/>
-    </StackPanel>
+        <TextBox Grid.Column="1"
+                 Text="{Binding Text}"
+                 PlaceholderText="{Binding Label}"
+                 VerticalAlignment="Top"/>
+    </Grid>
 </UserControl>

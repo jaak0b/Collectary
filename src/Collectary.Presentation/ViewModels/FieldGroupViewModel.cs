@@ -9,6 +9,7 @@ public partial class FieldGroupViewModel : ViewModelBase
 {
     public string Name { get; }
     public GroupDisplayMode DisplayMode { get; }
+    public int ColumnCount { get; }
 
     [ObservableProperty]
     public partial bool IsExpanded { get; set; }
@@ -23,6 +24,7 @@ public partial class FieldGroupViewModel : ViewModelBase
     {
         Name = group.Name;
         DisplayMode = group.DisplayMode;
+        ColumnCount = group.ColumnCount;
         IsExpanded = !group.DefaultCollapsed;
     }
 }

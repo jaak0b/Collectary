@@ -4,16 +4,22 @@
              x:Class="Collectary.UI.Views.ColorFieldEditorView"
              x:DataType="vm:ColorFieldEditorViewModel">
 
-    <StackPanel Spacing="4">
-        <StackPanel Orientation="Horizontal" Spacing="4">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                    VerticalAlignment="Top" Margin="0,4,16,0">
             <TextBlock Text="{Binding Definition.Label}"
-                       Foreground="{DynamicResource TextSecondaryBrush}"
-                       VerticalAlignment="Center"/>
+                       MaxWidth="160" TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
             <TextBlock Text="*"
                        Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"
-                       VerticalAlignment="Center"/>
+                       IsVisible="{Binding Definition.IsRequired}"/>
         </StackPanel>
-        <ContentControl Content="{Binding SubEditor}"/>
-    </StackPanel>
+        <ContentControl Grid.Column="1"
+                        Content="{Binding SubEditor}"
+                        VerticalAlignment="Top"/>
+    </Grid>
 </UserControl>
