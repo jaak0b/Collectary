@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.DisplayNameFieldEditorView"
+             x:DataType="vm:DisplayNameFieldEditorViewModel">
+
+    <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Label}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding Definition.IsRequired}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+        <TextBox Text="{Binding Text}" PlaceholderText="{Binding Label}"/>
+    </StackPanel>
+</UserControl>

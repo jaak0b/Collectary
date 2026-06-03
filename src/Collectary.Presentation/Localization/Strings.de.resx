@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="AppTitle" xml:space="preserve"><value>InventoryApp</value></data>
+  <data name="Presets" xml:space="preserve"><value>Vorlagen</value></data>
+  <data name="NewPreset" xml:space="preserve"><value>Neue Vorlage</value></data>
+  <data name="EditPreset" xml:space="preserve"><value>Vorlage bearbeiten</value></data>
+  <data name="DeletePreset" xml:space="preserve"><value>Vorlage löschen</value></data>
+  <data name="Items" xml:space="preserve"><value>Einträge</value></data>
+  <data name="NewItem" xml:space="preserve"><value>Neuer Eintrag</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Eintrag bearbeiten</value></data>
+  <data name="DeleteItem" xml:space="preserve"><value>Eintrag löschen</value></data>
+  <data name="Save" xml:space="preserve"><value>Speichern</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="Delete" xml:space="preserve"><value>Löschen</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Icon" xml:space="preserve"><value>Symbol</value></data>
+  <data name="Fields" xml:space="preserve"><value>Felder</value></data>
+  <data name="AddField" xml:space="preserve"><value>Feld hinzufügen</value></data>
+  <data name="Required" xml:space="preserve"><value>Pflichtfeld</value></data>
+  <data name="DisplayNameField" xml:space="preserve"><value>Anzeigename</value></data>
+  <data name="FieldType_Text" xml:space="preserve"><value>Text</value></data>
+  <data name="FieldType_Integer" xml:space="preserve"><value>Ganzzahl</value></data>
+  <data name="FieldType_Decimal" xml:space="preserve"><value>Dezimalzahl</value></data>
+  <data name="FieldType_Color" xml:space="preserve"><value>Farbe</value></data>
+  <data name="FieldType_Image" xml:space="preserve"><value>Bild</value></data>
+  <data name="FieldType_Date" xml:space="preserve"><value>Datum</value></data>
+  <data name="FieldType_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="FieldType_Bool" xml:space="preserve"><value>Ja / Nein</value></data>
+  <data name="FieldType_Url" xml:space="preserve"><value>URL</value></data>
+  <data name="FieldType_SingleChoice" xml:space="preserve"><value>Einfachauswahl</value></data>
+  <data name="FieldType_MultiChoice" xml:space="preserve"><value>Mehrfachauswahl</value></data>
+  <data name="FieldType_List" xml:space="preserve"><value>Liste</value></data>
+  <data name="FieldType_RichText" xml:space="preserve"><value>Formatierter Text</value></data>
+  <data name="FieldType_Phone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="FieldType_Email" xml:space="preserve"><value>E-Mail</value></data>
+  <data name="FieldType_Percentage" xml:space="preserve"><value>Prozentsatz</value></data>
+  <data name="FieldType_Duration" xml:space="preserve"><value>Dauer</value></data>
+  <data name="FieldType_Time" xml:space="preserve"><value>Uhrzeit</value></data>
+  <data name="FieldType_Currency" xml:space="preserve"><value>Währung</value></data>
+  <data name="FieldType_Tags" xml:space="preserve"><value>Stichwörter</value></data>
+  <data name="Theme_Label" xml:space="preserve"><value>Erscheinungsbild</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Hell</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Dunkel</value></data>
+  <data name="Language" xml:space="preserve"><value>Sprache</value></data>
+  <data name="Settings" xml:space="preserve"><value>Einstellungen</value></data>
+  <data name="CollectionSettings" xml:space="preserve"><value>Sammlungseinstellungen</value></data>
+  <data name="NoPresetsYet" xml:space="preserve"><value>Noch keine Vorlagen. Erstelle eine zum Starten!</value></data>
+  <data name="NoItemsYet" xml:space="preserve"><value>Noch keine Einträge. Füge einen hinzu!</value></data>
+  <data name="SaveAndGoBack" xml:space="preserve"><value>Speichern und zurück</value></data>
+  <data name="MyCollections" xml:space="preserve"><value>Meine Sammlungen</value></data>
+  <data name="NoCollectionsYet" xml:space="preserve"><value>Noch keine Sammlungen. Erstelle eine unten.</value></data>
+  <data name="NewCollection" xml:space="preserve"><value>＋ Neue Sammlung</value></data>
+  <data name="Collection" xml:space="preserve"><value>Sammlung</value></data>
+  <data name="Item" xml:space="preserve"><value>Eintrag</value></data>
+  <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>
+  <data name="Open" xml:space="preserve"><value>Öffnen</value></data>
+  <data name="AddItem" xml:space="preserve"><value>＋ Eintrag hinzufügen</value></data>
+  <data name="AddEntry" xml:space="preserve"><value>＋ Eintrag hinzufügen</value></data>
+  <data name="Entry" xml:space="preserve"><value>Eintrag</value></data>
+  <data name="Entries" xml:space="preserve"><value>Einträge</value></data>
+  <data name="NumberSign" xml:space="preserve"><value>#</value></data>
+  <data name="ParentPreset" xml:space="preserve"><value>Übergeordnete Vorlage (optional)</value></data>
+  <data name="NoneOption" xml:space="preserve"><value>— keine —</value></data>
+  <data name="InList" xml:space="preserve"><value>In Liste</value></data>
+  <data name="Format" xml:space="preserve"><value>Format:</value></data>
+  <data name="Options" xml:space="preserve"><value>Optionen:</value></data>
+  <data name="AddOption" xml:space="preserve"><value>+ Option hinzufügen</value></data>
+  <data name="InlineStyle" xml:space="preserve"><value>Darstellung:</value></data>
+  <data name="EntryEdit" xml:space="preserve"><value>Bearbeitungsmodus:</value></data>
+  <data name="SubFields" xml:space="preserve"><value>Unterfelder:</value></data>
+  <data name="FieldLabelWatermark" xml:space="preserve"><value>Feldbezeichnung</value></data>
+  <data name="OptionLabelWatermark" xml:space="preserve"><value>Optionsbezeichnung</value></data>
+  <data name="SubFieldLabelWatermark" xml:space="preserve"><value>Unterfeld-Bezeichnung</value></data>
+  <data name="ExampleFieldName" xml:space="preserve"><value>z.B. Modelleisenbahn</value></data>
+  <data name="CouldNotSave" xml:space="preserve"><value>Konnte nicht gespeichert werden</value></data>
+  <data name="CouldNotLoad" xml:space="preserve"><value>Konnte nicht geladen werden</value></data>
+  <data name="ConfirmDeleteTitle" xml:space="preserve"><value>Löschen bestätigen</value></data>
+  <data name="ConfirmDeleteBody" xml:space="preserve"><value>„{0}" löschen? Dies kann nicht rückgängig gemacht werden.</value></data>
+  <data name="NewTextField" xml:space="preserve"><value>Neues Textfeld</value></data>
+  <data name="NewRichTextField" xml:space="preserve"><value>Neues Formatiertes Textfeld</value></data>
+  <data name="NewPhoneField" xml:space="preserve"><value>Neues Telefonfeld</value></data>
+  <data name="NewEmailField" xml:space="preserve"><value>Neues E-Mail-Feld</value></data>
+  <data name="NewPercentageField" xml:space="preserve"><value>Neues Prozentfeld</value></data>
+  <data name="NewDurationField" xml:space="preserve"><value>Neues Dauerfeld</value></data>
+  <data name="NewTimeField" xml:space="preserve"><value>Neues Uhrzeitfeld</value></data>
+  <data name="NewCurrencyField" xml:space="preserve"><value>Neues Währungsfeld</value></data>
+  <data name="NewTagsField" xml:space="preserve"><value>Neues Stichwortfeld</value></data>
+  <data name="NewBoolField" xml:space="preserve"><value>Neues Ja/Nein-Feld</value></data>
+  <data name="NewNumberField" xml:space="preserve"><value>Neues Zahlenfeld</value></data>
+  <data name="NewDecimalField" xml:space="preserve"><value>Neues Dezimalfeld</value></data>
+  <data name="NewDateField" xml:space="preserve"><value>Neues Datumsfeld</value></data>
+  <data name="NewColorField" xml:space="preserve"><value>Neues Farbfeld</value></data>
+  <data name="NewRatingField" xml:space="preserve"><value>Neues Bewertungsfeld</value></data>
+  <data name="NewUrlField" xml:space="preserve"><value>Neues URL-Feld</value></data>
+  <data name="NewSingleChoiceField" xml:space="preserve"><value>Neues Einfachauswahl-Feld</value></data>
+  <data name="NewMultiChoiceField" xml:space="preserve"><value>Neues Mehrfachauswahl-Feld</value></data>
+  <data name="NewListField" xml:space="preserve"><value>Neues Listenfeld</value></data>
+  <data name="NewGroup" xml:space="preserve"><value>Neue Gruppe</value></data>
+  <data name="Groups" xml:space="preserve"><value>Gruppen</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>+ Gruppe</value></data>
+  <data name="Group" xml:space="preserve"><value>Gruppe</value></data>
+  <data name="GroupDisplayMode" xml:space="preserve"><value>Anzeigen als</value></data>
+  <data name="GroupCollapsedByDefault" xml:space="preserve"><value>Standardmäßig eingeklappt</value></data>
+  <data name="Ungrouped" xml:space="preserve"><value>— Ohne Gruppe —</value></data>
+  <data name="GroupShowFieldsInList" xml:space="preserve"><value>Felder in Liste anzeigen</value></data>
+  <data name="GroupPrefixColumnHeaders" xml:space="preserve"><value>Spaltenüberschriften mit Gruppennamen versehen</value></data>
+  <data name="EditGroup" xml:space="preserve"><value>Gruppe bearbeiten →</value></data>
+  <data name="AddTextField" xml:space="preserve"><value>+ Text</value></data>
+  <data name="AddRichTextField" xml:space="preserve"><value>+ Formatierter Text</value></data>
+  <data name="AddPhoneField" xml:space="preserve"><value>+ Telefon</value></data>
+  <data name="AddEmailField" xml:space="preserve"><value>+ E-Mail</value></data>
+  <data name="AddPercentageField" xml:space="preserve"><value>+ Prozent</value></data>
+  <data name="AddDurationField" xml:space="preserve"><value>+ Dauer</value></data>
+  <data name="AddTimeField" xml:space="preserve"><value>+ Uhrzeit</value></data>
+  <data name="AddCurrencyField" xml:space="preserve"><value>+ Währung</value></data>
+  <data name="AddTagsField" xml:space="preserve"><value>+ Stichwörter</value></data>
+  <data name="CurrencySymbol" xml:space="preserve"><value>Währungssymbol</value></data>
+  <data name="AddBoolField" xml:space="preserve"><value>+ Ja/Nein</value></data>
+  <data name="AddNumberField" xml:space="preserve"><value>+ Zahl</value></data>
+  <data name="AddDecimalField" xml:space="preserve"><value>+ Dezimal</value></data>
+  <data name="AddDateField" xml:space="preserve"><value>+ Datum</value></data>
+  <data name="AddColorField" xml:space="preserve"><value>+ Farbe</value></data>
+  <data name="AddRatingField" xml:space="preserve"><value>+ Bewertung</value></data>
+  <data name="AddUrlField" xml:space="preserve"><value>+ URL</value></data>
+  <data name="AddSingleChoiceField" xml:space="preserve"><value>+ Einfachauswahl</value></data>
+  <data name="AddMultiChoiceField" xml:space="preserve"><value>+ Mehrfachauswahl</value></data>
+  <data name="AddListField" xml:space="preserve"><value>+ Liste</value></data>
+  <data name="AddImageField" xml:space="preserve"><value>+ Bild</value></data>
+  <data name="AddSubField" xml:space="preserve"><value>+ Unterfeld hinzufügen</value></data>
+  <data name="NewImageField" xml:space="preserve"><value>Neues Bildfeld</value></data>
+  <data name="SelectImage" xml:space="preserve"><value>Bild auswählen</value></data>
+  <data name="SaveAs" xml:space="preserve"><value>Speichern unter</value></data>
+  <data name="DeleteImage" xml:space="preserve"><value>Löschen</value></data>
+  <data name="DisplayWidth" xml:space="preserve"><value>Breite</value></data>
+  <data name="DisplayHeight" xml:space="preserve"><value>Höhe</value></data>
+  <data name="SizeMode" xml:space="preserve"><value>Größenmodus</value></data>
+  <data name="ImageSizeMode_Fixed" xml:space="preserve"><value>Fest</value></data>
+  <data name="ImageSizeMode_Min" xml:space="preserve"><value>Minimum</value></data>
+  <data name="ImageSizeMode_Max" xml:space="preserve"><value>Maximum</value></data>
+  <data name="FieldSettings" xml:space="preserve"><value>Feldeinstellungen</value></data>
+  <data name="SelectFieldHint" xml:space="preserve"><value>Wähle links ein Feld aus, um es zu bearbeiten, oder füge ein neues hinzu.</value></data>
+  <data name="ConfigureSubFields" xml:space="preserve"><value>Unterfelder konfigurieren →</value></data>
+  <data name="SystemFields" xml:space="preserve"><value>Systemfelder</value></data>
+  <data name="SystemFieldsHint" xml:space="preserve"><value>Systemfelder sind wiederverwendbare Felddefinitionen, die in jede Sammlung eingefügt werden können. Eine Änderung wirkt sich überall aus.</value></data>
+  <data name="AddSystemField" xml:space="preserve"><value>＋ Systemfeld hinzufügen</value></data>
+  <data name="EditInSystemFields" xml:space="preserve"><value>Dies ist ein Systemfeld. Um es zu bearbeiten, öffne Systemfelder auf dem Startbildschirm.</value></data>
+  <data name="Done" xml:space="preserve"><value>Fertig</value></data>
+</root>

@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.TagsFieldEditorView"
+             x:DataType="vm:TagsFieldEditorViewModel">
+
+    <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Definition.Label}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding Definition.IsRequired}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <ItemsControl ItemsSource="{Binding Tags}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Border Background="{DynamicResource PrimaryBrush}"
+                            CornerRadius="12"
+                            Margin="0,0,4,4"
+                            Padding="8,3">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="{Binding}"
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"/>
+                            <Button Content="✕"
+                                    Padding="2,0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    FontSize="10"
+                                    Command="{Binding $parent[ItemsControl].((vm:TagsFieldEditorViewModel)DataContext).RemoveTagCommand}"
+                                    CommandParameter="{Binding}"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBox Text="{Binding NewTag}"
+                 PlaceholderText="Add tag, press Enter">
+            <TextBox.KeyBindings>
+                <KeyBinding Gesture="Enter" Command="{Binding AddTagCommand}"/>
+            </TextBox.KeyBindings>
+        </TextBox>
+    </StackPanel>
+</UserControl>

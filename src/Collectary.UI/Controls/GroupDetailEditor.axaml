@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             xmlns:controls="using:Collectary.UI.Controls"
+             x:Class="Collectary.UI.Controls.GroupDetailEditor"
+             x:DataType="vm:FieldGroupRowViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="12">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="🗂" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding [Group], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontWeight="SemiBold"
+                           FontSize="15"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Name -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <!-- Display mode -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding [GroupDisplayMode], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <ComboBox ItemsSource="{Binding DisplayModes}"
+                          SelectedItem="{Binding DisplayMode}"
+                          MinWidth="160"/>
+            </StackPanel>
+
+            <!-- Flags -->
+            <CheckBox IsChecked="{Binding DefaultCollapsed}"
+                      Content="{Binding [GroupCollapsedByDefault], Source={x:Static loc:LocalizationService.Instance}}"/>
+            <CheckBox IsChecked="{Binding ShowInList}"
+                      Content="{Binding [GroupShowFieldsInList], Source={x:Static loc:LocalizationService.Instance}}"/>
+            <CheckBox IsChecked="{Binding PrefixColumnHeaders}"
+                      IsEnabled="{Binding ShowInList}"
+                      Content="{Binding [GroupPrefixColumnHeaders], Source={x:Static loc:LocalizationService.Instance}}"/>
+
+            <!-- Drill into group contents -->
+            <Button Command="{Binding $parent[controls:GroupDetailEditor].DrillCommand}"
+                    CommandParameter="{Binding}"
+                    Padding="10,6"
+                    HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="{Binding [EditGroup], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Text="{Binding ChildNodes.Count, StringFormat='({0})'}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </Button>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

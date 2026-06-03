@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Controls.GroupedFieldsView"
+             x:DataType="vm:IGroupedFieldHost">
+
+    <StackPanel Spacing="4">
+
+        <ItemsControl ItemsSource="{Binding UngroupedEditors}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ContentControl Content="{Binding}" Margin="0,4"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl ItemsSource="{Binding LayoutRegions}"/>
+
+    </StackPanel>
+</UserControl>

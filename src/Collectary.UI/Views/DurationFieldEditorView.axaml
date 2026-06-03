@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.DurationFieldEditorView"
+             x:DataType="vm:DurationFieldEditorViewModel">
+
+    <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Definition.Label}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding Definition.IsRequired}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <NumericUpDown Value="{Binding Hours}"
+                           Minimum="0"
+                           Maximum="999"
+                           FormatString="0"
+                           Increment="1"
+                           MinWidth="80"/>
+            <TextBlock Text="h"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <NumericUpDown Value="{Binding Minutes}"
+                           Minimum="0"
+                           Maximum="59"
+                           FormatString="00"
+                           Increment="1"
+                           MinWidth="80"/>
+            <TextBlock Text="min"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

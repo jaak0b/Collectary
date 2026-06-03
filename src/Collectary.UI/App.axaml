@@ -1,0 +1,75 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Collectary.UI"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.App"
+             RequestedThemeVariant="Light">
+
+    <Application.DataTemplates>
+
+        <DataTemplate DataType="vm:FieldGroupViewModel">
+            <Expander Header="{Binding Name}"
+                      IsExpanded="{Binding IsExpanded}"
+                      HorizontalAlignment="Stretch"
+                      Margin="0,4">
+                <StackPanel Spacing="4">
+                    <ItemsControl ItemsSource="{Binding Editors}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ContentControl Content="{Binding}" Margin="0,4"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding ChildRegions}"/>
+                </StackPanel>
+            </Expander>
+        </DataTemplate>
+
+        <DataTemplate DataType="vm:TabRegionViewModel">
+            <Panel Margin="0,4">
+                <TabControl ItemsSource="{Binding TabGroups}"
+                            IsVisible="{Binding !Context.IsNarrow}">
+                    <TabControl.ItemTemplate>
+                        <DataTemplate DataType="vm:FieldGroupViewModel">
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                    <TabControl.ContentTemplate>
+                        <DataTemplate DataType="vm:FieldGroupViewModel">
+                            <StackPanel Spacing="4" Margin="0,8,0,0">
+                                <ItemsControl ItemsSource="{Binding Editors}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ContentControl Content="{Binding}" Margin="0,4"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ItemsControl ItemsSource="{Binding ChildRegions}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </TabControl.ContentTemplate>
+                </TabControl>
+
+                <ItemsControl ItemsSource="{Binding TabGroups}"
+                              IsVisible="{Binding Context.IsNarrow}"/>
+            </Panel>
+        </DataTemplate>
+
+        <local:ViewLocator/>
+
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Collectary.UI/Themes/Colors.Light.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml"/>
+    </Application.Styles>
+</Application>

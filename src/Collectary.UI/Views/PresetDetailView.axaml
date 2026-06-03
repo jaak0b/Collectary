@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             x:Class="Collectary.UI.Views.PresetDetailView"
+             x:DataType="vm:PresetDetailViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <DataGrid x:Name="ItemGrid"
+                  Grid.Row="0"
+                  ItemsSource="{Binding ItemRows}"
+                  IsReadOnly="True"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal"
+                  AutoGenerateColumns="False"
+                  Margin="0"/>
+
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <Button Command="{Binding AddItemCommand}"
+                    Content="{Binding [AddItem], Source={x:Static loc:LocalizationService.Instance}}"
+                    HorizontalAlignment="Left"
+                    Padding="12,6"/>
+        </Border>
+
+    </Grid>
+</UserControl>

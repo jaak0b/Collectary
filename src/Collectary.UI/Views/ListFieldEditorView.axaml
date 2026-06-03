@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             x:Class="Collectary.UI.Views.ListFieldEditorView"
+             x:DataType="vm:ListFieldEditorViewModel">
+
+    <StackPanel Spacing="6">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Label}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding IsRequired}"/>
+        </StackPanel>
+
+        <Border BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10"
+                IsVisible="{Binding IsCardInline}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}">
+                    <Run Text="{Binding EntryCount}"/><Run Text=" "/><Run Text="{Binding [Entries], Source={x:Static loc:LocalizationService.Instance}}"/>
+                </TextBlock>
+                <Button Content="{Binding [Open], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding OpenCommand}"
+                        Padding="12,4"/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Spacing="6" IsVisible="{Binding IsGridInline}">
+            <DataGrid x:Name="EntryGrid"
+                      ItemsSource="{Binding EntryRows}"
+                      IsReadOnly="True"
+                      CanUserSortColumns="False"
+                      AutoGenerateColumns="False"
+                      GridLinesVisibility="Horizontal"
+                      MaxHeight="240"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1"/>
+
+            <Button Content="{Binding [AddEntry], Source={x:Static loc:LocalizationService.Instance}}"
+                    Command="{Binding AddEntryCommand}"
+                    HorizontalAlignment="Left"
+                    Padding="12,4"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.HexColorFormatEditorView"
+             x:DataType="vm:HexColorFormatEditorViewModel">
+
+    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Top">
+        <StackPanel Spacing="2">
+            <TextBlock Text=" " FontSize="11"/>
+            <ColorPicker Color="{Binding PickerColor, Mode=TwoWay}"/>
+        </StackPanel>
+        <StackPanel Spacing="2">
+            <TextBlock Text="Hex" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBox Text="{Binding Hex}" Width="130" PlaceholderText="#RRGGBB"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

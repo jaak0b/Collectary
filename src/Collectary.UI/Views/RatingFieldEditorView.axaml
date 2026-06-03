@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.RatingFieldEditorView"
+             x:DataType="vm:RatingFieldEditorViewModel">
+
+    <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Definition.Label}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding Definition.IsRequired}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Slider Minimum="0"
+                    Maximum="{Binding MaxStars}"
+                    Value="{Binding Stars}"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    Width="160"
+                    VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Stars}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center"
+                       MinWidth="16"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

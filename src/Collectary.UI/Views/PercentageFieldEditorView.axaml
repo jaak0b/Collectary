@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.PercentageFieldEditorView"
+             x:DataType="vm:PercentageFieldEditorViewModel">
+
+    <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Definition.Label}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding Definition.IsRequired}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <NumericUpDown Value="{Binding Number}"
+                           Minimum="0"
+                           Maximum="100"
+                           FormatString="0.#"
+                           Increment="1"
+                           MinWidth="100"
+                           HorizontalAlignment="Left"/>
+            <TextBlock Text="%"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-stryker": {
+      "version": "4.14.2",
+      "commands": [
+        "dotnet-stryker"
+      ]
+    },
+    "nuke.globaltool": {
+      "version": "10.1.0",
+      "commands": [
+        "nuke"
+      ]
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.5.10",
+      "commands": [
+        "reportgenerator"
+      ]
+    }
+  }
+}

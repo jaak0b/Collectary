@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- SkipAutoProps: trivial auto-property getters/setters are pure data,
+               not logic worth covering. Keeps the gate focused on real branches. -->
+          <SkipAutoProps>true</SkipAutoProps>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <!-- EF Core migrations are auto-generated scaffolding. -->
+          <ExcludeByFile>**/Migrations/*.cs</ExcludeByFile>
+          <!--
+            Excluded categories (no unit-testable logic):
+              1. EF Core migrations (auto-generated scaffolding)
+              2. Avalonia Views / custom-control code-behind / generated XAML / App / ViewLocator
+                 + the application-shell pieces that require a running Avalonia app
+                 (MainWindowViewModel navigation host, DialogService, ThemeService) or do
+                 process-wide file IO setup (AppLogger)
+              3. DI module wiring
+            Test assemblies are excluded so the gate reflects production coverage only.
+          -->
+          <Exclude>
+            [*.Tests]*,
+            [Collectary.Infrastructure]Collectary.Infrastructure.Persistence.Migrations.*,
+            [Collectary.UI]Collectary.UI.Views.*,
+            [Collectary.UI]Collectary.UI.Controls.*,
+            [Collectary.UI]Collectary.UI.App,
+            [Collectary.UI]Collectary.UI.ViewLocator,
+            [Collectary.UI]CompiledAvaloniaXaml.*,
+            [Collectary.UI]XamlGeneratedNamespace.*,
+            [Collectary.UI]Collectary.UI.DI.*,
+            [Collectary.UI]Collectary.UI.Services.AvaloniaDialogService,
+            [Collectary.Presentation]Collectary.UI.ViewModels.MainWindowViewModel,
+            [Collectary.Presentation]Collectary.UI.Services.DialogService,
+            [Collectary.Presentation]Collectary.UI.Services.AppLogger,
+            [Collectary.Presentation]Collectary.UI.Localization.ThemeService
+          </Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

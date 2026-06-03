@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             x:Class="Collectary.UI.Views.SingleChoiceFieldEditorView"
+             x:DataType="vm:SingleChoiceFieldEditorViewModel">
+
+    <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding Definition.Label}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="*"
+                       Foreground="Red"
+                       IsVisible="{Binding Definition.IsRequired}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+        <ComboBox ItemsSource="{Binding Choices}"
+                  SelectedItem="{Binding Selected}"
+                  PlaceholderText="— select —"
+                  HorizontalAlignment="Stretch"/>
+    </StackPanel>
+</UserControl>

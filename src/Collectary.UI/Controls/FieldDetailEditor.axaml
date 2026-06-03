@@ -1,0 +1,178 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             xmlns:converters="using:Collectary.UI.Converters"
+             xmlns:controls="using:Collectary.UI.Controls"
+             x:Class="Collectary.UI.Controls.FieldDetailEditor"
+             x:DataType="vm:FieldDefinitionRowViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="12">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding TypeIcon}"
+                                               FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding [FieldSettings], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontWeight="SemiBold"
+                           FontSize="15"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding TypeDisplayName}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Label -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{Binding [FieldLabelWatermark], Source={x:Static loc:LocalizationService.Instance}}"
+                         IsVisible="{Binding IsLabelEditable}"/>
+                <TextBlock Text="{Binding DisplayLabel}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           IsVisible="{Binding !IsLabelEditable}"/>
+            </StackPanel>
+
+            <!-- Flags -->
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <CheckBox IsChecked="{Binding IsRequired}"
+                          Content="{Binding [Required], Source={x:Static loc:LocalizationService.Instance}}"/>
+                <CheckBox IsChecked="{Binding IsShownInList}"
+                          Content="{Binding [InList], Source={x:Static loc:LocalizationService.Instance}}"
+                          IsVisible="{Binding ShowInListCheckboxVisible}"/>
+            </StackPanel>
+
+            <!-- Group assignment -->
+            <StackPanel IsVisible="{Binding HasAvailableGroups}" Spacing="4">
+                <TextBlock Text="{Binding [Group], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <ComboBox Grid.Column="0"
+                              ItemsSource="{Binding AvailableGroups}"
+                              SelectedItem="{Binding SelectedGroup}"
+                              HorizontalAlignment="Stretch"
+                              PlaceholderText="{Binding [Ungrouped], Source={x:Static loc:LocalizationService.Instance}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FieldGroupRowViewModel">
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Grid.Column="1"
+                            Content="✕"
+                            Padding="6,2"
+                            Command="{Binding ClearGroupCommand}"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- Currency symbol -->
+            <StackPanel IsVisible="{Binding IsCurrency}" Spacing="4">
+                <TextBlock Text="{Binding [CurrencySymbol], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <TextBox Text="{Binding CurrencySymbol}"
+                         MaxLength="4"
+                         MinWidth="80"
+                         HorizontalAlignment="Left"/>
+            </StackPanel>
+
+            <!-- Color format -->
+            <StackPanel IsVisible="{Binding IsColor}" Spacing="4">
+                <TextBlock Text="{Binding [Format], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <ComboBox ItemsSource="{Binding ColorFormats}"
+                          SelectedItem="{Binding ColorFormat}"
+                          MinWidth="160"/>
+            </StackPanel>
+
+            <!-- Picture sizing -->
+            <StackPanel IsVisible="{Binding IsPicture}" Spacing="8">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding [SizeMode], Source={x:Static loc:LocalizationService.Instance}}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="12"/>
+                    <ComboBox ItemsSource="{Binding ImageSizeModes}"
+                              SelectedItem="{Binding ImageSizeMode}"
+                              MinWidth="160">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={x:Static converters:ImageSizeModeConverter.Instance}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="{Binding [DisplayWidth], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <NumericUpDown Value="{Binding DisplayWidth}" Minimum="50" Maximum="2000"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="{Binding [DisplayHeight], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <NumericUpDown Value="{Binding DisplayHeight}" Minimum="50" Maximum="2000"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Choices -->
+            <StackPanel IsVisible="{Binding HasChoices}" Spacing="4">
+                <TextBlock Text="{Binding [Options], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           FontSize="12"/>
+                <ItemsControl ItemsSource="{Binding ChoiceItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChoiceOptionRowViewModel">
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                         PlaceholderText="{Binding [OptionLabelWatermark], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                <Button Grid.Column="1"
+                                        Content="✕"
+                                        Padding="6,2"
+                                        Margin="4,0,0,0"
+                                        Command="{Binding $parent[ItemsControl].((vm:FieldDefinitionRowViewModel)DataContext).RemoveChoiceCommand}"
+                                        CommandParameter="{Binding}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Content="{Binding [AddOption], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding AddChoiceCommand}"
+                        Padding="8,3"
+                        Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- List config -->
+            <StackPanel IsVisible="{Binding IsList}" Spacing="8">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding [InlineStyle], Source={x:Static loc:LocalizationService.Instance}}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="12"/>
+                    <ComboBox ItemsSource="{Binding InlineStyles}"
+                              SelectedItem="{Binding InlineStyle}"
+                              MinWidth="160"/>
+                </StackPanel>
+                <Button Command="{Binding $parent[controls:FieldDetailEditor].DrillCommand}"
+                        CommandParameter="{Binding}"
+                        Padding="10,6"
+                        HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding [ConfigureSubFields], Source={x:Static loc:LocalizationService.Instance}}"/>
+                        <TextBlock Text="{Binding SubFieldCount, StringFormat='({0})'}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

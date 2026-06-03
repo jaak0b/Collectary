@@ -1,0 +1,24 @@
+{
+  "stryker-config": {
+    "reporters": [ "cleartexttree", "progress", "html" ],
+    "thresholds": {
+      "high": 98,
+      "low": 90,
+      "break": 0
+    },
+    "mutation-level": "Complete",
+    "mutate": [
+      "**/*.cs",
+      "!**/*.axaml.cs",
+      "!**/Views/**/*.cs",
+      "!**/Controls/**/*.cs",
+      "!**/Migrations/**/*.cs",
+      "!**/DI/**/*.cs",
+      "!**/Persistence/InventoryDbContext.cs",
+      "!**/ViewModels/MainWindowViewModel.cs",
+      "!**/Localization/ThemeService.cs",
+      "!**/Services/AppLogger.cs",
+      "!**/Services/DialogService.cs"
+    ]
+  }
+}

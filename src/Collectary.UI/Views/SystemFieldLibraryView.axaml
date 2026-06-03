@@ -1,0 +1,224 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:sf="using:Collectary.UI.ViewModels.SystemFields"
+             xmlns:loc="using:Collectary.UI.Localization"
+             xmlns:controls="using:Collectary.UI.Controls"
+             x:Class="Collectary.UI.Views.SystemFields.SystemFieldLibraryView"
+             x:DataType="sf:SystemFieldLibraryViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Text="{Binding [SystemFields], Source={x:Static loc:LocalizationService.Instance}}"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding [SystemFieldsHint], Source={x:Static loc:LocalizationService.Instance}}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,4,0,0"
+                       FontSize="13"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- Level breadcrumb -->
+        <controls:EditorBreadcrumb Grid.Row="1" Margin="-16,8,-16,0"/>
+
+        <!-- Master / detail split -->
+        <Grid x:Name="SplitGrid" Grid.Row="2" ColumnDefinitions="240,Auto,*" Margin="0,8,0,0">
+
+            <!-- Master: field list -->
+            <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto">
+                <Border Grid.Row="0"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <ListBox x:Name="FieldListBox"
+                             ItemsSource="{Binding CurrentRows}"
+                             SelectedItem="{Binding SelectedNode}"
+                             DragDrop.AllowDrop="True"
+                             Background="Transparent">
+                        <ListBox.DataTemplates>
+                            <DataTemplate DataType="vm:FieldDefinitionRowViewModel">
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="⠿"
+                                               Tag="DragHandle"
+                                               Background="Transparent"
+                                               Cursor="SizeAll"
+                                               IsVisible="{Binding CanDelete}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding TypeIcon}"
+                                               FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding DisplayLabel}"
+                                               FontWeight="Medium"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3"
+                                               Text="●"
+                                               FontSize="10"
+                                               ToolTip.Tip="{Binding [Required], Source={x:Static loc:LocalizationService.Instance}}"
+                                               IsVisible="{Binding IsRequired}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="4,0"/>
+                                    <TextBlock Grid.Column="4"
+                                               Text="›"
+                                               FontSize="16"
+                                               IsVisible="{Binding IsDrillable}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="4,0"/>
+                                    <Button Grid.Column="5"
+                                            Content="✕"
+                                            IsVisible="{Binding CanDelete}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="6,2"
+                                            Command="{Binding $parent[ListBox].((sf:SystemFieldLibraryViewModel)DataContext).RemoveFieldCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </Grid>
+                            </DataTemplate>
+
+                            <DataTemplate DataType="vm:FieldGroupRowViewModel">
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="⠿"
+                                               Tag="DragHandle"
+                                               Background="Transparent"
+                                               Cursor="SizeAll"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding TypeIcon}"
+                                               FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding DisplayLabel}"
+                                               FontWeight="Medium"
+                                               FontStyle="Italic"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3"
+                                               Text="›"
+                                               FontSize="16"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="4,0"/>
+                                    <Button Grid.Column="4"
+                                            Content="✕"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="6,2"
+                                            Command="{Binding $parent[ListBox].((sf:SystemFieldLibraryViewModel)DataContext).RemoveFieldCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.DataTemplates>
+                    </ListBox>
+                </Border>
+
+                <Button Grid.Row="1"
+                        Content="{Binding [AddField], Source={x:Static loc:LocalizationService.Instance}}"
+                        Padding="12,6"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Margin="0,8,0,0">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuItem Header="{Binding [AddTextField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddTextFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddNumberField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddIntegerFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddDecimalField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddDecimalFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddDateField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddDateFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddUrlField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddUrlFieldCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="{Binding [AddColorField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddColorFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddRatingField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddRatingFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddImageField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddImageFieldCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="{Binding [AddBoolField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddBoolFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddSingleChoiceField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddSingleChoiceFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddMultiChoiceField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddMultiChoiceFieldCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="{Binding [AddListField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddListFieldCommand}"/>
+                            <MenuItem Header="{Binding [AddGroup], Source={x:Static loc:LocalizationService.Instance}}"
+                                      Command="{Binding AddGroupCommand}"
+                                      IsEnabled="{Binding CurrentLevelSupportsGroups}"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+
+            <!-- Splitter -->
+            <GridSplitter x:Name="PaneSplitter"
+                          Grid.Column="1"
+                          Width="6"
+                          Margin="3,0"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          Background="{DynamicResource BorderBrush}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Cursor="SizeWestEast"/>
+
+            <!-- Detail: field configuration -->
+            <Border x:Name="DetailPane"
+                    Grid.Column="2"
+                    MinWidth="280"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16">
+                <Panel>
+
+                    <!-- Empty state -->
+                    <TextBlock Text="{Binding [SelectFieldHint], Source={x:Static loc:LocalizationService.Instance}}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNull}}"/>
+
+                    <!-- Field config -->
+                    <controls:FieldDetailEditor DataContext="{Binding SelectedFieldRow}"
+                                                IsVisible="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).SelectedFieldRow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                DrillCommand="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).DrillIntoCommand}"/>
+
+                    <!-- Group config -->
+                    <controls:GroupDetailEditor DataContext="{Binding SelectedGroupRow}"
+                                                IsVisible="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).SelectedGroupRow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                DrillCommand="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).DrillIntoCommand}"/>
+
+                </Panel>
+            </Border>
+        </Grid>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+            <Button Command="{Binding SaveCommand}"
+                    Content="{Binding [Save], Source={x:Static loc:LocalizationService.Instance}}"
+                    Background="{DynamicResource PrimaryBrush}"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Padding="16,6"/>
+            <Button Command="{Binding SaveAndGoBackCommand}"
+                    Content="{Binding [SaveAndGoBack], Source={x:Static loc:LocalizationService.Instance}}"
+                    Padding="12,6"/>
+            <Button Command="{Binding CancelCommand}"
+                    Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
+                    Padding="12,6"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

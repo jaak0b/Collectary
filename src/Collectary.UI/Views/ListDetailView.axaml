@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             x:Class="Collectary.UI.Views.ListDetailView"
+             x:DataType="vm:ListDetailViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <Border Grid.Row="0"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="12,10">
+            <TextBlock Text="{Binding Label}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center"/>
+        </Border>
+
+        <DataGrid x:Name="EntryGrid"
+                  Grid.Row="1"
+                  ItemsSource="{Binding EntryRows}"
+                  IsReadOnly="True"
+                  CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  AutoGenerateColumns="False"/>
+
+        <Border Grid.Row="2"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Command="{Binding AddEntryCommand}"
+                        Content="{Binding [AddEntry], Source={x:Static loc:LocalizationService.Instance}}"
+                        Padding="12,6"/>
+                <Button Command="{Binding SaveCommand}"
+                        Content="{Binding [Save], Source={x:Static loc:LocalizationService.Instance}}"
+                        Padding="12,6"/>
+                <Button Command="{Binding SaveAndGoBackCommand}"
+                        Content="{Binding [SaveAndGoBack], Source={x:Static loc:LocalizationService.Instance}}"
+                        Background="{DynamicResource PrimaryBrush}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        Padding="16,6"/>
+                <Button Command="{Binding GoBackCommand}"
+                        Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
+                        Padding="12,6"/>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

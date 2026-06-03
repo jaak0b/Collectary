@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Localization\Strings.en.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>Collectary.UI.Localization.Strings.en.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Localization\Strings.de.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>Collectary.UI.Localization.Strings.de.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.Debug" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Collectary.UI.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Collectary.Core\Collectary.Core.csproj" />
+    <ProjectReference Include="..\Collectary.Infrastructure\Collectary.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

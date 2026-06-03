@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels.ListCells"
+             xmlns:converters="using:Collectary.UI.Converters"
+             x:Class="Collectary.UI.Views.ListCells.ColorListCellView"
+             x:DataType="vm:ColorListCellViewModel">
+
+    <Border Width="20" Height="14" CornerRadius="3" VerticalAlignment="Center">
+        <Border.Background>
+            <SolidColorBrush Color="{Binding SwatchHex, Converter={x:Static converters:HexToColorConverter.Instance}}"/>
+        </Border.Background>
+    </Border>
+
+</UserControl>

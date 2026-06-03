@@ -1,0 +1,29 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using Collectary.Core.Domain;
+using Collectary.Core.Domain.Fields;
+
+namespace Collectary.UI.ViewModels;
+
+public partial class PercentageFieldEditorViewModel : FieldEditorViewModelBase
+{
+    private readonly PercentageFieldDefinition _definition;
+    private readonly PercentageFieldValue _value;
+
+    [ObservableProperty]
+    public partial decimal? Number { get; set; }
+
+    public PercentageFieldEditorViewModel(PercentageFieldDefinition definition, PercentageFieldValue value)
+    {
+        _definition = definition;
+        _value = value;
+        Number = value.Value;
+    }
+
+    public override FieldDefinition Definition => _definition;
+
+    public override FieldValue GetCurrentValue()
+    {
+        _value.Value = Number;
+        return _value;
+    }
+}

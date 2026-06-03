@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             xmlns:controls="using:Collectary.UI.Controls"
+             x:Class="Collectary.UI.Views.ItemEditorView"
+             x:DataType="vm:ItemEditorViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Spacing="12" Margin="16,16,16,0">
+
+                <TextBlock Text="{Binding [Item], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <controls:GroupedFieldsView/>
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="Red"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="16,12,16,16">
+            <Button Command="{Binding SaveCommand}"
+                    Content="{Binding [Save], Source={x:Static loc:LocalizationService.Instance}}"
+                    Padding="12,6"/>
+            <Button Command="{Binding SaveAndGoBackCommand}"
+                    Content="{Binding [SaveAndGoBack], Source={x:Static loc:LocalizationService.Instance}}"
+                    Background="{DynamicResource PrimaryBrush}"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Padding="16,6"/>
+            <Button Command="{Binding CancelCommand}"
+                    Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
+                    Padding="12,6"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

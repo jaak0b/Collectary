@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:loc="using:Collectary.UI.Localization"
+             x:Class="Collectary.UI.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollViewer Grid.Row="0">
+            <StackPanel>
+
+                <TextBlock Text="{Binding [NoCollectionsYet], Source={x:Static loc:LocalizationService.Instance}}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           HorizontalAlignment="Center"
+                           Margin="0,40,0,0"
+                           IsVisible="{Binding !Rows.Count}"/>
+
+                <ItemsControl x:Name="PresetItemsControl"
+                              ItemsSource="{Binding Rows}"
+                              DragDrop.AllowDrop="True">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PresetRowViewModel">
+                            <Border BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="0,0,0,1">
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="{Binding [Edit], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding EditCommand}"/>
+                                        <MenuItem Header="{Binding [Delete], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding DeleteCommand}"/>
+                                    </ContextMenu>
+                                </Border.ContextMenu>
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <TextBlock Grid.Column="0"
+                                               Text="⠿"
+                                               Tag="DragHandle"
+                                               Background="Transparent"
+                                               Cursor="SizeAll"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Padding="16,12,8,12"
+                                               FontSize="16"/>
+                                <Button Grid.Column="1"
+                                        Command="{Binding NavigateCommand}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Padding="0,12,16,12">
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Preset.Name}"
+                                                       FontSize="15"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} items'}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Content="⋯"
+                                                Padding="8,4"
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Center">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuItem Header="{Binding [Edit], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding EditCommand}"/>
+                                                    <MenuItem Header="{Binding [Delete], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding DeleteCommand}"/>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="›"
+                                                   FontSize="18"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0,0,0"/>
+                                    </Grid>
+                                </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Command="{Binding CreatePresetCommand}"
+                        Content="{Binding [NewCollection], Source={x:Static loc:LocalizationService.Instance}}"
+                        Padding="12,6"/>
+                <Button Command="{Binding NavigateToSystemFieldsCommand}"
+                        Content="{Binding [SystemFields], Source={x:Static loc:LocalizationService.Instance}}"
+                        Padding="12,6"/>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>
