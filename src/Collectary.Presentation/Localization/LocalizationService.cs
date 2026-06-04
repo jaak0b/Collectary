@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Resources;
 
-namespace Collectary.UI.Localization;
+namespace Collectary.Presentation.Localization;
 
 public class LocalizationService : INotifyPropertyChanged
 {

@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public record LanguageOption(string Code, string DisplayName);
 

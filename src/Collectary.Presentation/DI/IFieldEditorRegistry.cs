@@ -1,7 +1,7 @@
 using Collectary.Core.Domain;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
-namespace Collectary.UI.DI;
+namespace Collectary.Presentation.DI;
 
 public interface IFieldEditorRegistry
 {

@@ -2,9 +2,9 @@ using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
-using Collectary.UI.ViewModels.SystemFields;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.SystemFields;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -415,5 +415,92 @@ public class PresetEditorViewModelTest
         Assert.That(captured, Is.Not.Null);
         Assert.That(captured!.SystemFieldRefs, Has.Count.EqualTo(1));
         Assert.That(captured.SystemFieldRefs[0].SystemFieldId, Is.EqualTo(sf.Id));
+    }
+
+    [Test]
+    public void Constructor_GroupedField_HasCorrectColumnSpanOptionsAfterBuild()
+    {
+        var group = new FieldGroup { Name = "Specs", ColumnCount = 3 };
+        var field = new TextFieldDefinition { Label = "Notes", GroupId = group.Id };
+        var existing = new Preset
+        {
+            Name = "P",
+            Groups = [group],
+            Fields = [field]
+        };
+
+        var sut = CreateSut(existing: existing);
+
+        var groupRow = sut.CurrentRows.OfType<FieldGroupRowViewModel>()
+            .First(g => g.Name == "Specs");
+        var fieldRow = groupRow.ChildNodes.OfType<FieldDefinitionRowViewModel>()
+            .First(f => f.Label == "Notes");
+
+        Assert.That(fieldRow.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }),
+            "Grouped fields must see all span options for their group's column count after Build()");
+    }
+
+    [Test]
+    public void AddTextField_WhenPresetIsMultiColumn_NewFieldGetsColumnSpanOptions()
+    {
+        var sut = CreateSut();
+        sut.ColumnCount = 3;
+
+        sut.AddTextFieldCommand.Execute(null);
+
+        var added = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
+            .Last(f => !f.IsDisplayName);
+        Assert.That(added.IsInMultiColumnContext, Is.True,
+            "A newly added field in a multi-column preset must offer span options");
+        Assert.That(added.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }));
+    }
+
+    [Test]
+    public void AddListField_WhenPresetIsMultiColumn_ListGetsColumnSpanOptions()
+    {
+        var sut = CreateSut();
+        sut.ColumnCount = 3;
+
+        sut.AddListFieldCommand.Execute(null);
+
+        var added = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
+            .Last(f => f.IsList);
+        Assert.That(added.IsInMultiColumnContext, Is.True,
+            "A list field in a multi-column preset must offer its own column-span (width) options");
+        Assert.That(added.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }));
+    }
+
+    [Test]
+    public async Task Persist_GroupColumnCount_DoesNotOverwritePresetColumnCount()
+    {
+        var sut = CreateSut();
+        sut.Name = "P";
+        sut.ColumnCount = 5;
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        group.ColumnCount = 2;
+
+        Preset? captured = null;
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
+            .Invokes(call => captured = call.GetArgument<Preset>(0));
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        Assert.That(captured!.ColumnCount, Is.EqualTo(5),
+            "Setting a group's ColumnCount must not change the preset's ColumnCount");
+        Assert.That(captured.Groups.Single().ColumnCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void AddTextField_WhenPresetIsSingleColumn_NewFieldHasNoSpanChoice()
+    {
+        var sut = CreateSut();
+
+        sut.AddTextFieldCommand.Execute(null);
+
+        var added = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
+            .Last(f => !f.IsDisplayName);
+        Assert.That(added.IsInMultiColumnContext, Is.False);
+        Assert.That(added.ColumnSpanOptions, Is.EqualTo(new[] { 1 }));
     }
 }

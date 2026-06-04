@@ -1,7 +1,7 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 
-namespace Collectary.UI.ViewModels.ListCells;
+namespace Collectary.Presentation.ViewModels.ListCells;
 
 public class PercentageListCellViewModel : ListCellViewModelBase
 {

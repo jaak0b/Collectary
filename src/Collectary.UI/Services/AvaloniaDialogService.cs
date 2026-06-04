@@ -1,5 +1,6 @@
 using Avalonia.Controls;
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
 using Collectary.UI.Views;
 
 namespace Collectary.UI.Services;

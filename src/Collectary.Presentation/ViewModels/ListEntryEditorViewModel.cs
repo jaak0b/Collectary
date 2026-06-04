@@ -3,10 +3,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
 {

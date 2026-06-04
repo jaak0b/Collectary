@@ -1,6 +1,7 @@
 using Autofac;
 using Collectary.Core.Domain;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.DI;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.DI;
 

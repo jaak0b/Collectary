@@ -1,5 +1,5 @@
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.ViewModels.ListCells;
+using Collectary.Presentation.ViewModels.ListCells;
 
 namespace Collectary.UI.Tests.ViewModels;
 

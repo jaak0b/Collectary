@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
-             xmlns:loc="using:Collectary.UI.Localization"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:controls="using:Collectary.UI.Controls"
              x:Class="Collectary.UI.Controls.GroupDetailEditor"
              x:DataType="vm:FieldGroupRowViewModel">
@@ -41,9 +41,11 @@
                 <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            FontSize="12"/>
-                <NumericUpDown Value="{Binding ColumnCount}"
+                <controls:SafeNumericUpDown Value="{Binding ColumnCount}"
                                Minimum="1"
                                Maximum="24"
+                               Increment="1"
+                               FormatString="0"
                                HorizontalAlignment="Left"
                                MinWidth="80"/>
             </StackPanel>

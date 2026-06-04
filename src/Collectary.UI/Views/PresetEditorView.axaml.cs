@@ -3,8 +3,8 @@ using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Collectary.UI.Controls;
-using Collectary.UI.ViewModels;
-using Collectary.UI.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.SystemFields;
 
 namespace Collectary.UI.Views;
 

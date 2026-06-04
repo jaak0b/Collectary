@@ -10,9 +10,12 @@ public abstract class FieldDefinition : DomainObject
     public bool IsRequired { get; set; }
     public int DisplayOrder { get; set; }
     public int ColumnSpan { get; set; } = 1;
+    public virtual int DefaultColumnSpan => 1;
 
     public abstract Type ValueType { get; }
     public abstract FieldValue CreateEmptyValue();
+
+    public virtual void ApplyTypeSpecificProperties(FieldDefinition source) { }
 
     public FieldValue GetOrCreateEmptyValue(FieldValue? existing)
     {

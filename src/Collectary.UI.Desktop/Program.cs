@@ -1,7 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Logging;
-using Collectary.UI.Services;
+using Collectary.Presentation.Services;
 
 namespace Collectary.UI.Desktop;
 

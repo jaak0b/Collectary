@@ -3,10 +3,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Collectary.Infrastructure.Persistence;
+using Collectary.Presentation.DI;
 using Collectary.UI.DI;
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 using Collectary.UI.Views;
 using Microsoft.EntityFrameworkCore;
 

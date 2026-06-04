@@ -1,4 +1,4 @@
-namespace Collectary.UI.Services;
+namespace Collectary.Presentation.Services;
 
 public interface IDialogService
 {

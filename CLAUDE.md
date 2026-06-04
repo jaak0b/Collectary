@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **You are forbidden from creating git commits.** Never run `git commit` under any circumstances. Only the user commits. Make changes, verify they work, then stop — do not commit.
 
+**Adding a new `FieldDefinition` subtype must require zero changes to any class outside that subtype's own file.** Use virtual dispatch on `FieldDefinition` for type-specific behaviour (merge logic, layout defaults, etc.). A static registry or type-switch that must be updated when a new type is added violates this rule. The existing `FieldEditorRegistry` and `ListCellBuilder` keyed-registration pattern is the correct model for DI; apply the same philosophy to domain-level concerns.
+
 ## Build & Run
 
 ```powershell
@@ -39,6 +41,8 @@ dotnet tool restore
 ## Verifying fixes
 
 This is a desktop GUI app. When a fix needs runtime confirmation (especially UI/binding behavior that unit tests can't fully cover), **just ask the user to verify** — describe the exact repro steps to try. Do **not** attempt to drive the app via mouse/screenshot automation.
+
+**Rule: every UI bug fix MUST ship with a headless regression/end-to-end test.** When you fix a UI bug (rendering, binding, control behavior, view resolution, persistence-as-seen-through-the-editor, etc.), add a test that fails before the fix and passes after. Use the headless Avalonia harness (`Avalonia.Headless` + `HeadlessTestApp` in `Collectary.UI.Tests`, which loads `FluentTheme` so templated controls render) for control/rendering bugs, or a ViewModel/repository round-trip test for state/persistence bugs. Asking the user to verify is in *addition* to the test, never a substitute for it.
 
 ## Project Structure
 

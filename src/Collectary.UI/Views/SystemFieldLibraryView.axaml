@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
-             xmlns:sf="using:Collectary.UI.ViewModels.SystemFields"
-             xmlns:loc="using:Collectary.UI.Localization"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:sf="using:Collectary.Presentation.ViewModels.SystemFields"
+             xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:controls="using:Collectary.UI.Controls"
              x:Class="Collectary.UI.Views.SystemFields.SystemFieldLibraryView"
              x:DataType="sf:SystemFieldLibraryViewModel">

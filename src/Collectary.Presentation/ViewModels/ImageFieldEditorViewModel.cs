@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class ImageFieldEditorViewModel : FieldEditorViewModelBase
 {

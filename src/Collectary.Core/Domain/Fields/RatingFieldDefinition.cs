@@ -6,6 +6,11 @@ public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDis
 {
     public int MaxStars { get; set; } = 5;
     public bool ShowInList { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is RatingFieldDefinition src) MaxStars = src.MaxStars;
+    }
 }
 
 public class RatingFieldValue : FieldValue<RatingFieldDefinition>

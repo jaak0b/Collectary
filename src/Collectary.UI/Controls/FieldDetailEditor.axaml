@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
-             xmlns:loc="using:Collectary.UI.Localization"
-             xmlns:converters="using:Collectary.UI.Converters"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:converters="using:Collectary.Presentation.Converters"
              xmlns:controls="using:Collectary.UI.Controls"
              x:Class="Collectary.UI.Controls.FieldDetailEditor"
              x:DataType="vm:FieldDefinitionRowViewModel">
@@ -129,9 +129,11 @@
                         <TextBlock Text="{Binding [MaxStars], Source={x:Static loc:LocalizationService.Instance}}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontSize="12"/>
-                        <NumericUpDown Value="{Binding MaxStars}"
+                        <controls:SafeNumericUpDown Value="{Binding MaxStars}"
                                        Minimum="1"
                                        Maximum="10"
+                                       Increment="1"
+                                       FormatString="0"
                                        HorizontalAlignment="Left"
                                        MinWidth="80"/>
                     </StackPanel>
@@ -157,13 +159,13 @@
                                 <TextBlock Text="{Binding [DisplayWidth], Source={x:Static loc:LocalizationService.Instance}}"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                            FontSize="12"/>
-                                <NumericUpDown Value="{Binding DisplayWidth}" Minimum="50" Maximum="2000"/>
+                                <controls:SafeNumericUpDown Value="{Binding DisplayWidth}" Minimum="50" Maximum="2000" Increment="1" FormatString="0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4">
                                 <TextBlock Text="{Binding [DisplayHeight], Source={x:Static loc:LocalizationService.Instance}}"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                            FontSize="12"/>
-                                <NumericUpDown Value="{Binding DisplayHeight}" Minimum="50" Maximum="2000"/>
+                                <controls:SafeNumericUpDown Value="{Binding DisplayHeight}" Minimum="50" Maximum="2000" Increment="1" FormatString="0"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -202,9 +204,11 @@
                             <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontSize="12"/>
-                            <NumericUpDown Value="{Binding ListColumnCount}"
+                            <controls:SafeNumericUpDown Value="{Binding ListColumnCount}"
                                            Minimum="1"
                                            Maximum="24"
+                                           Increment="1"
+                                           FormatString="0"
                                            HorizontalAlignment="Left"
                                            MinWidth="80"/>
                         </StackPanel>

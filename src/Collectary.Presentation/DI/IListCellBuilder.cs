@@ -1,7 +1,7 @@
 using Collectary.Core.Domain;
-using Collectary.UI.ViewModels.ListCells;
+using Collectary.Presentation.ViewModels.ListCells;
 
-namespace Collectary.UI.DI;
+namespace Collectary.Presentation.DI;
 
 public interface IListCellBuilder
 {

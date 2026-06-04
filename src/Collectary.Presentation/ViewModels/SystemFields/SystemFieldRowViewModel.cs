@@ -1,7 +1,7 @@
 using System.Windows.Input;
 using Collectary.Core.Domain;
 
-namespace Collectary.UI.ViewModels.SystemFields;
+namespace Collectary.Presentation.ViewModels.SystemFields;
 
 public class SystemFieldRowViewModel
 {

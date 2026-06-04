@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {

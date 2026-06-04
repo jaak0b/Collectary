@@ -1,9 +1,9 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.DI;
-using Collectary.UI.ViewModels.ListCells;
+using Collectary.Presentation.DI;
+using Collectary.Presentation.ViewModels.ListCells;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public class ItemRowViewModel
 {

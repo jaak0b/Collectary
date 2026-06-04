@@ -1,5 +1,5 @@
 using Collectary.Core.Domain;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public record ListColumn(FieldDefinition Field, string Header);

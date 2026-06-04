@@ -1,4 +1,4 @@
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests;
 

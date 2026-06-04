@@ -155,11 +155,13 @@ public class PresetRepository : IPresetRepository
     public async Task UpdateDisplayOrdersAsync(IReadOnlyList<Preset> ordered)
     {
         using var db = _dbFactory();
+        var ids = ordered.Select(p => p.Id).ToList();
+        var lookup = await db.Presets
+            .Where(p => ids.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id);
         for (var i = 0; i < ordered.Count; i++)
-        {
-            var tracked = await db.Presets.FindAsync(ordered[i].Id);
-            if (tracked is not null) tracked.DisplayOrder = i;
-        }
+            if (lookup.TryGetValue(ordered[i].Id, out var tracked))
+                tracked.DisplayOrder = i;
         await db.SaveChangesAsync();
     }
 

@@ -4,7 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("📞")]
 public class PhoneFieldDefinition : FieldDefinition<PhoneFieldValue>, IListDisplayable
 {
-    public PhoneFieldDefinition() => ColumnSpan = 2;
+    public override int DefaultColumnSpan => 2;
     public bool ShowInList { get; set; }
 }
 

@@ -4,8 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Collectary.UI.Controls;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Views;
 

@@ -1,6 +1,6 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -146,6 +146,48 @@ public class FieldGroupRowViewModelTest
         group.ColumnCount = 3;
 
         Assert.That(field.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }));
+    }
+
+    [Test]
+    public void RefreshChildColumnSpans_SetsCorrectOptionsOnGroupedField()
+    {
+        var group = new FieldGroupRowViewModel("G") { ColumnCount = 3 };
+        var field = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut_SetGroupOnField(field, group);
+        group.ChildNodes.Add(field);
+
+        group.RefreshChildColumnSpans();
+
+        Assert.That(field.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3 }));
+    }
+
+    [Test]
+    public void RefreshChildColumnSpans_ClampsSpanAboveColumnCount()
+    {
+        var group = new FieldGroupRowViewModel("G") { ColumnCount = 2 };
+        var field = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut_SetGroupOnField(field, group);
+        field.ColumnSpan = 4;
+        group.ChildNodes.Add(field);
+
+        group.RefreshChildColumnSpans();
+
+        Assert.That(field.ColumnSpan, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void RefreshChildColumnSpans_RecursesIntoNestedGroups()
+    {
+        var parent = new FieldGroupRowViewModel("P") { ColumnCount = 4 };
+        var child = new FieldGroupRowViewModel("C") { ColumnCount = 4 };
+        var field = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut_SetGroupOnField(field, child);
+        child.ChildNodes.Add(field);
+        parent.ChildNodes.Add(child);
+
+        parent.RefreshChildColumnSpans();
+
+        Assert.That(field.ColumnSpanOptions, Is.EqualTo(new[] { 1, 2, 3, 4 }));
     }
 
     private static void sut_SetGroupOnField(FieldDefinitionRowViewModel field, FieldGroupRowViewModel group)

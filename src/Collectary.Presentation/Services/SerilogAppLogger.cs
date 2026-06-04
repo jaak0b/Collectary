@@ -1,6 +1,6 @@
 using Collectary.Core.Ports;
 
-namespace Collectary.UI.Services;
+namespace Collectary.Presentation.Services;
 
 public sealed class SerilogAppLogger : IAppLogger
 {

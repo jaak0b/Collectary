@@ -1,4 +1,4 @@
-using Collectary.UI.Layout;
+using Collectary.Presentation.Layout;
 
 namespace Collectary.UI.Tests.Layout;
 

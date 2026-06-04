@@ -1,6 +1,6 @@
 using Avalonia.Media;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public abstract class ColorFormatEditorViewModel : ViewModelBase
 {

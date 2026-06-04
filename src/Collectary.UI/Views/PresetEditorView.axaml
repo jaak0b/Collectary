@@ -1,9 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
-             xmlns:sf="using:Collectary.UI.ViewModels.SystemFields"
-             xmlns:loc="using:Collectary.UI.Localization"
-             xmlns:converters="using:Collectary.UI.Converters"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:sf="using:Collectary.Presentation.ViewModels.SystemFields"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:converters="using:Collectary.Presentation.Converters"
              xmlns:controls="using:Collectary.UI.Controls"
              x:Class="Collectary.UI.Views.PresetEditorView"
              x:DataType="vm:PresetEditorViewModel">
@@ -38,12 +38,16 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </StackPanel>
-                <StackPanel Grid.Column="2" Spacing="4">
+                <StackPanel Grid.Column="2" Spacing="4"
+                            x:Name="PresetColumnCountPanel"
+                            IsVisible="{Binding !IsNested}">
                     <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
                                Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    <NumericUpDown Value="{Binding ColumnCount}"
+                    <controls:SafeNumericUpDown Value="{Binding ColumnCount}"
                                    Minimum="1"
                                    Maximum="24"
+                                   Increment="1"
+                                   FormatString="0"
                                    HorizontalAlignment="Left"
                                    MinWidth="80"/>
                 </StackPanel>

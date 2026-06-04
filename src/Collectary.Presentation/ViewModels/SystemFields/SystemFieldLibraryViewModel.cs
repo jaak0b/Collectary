@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 
-namespace Collectary.UI.ViewModels.SystemFields;
+namespace Collectary.Presentation.ViewModels.SystemFields;
 
 public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
 {

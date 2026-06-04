@@ -1,9 +1,9 @@
 using Avalonia.Media;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Converters;
+using Collectary.Presentation.Converters;
 
-namespace Collectary.UI.ViewModels.ListCells;
+namespace Collectary.Presentation.ViewModels.ListCells;
 
 public class ColorListCellViewModel : ListCellViewModelBase
 {

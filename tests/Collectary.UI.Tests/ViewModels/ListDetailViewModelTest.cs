@@ -1,4 +1,4 @@
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 

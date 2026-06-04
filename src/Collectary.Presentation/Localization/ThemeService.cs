@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 
-namespace Collectary.UI.Localization;
+namespace Collectary.Presentation.Localization;
 
 public enum AppTheme { Light, Dark }
 

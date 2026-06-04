@@ -631,4 +631,35 @@ public class PresetRepositoryTest : DbIntegrationTestBase
         var reloaded = await _sut.GetByIdAsync(preset.Id);
         Assert.That(reloaded!.Fields[0].ColumnSpan, Is.EqualTo(3));
     }
+
+    [Test]
+    public async Task UpdateAsync_AddingGroupWithColumnCount_DoesNotChangePresetColumnCount()
+    {
+        var preset = new Preset { Name = "P", ColumnCount = 5 };
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        loaded!.Groups.Add(new FieldGroup { Name = "G", PresetId = loaded.Id, ColumnCount = 2 });
+        await _sut.UpdateAsync(loaded);
+
+        var reloaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(reloaded!.ColumnCount, Is.EqualTo(5), "Preset ColumnCount must not be overwritten by a group's");
+        Assert.That(reloaded.Groups.Single().ColumnCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task UpdateDisplayOrdersAsync_PersistsNewOrder()
+    {
+        var a = MakePreset("A");
+        var b = MakePreset("B");
+        var c = MakePreset("C");
+        await _sut.AddAsync(a);
+        await _sut.AddAsync(b);
+        await _sut.AddAsync(c);
+
+        await _sut.UpdateDisplayOrdersAsync(new[] { c, a, b });
+
+        var all = await _sut.GetAllAsync();
+        Assert.That(all.Select(p => p.Name), Is.EqualTo(new[] { "C", "A", "B" }));
+    }
 }

@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI;
 
@@ -14,7 +14,9 @@ public class ViewLocator : IDataTemplate
         if (param is null)
             return null;
 
-        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+        var name = param.GetType().FullName!
+            .Replace("Collectary.Presentation", "Collectary.UI", StringComparison.Ordinal)
+            .Replace("ViewModel", "View", StringComparison.Ordinal);
         var type = Type.GetType(name);
 
         if (type != null)

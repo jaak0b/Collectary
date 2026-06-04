@@ -4,9 +4,17 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("◉")]
 public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValue>, IListDisplayable
 {
-    public SingleChoiceFieldDefinition() => ColumnSpan = 2;
+    public override int DefaultColumnSpan => 2;
     public List<ChoiceOption> Choices { get; set; } = new();
     public bool ShowInList { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is not SingleChoiceFieldDefinition src) return;
+        Choices.Clear();
+        foreach (var c in src.Choices)
+            Choices.Add(new ChoiceOption { Id = c.Id, Value = c.Value, DisplayOrder = c.DisplayOrder });
+    }
 }
 
 public class SingleChoiceFieldValue : FieldValue<SingleChoiceFieldDefinition>

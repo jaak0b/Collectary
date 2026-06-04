@@ -4,9 +4,14 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("🎨")]
 public class ColorFieldDefinition : FieldDefinition<ColorFieldValue>, IListDisplayable
 {
-    public ColorFieldDefinition() => ColumnSpan = 2;
+    public override int DefaultColumnSpan => 2;
     public ColorFormat Format { get; set; } = ColorFormat.Hex;
     public bool ShowInList { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is ColorFieldDefinition src) Format = src.Format;
+    }
 }
 
 public class ColorFieldValue : FieldValue<ColorFieldDefinition>

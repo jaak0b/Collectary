@@ -1,4 +1,4 @@
-namespace Collectary.UI.Layout;
+namespace Collectary.Presentation.Layout;
 
 public record FieldSlot(int FieldIndex, int ColStart, int Span);
 

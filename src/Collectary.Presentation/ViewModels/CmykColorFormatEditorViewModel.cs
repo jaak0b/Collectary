@@ -1,8 +1,8 @@
 using Avalonia.Media;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Converters;
+using Collectary.Presentation.Converters;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public class CmykColorFormatEditorViewModel : ColorFormatEditorViewModel
 {

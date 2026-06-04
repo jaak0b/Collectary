@@ -1,8 +1,8 @@
 using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 

@@ -1,6 +1,6 @@
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 

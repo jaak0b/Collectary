@@ -1,8 +1,8 @@
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Collectary.UI.DI;
+using Collectary.Presentation.DI;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class ItemEditingContext : ObservableObject
 {

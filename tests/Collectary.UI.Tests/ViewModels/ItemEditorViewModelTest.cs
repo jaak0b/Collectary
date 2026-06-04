@@ -2,8 +2,8 @@ using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.UI.DI;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.DI;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 

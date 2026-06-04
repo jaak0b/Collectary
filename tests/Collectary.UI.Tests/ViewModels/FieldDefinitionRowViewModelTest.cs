@@ -1,6 +1,6 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 

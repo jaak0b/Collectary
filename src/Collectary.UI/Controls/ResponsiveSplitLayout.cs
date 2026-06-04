@@ -1,7 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using Collectary.UI.Services;
+using Collectary.Presentation.Services;
 
 namespace Collectary.UI.Controls;
 

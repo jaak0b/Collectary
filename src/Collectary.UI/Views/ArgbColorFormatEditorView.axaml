@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.ArgbColorFormatEditorView"
              x:DataType="vm:ArgbColorFormatEditorViewModel">
 
@@ -11,19 +12,19 @@
         </StackPanel>
         <StackPanel Spacing="2">
             <TextBlock Text="A" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <NumericUpDown Value="{Binding A}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
+            <controls:SafeNumericUpDown Value="{Binding A}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
         </StackPanel>
         <StackPanel Spacing="2">
             <TextBlock Text="R" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <NumericUpDown Value="{Binding R}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
+            <controls:SafeNumericUpDown Value="{Binding R}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
         </StackPanel>
         <StackPanel Spacing="2">
             <TextBlock Text="G" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <NumericUpDown Value="{Binding G}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
+            <controls:SafeNumericUpDown Value="{Binding G}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
         </StackPanel>
         <StackPanel Spacing="2">
             <TextBlock Text="B" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <NumericUpDown Value="{Binding B}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
+            <controls:SafeNumericUpDown Value="{Binding B}" Minimum="0" Maximum="255" Increment="1" FormatString="0" Width="120"/>
         </StackPanel>
     </StackPanel>
 </UserControl>

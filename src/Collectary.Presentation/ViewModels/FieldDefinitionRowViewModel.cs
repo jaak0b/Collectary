@@ -4,9 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
 {
@@ -140,7 +140,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
     }
 
-    internal void NotifyColumnSpanOptionsChanged()
+    internal void RaiseColumnSpanChanged()
     {
         OnPropertyChanged(nameof(ColumnSpanOptions));
         OnPropertyChanged(nameof(IsInMultiColumnContext));
@@ -165,7 +165,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         DisplayHeight = (_definition as ImageFieldDefinition)?.DisplayHeight ?? 200;
         ImageSizeMode = (_definition as ImageFieldDefinition)?.SizeMode ?? ImageSizeMode.Fixed;
         CurrencySymbol = (_definition as CurrencyFieldDefinition)?.CurrencySymbol ?? "€";
-        ColumnSpan = definition.ColumnSpan;
+        ColumnSpan = definition.ColumnSpan > 1 ? definition.ColumnSpan : definition.DefaultColumnSpan;
         MaxStars = (_definition as RatingFieldDefinition)?.MaxStars ?? 5;
         ListColumnCount = (_definition as ListFieldDefinition)?.ColumnCount ?? 1;
 
@@ -198,6 +198,8 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
                 row.SetParentColumnCount(lfd.ColumnCount);
             var tree = new EditorNodeTreeBuilder().Build(groupNodes, fieldRows);
             foreach (var node in tree) SubFieldRows.Add(node);
+            foreach (var group in groupNodes)
+                group.RefreshChildColumnSpans();
             foreach (var root in groupNodes.Where(g => g.ParentGroupId is null))
                 root.ApplyListGate(true);
         }

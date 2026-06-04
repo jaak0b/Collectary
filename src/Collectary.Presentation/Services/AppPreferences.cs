@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
 
-namespace Collectary.UI.Services;
+namespace Collectary.Presentation.Services;
 
 public record AppPreferencesData(
     AppTheme Theme = AppTheme.Light,

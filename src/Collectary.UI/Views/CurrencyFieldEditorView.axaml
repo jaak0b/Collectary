@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.CurrencyFieldEditorView"
              x:DataType="vm:CurrencyFieldEditorViewModel">
 
@@ -23,7 +24,7 @@
                        VerticalAlignment="Center"
                        FontWeight="Medium"
                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <NumericUpDown Value="{Binding Amount}"
+            <controls:SafeNumericUpDown Value="{Binding Amount}"
                            Minimum="0"
                            Maximum="999999999"
                            FormatString="0.00"

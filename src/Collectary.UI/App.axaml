@@ -1,7 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Collectary.UI"
-             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:controls="using:Collectary.UI.Controls"
              x:Class="Collectary.UI.App"
              RequestedThemeVariant="Light">

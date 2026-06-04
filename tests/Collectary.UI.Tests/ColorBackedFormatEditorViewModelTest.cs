@@ -1,5 +1,5 @@
 using Avalonia.Media;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests;
 

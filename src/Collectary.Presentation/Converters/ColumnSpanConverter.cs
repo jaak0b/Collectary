@@ -1,8 +1,8 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
 
-namespace Collectary.UI.Converters;
+namespace Collectary.Presentation.Converters;
 
 public class ColumnSpanConverter : IValueConverter
 {

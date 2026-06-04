@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <!-- Testing -->
+    <PackageVersion Include="Avalonia.Headless" Version="12.0.4" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="FakeItEasy" Version="9.0.1" />

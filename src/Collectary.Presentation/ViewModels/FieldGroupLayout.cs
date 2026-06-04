@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public class FieldGroupLayout
 {

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Collectary.Core.Domain;
 
-namespace Collectary.UI.ViewModels.ListCells;
+namespace Collectary.Presentation.ViewModels.ListCells;
 
 public class RichTextListCellViewModel : ListCellViewModelBase
 {

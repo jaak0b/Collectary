@@ -2,7 +2,7 @@ using Autofac;
 using Collectary.Core.Ports;
 using Collectary.Infrastructure.Persistence;
 using Collectary.Infrastructure.Storage;
-using Collectary.UI.Services;
+using Collectary.Presentation.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Collectary.UI.DI;

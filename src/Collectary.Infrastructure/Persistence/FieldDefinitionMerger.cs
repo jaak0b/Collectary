@@ -24,34 +24,10 @@ public class FieldDefinitionMerger : IFieldDefinitionMerger
         if (existing is IListDisplayable existingLd && updated is IListDisplayable updatedLd)
             existingLd.ShowInList = updatedLd.ShowInList;
 
-        if (existing is ColorFieldDefinition existingCd && updated is ColorFieldDefinition updatedCd)
-            existingCd.Format = updatedCd.Format;
-
-        if (existing is ImageFieldDefinition existingImg && updated is ImageFieldDefinition updatedImg)
-        {
-            existingImg.DisplayWidth = updatedImg.DisplayWidth;
-            existingImg.DisplayHeight = updatedImg.DisplayHeight;
-            existingImg.SizeMode = updatedImg.SizeMode;
-        }
-
-        if (existing is SingleChoiceFieldDefinition existingSc && updated is SingleChoiceFieldDefinition updatedSc)
-            ReplaceChoices(existingSc.Choices, updatedSc.Choices);
-
-        if (existing is MultiChoiceFieldDefinition existingMc && updated is MultiChoiceFieldDefinition updatedMc)
-            ReplaceChoices(existingMc.Choices, updatedMc.Choices);
-
-        if (existing is CurrencyFieldDefinition existingCurr && updated is CurrencyFieldDefinition updatedCurr)
-            existingCurr.CurrencySymbol = updatedCurr.CurrencySymbol;
-
-        if (existing is RatingFieldDefinition existingRating && updated is RatingFieldDefinition updatedRating)
-            existingRating.MaxStars = updatedRating.MaxStars;
+        existing.ApplyTypeSpecificProperties(updated);
 
         if (existing is ListFieldDefinition existingList && updated is ListFieldDefinition updatedList)
-        {
-            existingList.ColumnCount = updatedList.ColumnCount;
-            existingList.InlineStyle = updatedList.InlineStyle;
             SyncSubFields(db, existingList, updatedList);
-        }
     }
 
     public void SyncSubFields(InventoryDbContext db, ListFieldDefinition existing, ListFieldDefinition updated)
@@ -126,12 +102,5 @@ public class FieldDefinitionMerger : IFieldDefinitionMerger
             added, updatedCount, removed.Count);
 
         return removed.Select(g => g.Id).ToHashSet();
-    }
-
-    private static void ReplaceChoices(ICollection<ChoiceOption> existing, IEnumerable<ChoiceOption> updated)
-    {
-        existing.Clear();
-        foreach (var c in updated)
-            existing.Add(new ChoiceOption { Id = c.Id, Value = c.Value, DisplayOrder = c.DisplayOrder });
     }
 }

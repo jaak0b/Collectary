@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
 {
@@ -33,10 +33,7 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
     partial void OnColumnCountChanged(int value)
     {
         foreach (var field in ChildNodes.OfType<FieldDefinitionRowViewModel>())
-        {
-            field.NotifyColumnSpanOptionsChanged();
-            if (field.ColumnSpan > value) field.ColumnSpan = value;
-        }
+            field.SetParentColumnCount(value);
     }
 
     public int DisplayOrder { get; set; }
@@ -74,6 +71,14 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
         Name = name;
         DisplayMode = GroupDisplayMode.Card;
         ShowInList = true;
+    }
+
+    public void RefreshChildColumnSpans()
+    {
+        foreach (var field in ChildNodes.OfType<FieldDefinitionRowViewModel>())
+            field.SetParentColumnCount(ColumnCount);
+        foreach (var childGroup in ChildNodes.OfType<FieldGroupRowViewModel>())
+            childGroup.RefreshChildColumnSpans();
     }
 
     partial void OnShowInListChanged(bool value) => ApplyListGate(_ancestorListAllowed);

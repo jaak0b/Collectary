@@ -6,10 +6,20 @@ public enum ImageSizeMode { Fixed, Min, Max }
 [FieldIcon("🖼")]
 public class ImageFieldDefinition : FieldDefinition<ImageFieldValue>
 {
-    public ImageFieldDefinition() => ColumnSpan = 2;
+    public override int DefaultColumnSpan => 2;
     public int DisplayWidth { get; set; } = 200;
     public int DisplayHeight { get; set; } = 200;
     public ImageSizeMode SizeMode { get; set; } = ImageSizeMode.Fixed;
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is ImageFieldDefinition src)
+        {
+            DisplayWidth = src.DisplayWidth;
+            DisplayHeight = src.DisplayHeight;
+            SizeMode = src.SizeMode;
+        }
+    }
 }
 
 public class ImageFieldValue : FieldValue<ImageFieldDefinition>

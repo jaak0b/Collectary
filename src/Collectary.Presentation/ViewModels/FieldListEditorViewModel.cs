@@ -4,9 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public class EditorLevel : System.ComponentModel.INotifyPropertyChanged
 {
@@ -121,14 +121,25 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
     private void PopulateFieldRowGroups(EditorLevel level)
     {
         var ownerGroups = CollectGroups(level.OwnerRootRows).ToList();
+        var levelColumnCount = ColumnCountForLevel(level);
         foreach (var node in level.Rows)
         {
             if (node is not FieldDefinitionRowViewModel field) continue;
             SyncAvailableGroups(field.AvailableGroups, ownerGroups);
             field.AssignedGroupId = level.ScopeGroupId;
             field.GroupMoveRequested = (row, target) => MoveFieldToGroup(level, row, target);
+            field.SetParentColumnCount(levelColumnCount);
         }
     }
+
+    private int ColumnCountForLevel(EditorLevel level) => level.OwnerNode switch
+    {
+        FieldGroupRowViewModel group => group.ColumnCount,
+        FieldDefinitionRowViewModel listField => listField.ListColumnCount,
+        _ => GetRootColumnCount()
+    };
+
+    protected virtual int GetRootColumnCount() => 1;
 
     private static void SyncAvailableGroups(
         ObservableCollection<FieldGroupRowViewModel> target,

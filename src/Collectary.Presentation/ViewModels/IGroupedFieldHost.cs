@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public interface IGroupedFieldHost
 {

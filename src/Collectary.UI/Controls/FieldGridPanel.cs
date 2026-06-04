@@ -1,12 +1,20 @@
 using Avalonia;
 using Avalonia.Controls;
-using Collectary.UI.Layout;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.Layout;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Controls;
 
 public class FieldGridPanel : Panel
 {
+    static FieldGridPanel()
+    {
+        AffectsMeasure<FieldGridPanel>(
+            ColumnCountProperty,
+            MinColumnWidthProperty,
+            ColumnSpacingProperty);
+    }
+
     public static readonly StyledProperty<int> ColumnCountProperty =
         AvaloniaProperty.Register<FieldGridPanel, int>(nameof(ColumnCount), 1);
 
@@ -33,6 +41,9 @@ public class FieldGridPanel : Panel
         get => GetValue(ColumnSpacingProperty);
         set => SetValue(ColumnSpacingProperty, value);
     }
+
+    private IReadOnlyList<FieldRow> _cachedRows = Array.Empty<FieldRow>();
+    private double _cachedLayoutWidth = -1;
 
     private static int GetSpan(Control child) =>
         child.DataContext is FieldEditorViewModelBase vm
@@ -62,11 +73,14 @@ public class FieldGridPanel : Panel
             ? ColumnCount * (MinColumnWidth + ColumnSpacing) - ColumnSpacing
             : availableSize.Width;
 
+        _cachedRows = GetRows(w);
+        _cachedLayoutWidth = w;
+
         int cols = FieldLayoutEngine.ComputeEffectiveCols(ColumnCount, w, MinColumnWidth);
         double colW = ColumnWidth(w, cols);
         double totalH = 0;
 
-        foreach (var row in GetRows(w))
+        foreach (var row in _cachedRows)
         {
             double rowH = 0;
             foreach (var slot in row.Slots)
@@ -83,19 +97,20 @@ public class FieldGridPanel : Panel
 
     protected override Size ArrangeOverride(Size finalSize)
     {
+        var rows = Math.Abs(finalSize.Width - _cachedLayoutWidth) < 0.5
+            ? _cachedRows
+            : GetRows(finalSize.Width);
+
         int cols = FieldLayoutEngine.ComputeEffectiveCols(ColumnCount, finalSize.Width, MinColumnWidth);
         double colW = ColumnWidth(finalSize.Width, cols);
         double y = 0;
 
-        foreach (var row in GetRows(finalSize.Width))
+        foreach (var row in rows)
         {
             double rowH = row.Slots.Max(s => Children[s.FieldIndex].DesiredSize.Height);
             foreach (var slot in row.Slots)
-            {
-                double x = SlotX(slot.ColStart, colW);
-                double w = SlotWidth(slot.Span, colW);
-                Children[slot.FieldIndex].Arrange(new Rect(x, y, w, rowH));
-            }
+                Children[slot.FieldIndex].Arrange(
+                    new Rect(SlotX(slot.ColStart, colW), y, SlotWidth(slot.Span, colW), rowH));
             y += rowH;
         }
 

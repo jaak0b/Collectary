@@ -4,7 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 [FieldIcon("🔤")]
 public class TextFieldDefinition : FieldDefinition<TextFieldValue>, IListDisplayable
 {
-    public TextFieldDefinition() => ColumnSpan = 2;
+    public override int DefaultColumnSpan => 2;
     public int? MaxLength { get; set; }
     public bool ShowInList { get; set; }
 }

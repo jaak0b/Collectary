@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Collectary.UI.Controls;
-using Collectary.UI.ViewModels;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Views;
 

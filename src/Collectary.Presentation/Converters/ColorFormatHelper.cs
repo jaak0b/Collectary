@@ -1,9 +1,9 @@
 using System.Globalization;
 using Avalonia.Media;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Services;
+using Collectary.Presentation.Services;
 
-namespace Collectary.UI.Converters;
+namespace Collectary.Presentation.Converters;
 
 public static class ColorFormatHelper
 {

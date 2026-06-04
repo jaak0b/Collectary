@@ -4,11 +4,11 @@ using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels.SystemFields;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels.SystemFields;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class PresetEditorViewModel : FieldListEditorViewModel
 {
@@ -34,6 +34,8 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     private readonly ObservableCollection<IEditorNode> _rootRows = new();
 
     public ObservableCollection<SystemFieldRowViewModel> AvailableSystemFields { get; } = new();
+
+    protected override int GetRootColumnCount() => ColumnCount;
 
     partial void OnColumnCountChanged(int value)
     {
@@ -87,6 +89,8 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         foreach (var node in tree) _rootRows.Add(node);
         foreach (var root in groupNodes.Where(g => g.ParentGroupId is null))
             root.ApplyListGate(true);
+        foreach (var group in groupNodes)
+            group.RefreshChildColumnSpans();
 
         foreach (var field in _rootRows.OfType<FieldDefinitionRowViewModel>())
             field.SetParentColumnCount(ColumnCount);

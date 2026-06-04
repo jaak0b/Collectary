@@ -1,7 +1,8 @@
 using Autofac.Features.Indexed;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.ViewModels.ListCells;
+using Collectary.Presentation.DI;
+using Collectary.Presentation.ViewModels.ListCells;
 
 namespace Collectary.UI.DI;
 

@@ -1,10 +1,12 @@
 using Autofac;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.UI.Localization;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.DI;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 using Collectary.UI.Services;
-using Collectary.UI.ViewModels;
-using Collectary.UI.ViewModels.ListCells;
+using Collectary.Presentation.ViewModels.ListCells;
 using Collectary.UI.Views;
 
 namespace Collectary.UI.DI;

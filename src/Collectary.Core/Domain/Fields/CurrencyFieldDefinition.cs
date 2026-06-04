@@ -6,6 +6,11 @@ public class CurrencyFieldDefinition : FieldDefinition<CurrencyFieldValue>, ILis
 {
     public bool ShowInList { get; set; }
     public string CurrencySymbol { get; set; } = "€";
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is CurrencyFieldDefinition src) CurrencySymbol = src.CurrencySymbol;
+    }
 }
 
 public class CurrencyFieldValue : FieldValue<CurrencyFieldDefinition>

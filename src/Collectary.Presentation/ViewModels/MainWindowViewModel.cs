@@ -8,12 +8,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
-using Collectary.UI.DI;
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
-using Collectary.UI.ViewModels.SystemFields;
+using Collectary.Presentation.DI;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels.SystemFields;
 
-namespace Collectary.UI.ViewModels;
+namespace Collectary.Presentation.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {

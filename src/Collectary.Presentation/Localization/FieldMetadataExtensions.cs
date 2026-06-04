@@ -1,7 +1,7 @@
 using System.Reflection;
 using Collectary.Core.Domain.Fields;
 
-namespace Collectary.UI.Localization;
+namespace Collectary.Presentation.Localization;
 
 public static class FieldMetadataExtensions
 {

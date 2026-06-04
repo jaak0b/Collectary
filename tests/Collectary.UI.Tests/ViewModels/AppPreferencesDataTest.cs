@@ -1,5 +1,5 @@
-using Collectary.UI.Localization;
-using Collectary.UI.Services;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
 
 namespace Collectary.UI.Tests.ViewModels;
 

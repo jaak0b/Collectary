@@ -2,7 +2,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
-namespace Collectary.UI.Converters;
+namespace Collectary.Presentation.Converters;
 
 public class HexToColorConverter : IValueConverter
 {

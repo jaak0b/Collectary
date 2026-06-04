@@ -1,6 +1,6 @@
 using Collectary.Core.Domain;
 
-namespace Collectary.UI.ViewModels.ListCells;
+namespace Collectary.Presentation.ViewModels.ListCells;
 
 public abstract class ListCellViewModelBase : ViewModelBase
 {

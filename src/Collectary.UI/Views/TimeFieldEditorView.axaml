@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.TimeFieldEditorView"
              x:DataType="vm:TimeFieldEditorViewModel">
 
@@ -19,7 +20,7 @@
                        IsVisible="{Binding Definition.IsRequired}"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top">
-            <NumericUpDown Value="{Binding Hour}"
+            <controls:SafeNumericUpDown Value="{Binding Hour}"
                            Minimum="0"
                            Maximum="23"
                            FormatString="00"
@@ -30,7 +31,7 @@
                        FontSize="16"
                        FontWeight="Bold"
                        Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <NumericUpDown Value="{Binding Minute}"
+            <controls:SafeNumericUpDown Value="{Binding Minute}"
                            Minimum="0"
                            Maximum="59"
                            FormatString="00"

@@ -1,7 +1,7 @@
 using Serilog;
 using Serilog.Events;
 
-namespace Collectary.UI.Services;
+namespace Collectary.Presentation.Services;
 
 public static class AppLogger
 {

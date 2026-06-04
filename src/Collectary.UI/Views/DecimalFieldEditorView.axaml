@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:Collectary.UI.ViewModels"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.DecimalFieldEditorView"
              x:DataType="vm:DecimalFieldEditorViewModel">
 
@@ -18,7 +19,7 @@
                        Foreground="Red"
                        IsVisible="{Binding Definition.IsRequired}"/>
         </StackPanel>
-        <NumericUpDown Grid.Column="1"
+        <controls:SafeNumericUpDown Grid.Column="1"
                        Value="{Binding Number}"
                        FormatString="0.##"
                        Increment="0.1"
