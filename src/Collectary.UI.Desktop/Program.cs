@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Logging;
+using Collectary.Infrastructure.Cloud;
 using Collectary.Presentation.Services;
 
 namespace Collectary.UI.Desktop;
@@ -32,6 +34,7 @@ sealed class Program
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
+            .AfterSetup(RegisterCloudModule)
             .UsePlatformDetect()
 #if DEBUG
             .WithDeveloperTools()
@@ -39,4 +42,17 @@ sealed class Program
             .WithInterFont()
             .LogToTrace(LogEventLevel.Warning)
             .LogToTrace(LogEventLevel.Verbose, LogArea.Binding);
+
+    private static void RegisterCloudModule(AppBuilder builder)
+    {
+        if (builder.Instance is not App app) return;
+
+        var cacheDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Collectary");
+
+        app.PlatformModules = new Autofac.Core.IModule[]
+        {
+            new CloudModule(cacheDirectory, () => AppPreferences.Load().OneDriveRootFolderId),
+        };
+    }
 }

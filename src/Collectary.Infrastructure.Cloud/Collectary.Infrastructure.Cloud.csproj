@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!--
+    Desktop-only cloud sync. Holds the OAuth/Drive SDKs (MSAL, Microsoft.Graph, Google.Apis) and
+    their implementations of the Core cloud ports. Referenced ONLY by Collectary.UI.Desktop so the
+    WebAssembly build graph never sees these packages. A future browser cloud implementation would
+    be its own browser-only project implementing the same ports in Collectary.Core.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Collectary.Core\Collectary.Core.csproj" />
+    <ProjectReference Include="..\Collectary.Infrastructure\Collectary.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" />
+    <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+
+</Project>

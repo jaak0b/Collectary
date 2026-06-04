@@ -18,6 +18,13 @@ public partial class App : Application
 {
     private IContainer? _container;
 
+    /// <summary>
+    /// Extra DI modules contributed by the platform entry point (e.g. desktop registers cloud sync).
+    /// Set during <c>AppBuilder.AfterSetup</c> before the container is built. Kept empty on platforms
+    /// (Browser) that must not pull in platform-specific SDKs.
+    /// </summary>
+    public IReadOnlyList<Autofac.Core.IModule> PlatformModules { get; set; } = Array.Empty<Autofac.Core.IModule>();
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -211,7 +218,7 @@ public partial class App : Application
         desktop.MainWindow = login;
     }
 
-    private static IContainer BuildContainer()
+    private IContainer BuildContainer()
     {
         var builder = new ContainerBuilder();
         builder.RegisterModule(new CoreModule());
@@ -228,6 +235,9 @@ public partial class App : Application
             Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
             builder.RegisterModule(new InfrastructureModule(dbPath, imagePath));
         }
+
+        foreach (var module in PlatformModules)
+            builder.RegisterModule(module);
 
         builder.RegisterModule(new SecurityModule());
         builder.RegisterModule(new UiModule());

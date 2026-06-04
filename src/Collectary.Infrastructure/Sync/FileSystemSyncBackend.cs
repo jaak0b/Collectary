@@ -5,6 +5,7 @@ namespace Collectary.Infrastructure.Sync;
 public class FileSystemSyncBackend : ISyncBackend
 {
     private readonly Func<string?> _rootProvider;
+    private readonly SyncFileNaming _naming = new();
 
     public FileSystemSyncBackend(string rootPath) : this(() => rootPath) { }
 
@@ -21,13 +22,8 @@ public class FileSystemSyncBackend : ISyncBackend
 
         var entries = new List<SyncEntry>();
         foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
-        {
-            var name = Path.GetFileNameWithoutExtension(file);
-            var dot = name.LastIndexOf('.');
-            if (dot <= 0) continue;
-            if (Guid.TryParse(name[..dot], out var id) && long.TryParse(name[(dot + 1)..], out var revision))
+            if (_naming.TryParseDocument(Path.GetFileName(file), out var id, out var revision))
                 entries.Add(new SyncEntry(id, revision));
-        }
 
         return Task.FromResult<IReadOnlyList<SyncEntry>>(entries);
     }
@@ -42,7 +38,7 @@ public class FileSystemSyncBackend : ISyncBackend
     {
         var dir = KindDir(kind);
         Directory.CreateDirectory(dir);
-        var target = Path.Combine(dir, $"{id:N}.{revision}.json");
+        var target = Path.Combine(dir, _naming.DocumentName(id, revision));
 
         foreach (var stale in Directory.EnumerateFiles(dir, $"{id:N}.*.json"))
             if (!string.Equals(stale, target, StringComparison.OrdinalIgnoreCase))
@@ -106,14 +102,7 @@ public class FileSystemSyncBackend : ISyncBackend
         return Task.CompletedTask;
     }
 
-    private string SafeKey(string key)
-    {
-        if (string.IsNullOrWhiteSpace(key) || key is "." or ".."
-            || Path.GetFileName(key) != key
-            || key.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            throw new ArgumentException($"Unsafe blob key: '{key}'", nameof(key));
-        return key;
-    }
+    private string SafeKey(string key) => _naming.SafeKey(key);
 
     private string KindDir(string kind) => Path.Combine(Root, kind);
 }

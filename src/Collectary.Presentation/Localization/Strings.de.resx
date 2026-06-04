@@ -228,4 +228,21 @@
   <data name="Sync_Disable" xml:space="preserve"><value>Sync deaktivieren</value></data>
   <data name="Sync_AutoSync" xml:space="preserve"><value>Automatische Synchronisierung</value></data>
   <data name="Sync_IntervalMinutes" xml:space="preserve"><value>Intervall (Minuten)</value></data>
+  <data name="Settings_SyncProvider" xml:space="preserve"><value>Speicheranbieter</value></data>
+  <data name="Settings_Provider_Folder" xml:space="preserve"><value>Lokaler / eingebundener Ordner</value></data>
+  <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>
+  <data name="Settings_Provider_GoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="Cloud_Connect" xml:space="preserve"><value>Verbinden…</value></data>
+  <data name="Cloud_Disconnect" xml:space="preserve"><value>Trennen</value></data>
+  <data name="Cloud_Connected_As" xml:space="preserve"><value>Verbunden als {0}</value></data>
+  <data name="Cloud_NotConnected" xml:space="preserve"><value>Nicht verbunden</value></data>
+  <data name="Cloud_ChooseFolder" xml:space="preserve"><value>Sync-Ordner einrichten</value></data>
+  <data name="Cloud_FolderReady" xml:space="preserve"><value>Sync-Ordner bereit</value></data>
+  <data name="Cloud_AutoDetectFolder" xml:space="preserve"><value>Installierten OneDrive-Ordner verwenden</value></data>
+  <data name="Cloud_AuthFailed" xml:space="preserve"><value>Verbindung fehlgeschlagen. Bitte erneut versuchen.</value></data>
+  <data name="Cloud_FolderPicker_Title" xml:space="preserve"><value>Sync-Ordner auswählen</value></data>
+  <data name="Cloud_NewFolderName" xml:space="preserve"><value>Name des neuen Ordners</value></data>
+  <data name="Cloud_CreateFolder" xml:space="preserve"><value>Erstellen</value></data>
+  <data name="Cloud_UseThisFolder" xml:space="preserve"><value>Diesen Ordner verwenden</value></data>
+  <data name="Cloud_SyncFolder" xml:space="preserve"><value>Sync-Ordner:</value></data>
 </root>
