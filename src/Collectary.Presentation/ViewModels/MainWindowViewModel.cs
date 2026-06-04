@@ -119,6 +119,7 @@ public partial class MainWindowViewModel : ViewModelBase
         home.OnCreateFromTemplate = NavigateToTemplatePicker;
         home.OnEditPreset = preset => NavigateToPresetEditor(preset);
         home.OnNavigateToSystemFields = NavigateToSystemFieldLibrary;
+        home.OnSharePreset = SharePreset;
         home.OnDeletePreset = async (preset) =>
         {
             await _presetUseCase.DeletePresetAsync(preset.Id);
@@ -143,6 +144,26 @@ public partial class MainWindowViewModel : ViewModelBase
         IsSidebarOpen = true;
         var prefs = AppPreferences.Load();
         AppPreferences.Save(prefs with { SidebarOpen = true });
+        if (SidebarViewModel is not null)
+            await SidebarViewModel.LoadAsync();
+    }
+
+    private void SharePreset(Preset preset)
+    {
+        AppLogger.Log.Debug("Share: preset id={Id} name={Name}", preset.Id, preset.Name);
+        var shareUseCase = _scope.Resolve<IShareUseCase>();
+        var vm = new ShareDialogViewModel(
+            shareUseCase,
+            preset.Id,
+            preset.Name,
+            onTransferred: () => { _ = SidebarViewModel?.LoadAsync(); });
+        _ = ShowShareDialogAsync(vm);
+    }
+
+    private async Task ShowShareDialogAsync(ShareDialogViewModel vm)
+    {
+        await vm.LoadAsync();
+        await _dialogService.ShowShareDialogAsync(vm);
         if (SidebarViewModel is not null)
             await SidebarViewModel.LoadAsync();
     }

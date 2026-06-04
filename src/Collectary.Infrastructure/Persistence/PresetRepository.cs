@@ -11,12 +11,14 @@ public class PresetRepository : IPresetRepository
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IFieldDefinitionMerger _merger;
     private readonly IAppLogger _logger;
+    private readonly ICurrentUser? _currentUser;
 
-    public PresetRepository(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null)
+    public PresetRepository(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null, ICurrentUser? currentUser = null)
     {
         _dbFactory = dbFactory;
         _merger = merger;
         _logger = logger ?? new NullAppLogger();
+        _currentUser = currentUser;
     }
 
     private IQueryable<Preset> WithDetails(IQueryable<Preset> query) =>
@@ -33,10 +35,18 @@ public class PresetRepository : IPresetRepository
     public async Task<IReadOnlyList<Preset>> GetAllAsync()
     {
         using var db = _dbFactory();
-        return await WithDetails(db.Presets)
-            .AsNoTracking()
-            .OrderBy(p => p.DisplayOrder)
-            .ToListAsync();
+        var query = WithDetails(db.Presets).AsNoTracking();
+        if (_currentUser?.IsAuthenticated == true)
+        {
+            var uid = _currentUser.UserId;
+            var sharedIds = await db.CollectionShares
+                .Where(s => s.SharedWithUserId == uid)
+                .Select(s => s.PresetId)
+                .ToListAsync();
+            query = query.Where(p => p.OwnerId == uid || sharedIds.Contains(p.Id));
+        }
+
+        return await query.OrderBy(p => p.DisplayOrder).ToListAsync();
     }
 
     public async Task<Preset?> GetByIdAsync(Guid id)
@@ -60,6 +70,15 @@ public class PresetRepository : IPresetRepository
     public async Task AddAsync(Preset preset)
     {
         using var db = _dbFactory();
+        if (_currentUser?.IsAuthenticated == true)
+        {
+            preset.OwnerId ??= _currentUser.UserId;
+            preset.LastModifiedByUserId = _currentUser.UserId;
+        }
+
+        preset.UpdatedAt = DateTime.UtcNow;
+        preset.IsDirty = true;
+        preset.Revision++;
         db.Presets.Add(preset);
         await db.SaveChangesAsync();
         _logger.Debug("Added preset id={Id} name={Name} fields={Fields} groups={Groups} systemRefs={Refs}",
@@ -134,6 +153,12 @@ public class PresetRepository : IPresetRepository
             }
         }
 
+        tracked.UpdatedAt = DateTime.UtcNow;
+        tracked.IsDirty = true;
+        tracked.Revision++;
+        if (_currentUser?.IsAuthenticated == true)
+            tracked.LastModifiedByUserId = _currentUser.UserId;
+
         await db.SaveChangesAsync();
     }
 
@@ -147,6 +172,17 @@ public class PresetRepository : IPresetRepository
         for (var i = 0; i < ordered.Count; i++)
             if (lookup.TryGetValue(ordered[i].Id, out var tracked))
                 tracked.DisplayOrder = i;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task BackfillOwnerlessAsync(Guid ownerId)
+    {
+        using var db = _dbFactory();
+        var ownerless = await db.Presets.IgnoreQueryFilters()
+            .Where(p => p.OwnerId == null)
+            .ToListAsync();
+        foreach (var preset in ownerless)
+            preset.OwnerId = ownerId;
         await db.SaveChangesAsync();
     }
 

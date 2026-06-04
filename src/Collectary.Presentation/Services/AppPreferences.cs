@@ -8,7 +8,8 @@ public record AppPreferencesData(
     string Language = "en",
     double FieldPaneRatio = 0.4,
     bool SidebarOpen = true,
-    double SidebarWidth = 260);
+    double SidebarWidth = 260,
+    bool RequireLogin = true);
 
 public static class AppPreferences
 {

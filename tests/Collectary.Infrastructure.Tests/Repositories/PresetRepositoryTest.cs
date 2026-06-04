@@ -662,4 +662,70 @@ public class PresetRepositoryTest : DbIntegrationTestBase
         var all = await _sut.GetAllAsync();
         Assert.That(all.Select(p => p.Name), Is.EqualTo(new[] { "C", "A", "B" }));
     }
+
+    [Test]
+    public async Task AddAsync_SetsDirtyAndRevision()
+    {
+        var preset = MakePreset("Dirty");
+
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(loaded!.IsDirty, Is.True);
+            Assert.That(loaded.Revision, Is.GreaterThan(0));
+        });
+    }
+
+    [Test]
+    public async Task AddAsync_WhenAuthenticated_SetsOwnerId()
+    {
+        var me = Guid.NewGuid();
+        var scoped = new PresetRepository(DbFactory, new FieldDefinitionMerger(), null, new FixedCurrentUser(me));
+        var preset = MakePreset("Owned");
+
+        await scoped.AddAsync(preset);
+
+        var loaded = await scoped.GetByIdAsync(preset.Id);
+        Assert.That(loaded!.OwnerId, Is.EqualTo(me));
+    }
+
+    [Test]
+    public async Task GetAllAsync_WhenScoped_ReturnsOnlyOwnedAndShared()
+    {
+        var me = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var scoped = new PresetRepository(DbFactory, new FieldDefinitionMerger(), null, new FixedCurrentUser(me));
+
+        var mine = MakePreset("Mine");
+        await scoped.AddAsync(mine);
+
+        var theirsPrivate = new Preset { Name = "TheirsPrivate", OwnerId = other };
+        var theirsShared = new Preset { Name = "TheirsShared", OwnerId = other };
+        using (var db = DbFactory())
+        {
+            db.Presets.Add(theirsPrivate);
+            db.Presets.Add(theirsShared);
+            db.CollectionShares.Add(new CollectionShare
+            {
+                PresetId = theirsShared.Id,
+                SharedWithUserId = me,
+                GrantedByUserId = other,
+                Permission = SharePermission.Read,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var visible = await scoped.GetAllAsync();
+
+        Assert.That(visible.Select(p => p.Name), Is.EquivalentTo(new[] { "Mine", "TheirsShared" }));
+    }
+}
+
+file sealed class FixedCurrentUser : ICurrentUser
+{
+    public FixedCurrentUser(Guid userId) => UserId = userId;
+    public Guid UserId { get; }
+    public bool IsAuthenticated => UserId != Guid.Empty;
 }

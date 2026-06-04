@@ -10,12 +10,14 @@ public class ItemUseCase : IItemUseCase
     private readonly IItemRepository _items;
     private readonly IPresetUseCase _presets;
     private readonly IAppLogger _logger;
+    private readonly ICollectionAuthorization? _authorization;
 
-    public ItemUseCase(IItemRepository items, IPresetUseCase presets, IAppLogger? logger = null)
+    public ItemUseCase(IItemRepository items, IPresetUseCase presets, IAppLogger? logger = null, ICollectionAuthorization? authorization = null)
     {
         _items = items;
         _presets = presets;
         _logger = logger ?? new NullAppLogger();
+        _authorization = authorization;
     }
 
     public Task<IReadOnlyList<Item>> GetItemsForPresetAsync(Guid presetId) =>
@@ -26,6 +28,7 @@ public class ItemUseCase : IItemUseCase
 
     public async Task CreateItemAsync(Item item)
     {
+        await EnsureCanWriteAsync(item.PresetId);
         var effectiveFields = await _presets.GetEffectiveFieldsAsync(item.PresetId);
         EnsureRequiredFieldsPresent(item, effectiveFields.Fields);
         item.UpdatedAt = DateTime.UtcNow;
@@ -36,6 +39,7 @@ public class ItemUseCase : IItemUseCase
 
     public async Task UpdateItemAsync(Item item)
     {
+        await EnsureCanWriteAsync(item.PresetId);
         var effectiveFields = await _presets.GetEffectiveFieldsAsync(item.PresetId);
         EnsureRequiredFieldsPresent(item, effectiveFields.Fields);
         item.UpdatedAt = DateTime.UtcNow;
@@ -44,10 +48,22 @@ public class ItemUseCase : IItemUseCase
             item.Id, item.PresetId, item.Values.Count);
     }
 
-    public Task DeleteItemAsync(Guid id)
+    public async Task DeleteItemAsync(Guid id)
     {
+        if (_authorization is not null)
+        {
+            var existing = await _items.GetByIdAsync(id);
+            if (existing is not null) await EnsureCanWriteAsync(existing.PresetId);
+        }
+
         _logger.Debug("Deleting item id={ItemId}", id);
-        return _items.DeleteAsync(id);
+        await _items.DeleteAsync(id);
+    }
+
+    private async Task EnsureCanWriteAsync(Guid presetId)
+    {
+        if (_authorization is not null && !await _authorization.CanWriteAsync(presetId))
+            throw new UnauthorizedAccessException("You do not have edit access to this collection.");
     }
 
     private static void EnsureRequiredFieldsPresent(Item item, IReadOnlyList<FieldDefinition> effectiveFields)

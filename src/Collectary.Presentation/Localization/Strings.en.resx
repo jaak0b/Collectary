@@ -175,4 +175,35 @@
   <data name="Done" xml:space="preserve"><value>Done</value></data>
   <data name="ToggleSidebar" xml:space="preserve"><value>Toggle sidebar</value></data>
   <data name="SelectCollectionPrompt" xml:space="preserve"><value>Select a collection to get started</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login_RegisterTitle" xml:space="preserve"><value>Create account</value></data>
+  <data name="Login_Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Login_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Login_DisplayName" xml:space="preserve"><value>Display name</value></data>
+  <data name="Login_Email" xml:space="preserve"><value>Email (optional)</value></data>
+  <data name="Login_SignInButton" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login_RegisterButton" xml:space="preserve"><value>Create account</value></data>
+  <data name="Login_SwitchToRegister" xml:space="preserve"><value>Need an account? Register</value></data>
+  <data name="Login_SwitchToLogin" xml:space="preserve"><value>Have an account? Sign in</value></data>
+  <data name="Login_Failed" xml:space="preserve"><value>Incorrect username or password.</value></data>
+  <data name="Login_UsernameTaken" xml:space="preserve"><value>That username is already taken.</value></data>
+  <data name="Login_FieldsRequired" xml:space="preserve"><value>Username and password are required.</value></data>
+  <data name="Share_Title" xml:space="preserve"><value>Share collection</value></data>
+  <data name="Share_AddUser" xml:space="preserve"><value>Share with a user</value></data>
+  <data name="Share_Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Share_Permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="Share_ShareButton" xml:space="preserve"><value>Share</value></data>
+  <data name="Share_Revoke" xml:space="preserve"><value>Revoke</value></data>
+  <data name="Share_CurrentShares" xml:space="preserve"><value>People with access</value></data>
+  <data name="Share_NoShares" xml:space="preserve"><value>Not shared with anyone yet.</value></data>
+  <data name="Share_Transfer" xml:space="preserve"><value>Transfer ownership</value></data>
+  <data name="Share_TransferTo" xml:space="preserve"><value>New owner username</value></data>
+  <data name="Share_TransferButton" xml:space="preserve"><value>Transfer</value></data>
+  <data name="Share_TransferDone" xml:space="preserve"><value>Ownership transferred.</value></data>
+  <data name="Share_UserNotFound" xml:space="preserve"><value>No user with that username exists.</value></data>
+  <data name="Share_NotOwner" xml:space="preserve"><value>Only the owner can manage sharing.</value></data>
+  <data name="Share_Invalid" xml:space="preserve"><value>That sharing action is not allowed.</value></data>
+  <data name="Permission_Read" xml:space="preserve"><value>Read</value></data>
+  <data name="Permission_Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Share" xml:space="preserve"><value>Share</value></data>
 </root>

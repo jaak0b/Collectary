@@ -2,6 +2,7 @@ using Autofac;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Collectary.Core.Ports;
 using Collectary.Infrastructure.Persistence;
 using Collectary.Presentation.DI;
 using Collectary.UI.DI;
@@ -52,18 +53,26 @@ public partial class App : Application
 
             AppLogger.Log.Information("Application started");
 
-            var mainWindowVm = _container.Resolve<MainWindowViewModel>();
-            _ = mainWindowVm.InitializeAsync();
+            var prefs = AppPreferences.Load();
+            var requireLogin = prefs.RequireLogin && !OperatingSystem.IsBrowser();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var window = _container.Resolve<MainWindow>();
-                window.DataContext = mainWindowVm;
-                mainWindowVm.Host = window;
-                desktop.MainWindow = window;
+                if (requireLogin)
+                {
+                    ShowLoginThenMain(desktop);
+                }
+                else
+                {
+                    EnsureDefaultUser();
+                    ShowMainWindow(desktop);
+                }
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleView)
             {
+                EnsureDefaultUser();
+                var mainWindowVm = _container.Resolve<MainWindowViewModel>();
+                _ = mainWindowVm.InitializeAsync();
                 var view = new MainView();
                 view.DataContext = mainWindowVm;
                 singleView.MainView = view;
@@ -163,6 +172,45 @@ public partial class App : Application
         }
     }
 
+    private void EnsureDefaultUser()
+    {
+        var bootstrapper = _container!.Resolve<IAccountBootstrapper>();
+        var user = bootstrapper.EnsureDefaultUserAsync().GetAwaiter().GetResult();
+        bootstrapper.BackfillOwnerlessAsync(user.Id).GetAwaiter().GetResult();
+    }
+
+    private void ShowMainWindow(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var vm = _container!.Resolve<MainWindowViewModel>();
+        _ = vm.InitializeAsync();
+        var window = _container.Resolve<MainWindow>();
+        window.DataContext = vm;
+        vm.Host = window;
+        desktop.MainWindow = window;
+    }
+
+    private void ShowLoginThenMain(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        LoginWindow? login = null;
+        var loginVm = new LoginViewModel(
+            _container!.Resolve<IAuthService>(),
+            _container.Resolve<IAccountBootstrapper>(),
+            onAuthenticated: () =>
+            {
+                var vm = _container.Resolve<MainWindowViewModel>();
+                _ = vm.InitializeAsync();
+                var window = _container.Resolve<MainWindow>();
+                window.DataContext = vm;
+                vm.Host = window;
+                desktop.MainWindow = window;
+                window.Show();
+                login?.Close();
+            });
+
+        login = new LoginWindow { DataContext = loginVm };
+        desktop.MainWindow = login;
+    }
+
     private static IContainer BuildContainer()
     {
         var builder = new ContainerBuilder();
@@ -181,6 +229,7 @@ public partial class App : Application
             builder.RegisterModule(new InfrastructureModule(dbPath, imagePath));
         }
 
+        builder.RegisterModule(new SecurityModule());
         builder.RegisterModule(new UiModule());
         return builder.Build();
     }

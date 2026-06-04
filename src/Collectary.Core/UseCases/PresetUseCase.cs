@@ -10,12 +10,14 @@ public class PresetUseCase : IPresetUseCase
     private readonly IPresetRepository _presets;
     private readonly IItemRepository _items;
     private readonly IAppLogger _logger;
+    private readonly ICollectionAuthorization? _authorization;
 
-    public PresetUseCase(IPresetRepository presets, IItemRepository items, IAppLogger? logger = null)
+    public PresetUseCase(IPresetRepository presets, IItemRepository items, IAppLogger? logger = null, ICollectionAuthorization? authorization = null)
     {
         _presets = presets;
         _items = items;
         _logger = logger ?? new NullAppLogger();
+        _authorization = authorization;
     }
 
     public Task<IReadOnlyList<Preset>> GetAllPresetsAsync() =>
@@ -81,14 +83,20 @@ public class PresetUseCase : IPresetUseCase
     public Task CreatePresetAsync(Preset preset) =>
         _presets.AddAsync(preset);
 
-    public Task UpdatePresetAsync(Preset preset) =>
-        _presets.UpdateAsync(preset);
+    public async Task UpdatePresetAsync(Preset preset)
+    {
+        if (_authorization is not null && !await _authorization.CanWriteAsync(preset.Id))
+            throw new UnauthorizedAccessException("You do not have edit access to this collection.");
+        await _presets.UpdateAsync(preset);
+    }
 
     public Task UpdatePresetOrderAsync(IReadOnlyList<Preset> ordered) =>
         _presets.UpdateDisplayOrdersAsync(ordered);
 
     public async Task DeletePresetAsync(Guid id)
     {
+        if (_authorization is not null && !await _authorization.IsOwnerAsync(id))
+            throw new UnauthorizedAccessException("Only the owner can delete this collection.");
         await _items.DeleteByPresetAsync(id);
         await _presets.DeleteAsync(id);
     }

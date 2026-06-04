@@ -15,13 +15,15 @@ public partial class PresetRowViewModel : ViewModelBase
     public IRelayCommand NavigateCommand { get; }
     public IRelayCommand EditCommand { get; }
     public IAsyncRelayCommand DeleteCommand { get; }
+    public IRelayCommand ShareCommand { get; }
 
-    public PresetRowViewModel(Preset preset, int itemCount, Action onNavigate, Action onEdit, Func<Task> onDelete)
+    public PresetRowViewModel(Preset preset, int itemCount, Action onNavigate, Action onEdit, Func<Task> onDelete, Action? onShare = null)
     {
         Preset = preset;
         ItemCount = itemCount;
         NavigateCommand = new RelayCommand(onNavigate);
         EditCommand = new RelayCommand(onEdit);
         DeleteCommand = new AsyncRelayCommand(onDelete);
+        ShareCommand = new RelayCommand(onShare ?? (() => { }));
     }
 }

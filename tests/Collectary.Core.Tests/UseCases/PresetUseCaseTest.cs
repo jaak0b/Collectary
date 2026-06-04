@@ -272,6 +272,55 @@ public class PresetUseCaseTest
     }
 
     [Test]
+    public void UpdatePresetAsync_WhenNotAuthorized_Throws()
+    {
+        var preset = new Preset { Name = "P" };
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(preset.Id)).Returns(false);
+        var sut = new PresetUseCase(_presets, _items, null, auth);
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.UpdatePresetAsync(preset));
+    }
+
+    [Test]
+    public async Task UpdatePresetAsync_WhenAuthorized_Updates()
+    {
+        var preset = new Preset { Name = "P" };
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(preset.Id)).Returns(true);
+        var sut = new PresetUseCase(_presets, _items, null, auth);
+
+        await sut.UpdatePresetAsync(preset);
+
+        A.CallTo(() => _presets.UpdateAsync(preset)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public void DeletePresetAsync_WhenNotOwner_Throws()
+    {
+        var id = Guid.NewGuid();
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.IsOwnerAsync(id)).Returns(false);
+        var sut = new PresetUseCase(_presets, _items, null, auth);
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.DeletePresetAsync(id));
+    }
+
+    [Test]
+    public async Task DeletePresetAsync_WhenOwner_DeletesItemsThenPreset()
+    {
+        var id = Guid.NewGuid();
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.IsOwnerAsync(id)).Returns(true);
+        var sut = new PresetUseCase(_presets, _items, null, auth);
+
+        await sut.DeletePresetAsync(id);
+
+        A.CallTo(() => _items.DeleteByPresetAsync(id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _presets.DeleteAsync(id)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public async Task GetEffectiveFieldsAsync_GroupByFieldIdCountsGroupedFields()
     {
         var presetId = Guid.NewGuid();

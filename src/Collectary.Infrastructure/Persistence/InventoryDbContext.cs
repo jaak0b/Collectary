@@ -14,6 +14,9 @@ public class InventoryDbContext : DbContext
     public DbSet<ListEntry> ListEntries => Set<ListEntry>();
     public DbSet<SystemField> SystemFields => Set<SystemField>();
     public DbSet<FieldGroup> FieldGroups => Set<FieldGroup>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<UserCredentialRecord> UserCredentials => Set<UserCredentialRecord>();
+    public DbSet<CollectionShare> CollectionShares => Set<CollectionShare>();
 
     public InventoryDbContext(DbContextOptions<InventoryDbContext> options) : base(options) { }
 
@@ -26,7 +29,31 @@ public class InventoryDbContext : DbContext
         ConfigureFieldDefinitions(modelBuilder);
         ConfigureFieldValues(modelBuilder);
         ConfigureFieldGroups(modelBuilder);
+        ConfigureAccounts(modelBuilder);
         ConfigureClientGeneratedKeys(modelBuilder);
+    }
+
+    private static void ConfigureAccounts(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>(e =>
+        {
+            e.ToTable("Users");
+            e.HasKey(u => u.Id);
+            e.HasIndex(u => u.Username).IsUnique();
+        });
+
+        modelBuilder.Entity<UserCredentialRecord>(e =>
+        {
+            e.ToTable("UserCredentials");
+            e.HasKey(c => c.UserId);
+        });
+
+        modelBuilder.Entity<CollectionShare>(e =>
+        {
+            e.ToTable("CollectionShares");
+            e.HasKey(s => s.Id);
+            e.HasIndex(s => new { s.PresetId, s.SharedWithUserId }).IsUnique();
+        });
     }
 
     private static void ConfigureFieldGroups(ModelBuilder modelBuilder)
@@ -93,6 +120,7 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("Presets");
             e.HasKey(p => p.Id);
+            e.HasQueryFilter(p => !p.IsDeleted);
             e.HasMany(p => p.Fields)
              .WithOne()
              .HasForeignKey(f => f.PresetId)
@@ -121,6 +149,7 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("Items");
             e.HasKey(i => i.Id);
+            e.HasQueryFilter(i => !i.IsDeleted);
             e.HasMany(i => i.Values)
              .WithOne()
              .HasForeignKey(v => v.ItemId)

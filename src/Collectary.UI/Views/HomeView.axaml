@@ -32,6 +32,7 @@
                                 <Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="{Binding [Edit], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding EditCommand}"/>
+                                        <MenuItem Header="{Binding [Share], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding ShareCommand}"/>
                                         <MenuItem Header="{Binding [Delete], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding DeleteCommand}"/>
                                     </ContextMenu>
                                 </Border.ContextMenu>
@@ -70,6 +71,7 @@
                                             <Button.Flyout>
                                                 <MenuFlyout>
                                                     <MenuItem Header="{Binding [Edit], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding EditCommand}"/>
+                                                    <MenuItem Header="{Binding [Share], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding ShareCommand}"/>
                                                     <MenuItem Header="{Binding [Delete], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding DeleteCommand}"/>
                                                 </MenuFlyout>
                                             </Button.Flyout>

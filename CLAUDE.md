@@ -13,6 +13,8 @@
 9. **New `FieldDefinition` subtype = zero changes outside its own file.** Virtual dispatch only; one keyed Autofac registration in `UiModule`, no type-switches.
 10. **Missing field type → add a simple version + on-screen note.** Never silently skip a use case.
 11. **No trademarked words in files.**
+12. **NuGet packages: official Microsoft or highly-regarded community only.** No niche/unmaintained single-author packages. Prefer built-in BCL APIs (e.g. PBKDF2 via `System.Security.Cryptography.Rfc2898DeriveBytes`) over third-party dependencies.
+13. **Credentials are bullet-proof.** Passwords hashed with built-in PBKDF2-HMAC-SHA512, per-user random salt, iteration count + algorithm stored with the hash. Never store/log plaintext; never store anything reversible.
 
 ## Build & Run
 

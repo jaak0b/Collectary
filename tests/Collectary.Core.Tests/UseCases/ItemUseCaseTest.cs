@@ -254,4 +254,56 @@ public class ItemUseCaseTest
             await sut.CreateItemAsync(new Item { PresetId = presetId });
         });
     }
+
+    [Test]
+    public void CreateItemAsync_WhenNotAuthorized_Throws()
+    {
+        var presetId = Guid.NewGuid();
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(false);
+        var sut = new ItemUseCase(_items, _presets, null, auth);
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => sut.CreateItemAsync(new Item { PresetId = presetId }));
+    }
+
+    [Test]
+    public void UpdateItemAsync_WhenNotAuthorized_Throws()
+    {
+        var presetId = Guid.NewGuid();
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(false);
+        var sut = new ItemUseCase(_items, _presets, null, auth);
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => sut.UpdateItemAsync(new Item { PresetId = presetId }));
+    }
+
+    [Test]
+    public void DeleteItemAsync_WhenNotAuthorized_Throws()
+    {
+        var presetId = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        A.CallTo(() => _items.GetByIdAsync(id)).Returns(new Item { Id = id, PresetId = presetId });
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(false);
+        var sut = new ItemUseCase(_items, _presets, null, auth);
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.DeleteItemAsync(id));
+    }
+
+    [Test]
+    public async Task CreateItemAsync_WhenAuthorized_Adds()
+    {
+        var presetId = Guid.NewGuid();
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId)).Returns(new EffectiveFields());
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(true);
+        var sut = new ItemUseCase(_items, _presets, null, auth);
+        var item = new Item { PresetId = presetId };
+
+        await sut.CreateItemAsync(item);
+
+        A.CallTo(() => _items.AddAsync(item)).MustHaveHappenedOnceExactly();
+    }
 }

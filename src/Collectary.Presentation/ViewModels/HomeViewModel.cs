@@ -18,6 +18,7 @@ public partial class HomeViewModel : ViewModelBase
     public Action? OnCreateFromTemplate { get; set; }
     public Action<Core.Domain.Preset>? OnEditPreset { get; set; }
     public Func<Core.Domain.Preset, Task>? OnDeletePreset { get; set; }
+    public Action<Core.Domain.Preset>? OnSharePreset { get; set; }
     public Action? OnNavigateToSystemFields { get; set; }
 
     public ObservableCollection<PresetRowViewModel> Rows { get; } = new();
@@ -52,7 +53,8 @@ public partial class HomeViewModel : ViewModelBase
                     {
                         if (!await _dialogService.ConfirmDeleteAsync(captured.Name)) return;
                         if (OnDeletePreset is not null) await OnDeletePreset(captured);
-                    });
+                    },
+                    onShare: () => OnSharePreset?.Invoke(captured));
                 Rows.Add(row);
             }
         }

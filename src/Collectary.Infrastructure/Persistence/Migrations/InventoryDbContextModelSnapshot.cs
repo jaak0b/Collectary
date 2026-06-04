@@ -17,6 +17,34 @@ namespace Collectary.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.16");
 
+            modelBuilder.Entity("Collectary.Core.Domain.CollectionShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GrantedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Permission")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PresetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SharedWithUserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PresetId", "SharedWithUserId")
+                        .IsUnique();
+
+                    b.ToTable("CollectionShares", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.FieldDefinition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -140,15 +168,33 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<long>("BaseRevision")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDirty")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("LastModifiedByUserId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("PresetId")
                         .HasColumnType("TEXT");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -202,20 +248,44 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<long>("BaseRevision")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("ColumnCount")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDirty")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("LastModifiedByUserId")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("ParentPresetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Revision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -261,6 +331,56 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SystemFields", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Infrastructure.Persistence.UserCredentialRecord", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Hash")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<int>("Iterations")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Salt")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserCredentials", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BoolFieldDefinition", b =>

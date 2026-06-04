@@ -10,11 +10,13 @@ public class ItemRepository : IItemRepository
 {
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IAppLogger _logger;
+    private readonly ICurrentUser? _currentUser;
 
-    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null)
+    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null)
     {
         _dbFactory = dbFactory;
         _logger = logger ?? new NullAppLogger();
+        _currentUser = currentUser;
     }
 
     private IQueryable<Item> WithDetails(IQueryable<Item> query) =>
@@ -42,6 +44,11 @@ public class ItemRepository : IItemRepository
     public async Task AddAsync(Item item)
     {
         using var db = _dbFactory();
+        item.UpdatedAt = DateTime.UtcNow;
+        item.IsDirty = true;
+        item.Revision++;
+        if (_currentUser?.IsAuthenticated == true)
+            item.LastModifiedByUserId = _currentUser.UserId;
         db.Items.Add(item);
         await db.SaveChangesAsync();
         _logger.Debug("Persisted new item id={Id} preset={PresetId} values={Values}",
@@ -57,6 +64,10 @@ public class ItemRepository : IItemRepository
 
         tracked.DisplayName = item.DisplayName;
         tracked.UpdatedAt = item.UpdatedAt;
+        tracked.IsDirty = true;
+        tracked.Revision++;
+        if (_currentUser?.IsAuthenticated == true)
+            tracked.LastModifiedByUserId = _currentUser.UserId;
 
         var updatedIds = item.Values.Select(v => v.Id).ToHashSet();
         var toRemove = tracked.Values

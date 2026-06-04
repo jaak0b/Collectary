@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels;
 using Collectary.UI.Views;
 
 namespace Collectary.UI.Services;
@@ -29,6 +30,13 @@ public class AvaloniaDialogService : IDialogService
             ? LocalizationService.Instance["AppTitle"]
             : title;
         var dialog = new MessageDialog(message, effectiveTitle);
+        await dialog.ShowDialog(Owner);
+    }
+
+    public async Task ShowShareDialogAsync(ShareDialogViewModel viewModel)
+    {
+        if (Owner is null) return;
+        var dialog = new ShareDialog { DataContext = viewModel };
         await dialog.ShowDialog(Owner);
     }
 }

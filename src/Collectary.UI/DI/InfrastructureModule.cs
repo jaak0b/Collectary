@@ -35,6 +35,9 @@ public class InfrastructureModule : Module
         builder.RegisterType<PresetRepository>().As<IPresetRepository>().SingleInstance();
         builder.RegisterType<ItemRepository>().As<IItemRepository>().SingleInstance();
         builder.RegisterType<SystemFieldRepository>().As<ISystemFieldRepository>().SingleInstance();
+        builder.RegisterType<UserRepository>().As<IUserRepository>().SingleInstance();
+        builder.RegisterType<CredentialStore>().As<ICredentialStore>().SingleInstance();
+        builder.RegisterType<ShareRepository>().As<IShareRepository>().SingleInstance();
 
         builder.Register(_ => new FileSystemImageStore(_imageStorePath))
                .As<IImageStore>()
