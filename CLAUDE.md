@@ -10,7 +10,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Localization is resx-only.** Every user-visible, translatable string MUST live in the resx files (`Strings.en.resx` + `Strings.de.resx`, or a domain-specific pair like `TemplateStrings.en/de.resx`) and be referenced by key — `LocalizationService.Instance["Key"]` in C#, or `{Binding [Key], Source={x:Static loc:LocalizationService.Instance}}` in XAML. Never inline translatable text in C#, XAML, or data structures. Every key added must exist in **both** language files (the German value may be a stopgap, but the key must be present). When a feature would add a large block of strings (e.g. preset templates), give it its own resx pair rather than bloating the shared `Strings.*.resx`.
 
-**Every new feature ships unit/integration tests AND headless tests.** Reaffirms the rule below — a feature is not done until it has both: logic-level coverage (Core/Infrastructure unit/integration tests) *and* headless end-to-end tests covering full CRUD plus the feature-specific behavior. The developer is a single person who cannot manually verify every path.
+**Test-Driven Development is mandatory — no exceptions.** For every bug fix or new feature, the workflow is strictly:
+1. **Write a failing test first.** Add the unit/integration/headless test that captures the bug or specifies the new behaviour. Run it and confirm it **fails** for the right reason.
+2. **Fix the bug or implement the feature.** Change only the production code necessary.
+3. **Run the test again and confirm it passes.** Only then is the work considered done.
+
+Never write production code before a failing test exists for it. Never write a test after the fact to rubber-stamp code that already works. This is a hard, non-negotiable rule — it applies to the smallest one-line bug fix and to the largest new feature alike.
+
+**Every new feature and every bug fix requires unit tests, integration tests, AND headless tests — no exceptions.** A feature or fix is not done until all three layers are present:
+- **Unit tests** — logic-level coverage for every new/changed class in Core and Presentation.
+- **Integration tests** — repository and use-case round-trips through an in-memory SQLite DB in `Collectary.Infrastructure.Tests`.
+- **Headless tests** — end-to-end ViewModel/command tests in `Collectary.UI.Tests` covering full CRUD plus all feature-specific behaviour.
+
+**Code coverage and mutation scores must not drop.** After every change, run the full test suite including coverage and mutation analysis:
+```powershell
+.\build.ps1 --target Coverage   # must stay >= 95% line coverage
+.\build.ps1 --target Mutate     # Stryker score must not decrease vs. the previous baseline
+```
+If a change causes either score to fall, add tests until both are restored before considering the work done. Never ship a feature or fix that reduces the quality bar of the test suite.
 
 **Missing field type → stopgap + visible note.** If a feature (e.g. a preset template for a new hobby) needs a `FieldDefinition` type that doesn't exist yet, do **not** skip the use case. Add a *simple* version of the field type (following the FieldDefinition/FieldValue parallel-hierarchy rules) and surface an on-screen note so it can be refined later, rather than silently dropping the field.
 

@@ -17,8 +17,12 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     private readonly IDialogService _dialogService;
     private readonly Mapping.IFieldEditorMapper _mapper;
     private readonly Preset? _existing;
+    private Preset? _createdPreset;
+    private Preset? ExistingOrCreated => _existing ?? _createdPreset;
     private readonly Action _onSaved;
     private readonly Action _onCancelled;
+
+    public Action? OnAnySuccessfulSave { get; set; }
 
     [ObservableProperty]
     public partial string Name { get; set; } = string.Empty;
@@ -155,7 +159,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
     private async Task<bool> PersistAsync()
     {
-        var preset = _existing ?? new Preset { CreatedAt = DateTime.UtcNow };
+        var preset = ExistingOrCreated ?? new Preset { CreatedAt = DateTime.UtcNow };
         preset.Name = Name.Trim();
         preset.ColumnCount = ColumnCount;
         preset.ParentPresetId = SelectedParent?.Id;
@@ -198,10 +202,14 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
         try
         {
-            if (_existing is null)
+            if (ExistingOrCreated is null)
+            {
                 await _presetUseCase.CreatePresetAsync(preset);
+                _createdPreset = preset;
+            }
             else
                 await _presetUseCase.UpdatePresetAsync(preset);
+            OnAnySuccessfulSave?.Invoke();
             return true;
         }
         catch (Exception ex)

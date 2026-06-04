@@ -190,6 +190,7 @@ public partial class MainWindowViewModel : ViewModelBase
             existing: existing,
             seed: seed);
 
+        vm.OnAnySuccessfulSave = () => { _ = SidebarViewModel?.LoadAsync(); };
         ResetBreadcrumb(LocalizationService.Instance["CollectionSettings"], vm);
         _ = vm.LoadAsync();
     }

@@ -119,4 +119,46 @@ public class PresetTemplateSeedFlowTest : FlowTestBase
         Assert.That(items, Has.Count.EqualTo(1));
         Assert.That(items[0].DisplayName, Is.EqualTo("The Hobbit"));
     }
+
+    [Test]
+    public async Task ChooseCoinsTemplate_PersistsPresetWithFields()
+    {
+        var saved = await SeedSaveAndReload("coins");
+
+        Assert.That(saved.Name, Is.EqualTo("Coins"));
+        Assert.That(saved.Fields.OfType<SingleChoiceFieldDefinition>().Any(f => f.Label == "Grade"), Is.True);
+        Assert.That(saved.Fields.OfType<CurrencyFieldDefinition>().Any(f => f.Label == "Value"), Is.True);
+    }
+
+    [Test]
+    public async Task SaveCommand_ThenSaveAndGoBack_UpdatesNotCreates()
+    {
+        var onSavedCount = 0;
+        var seed = Template("coins").Build();
+        var editor = MakePresetEditorVm(seed: seed, onSaved: () => onSavedCount++);
+        await editor.LoadAsync();
+
+        await editor.SaveCommand.ExecuteAsync(null);
+        editor.Name = "My Coins";
+        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        var all = await PresetRepo.GetAllAsync();
+        Assert.That(all, Has.Count.EqualTo(1), "SaveAndGoBack must not create a second preset");
+        Assert.That(onSavedCount, Is.EqualTo(1), "SaveAndGoBack must have succeeded and fired onSaved");
+        Assert.That(all[0].Name, Is.EqualTo("My Coins"), "The rename from the second save must have persisted");
+    }
+
+    [Test]
+    public async Task SaveCommand_ThenSaveAndGoBack_FieldsIntact()
+    {
+        var seed = Template("coins").Build();
+        var editor = MakePresetEditorVm(seed: seed);
+        await editor.LoadAsync();
+
+        await editor.SaveCommand.ExecuteAsync(null);
+        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        var saved = (await PresetRepo.GetAllAsync()).Single();
+        Assert.That(saved.Fields.OfType<SingleChoiceFieldDefinition>().Any(f => f.Label == "Grade"), Is.True);
+    }
 }
