@@ -37,9 +37,7 @@ public static class AppPreferences
 {
     private static readonly object Gate = new();
 
-    internal static string FilePath { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "Collectary", "preferences.json");
+    internal static string FilePath { get; set; } = Path.Combine(AppDataPaths.Root, "preferences.json");
 
     public static AppPreferencesData Load()
     {

@@ -102,3 +102,48 @@ Then, in the app:
 - The **Use installed OneDrive folder** button (Folder provider) is the no-API alternative: it points
   the plain folder backend at your locally-synced OneDrive directory, if the OneDrive desktop client
   is installed.
+
+---
+
+# Google Drive
+
+Google Drive works the same way in the app (Settings → **Google Drive** → Connect → Set up sync
+folder → Sync), with its own one-time registration. **Windows only** for now — the encrypted token
+store uses DPAPI, so the Google provider is not registered on other desktop OSes.
+
+## 1. Register the Google OAuth client — one time, free
+
+1. [Google Cloud Console](https://console.cloud.google.com) → create (or pick) a project.
+2. **APIs & Services → Library** → enable the **Google Drive API**.
+3. **APIs & Services → OAuth consent screen** → User type **External** → fill app name + support
+   email → add the scope **`.../auth/drive.file`** → save. Add yourself as a **Test user** while the
+   screen is in *Testing*.
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID** → Application type
+   **Desktop app** → create. Copy the **Client ID** *and* **Client secret**.
+   > For installed/desktop apps the "secret" is **not** confidential (it ships in the app); Google's
+   > flow still requires it.
+5. **Publishing:** `drive.file` is a non-sensitive scope, so it avoids the restricted-scope security
+   assessment. While the consent screen stays in *Testing* only added test users can connect (and
+   refresh tokens expire weekly); **Publish to Production** for general use. Until brand verification,
+   users see a click-through "Google hasn't verified this app" screen.
+
+## 2. Provide the credentials to the app
+
+Same model as OneDrive (see above), but two values — env vars win over the placeholders in
+[`CloudClientIds.cs`](../src/Collectary.Infrastructure.Cloud/CloudClientIds.cs):
+
+```powershell
+$env:COLLECTARY_GOOGLE_CLIENT_ID     = "<your-google-client-id>"
+$env:COLLECTARY_GOOGLE_CLIENT_SECRET = "<your-google-client-secret>"
+```
+(Match the launch method — same-terminal / `setx` / Rider run config / hardcode — as the OneDrive
+section. Rebuild + relaunch after changing them.)
+
+## 3. Notes & differences from OneDrive
+- **Scope is `drive.file`**, so the app only sees files/folders it created. There is no browsing of
+  your whole Drive — "Set up sync folder" starts at an app-owned **Collectary** folder, where you
+  create/pick the sync folder.
+- Tokens are stored **DPAPI-encrypted** (our custom data store), not the SDK's plaintext file store.
+- Uploads use Drive's resumable upload protocol.
+- Verify the same way: after Sync, the `presets/ items/ systemfields/` subfolders appear inside the
+  chosen Drive folder (visible in the Google Drive web UI).

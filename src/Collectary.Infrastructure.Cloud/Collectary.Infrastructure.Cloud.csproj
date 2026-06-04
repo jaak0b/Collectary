@@ -21,6 +21,8 @@
     <PackageReference Include="Autofac" />
     <PackageReference Include="Microsoft.Graph" />
     <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Google.Apis.Drive.v3" />
+    <PackageReference Include="Google.Apis.Auth" />
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>

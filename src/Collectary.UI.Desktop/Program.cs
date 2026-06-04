@@ -12,9 +12,7 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        var logPath = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Collectary", "logs");
+        var logPath = Path.Combine(AppDataPaths.Root, "logs");
         AppLogger.Initialize(logPath);
         try
         {
@@ -47,12 +45,14 @@ sealed class Program
     {
         if (builder.Instance is not App app) return;
 
-        var cacheDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Collectary");
+        var cacheDirectory = AppDataPaths.Root;
 
         app.PlatformModules = new Autofac.Core.IModule[]
         {
-            new CloudModule(cacheDirectory, () => AppPreferences.Load().OneDriveRootFolderId),
+            new CloudModule(
+                cacheDirectory,
+                () => AppPreferences.Load().OneDriveRootFolderId,
+                () => AppPreferences.Load().GoogleDriveRootFolderId),
         };
     }
 }

@@ -237,10 +237,10 @@ public partial class App : Application
         }
         else
         {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var dbPath = Path.Combine(appData, "Collectary", "collectary.db");
-            var imagePath = Path.Combine(appData, "Collectary", "images");
-            Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+            var dataRoot = AppDataPaths.Root;
+            var dbPath = Path.Combine(dataRoot, "collectary.db");
+            var imagePath = Path.Combine(dataRoot, "images");
+            Directory.CreateDirectory(dataRoot);
             builder.RegisterModule(new InfrastructureModule(dbPath, imagePath));
         }
 

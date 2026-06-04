@@ -38,6 +38,14 @@ public class DpapiSecretStore
         if (File.Exists(path)) File.Delete(path);
     }
 
+    /// <summary>Removes every secret in this store's directory.</summary>
+    public void Clear()
+    {
+        if (!Directory.Exists(_directory)) return;
+        foreach (var file in Directory.EnumerateFiles(_directory, "*.secret"))
+            File.Delete(file);
+    }
+
     private string PathFor(string key)
     {
         if (string.IsNullOrWhiteSpace(key) || key is "." or ".."

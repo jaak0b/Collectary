@@ -43,6 +43,13 @@ public class StubHttpMessageHandler : HttpMessageHandler
         return this;
     }
 
+    /// <summary>Full control over the response (e.g. to set headers like Location).</summary>
+    public StubHttpMessageHandler On(HttpMethod method, string pathContains, Func<HttpResponseMessage> respond)
+    {
+        _rules.Add(new Rule(method, pathContains, _ => respond()));
+        return this;
+    }
+
     public int CountRequests(HttpMethod method, string pathContains) =>
         Requests.Count(r => r.Method == method
             && (r.RequestUri?.ToString().Contains(pathContains, StringComparison.OrdinalIgnoreCase) ?? false));
