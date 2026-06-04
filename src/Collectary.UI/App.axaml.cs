@@ -38,9 +38,16 @@ public partial class App : Application
             using (var scope = _container.BeginLifetimeScope())
             {
                 var db = scope.Resolve<InventoryDbContext>();
-                EnsureMigrationsCompatibility(db);
-                db.Database.Migrate();
-                DropObsoleteColumns(db);
+                if (OperatingSystem.IsBrowser())
+                {
+                    db.Database.EnsureCreated();
+                }
+                else
+                {
+                    EnsureMigrationsCompatibility(db);
+                    db.Database.Migrate();
+                    DropObsoleteColumns(db);
+                }
             }
 
             AppLogger.Log.Information("Application started");
@@ -158,14 +165,22 @@ public partial class App : Application
 
     private static IContainer BuildContainer()
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var dbPath = Path.Combine(appData, "Collectary", "collectary.db");
-        var imagePath = Path.Combine(appData, "Collectary", "images");
-        Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-
         var builder = new ContainerBuilder();
         builder.RegisterModule(new CoreModule());
-        builder.RegisterModule(new InfrastructureModule(dbPath, imagePath));
+
+        if (OperatingSystem.IsBrowser())
+        {
+            builder.RegisterModule(new BrowserInfrastructureModule());
+        }
+        else
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var dbPath = Path.Combine(appData, "Collectary", "collectary.db");
+            var imagePath = Path.Combine(appData, "Collectary", "images");
+            Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+            builder.RegisterModule(new InfrastructureModule(dbPath, imagePath));
+        }
+
         builder.RegisterModule(new UiModule());
         return builder.Build();
     }

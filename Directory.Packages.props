@@ -29,6 +29,7 @@
     <!-- EF Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.*" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.*" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.*" />
   </ItemGroup>
 
   <ItemGroup>
