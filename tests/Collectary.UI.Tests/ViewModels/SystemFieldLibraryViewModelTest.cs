@@ -98,7 +98,7 @@ public class SystemFieldLibraryViewModelTest
     [Test]
     public async Task AddTextField_AtRoot_CreatesSystemFieldViaUseCase()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         A.CallTo(() => _useCase.CreateAsync(A<SystemField>._))
             .MustHaveHappenedOnceExactly();
@@ -107,7 +107,7 @@ public class SystemFieldLibraryViewModelTest
     [Test]
     public async Task AddTextField_AtRoot_AddsRowToCurrentRows()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         Assert.That(_sut.CurrentRows.Count, Is.EqualTo(1));
     }
@@ -126,7 +126,7 @@ public class SystemFieldLibraryViewModelTest
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
         Fake.ClearRecordedCalls(_useCase);
 
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         A.CallTo(() => _useCase.CreateAsync(A<SystemField>._)).MustNotHaveHappened();
     }

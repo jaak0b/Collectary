@@ -26,16 +26,36 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task AddTextFieldCommand_AddsTextRowToCurrentRows()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         Assert.That(_sut.CurrentRows.Count, Is.EqualTo(1));
         Assert.That(((FieldDefinitionRowViewModel)_sut.CurrentRows[0]).IsList, Is.False);
     }
 
     [Test]
+    public void AddableFieldTypes_AreIdentical_AcrossPresetEditorAndSystemFieldLibrary()
+    {
+        var presetEditor = new PresetEditorViewModel(
+            A.Fake<IPresetUseCase>(), _useCase, _dialogService, new TestFieldEditorMapper().Create(),
+            onSaved: () => { }, onCancelled: () => { });
+
+        Assert.That(
+            _sut.AddableFieldTypes.Select(e => e.Type),
+            Is.EqualTo(presetEditor.AddableFieldTypes.Select(e => e.Type)));
+    }
+
+    [Test]
+    public void AddFieldOfTypeCommand_AppendsRowOfMatchingType()
+    {
+        _sut.AddField<ImageFieldDefinition>();
+
+        Assert.That(((FieldDefinitionRowViewModel)_sut.CurrentRows[0]).IsPicture, Is.True);
+    }
+
+    [Test]
     public async Task AddBoolFieldCommand_AddsBoolRow()
     {
-        await _sut.AddBoolFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<BoolFieldDefinition>();
 
         Assert.That(_sut.CurrentRows.Count, Is.EqualTo(1));
     }
@@ -43,7 +63,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task AddImageFieldCommand_AddsImageRow()
     {
-        await _sut.AddImageFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ImageFieldDefinition>();
 
         Assert.That(_sut.CurrentRows.Count, Is.EqualTo(1));
         Assert.That(((FieldDefinitionRowViewModel)_sut.CurrentRows[0]).IsPicture, Is.True);
@@ -52,7 +72,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task AddListFieldCommand_AddsListRow()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
 
         Assert.That(_sut.CurrentRows.Count, Is.EqualTo(1));
         Assert.That(((FieldDefinitionRowViewModel)_sut.CurrentRows[0]).IsList, Is.True);
@@ -61,9 +81,9 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task MultipleAdds_EachIncreasesCount()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
-        await _sut.AddBoolFieldCommand.ExecuteAsync(null);
-        await _sut.AddIntegerFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        await _sut.AddFieldAsync<BoolFieldDefinition>();
+        await _sut.AddFieldAsync<IntegerFieldDefinition>();
 
         Assert.That(_sut.CurrentRows.Count, Is.EqualTo(3));
     }
@@ -71,7 +91,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task AddTextField_SetsSelectedField()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         Assert.That(_sut.SelectedNode, Is.SameAs(_sut.CurrentRows[0]));
     }
@@ -79,7 +99,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task RemoveFieldCommand_RemovesSelectedRow()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var row = _sut.CurrentRows[0];
 
         await _sut.RemoveFieldCommand.ExecuteAsync(row);
@@ -90,7 +110,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task RemoveFieldCommand_ClearsSelectedFieldWhenRemovingSelected()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var row = _sut.CurrentRows[0];
         _sut.SelectedNode = row;
 
@@ -114,7 +134,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task DrillIntoCommand_PushesNewLevel()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         var listRow = _sut.CurrentRows[0];
         var levelsBefore = _sut.Levels.Count;
 
@@ -126,11 +146,11 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task DrillIntoCommand_SwitchesCurrentRowsToSubFields()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         var listRow = (FieldDefinitionRowViewModel)_sut.CurrentRows[0];
 
         _sut.DrillIntoCommand.Execute(listRow);
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         Assert.That(listRow.DrillChildren, Has.Count.EqualTo(1));
         Assert.That(_sut.CurrentRows, Is.EqualTo(listRow.DrillChildren));
@@ -139,7 +159,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task DrillIntoCommand_SetsIsNested()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
 
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
 
@@ -149,7 +169,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task NavigateToLevelCommand_PopsToTargetLevel()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         var rootLevel = _sut.Levels[0];
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
 
@@ -162,7 +182,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task NavigateToLevelCommand_RestoresCurrentRows()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         var rootLevel = _sut.Levels[0];
         var listRow = _sut.CurrentRows[0];
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
@@ -175,7 +195,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task DrillIntoCommand_IgnoresNonListRows()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var textRow = _sut.CurrentRows[0];
         var levelsBefore = _sut.Levels.Count;
 
@@ -209,7 +229,7 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task SelectedFieldRow_ReturnsFieldWhenSelectedNodeIsField()
     {
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var field = _sut.CurrentRows[0];
         _sut.SelectedNode = field;
 
@@ -231,9 +251,9 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task RemoveFieldCommand_OnDrilledNonGroupField_RemovesFromCurrentRows()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var field = _sut.CurrentRows[0];
 
         await _sut.RemoveFieldCommand.ExecuteAsync(field);
@@ -244,9 +264,9 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task CurrentRows_Replace_MirroredToBacking()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         var replacement = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "R" });
         _sut.CurrentRows[0] = replacement;
@@ -257,9 +277,9 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task CurrentRows_Clear_MirroredToBacking()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
 
         _sut.CurrentRows.Clear();
 
@@ -269,11 +289,11 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task MovingSelectedFieldIntoGroup_ClearsSelectionAndRemovesFromCurrentRows()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
         _sut.AddGroupCommand.Execute(null);
         var group = (FieldGroupRowViewModel)_sut.CurrentRows[0];
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var field = (FieldDefinitionRowViewModel)_sut.CurrentRows.Last(n => n is FieldDefinitionRowViewModel);
         _sut.SelectedNode = field;
 
@@ -287,12 +307,12 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task SettingSelectedGroupToNull_DoesNotEjectFieldFromGroup()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
         _sut.AddGroupCommand.Execute(null);
         var group = (FieldGroupRowViewModel)_sut.CurrentRows[0];
         _sut.DrillIntoCommand.Execute(group);
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var field = (FieldDefinitionRowViewModel)_sut.CurrentRows.Last(n => n is FieldDefinitionRowViewModel);
 
         field.SelectedGroup = null;
@@ -304,12 +324,12 @@ public class FieldListEditorViewModelTest
     [Test]
     public async Task ClearGroupCommand_EjectsFieldFromGroup()
     {
-        await _sut.AddListFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<ListFieldDefinition>();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
         _sut.AddGroupCommand.Execute(null);
         var group = (FieldGroupRowViewModel)_sut.CurrentRows[0];
         _sut.DrillIntoCommand.Execute(group);
-        await _sut.AddTextFieldCommand.ExecuteAsync(null);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
         var field = (FieldDefinitionRowViewModel)_sut.CurrentRows.Last(n => n is FieldDefinitionRowViewModel);
 
         field.ClearGroupCommand.Execute(null);

@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Rating")]
 [FieldIcon("★")]
+[FieldCatalog(1, FieldCategory.Visual)]
 public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDisplayable
 {
     public int MaxStars { get; set; } = 5;

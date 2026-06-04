@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Date")]
 [FieldIcon("📅")]
+[FieldCatalog(6, FieldCategory.TextAndNumbers)]
 public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplayable
 {
     public DateTime? Min { get; set; }

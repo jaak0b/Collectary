@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Collectary.UI.Controls;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels.SystemFields;
 
 namespace Collectary.UI.Views.SystemFields;
@@ -9,6 +11,7 @@ public partial class SystemFieldLibraryView : UserControl
 {
     private readonly ResponsiveSplitLayout _layout;
     private readonly ListReorderBehavior _reorder;
+    private readonly AddFieldMenuBuilder _menuBuilder = new();
 
     public SystemFieldLibraryView()
     {
@@ -16,6 +19,34 @@ public partial class SystemFieldLibraryView : UserControl
         _layout = new ResponsiveSplitLayout(SplitGrid, MasterPane, PaneSplitter, DetailPane);
         _reorder = new ListReorderBehavior(FieldListBox,
             (from, to) => _ = (DataContext as SystemFieldLibraryViewModel)?.ReorderAsync(from, to));
+        DataContextChanged += OnDataContextChanged;
+        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
+
+    private void OnLanguageChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
+
+    private void BuildAddFieldMenu()
+    {
+        if (DataContext is not SystemFieldLibraryViewModel vm) return;
+
+        var items = _menuBuilder.BuildCatalogItems(vm.AddableFieldTypes, vm.AddFieldOfTypeCommand);
+
+        items.Add(new Separator());
+        var addGroup = new MenuItem
+        {
+            Header = LocalizationService.Instance["AddGroup"],
+            Command = vm.AddGroupCommand,
+        };
+        addGroup.Bind(MenuItem.IsEnabledProperty, new Binding
+        {
+            Source = vm,
+            Path = nameof(SystemFieldLibraryViewModel.CurrentLevelSupportsGroups),
+        });
+        items.Add(addGroup);
+
+        ((MenuFlyout)AddFieldButton.Flyout!).ItemsSource = items;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

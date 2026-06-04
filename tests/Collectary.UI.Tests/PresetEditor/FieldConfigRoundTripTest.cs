@@ -32,7 +32,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddTextFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<TextFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName);
             r.Label = "Author";
             r.IsRequired = true;
@@ -49,7 +49,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddColorFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<ColorFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsColor);
             r.Label = "Spine Color";
             r.Format = ColorFormat.Rgb;
@@ -63,7 +63,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddColorFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<ColorFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsColor);
             r.Format = ColorFormat.Argb;
             r.Label = "C1";
@@ -77,7 +77,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddColorFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<ColorFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsColor);
             r.Format = ColorFormat.Cmyk;
             r.Label = "C2";
@@ -91,7 +91,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddCurrencyFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<CurrencyFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsCurrency);
             r.CurrencySymbol = "$";
             r.Label = "Price";
@@ -105,7 +105,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddRatingFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<RatingFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsRating);
             r.MaxStars = 10;
             r.Label = "Score";
@@ -119,7 +119,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddImageFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<ImageFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsPicture);
             r.DisplayWidth = 320;
             r.DisplayHeight = 240;
@@ -137,7 +137,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
     {
         var row = await SaveAndGetRow(async sut =>
         {
-            await sut.AddListFieldCommand.ExecuteAsync(null);
+            await sut.AddFieldAsync<ListFieldDefinition>();
             var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsList);
             r.ColumnCount = 3;
             r.InlineStyle = ListInlineStyle.Grid;
@@ -154,12 +154,12 @@ public class FieldConfigRoundTripTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.AddListFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<ListFieldDefinition>();
         var listRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsList);
         listRow.Label = "Chapters";
 
         sut.DrillIntoCommand.Execute(listRow);
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         var sub = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName);
         sub.Label = "Title";
 
@@ -177,7 +177,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.AddSingleChoiceFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<SingleChoiceFieldDefinition>();
         var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.HasChoices);
         r.Label = "Genre";
         r.AddChoiceCommand.Execute(null);
@@ -204,7 +204,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.AddMultiChoiceFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<MultiChoiceFieldDefinition>();
         var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.HasChoices);
         r.Label = "Tags";
         r.AddChoiceCommand.Execute(null);
@@ -227,7 +227,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.AddSingleChoiceFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<SingleChoiceFieldDefinition>();
         var r = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.HasChoices);
         r.Label = "Status";
         r.AddChoiceCommand.Execute(null);
@@ -261,7 +261,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         group.ColumnCount = 2;
 
         sut.DrillIntoCommand.Execute(group);
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         var fieldRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName);
         fieldRow.Label = "Notes";
         fieldRow.ColumnSpan = 2;

@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Phone")]
 [FieldIcon("📞")]
+[FieldCatalog(10, FieldCategory.TextAndNumbers)]
 public class PhoneFieldDefinition : FieldDefinition<PhoneFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

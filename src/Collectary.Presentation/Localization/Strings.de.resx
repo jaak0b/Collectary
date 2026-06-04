@@ -129,6 +129,7 @@
   <data name="CouldNotLoad" xml:space="preserve"><value>Konnte nicht geladen werden</value></data>
   <data name="ConfirmDeleteTitle" xml:space="preserve"><value>Löschen bestätigen</value></data>
   <data name="ConfirmDeleteBody" xml:space="preserve"><value>„{0}" löschen? Dies kann nicht rückgängig gemacht werden.</value></data>
+  <data name="NewFieldNamed" xml:space="preserve"><value>Neues {0}</value></data>
   <data name="NewTextField" xml:space="preserve"><value>Neues Textfeld</value></data>
   <data name="NewRichTextField" xml:space="preserve"><value>Neues Formatiertes Textfeld</value></data>
   <data name="NewPhoneField" xml:space="preserve"><value>Neues Telefonfeld</value></data>

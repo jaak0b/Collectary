@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Email")]
 [FieldIcon("✉️")]
+[FieldCatalog(11, FieldCategory.TextAndNumbers)]
 public class EmailFieldDefinition : FieldDefinition<EmailFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

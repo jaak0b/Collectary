@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Currency")]
 [FieldIcon("💰")]
+[FieldCatalog(5, FieldCategory.TextAndNumbers)]
 public class CurrencyFieldDefinition : FieldDefinition<CurrencyFieldValue>, IListDisplayable
 {
     public bool ShowInList { get; set; }

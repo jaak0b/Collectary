@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Url")]
 [FieldIcon("🔗")]
+[FieldCatalog(9, FieldCategory.TextAndNumbers)]
 public class UrlFieldDefinition : FieldDefinition<UrlFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

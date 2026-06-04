@@ -130,32 +130,14 @@
                 </Border>
 
                 <Button Grid.Row="1"
+                        x:Name="AddFieldButton"
                         Content="{Binding [AddField], Source={x:Static loc:LocalizationService.Instance}}"
                         Padding="12,6"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         Margin="0,8,0,0">
                     <Button.Flyout>
-                        <MenuFlyout>
-                            <MenuItem Header="{Binding [AddTextField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddTextFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddNumberField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddIntegerFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddDecimalField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddDecimalFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddDateField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddDateFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddUrlField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddUrlFieldCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="{Binding [AddColorField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddColorFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddRatingField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddRatingFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddImageField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddImageFieldCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="{Binding [AddBoolField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddBoolFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddSingleChoiceField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddSingleChoiceFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddMultiChoiceField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddMultiChoiceFieldCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="{Binding [AddListField], Source={x:Static loc:LocalizationService.Instance}}" Command="{Binding AddListFieldCommand}"/>
-                            <MenuItem Header="{Binding [AddGroup], Source={x:Static loc:LocalizationService.Instance}}"
-                                      Command="{Binding AddGroupCommand}"
-                                      IsEnabled="{Binding CurrentLevelSupportsGroups}"/>
-                        </MenuFlyout>
+                        <MenuFlyout/>
                     </Button.Flyout>
                 </Button>
             </Grid>

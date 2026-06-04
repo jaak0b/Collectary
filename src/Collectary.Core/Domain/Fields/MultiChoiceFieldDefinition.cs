@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_MultiChoice")]
 [FieldIcon("☰")]
+[FieldCatalog(2, FieldCategory.Choice)]
 public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

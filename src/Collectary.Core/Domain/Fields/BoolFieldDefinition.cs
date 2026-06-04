@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Bool")]
 [FieldIcon("☑")]
+[FieldCatalog(0, FieldCategory.Choice)]
 public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable
 {
     public bool ShowInList { get; set; }

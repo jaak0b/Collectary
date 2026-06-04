@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Text")]
 [FieldIcon("🔤")]
+[FieldCatalog(0, FieldCategory.TextAndNumbers)]
 public class TextFieldDefinition : FieldDefinition<TextFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

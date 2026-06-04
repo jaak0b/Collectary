@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Collectary.UI.Controls;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 using Collectary.Presentation.ViewModels.SystemFields;
 
@@ -12,6 +13,7 @@ public partial class PresetEditorView : UserControl
 {
     private readonly ResponsiveSplitLayout _layout;
     private readonly ListReorderBehavior _reorder;
+    private readonly AddFieldMenuBuilder _menuBuilder = new();
 
     private ObservableCollection<SystemFieldRowViewModel>? _systemFields;
 
@@ -22,6 +24,7 @@ public partial class PresetEditorView : UserControl
         _reorder = new ListReorderBehavior(FieldListBox,
             (from, to) => (DataContext as PresetEditorViewModel)?.MoveField(from, to));
         DataContextChanged += OnDataContextChanged;
+        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -34,13 +37,38 @@ public partial class PresetEditorView : UserControl
         if (_systemFields is not null)
             _systemFields.CollectionChanged += OnSystemFieldsChanged;
 
-        BuildSystemFieldsMenu();
+        BuildAddFieldMenu();
     }
 
     private void OnSystemFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
-        BuildSystemFieldsMenu();
+        BuildAddFieldMenu();
 
-    private void BuildSystemFieldsMenu()
+    private void OnLanguageChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
+
+    private void BuildAddFieldMenu()
+    {
+        if (DataContext is not PresetEditorViewModel vm) return;
+
+        var items = _menuBuilder.BuildCatalogItems(vm.AddableFieldTypes, vm.AddFieldOfTypeCommand);
+
+        items.Add(new Separator());
+        items.Add(new MenuItem
+        {
+            Header = LocalizationService.Instance["AddGroup"],
+            Command = vm.AddGroupCommand,
+        });
+
+        items.Add(new Separator());
+        items.Add(new MenuItem
+        {
+            Header = LocalizationService.Instance["SystemFields"],
+            ItemsSource = BuildSystemFieldItems(),
+        });
+
+        ((MenuFlyout)AddFieldButton.Flyout!).ItemsSource = items;
+    }
+
+    private List<MenuItem> BuildSystemFieldItems()
     {
         var items = new List<MenuItem>();
         if (_systemFields is not null)
@@ -49,9 +77,9 @@ public partial class PresetEditorView : UserControl
                 {
                     Header = row.Name,
                     Command = row.AddToCollectionCommand,
-                    CommandParameter = row
+                    CommandParameter = row,
                 });
-        SystemFieldsMenuItem.ItemsSource = items;
+        return items;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

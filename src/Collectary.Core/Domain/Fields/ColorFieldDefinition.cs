@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Color")]
 [FieldIcon("🎨")]
+[FieldCatalog(0, FieldCategory.Visual)]
 public class ColorFieldDefinition : FieldDefinition<ColorFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

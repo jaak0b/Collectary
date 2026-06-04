@@ -11,7 +11,12 @@ To add a new field type (say `RatingFieldDefinition`):
 
 1. **Domain** — add the `FieldDefinition` subclass in
    `src/Collectary.Core/Domain/Fields/`, plus its corresponding field-value type. Put all
-   type-specific behaviour here via virtual dispatch.
+   type-specific behaviour here via virtual dispatch. Decorate the class with three attributes:
+   - `[LocalizedName("FieldType_Rating")]` — the resx key for the type's display name.
+   - `[FieldIcon("★")]` — the glyph shown beside it in the menu.
+   - `[FieldCatalog(order, FieldCategory.Visual)]` — marks it as **user-addable** and places it in
+     the "Add field" menu. Omit this attribute only for types that must never be added by hand
+     (the way `DisplayNameFieldDefinition` does).
 2. **Editor ViewModel** — add a field-editor view model in `src/Collectary.Presentation/ViewModels/`.
 3. **View** — add the `.axaml` editor view (and, if needed, a list-cell view) in
    `src/Collectary.UI/Views/`. Remember `x:DataType` on every `DataTemplate` (compiled bindings).
@@ -20,7 +25,16 @@ To add a new field type (say `RatingFieldDefinition`):
    `FieldEditorRegistry` and `ListCellBuilder` resolve by `definition.GetType().Name`, so this one
    registration is all the wiring needed.
 
-That's it — no edits to existing field types, registries, or any central switch.
+That's it — no edits to existing field types, registries, menus, or any central switch.
+
+## The "Add field" menu is data-driven
+
+You never touch a menu when adding a type. `FieldTypeCatalog`
+(`src/Collectary.Presentation/ViewModels/FieldTypeCatalog.cs`) discovers every `FieldDefinition`
+carrying a `[FieldCatalog]` attribute by reflection and orders them by `(category, order)`. Both the
+**preset editor** (Collection Settings) and the **System Fields library** render this one catalog, so
+their menus are always identical — a type added with `[FieldCatalog]` appears in both automatically.
+A guard test (`FieldCatalogAttributeTest`) fails the build if a new addable type forgets the attribute.
 
 ## Required tests
 

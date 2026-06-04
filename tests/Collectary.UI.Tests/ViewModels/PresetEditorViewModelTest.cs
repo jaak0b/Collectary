@@ -280,7 +280,7 @@ public class PresetEditorViewModelTest
         var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
 
         sut.DrillIntoCommand.Execute(group);
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         var field = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First();
 
         Assert.That(field.AssignedGroupId, Is.EqualTo(group.Id));
@@ -293,13 +293,13 @@ public class PresetEditorViewModelTest
         sut.AddGroupCommand.Execute(null);
         var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
         sut.DrillIntoCommand.Execute(group);
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         var field1 = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First();
 
         var churned = false;
         field1.AvailableGroups.CollectionChanged += (_, _) => churned = true;
 
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
 
         Assert.That(churned, Is.False, "Re-populating an unchanged group set must not clear/refill AvailableGroups, which would make the bound ComboBox push back a spurious null selection and eject the field from its group.");
         Assert.That(field1.AssignedGroupId, Is.EqualTo(group.Id));
@@ -328,7 +328,7 @@ public class PresetEditorViewModelTest
         sut.AddGroupCommand.Execute(null);
         var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
         sut.DrillIntoCommand.Execute(group);
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         var field = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First();
 
         sut.NavigateToLevelCommand.Execute(sut.Levels[0]);
@@ -479,7 +479,7 @@ public class PresetEditorViewModelTest
         var sut = CreateSut();
         sut.ColumnCount = 3;
 
-        sut.AddTextFieldCommand.Execute(null);
+        sut.AddField<TextFieldDefinition>();
 
         var added = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
             .Last(f => !f.IsDisplayName);
@@ -494,7 +494,7 @@ public class PresetEditorViewModelTest
         var sut = CreateSut();
         sut.ColumnCount = 3;
 
-        sut.AddListFieldCommand.Execute(null);
+        sut.AddField<ListFieldDefinition>();
 
         var added = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
             .Last(f => f.IsList);
@@ -529,7 +529,7 @@ public class PresetEditorViewModelTest
     {
         var sut = CreateSut();
 
-        sut.AddTextFieldCommand.Execute(null);
+        sut.AddField<TextFieldDefinition>();
 
         var added = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
             .Last(f => !f.IsDisplayName);

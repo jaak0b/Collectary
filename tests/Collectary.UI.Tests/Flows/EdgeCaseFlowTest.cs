@@ -87,12 +87,12 @@ public class EdgeCaseFlowTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.AddListFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<ListFieldDefinition>();
         var listRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => f.IsList);
         listRow.Label = "Chapters";
 
         sut.DrillIntoCommand.Execute(listRow);
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last().Label = "ChapterName";
 
         await sut.SaveAndGoBackCommand.ExecuteAsync(null);
@@ -142,7 +142,7 @@ public class EdgeCaseFlowTest : FlowTestBase
         var saved = (await PresetRepo.GetAllAsync())[0];
         var editor = MakePresetEditorVm(existing: saved);
         await editor.LoadAsync();
-        await editor.AddTextFieldCommand.ExecuteAsync(null);
+        await editor.AddFieldAsync<TextFieldDefinition>();
         editor.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName).Label = "NewField";
         await editor.SaveAndGoBackCommand.ExecuteAsync(null);
 
@@ -156,7 +156,7 @@ public class EdgeCaseFlowTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.AddTextFieldCommand.ExecuteAsync(null);
+        await sut.AddFieldAsync<TextFieldDefinition>();
         var fieldRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName);
         fieldRow.Label = "ToRemove";
         await sut.SaveAndGoBackCommand.ExecuteAsync(null);

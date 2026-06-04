@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_RichText")]
 [FieldIcon("📝")]
+[FieldCatalog(1, FieldCategory.TextAndNumbers)]
 public class RichTextFieldDefinition : FieldDefinition<RichTextFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

@@ -204,65 +204,15 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
         SelectedNode = group;
     }
 
-    [RelayCommand]
-    private async Task AddTextField() => await AddField(new TextFieldDefinition { Label = LocalizationService.Instance["NewTextField"] });
+    /// <summary>
+    /// The single source of truth for the "Add field" menu, shared by every editor that derives from this
+    /// base (preset editor and system-field library). Both menus render these entries, so they can never
+    /// diverge, and a new field type appears automatically — no menu edits required.
+    /// </summary>
+    public IReadOnlyList<FieldTypeCatalogEntry> AddableFieldTypes { get; } = new FieldTypeCatalog().Entries;
 
     [RelayCommand]
-    private async Task AddBoolField() => await AddField(new BoolFieldDefinition { Label = LocalizationService.Instance["NewBoolField"] });
-
-    [RelayCommand]
-    private async Task AddIntegerField() => await AddField(new IntegerFieldDefinition { Label = LocalizationService.Instance["NewNumberField"] });
-
-    [RelayCommand]
-    private async Task AddDecimalField() => await AddField(new DecimalFieldDefinition { Label = LocalizationService.Instance["NewDecimalField"] });
-
-    [RelayCommand]
-    private async Task AddDateField() => await AddField(new DateFieldDefinition { Label = LocalizationService.Instance["NewDateField"] });
-
-    [RelayCommand]
-    private async Task AddColorField() => await AddField(new ColorFieldDefinition { Label = LocalizationService.Instance["NewColorField"] });
-
-    [RelayCommand]
-    private async Task AddRatingField() => await AddField(new RatingFieldDefinition { Label = LocalizationService.Instance["NewRatingField"] });
-
-    [RelayCommand]
-    private async Task AddUrlField() => await AddField(new UrlFieldDefinition { Label = LocalizationService.Instance["NewUrlField"] });
-
-    [RelayCommand]
-    private async Task AddSingleChoiceField() => await AddField(new SingleChoiceFieldDefinition { Label = LocalizationService.Instance["NewSingleChoiceField"] });
-
-    [RelayCommand]
-    private async Task AddMultiChoiceField() => await AddField(new MultiChoiceFieldDefinition { Label = LocalizationService.Instance["NewMultiChoiceField"] });
-
-    [RelayCommand]
-    private async Task AddListField() => await AddField(new ListFieldDefinition { Label = LocalizationService.Instance["NewListField"] });
-
-    [RelayCommand]
-    private async Task AddImageField() => await AddField(new ImageFieldDefinition { Label = LocalizationService.Instance["NewImageField"] });
-
-    [RelayCommand]
-    private async Task AddRichTextField() => await AddField(new RichTextFieldDefinition { Label = LocalizationService.Instance["NewRichTextField"] });
-
-    [RelayCommand]
-    private async Task AddPhoneField() => await AddField(new PhoneFieldDefinition { Label = LocalizationService.Instance["NewPhoneField"] });
-
-    [RelayCommand]
-    private async Task AddEmailField() => await AddField(new EmailFieldDefinition { Label = LocalizationService.Instance["NewEmailField"] });
-
-    [RelayCommand]
-    private async Task AddPercentageField() => await AddField(new PercentageFieldDefinition { Label = LocalizationService.Instance["NewPercentageField"] });
-
-    [RelayCommand]
-    private async Task AddDurationField() => await AddField(new DurationFieldDefinition { Label = LocalizationService.Instance["NewDurationField"] });
-
-    [RelayCommand]
-    private async Task AddTimeField() => await AddField(new TimeFieldDefinition { Label = LocalizationService.Instance["NewTimeField"] });
-
-    [RelayCommand]
-    private async Task AddCurrencyField() => await AddField(new CurrencyFieldDefinition { Label = LocalizationService.Instance["NewCurrencyField"] });
-
-    [RelayCommand]
-    private async Task AddTagsField() => await AddField(new TagsFieldDefinition { Label = LocalizationService.Instance["NewTagsField"] });
+    private Task AddFieldOfType(FieldTypeCatalogEntry entry) => AddField(entry.Create());
 
     [RelayCommand]
     protected virtual Task RemoveField(IEditorNode node)

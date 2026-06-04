@@ -2,6 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_SingleChoice")]
 [FieldIcon("◉")]
+[FieldCatalog(1, FieldCategory.Choice)]
 public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValue>, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;
