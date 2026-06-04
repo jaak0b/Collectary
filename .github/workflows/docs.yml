@@ -1,0 +1,69 @@
+name: Build & publish documentation
+
+# Builds the MkDocs site and the Avalonia WASM app, then commits the generated
+# static site into the /docs folder on `main`. GitHub Pages is configured to
+# "Deploy from a branch" -> main -> /docs, so committing /docs publishes the site.
+#
+# Loop guard: this workflow's own commit only touches docs/**, and `paths-ignore`
+# below excludes docs/**, so the bot commit does NOT re-trigger the workflow.
+# The commit message also carries [skip ci] as a second line of defence.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install MkDocs Material
+        run: pip install -r requirements.txt
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
+      - name: Publish WASM app
+        run: dotnet publish src/Collectary.UI.Browser/Collectary.UI.Browser.csproj -c Release -o ./browser-publish
+
+      - name: Build MkDocs site (into docs/)
+        run: mkdocs build
+
+      - name: Copy WASM app into docs/app/
+        run: |
+          mkdir -p docs/app
+          cp -r ./browser-publish/wwwroot/. docs/app/
+
+      - name: Commit generated docs
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add --force docs
+          if git diff --cached --quiet; then
+            echo "No documentation changes to commit."
+          else
+            git commit -m "docs: rebuild site and WASM app [skip ci]"
+            git push
+          fi

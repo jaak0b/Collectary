@@ -1,0 +1,63 @@
+site_name: Collectary
+site_description: User and developer documentation for Collectary — a cross-platform collection manager.
+docs_dir: docs-src
+site_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+
+nav:
+  - Home: index.md
+  - Live Demo: demo.md
+  - User Guide:
+      - user-guide/getting-started.md
+      - user-guide/accounts.md
+      - user-guide/collections.md
+      - user-guide/items.md
+      - user-guide/field-types.md
+      - user-guide/sharing.md
+      - user-guide/sync.md
+      - user-guide/settings.md
+  - Developer Guide:
+      - dev-guide/architecture.md
+      - dev-guide/building.md
+      - dev-guide/dependency-injection.md
+      - dev-guide/localization.md
+      - dev-guide/adding-a-field-type.md
+      - dev-guide/sync-architecture.md
+      - dev-guide/testing.md
+      - dev-guide/contributing.md

@@ -15,6 +15,7 @@
 11. **No trademarked words in files.**
 12. **NuGet packages: official Microsoft or highly-regarded community only.** No niche/unmaintained single-author packages. Prefer built-in BCL APIs (e.g. PBKDF2 via `System.Security.Cryptography.Rfc2898DeriveBytes`) over third-party dependencies.
 13. **Credentials are bullet-proof.** Passwords hashed with built-in PBKDF2-HMAC-SHA512, per-user random salt, iteration count + algorithm stored with the hash. Never store/log plaintext; never store anything reversible.
+14. **Every new feature is documented.** Add/update the relevant `docs-src/**` page in the same change. Write in a human, conversational style — not terse machine-speak.
 
 ## Build & Run
 

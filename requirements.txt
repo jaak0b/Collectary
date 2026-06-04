@@ -1,0 +1,3 @@
+# Documentation toolchain (Material for MkDocs).
+# Used by local builds (`pip install -r requirements.txt`) and CI (.github/workflows/docs.yml).
+mkdocs-material==9.5.39
