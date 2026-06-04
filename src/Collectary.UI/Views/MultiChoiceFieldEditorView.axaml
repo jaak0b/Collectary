@@ -1,25 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.MultiChoiceFieldEditorView"
              x:DataType="vm:MultiChoiceFieldEditorViewModel">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
-                    VerticalAlignment="Top" Margin="0,4,16,0">
-            <TextBlock Text="{Binding Definition.Label}"
-                       MaxWidth="160" TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <TextBlock Text="*"
-                       Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"/>
-        </StackPanel>
-        <ItemsControl Grid.Column="1"
-                      ItemsSource="{Binding ChoiceItems}"
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <ItemsControl ItemsSource="{Binding ChoiceItems}"
                       VerticalAlignment="Top">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:MultiChoiceItemViewModel">
@@ -29,5 +18,5 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-    </Grid>
+    </controls:FieldEditorScaffold>
 </UserControl>

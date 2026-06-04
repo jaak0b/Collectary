@@ -92,6 +92,7 @@ public class PresetRepository : IPresetRepository
 
         tracked.Name = preset.Name;
         tracked.ColumnCount = preset.ColumnCount;
+        tracked.FieldLabelLayout = preset.FieldLabelLayout;
         tracked.ParentPresetId = preset.ParentPresetId;
 
         _logger.Debug("Updating preset id={Id} name={Name} fields={Fields} groups={Groups} systemRefs={Refs}",

@@ -8,6 +8,7 @@ public class Preset : DomainObject, ISyncable
     public List<FieldGroup> Groups { get; set; } = new();
     public List<PresetSystemField> SystemFieldRefs { get; set; } = new();
     public int ColumnCount { get; set; } = 1;
+    public FieldLabelLayout? FieldLabelLayout { get; set; }
     public int DisplayOrder { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 

@@ -52,6 +52,7 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
             var editor = context.EditorRegistry.Create(subDef, existingValue, context);
             if (editor is not null)
             {
+                editor.LabelAbove = context.LabelAbove;
                 FieldEditors.Add(editor);
                 groupByFieldId[subDef.Id] = subDef.GroupId;
             }

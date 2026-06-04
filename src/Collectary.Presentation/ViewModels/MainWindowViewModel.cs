@@ -403,6 +403,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             },
             deleteImageAsync: key => _imageStore.DeleteAsync(key));
 
+        context.GlobalFieldLabelLayout = AppPreferences.Load().FieldLabelLayout;
+
         var rootEditor = new ItemEditorViewModel(
             itemUseCase,
             presetUseCase,

@@ -34,8 +34,16 @@ public partial class App : Application
 
         var prefs = AppPreferences.Load();
         LocalizationService.Instance.Apply(prefs.Language);
-        ThemeService.Instance.Apply(prefs.Theme);
+        ThemeService.Instance.ApplySkin(prefs.Skin);
+        ThemeService.Instance.ApplyColorTheme(prefs.EffectiveColorTheme());
+        ThemeService.Instance.ApplyAccent(ParseAccent(prefs.AccentColor));
+        ThemeService.Instance.ApplyCustomColors(prefs.CustomColors);
     }
+
+    private static Avalonia.Media.Color? ParseAccent(string? hex) =>
+        !string.IsNullOrWhiteSpace(hex) && Avalonia.Media.Color.TryParse(hex, out var color)
+            ? color
+            : null;
 
     public override void OnFrameworkInitializationCompleted()
     {

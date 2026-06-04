@@ -63,6 +63,54 @@ public class ItemEditorViewModelTest
     }
 
     [Test]
+    public void Constructor_Adaptive_MultiColumn_SetsLabelAboveTrue()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Adaptive;
+
+        CreateSut(preset: new Preset { ColumnCount = 2 }, fields: [def], context: ctx);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.LabelAbove, Is.True);
+            Assert.That(editor.LabelAbove, Is.True);
+        });
+    }
+
+    [Test]
+    public void Constructor_Adaptive_SingleColumn_SetsLabelAboveFalse()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Adaptive;
+
+        CreateSut(preset: new Preset { ColumnCount = 1 }, fields: [def], context: ctx);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.LabelAbove, Is.False);
+            Assert.That(editor.LabelAbove, Is.False);
+        });
+    }
+
+    [Test]
+    public void Constructor_PresetOverride_BeatsGlobalDefault()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Above;
+
+        CreateSut(preset: new Preset { ColumnCount = 2, FieldLabelLayout = FieldLabelLayout.Beside },
+            fields: [def], context: ctx);
+
+        Assert.That(editor.LabelAbove, Is.False);
+    }
+
+    [Test]
     public void Constructor_CreatesEditorsForEachEffectiveField()
     {
         var fields = new List<FieldDefinition>

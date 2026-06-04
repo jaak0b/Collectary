@@ -57,6 +57,38 @@
   <data name="Theme_Label" xml:space="preserve"><value>Erscheinungsbild</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Hell</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dunkel</value></data>
+  <data name="Appearance_Skin" xml:space="preserve"><value>Stil</value></data>
+  <data name="Appearance_ColorTheme" xml:space="preserve"><value>Farbschema</value></data>
+  <data name="Appearance_Accent" xml:space="preserve"><value>Akzentfarbe</value></data>
+  <data name="Appearance_ResetAccent" xml:space="preserve"><value>Zurücksetzen</value></data>
+  <data name="Appearance_Customize" xml:space="preserve"><value>Farben anpassen</value></data>
+  <data name="Appearance_EasyMode" xml:space="preserve"><value>Einfach</value></data>
+  <data name="Appearance_ExpertMode" xml:space="preserve"><value>Experte</value></data>
+  <data name="Appearance_ResetColors" xml:space="preserve"><value>Farben zurücksetzen</value></data>
+  <data name="Color_Accent" xml:space="preserve"><value>Akzent</value></data>
+  <data name="Color_Background" xml:space="preserve"><value>Fensterhintergrund</value></data>
+  <data name="Color_Surface" xml:space="preserve"><value>Oberfläche / Karten</value></data>
+  <data name="Color_SurfaceAlt" xml:space="preserve"><value>Oberfläche (alternativ)</value></data>
+  <data name="Color_Primary" xml:space="preserve"><value>Primär</value></data>
+  <data name="Color_PrimaryHover" xml:space="preserve"><value>Primär (Hover)</value></data>
+  <data name="Color_PrimaryPressed" xml:space="preserve"><value>Primär (gedrückt)</value></data>
+  <data name="Color_PrimaryForeground" xml:space="preserve"><value>Primärer Text</value></data>
+  <data name="Color_TextPrimary" xml:space="preserve"><value>Haupttext</value></data>
+  <data name="Color_TextSecondary" xml:space="preserve"><value>Sekundärer Text</value></data>
+  <data name="Color_TextDisabled" xml:space="preserve"><value>Deaktivierter Text</value></data>
+  <data name="Color_Border" xml:space="preserve"><value>Rahmen</value></data>
+  <data name="Color_BorderStrong" xml:space="preserve"><value>Rahmen (stark)</value></data>
+  <data name="Color_ControlHover" xml:space="preserve"><value>Steuerelement-Hover</value></data>
+  <data name="Color_FocusRing" xml:space="preserve"><value>Fokusring</value></data>
+  <data name="Color_SidebarBackground" xml:space="preserve"><value>Seitenleisten-Hintergrund</value></data>
+  <data name="Color_SidebarSelected" xml:space="preserve"><value>Seitenleisten-Auswahl</value></data>
+  <data name="Color_Danger" xml:space="preserve"><value>Gefahr</value></data>
+  <data name="Color_DangerForeground" xml:space="preserve"><value>Gefahrentext</value></data>
+  <data name="FieldLabel_Layout" xml:space="preserve"><value>Beschriftungsposition</value></data>
+  <data name="FieldLabel_Inherit" xml:space="preserve"><value>Standard übernehmen</value></data>
+  <data name="FieldLabel_Beside" xml:space="preserve"><value>Neben dem Feld</value></data>
+  <data name="FieldLabel_Above" xml:space="preserve"><value>Über dem Feld</value></data>
+  <data name="FieldLabel_Adaptive" xml:space="preserve"><value>Adaptiv</value></data>
   <data name="Language" xml:space="preserve"><value>Sprache</value></data>
   <data name="Settings" xml:space="preserve"><value>Einstellungen</value></data>
   <data name="CollectionSettings" xml:space="preserve"><value>Sammlungseinstellungen</value></data>

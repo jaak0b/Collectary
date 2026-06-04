@@ -55,18 +55,24 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost
         if (existing is not null)
             DisplayName = existing.DisplayName;
 
+        context.LabelAbove = new FieldLabelLayoutResolver()
+            .ResolveLabelAbove(preset.FieldLabelLayout, context.GlobalFieldLabelLayout, preset.ColumnCount);
+
         foreach (var definition in effectiveFields.Fields)
         {
             if (definition is DisplayNameFieldDefinition dn)
             {
-                FieldEditors.Add(new DisplayNameFieldEditorViewModel(dn, existing?.DisplayName ?? ""));
+                FieldEditors.Add(new DisplayNameFieldEditorViewModel(dn, existing?.DisplayName ?? "") { LabelAbove = context.LabelAbove });
                 continue;
             }
 
             var existingValue = existing?.Values.FirstOrDefault(v => v.FieldDefinitionId == definition.Id);
             var editor = context.EditorRegistry.Create(definition, existingValue, context);
             if (editor is not null)
+            {
+                editor.LabelAbove = context.LabelAbove;
                 FieldEditors.Add(editor);
+            }
         }
 
         var layout = new FieldGroupLayout(

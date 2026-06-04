@@ -74,6 +74,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Collectary.UI/Themes/Colors.Light.axaml"/>
+                <ResourceInclude Source="avares://Collectary.UI/Controls/FieldEditorScaffold.axaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

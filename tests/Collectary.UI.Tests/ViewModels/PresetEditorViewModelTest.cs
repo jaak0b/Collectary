@@ -217,6 +217,35 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
+    public void Constructor_NewPreset_DefaultsFieldLabelLayoutToInherit()
+    {
+        var sut = CreateSut();
+
+        Assert.That(sut.SelectedFieldLabelLayout.Value, Is.Null);
+    }
+
+    [Test]
+    public void Constructor_LoadsFieldLabelLayoutFromExisting()
+    {
+        var sut = CreateSut(existing: new Preset { Name = "P", FieldLabelLayout = FieldLabelLayout.Above });
+
+        Assert.That(sut.SelectedFieldLabelLayout.Value, Is.EqualTo(FieldLabelLayout.Above));
+    }
+
+    [Test]
+    public async Task PersistAsync_WritesSelectedFieldLabelLayout()
+    {
+        var sut = CreateSut();
+        sut.SelectedFieldLabelLayout = sut.FieldLabelLayoutOptions.First(o => o.Value == FieldLabelLayout.Beside);
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(
+            A<Preset>.That.Matches(p => p.FieldLabelLayout == FieldLabelLayout.Beside)))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public void AddGroupCommand_AddsGroupNodeToCurrentRows()
     {
         var sut = CreateSut();

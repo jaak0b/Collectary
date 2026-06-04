@@ -30,6 +30,17 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     [ObservableProperty]
     public partial int ColumnCount { get; set; } = 1;
 
+    public IReadOnlyList<FieldLabelLayoutOption> FieldLabelLayoutOptions { get; } =
+    [
+        new(null, LocalizationService.Instance["FieldLabel_Inherit"]),
+        new(FieldLabelLayout.Beside, LocalizationService.Instance["FieldLabel_Beside"]),
+        new(FieldLabelLayout.Above, LocalizationService.Instance["FieldLabel_Above"]),
+        new(FieldLabelLayout.Adaptive, LocalizationService.Instance["FieldLabel_Adaptive"]),
+    ];
+
+    [ObservableProperty]
+    public partial FieldLabelLayoutOption SelectedFieldLabelLayout { get; set; }
+
     [ObservableProperty]
     public partial ObservableCollection<Preset> AvailableParents { get; set; } = new();
 
@@ -89,6 +100,8 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
                 fieldRows.Add(row);
             }
         }
+
+        SelectedFieldLabelLayout = FieldLabelLayoutOptions.First(o => o.Value == source?.FieldLabelLayout);
 
         if (fieldRows.All(f => !f.IsDisplayName))
             fieldRows.Insert(0, new FieldDefinitionRowViewModel(
@@ -162,6 +175,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         var preset = ExistingOrCreated ?? new Preset { CreatedAt = DateTime.UtcNow };
         preset.Name = Name.Trim();
         preset.ColumnCount = ColumnCount;
+        preset.FieldLabelLayout = SelectedFieldLabelLayout?.Value;
         preset.ParentPresetId = SelectedParent?.Id;
 
         var flat = new EditorNodeTreeBuilder().Flatten(_rootRows);

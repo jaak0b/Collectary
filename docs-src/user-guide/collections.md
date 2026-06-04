@@ -42,6 +42,20 @@ One field is marked as the **display name** — that's the value used to label e
 Fields can be organised into named **groups** within a collection (e.g. "Identification",
 "Condition", "Purchase"). Groups keep large item editors tidy.
 
+### Layout: columns and label position
+
+The collection editor also controls how the item editor is laid out:
+
+- **Columns** — spread fields across up to several columns so a long form fits on one screen
+  instead of scrolling forever.
+- **Label position** — choose where each field's label sits relative to its input:
+    - **Beside input** — label on the left, compact. Great for single-column forms.
+    - **Above input** — label stacked on top. This keeps columns clean and readable when you use
+      more than one column, since labels never crowd the neighbouring column.
+    - **Adaptive** — the easy choice: beside when there's one column, above as soon as you add more.
+    - **Inherit (default)** — just follow the app-wide default you set in
+      [Settings](settings.md#appearance).
+
 ### Reusing fields across collections
 
 The **System Field Library** holds field definitions you want to reuse across multiple

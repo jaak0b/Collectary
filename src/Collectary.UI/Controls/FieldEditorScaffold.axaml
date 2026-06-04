@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Collectary.UI.Controls">
+
+    <ControlTheme x:Key="{x:Type controls:FieldEditorScaffold}" TargetType="controls:FieldEditorScaffold">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel x:Name="PART_Label"
+                                Grid.Row="0" Grid.Column="0"
+                                Orientation="Horizontal" Spacing="4"
+                                VerticalAlignment="Top" Margin="0,4,16,0">
+                        <TextBlock Text="{TemplateBinding Label}"
+                                   MaxWidth="160" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Text="*"
+                                   Foreground="Red"
+                                   IsVisible="{TemplateBinding IsRequired}"/>
+                    </StackPanel>
+
+                    <ContentPresenter x:Name="PART_Content"
+                                      Grid.Row="0" Grid.Column="1"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Top"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Above: label spans both columns on the top row, input fills the row below -->
+        <Style Selector="^:above /template/ StackPanel#PART_Label">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        <Style Selector="^:above /template/ ContentPresenter#PART_Content">
+            <Setter Property="Grid.Row" Value="1"/>
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

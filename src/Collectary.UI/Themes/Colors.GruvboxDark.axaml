@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="BackgroundColor">#282828</Color>
+    <Color x:Key="SurfaceColor">#32302F</Color>
+    <Color x:Key="SurfaceAltColor">#3C3836</Color>
+    <Color x:Key="PrimaryColor">#83A598</Color>
+    <Color x:Key="PrimaryHoverColor">#97B8AB</Color>
+    <Color x:Key="PrimaryPressedColor">#6F9183</Color>
+    <Color x:Key="PrimaryForegroundColor">#282828</Color>
+    <Color x:Key="TextPrimaryColor">#EBDBB2</Color>
+    <Color x:Key="TextSecondaryColor">#A89984</Color>
+    <Color x:Key="TextDisabledColor">#928374</Color>
+    <Color x:Key="BorderColor">#3C3836</Color>
+    <Color x:Key="BorderStrongColor">#83A598</Color>
+    <Color x:Key="ControlHoverColor">#3C3836</Color>
+    <Color x:Key="FocusRingColor">#83A598</Color>
+    <Color x:Key="SidebarBackgroundColor">#1D2021</Color>
+    <Color x:Key="SidebarSelectedColor">#504945</Color>
+    <Color x:Key="DangerColor">#FB4934</Color>
+    <Color x:Key="DangerForegroundColor">#282828</Color>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+    <SolidColorBrush x:Key="SurfaceAltBrush" Color="{StaticResource SurfaceAltColor}"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="{StaticResource PrimaryHoverColor}"/>
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}"/>
+    <SolidColorBrush x:Key="PrimaryForegroundBrush" Color="{StaticResource PrimaryForegroundColor}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrongColor}"/>
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="{StaticResource ControlHoverColor}"/>
+    <SolidColorBrush x:Key="FocusRingBrush" Color="{StaticResource FocusRingColor}"/>
+    <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="{StaticResource SidebarBackgroundColor}"/>
+    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="{StaticResource SidebarSelectedColor}"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+    <SolidColorBrush x:Key="DangerForegroundBrush" Color="{StaticResource DangerForegroundColor}"/>
+</ResourceDictionary>

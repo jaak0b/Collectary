@@ -5,21 +5,10 @@
              x:Class="Collectary.UI.Views.CurrencyFieldEditorView"
              x:DataType="vm:CurrencyFieldEditorViewModel">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
-                    VerticalAlignment="Top" Margin="0,4,16,0">
-            <TextBlock Text="{Binding Definition.Label}"
-                       MaxWidth="160" TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <TextBlock Text="*"
-                       Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"/>
-        </StackPanel>
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
             <TextBlock Text="{Binding CurrencySymbol}"
                        VerticalAlignment="Center"
                        FontWeight="Medium"
@@ -32,5 +21,5 @@
                            MinWidth="140"
                            HorizontalAlignment="Left"/>
         </StackPanel>
-    </Grid>
+    </controls:FieldEditorScaffold>
 </UserControl>

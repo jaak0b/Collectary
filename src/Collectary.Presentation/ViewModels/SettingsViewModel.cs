@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
@@ -19,6 +21,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Func<CloudProvider, Task>? _disconnectCloud;
     private readonly Func<string?>? _detectInstalledCloudFolder;
     private bool _loadingSync;
+    private bool _loadingAppearance;
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
     [
@@ -36,26 +39,160 @@ public partial class SettingsViewModel : ViewModelBase
         SavePreferences();
     }
 
+    public IReadOnlyList<SkinInfo> Skins => ThemeService.Instance.Skins;
+    public IReadOnlyList<ColorThemeInfo> ColorThemes => ThemeService.Instance.Themes;
+
     [ObservableProperty]
-    public partial AppTheme CurrentTheme { get; set; }
+    public partial SkinInfo SelectedSkin { get; set; }
 
-    public bool IsLightTheme => CurrentTheme == AppTheme.Light;
-    public bool IsDarkTheme => CurrentTheme == AppTheme.Dark;
+    [ObservableProperty]
+    public partial ColorThemeInfo SelectedColorTheme { get; set; }
 
-    partial void OnCurrentThemeChanged(AppTheme _)
+    [ObservableProperty]
+    public partial Color AccentColor { get; set; }
+
+    [ObservableProperty]
+    public partial bool HasCustomAccent { get; set; }
+
+    [ObservableProperty]
+    public partial bool ExpertColorMode { get; set; }
+
+    public IReadOnlyList<FieldLabelLayoutOption> FieldLabelLayoutOptions { get; } =
+    [
+        new(FieldLabelLayout.Beside, LocalizationService.Instance["FieldLabel_Beside"]),
+        new(FieldLabelLayout.Above, LocalizationService.Instance["FieldLabel_Above"]),
+        new(FieldLabelLayout.Adaptive, LocalizationService.Instance["FieldLabel_Adaptive"]),
+    ];
+
+    [ObservableProperty]
+    public partial FieldLabelLayoutOption SelectedFieldLabelLayout { get; set; }
+
+    partial void OnSelectedFieldLabelLayoutChanged(FieldLabelLayoutOption? value)
     {
-        OnPropertyChanged(nameof(IsLightTheme));
-        OnPropertyChanged(nameof(IsDarkTheme));
+        if (_loadingAppearance || value?.Value is not { } layout) return;
+        AppPreferences.Update(p => p with { FieldLabelLayout = layout });
+    }
+
+    public ObservableCollection<CustomColorSlot> ColorSlots { get; } = [];
+
+    private readonly IReadOnlyList<(string Key, string LabelKey, bool IsEasy)> _slotDefinitions =
+    [
+        ("Background", "Color_Background", true),
+        ("Surface", "Color_Surface", true),
+        ("SurfaceAlt", "Color_SurfaceAlt", false),
+        ("Primary", "Color_Primary", false),
+        ("PrimaryHover", "Color_PrimaryHover", false),
+        ("PrimaryPressed", "Color_PrimaryPressed", false),
+        ("PrimaryForeground", "Color_PrimaryForeground", false),
+        ("TextPrimary", "Color_TextPrimary", true),
+        ("TextSecondary", "Color_TextSecondary", false),
+        ("TextDisabled", "Color_TextDisabled", false),
+        ("Border", "Color_Border", false),
+        ("BorderStrong", "Color_BorderStrong", false),
+        ("ControlHover", "Color_ControlHover", false),
+        ("FocusRing", "Color_FocusRing", false),
+        ("SidebarBackground", "Color_SidebarBackground", true),
+        ("SidebarSelected", "Color_SidebarSelected", false),
+        ("Danger", "Color_Danger", false),
+        ("DangerForeground", "Color_DangerForeground", false),
+    ];
+
+    partial void OnExpertColorModeChanged(bool value)
+    {
+        UpdateSlotVisibility();
+        if (_loadingAppearance) return;
+        SaveAppearance();
+    }
+
+    private void UpdateSlotVisibility()
+    {
+        foreach (var slot in ColorSlots)
+            slot.IsRowVisible = slot.IsEasy || ExpertColorMode;
+    }
+
+    private void OnColorSlotChanged(CustomColorSlot slot)
+    {
+        if (_loadingAppearance) return;
+        ThemeService.Instance.ApplyCustomColors(CurrentOverrideMap());
+        SaveAppearance();
+    }
+
+    private Dictionary<string, Color> CurrentOverrideMap() =>
+        ColorSlots.Where(s => s.IsOverridden).ToDictionary(s => s.Key, s => s.Color);
+
+    private Color CurrentColorFor(string key)
+    {
+        if (ThemeService.Instance.CurrentCustomColors.TryGetValue(key, out var custom))
+            return custom;
+        if (Avalonia.Application.Current?.TryGetResource(
+                $"{key}Color", Avalonia.Application.Current.ActualThemeVariant, out var value) == true
+            && value is Color color)
+            return color;
+        return Colors.Gray;
     }
 
     [RelayCommand]
-    private void SetTheme(string theme)
+    private void ResetColors()
     {
-        var next = theme == "Dark" ? AppTheme.Dark : AppTheme.Light;
-        if (next == CurrentTheme) return;
-        ThemeService.Instance.Apply(next);
-        CurrentTheme = next;
-        SavePreferences();
+        _loadingAppearance = true;
+        ThemeService.Instance.ApplyCustomColors((IReadOnlyDictionary<string, Color>?)null);
+        ThemeService.Instance.ApplyAccent(null);
+        HasCustomAccent = false;
+        foreach (var slot in ColorSlots)
+            slot.Revert(CurrentColorFor(slot.Key));
+        AccentColor = CurrentThemePrimary();
+        _loadingAppearance = false;
+        SaveAppearance();
+    }
+
+    partial void OnSelectedSkinChanged(SkinInfo? value)
+    {
+        if (_loadingAppearance || value is null) return;
+        ThemeService.Instance.ApplySkin(value.Id);
+        SaveAppearance();
+    }
+
+    partial void OnSelectedColorThemeChanged(ColorThemeInfo? value)
+    {
+        if (_loadingAppearance || value is null) return;
+        ThemeService.Instance.ApplyColorTheme(value.Id);
+        foreach (var slot in ColorSlots.Where(s => !s.IsOverridden))
+            slot.Revert(CurrentColorFor(slot.Key));
+        SaveAppearance();
+    }
+
+    partial void OnAccentColorChanged(Color value)
+    {
+        if (_loadingAppearance) return;
+        HasCustomAccent = true;
+        ThemeService.Instance.ApplyAccent(value);
+        SaveAppearance();
+    }
+
+    [RelayCommand]
+    private void ResetAccent()
+    {
+        HasCustomAccent = false;
+        ThemeService.Instance.ApplyAccent(null);
+        _loadingAppearance = true;
+        AccentColor = CurrentThemePrimary();
+        _loadingAppearance = false;
+        SaveAppearance();
+    }
+
+    private void SaveAppearance()
+    {
+        if (_loadingAppearance) return;
+        var custom = ColorSlots.Where(s => s.IsOverridden)
+            .ToDictionary(s => s.Key, s => s.Color.ToString());
+        AppPreferences.Update(p => p with
+        {
+            Skin = SelectedSkin?.Id ?? "Windows11",
+            ColorTheme = SelectedColorTheme?.Id ?? "Light",
+            AccentColor = HasCustomAccent ? AccentColor.ToString() : null,
+            CustomColors = custom.Count > 0 ? custom : null,
+            ExpertColorMode = ExpertColorMode,
+        });
     }
 
     [RelayCommand]
@@ -235,21 +372,43 @@ public partial class SettingsViewModel : ViewModelBase
         _detectInstalledCloudFolder = detectInstalledCloudFolder;
         var currentCode = LocalizationService.Instance.CurrentCode;
         SelectedLanguage = LanguageOptions.FirstOrDefault(o => o.Code == currentCode) ?? LanguageOptions[0];
-        CurrentTheme = ThemeService.Instance.Current;
 
         _loadingSync = true;
+        _loadingAppearance = true;
         var prefs = AppPreferences.Load();
         SyncProvider = prefs.SyncProvider;
         SyncLocation = prefs.SyncLocation;
         AutoSyncEnabled = prefs.AutoSyncEnabled;
         AutoSyncIntervalMinutes = prefs.AutoSyncIntervalMinutes;
+
+        SelectedSkin = Skins.FirstOrDefault(s => s.Id == ThemeService.Instance.CurrentSkinId) ?? Skins[0];
+        SelectedColorTheme = ColorThemes.FirstOrDefault(t => t.Id == ThemeService.Instance.CurrentColorThemeId) ?? ColorThemes[0];
+        HasCustomAccent = ThemeService.Instance.CurrentAccent is not null;
+        AccentColor = ThemeService.Instance.CurrentAccent ?? CurrentThemePrimary();
+        ExpertColorMode = prefs.ExpertColorMode;
+        SelectedFieldLabelLayout = FieldLabelLayoutOptions.First(o => o.Value == prefs.FieldLabelLayout);
+        foreach (var (key, labelKey, isEasy) in _slotDefinitions)
+        {
+            var overridden = ThemeService.Instance.CurrentCustomColors.ContainsKey(key);
+            ColorSlots.Add(new CustomColorSlot(key, labelKey, isEasy, CurrentColorFor(key), overridden, OnColorSlotChanged));
+        }
+        UpdateSlotVisibility();
         _loadingSync = false;
+        _loadingAppearance = false;
+    }
+
+    private static Color CurrentThemePrimary()
+    {
+        if (Avalonia.Application.Current?.TryGetResource(
+                "PrimaryColor", Avalonia.Application.Current.ActualThemeVariant, out var value) == true
+            && value is Color color)
+            return color;
+        return Color.Parse("#2563EB");
     }
 
     private void SavePreferences() =>
         AppPreferences.Update(p => p with
         {
-            Theme = CurrentTheme,
             Language = SelectedLanguage?.Code ?? "en"
         });
 }

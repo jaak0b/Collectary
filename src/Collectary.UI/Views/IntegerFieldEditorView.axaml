@@ -5,26 +5,14 @@
              x:Class="Collectary.UI.Views.IntegerFieldEditorView"
              x:DataType="vm:IntegerFieldEditorViewModel">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
-                    VerticalAlignment="Top" Margin="0,4,16,0">
-            <TextBlock Text="{Binding Definition.Label}"
-                       MaxWidth="160" TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <TextBlock Text="*"
-                       Foreground="Red"
-                       IsVisible="{Binding Definition.IsRequired}"/>
-        </StackPanel>
-        <controls:SafeNumericUpDown Grid.Column="1"
-                       Value="{Binding Number}"
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <controls:SafeNumericUpDown Value="{Binding Number}"
                        FormatString="0"
                        Increment="1"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top"
                        MinWidth="120"/>
-    </Grid>
+    </controls:FieldEditorScaffold>
 </UserControl>

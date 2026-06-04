@@ -1,26 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
              x:Class="Collectary.UI.Views.ListFieldEditorView"
              x:DataType="vm:ListFieldEditorViewModel">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" SharedSizeGroup="FieldLabel"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
-                    VerticalAlignment="Top" Margin="0,4,16,0">
-            <TextBlock Text="{Binding Label}"
-                       FontWeight="Medium"
-                       MaxWidth="160" TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <TextBlock Text="*"
-                       Foreground="Red"
-                       IsVisible="{Binding IsRequired}"/>
-        </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Top">
+    <controls:FieldEditorScaffold Label="{Binding Label}"
+                                  IsRequired="{Binding IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Spacing="6" VerticalAlignment="Top">
             <Border BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
@@ -52,5 +41,5 @@
                         Padding="12,4"/>
             </StackPanel>
         </StackPanel>
-    </Grid>
+    </controls:FieldEditorScaffold>
 </UserControl>

@@ -1,5 +1,6 @@
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Collectary.Core.Domain;
 using Collectary.Presentation.DI;
 
 namespace Collectary.Presentation.ViewModels;
@@ -11,6 +12,12 @@ public partial class ItemEditingContext : ObservableObject
 
     [ObservableProperty]
     public partial bool IsNarrow { get; set; }
+
+    /// <summary>App-wide default label layout, used to resolve a preset's null (inherit) choice.</summary>
+    public FieldLabelLayout GlobalFieldLabelLayout { get; set; } = FieldLabelLayout.Adaptive;
+
+    /// <summary>Resolved label placement for every editor built within this editing session.</summary>
+    public bool LabelAbove { get; set; }
     public Func<Task> SaveAsync { get; set; } = () => Task.CompletedTask;
     public Action<ListFieldEditorViewModel> OpenList { get; set; } = _ => { };
     public Action<ListEntryEditorViewModel, string> OpenEntry { get; set; } = (_, _) => { };

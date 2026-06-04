@@ -50,6 +50,14 @@
                                    FormatString="0"
                                    HorizontalAlignment="Left"
                                    MinWidth="80"/>
+                    <TextBlock Text="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,6,0,0"/>
+                    <ComboBox ItemsSource="{Binding FieldLabelLayoutOptions}"
+                              SelectedItem="{Binding SelectedFieldLabelLayout}"
+                              DisplayMemberBinding="{Binding Display}"
+                              HorizontalAlignment="Left"
+                              MinWidth="160"/>
                 </StackPanel>
             </Grid>
 

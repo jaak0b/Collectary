@@ -22,22 +22,97 @@
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            LetterSpacing="1"/>
+
                 <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
                     <TextBlock Grid.Column="0"
-                               Text="{Binding [Theme_Label], Source={x:Static loc:LocalizationService.Instance}}"
+                               Text="{Binding [Appearance_Skin], Source={x:Static loc:LocalizationService.Instance}}"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button Content="☀️ Light"
-                                Command="{Binding SetThemeCommand}"
-                                CommandParameter="Light"
-                                Padding="14,6"/>
-                        <Button Content="🌙 Dark"
-                                Command="{Binding SetThemeCommand}"
-                                CommandParameter="Dark"
-                                Padding="14,6"/>
-                    </StackPanel>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Skins}"
+                              SelectedItem="{Binding SelectedSkin}"
+                              DisplayMemberBinding="{Binding DisplayName}"
+                              MinWidth="200"/>
                 </Grid>
+
+                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding [Appearance_ColorTheme], Source={x:Static loc:LocalizationService.Instance}}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding ColorThemes}"
+                              SelectedItem="{Binding SelectedColorTheme}"
+                              DisplayMemberBinding="{Binding DisplayName}"
+                              MinWidth="200"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding FieldLabelLayoutOptions}"
+                              SelectedItem="{Binding SelectedFieldLabelLayout}"
+                              DisplayMemberBinding="{Binding Display}"
+                              MinWidth="200"/>
+                </Grid>
+
+                <Expander Header="{Binding [Appearance_Customize], Source={x:Static loc:LocalizationService.Instance}}"
+                          HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="14" Margin="0,8,0,0">
+
+                        <!-- Easy | Expert toggle -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <RadioButton GroupName="ColorMode"
+                                         Content="{Binding [Appearance_EasyMode], Source={x:Static loc:LocalizationService.Instance}}"
+                                         IsChecked="{Binding !ExpertColorMode}"/>
+                            <RadioButton GroupName="ColorMode"
+                                         Content="{Binding [Appearance_ExpertMode], Source={x:Static loc:LocalizationService.Instance}}"
+                                         IsChecked="{Binding ExpertColorMode}"/>
+                        </StackPanel>
+
+                        <!-- Accent (Easy mode only — auto-derives button states) -->
+                        <Grid ColumnDefinitions="140,*" VerticalAlignment="Center"
+                              IsVisible="{Binding !ExpertColorMode}">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding [Color_Accent], Source={x:Static loc:LocalizationService.Instance}}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <ColorPicker Color="{Binding AccentColor}"/>
+                                <Button Content="{Binding [Appearance_ResetAccent], Source={x:Static loc:LocalizationService.Instance}}"
+                                        Command="{Binding ResetAccentCommand}"
+                                        IsVisible="{Binding HasCustomAccent}"
+                                        Padding="12,6"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Per-color pickers (Easy shows essentials, Expert shows all) -->
+                        <ItemsControl ItemsSource="{Binding ColorSlots}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CustomColorSlot">
+                                    <Grid ColumnDefinitions="140,*" Margin="0,0,0,8"
+                                          IsVisible="{Binding IsRowVisible}">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Label}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <ColorPicker Grid.Column="1"
+                                                     HorizontalAlignment="Left"
+                                                     Color="{Binding Color}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Button Content="{Binding [Appearance_ResetColors], Source={x:Static loc:LocalizationService.Instance}}"
+                                Command="{Binding ResetColorsCommand}"
+                                HorizontalAlignment="Left"
+                                Padding="12,6"/>
+                    </StackPanel>
+                </Expander>
             </StackPanel>
 
             <Separator/>

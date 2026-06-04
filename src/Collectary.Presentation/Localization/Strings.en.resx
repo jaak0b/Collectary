@@ -57,6 +57,38 @@
   <data name="Theme_Label" xml:space="preserve"><value>Theme</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Light</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Appearance_Skin" xml:space="preserve"><value>Style</value></data>
+  <data name="Appearance_ColorTheme" xml:space="preserve"><value>Color theme</value></data>
+  <data name="Appearance_Accent" xml:space="preserve"><value>Accent color</value></data>
+  <data name="Appearance_ResetAccent" xml:space="preserve"><value>Reset</value></data>
+  <data name="Appearance_Customize" xml:space="preserve"><value>Customize colors</value></data>
+  <data name="Appearance_EasyMode" xml:space="preserve"><value>Easy</value></data>
+  <data name="Appearance_ExpertMode" xml:space="preserve"><value>Expert</value></data>
+  <data name="Appearance_ResetColors" xml:space="preserve"><value>Reset colors</value></data>
+  <data name="Color_Accent" xml:space="preserve"><value>Accent</value></data>
+  <data name="Color_Background" xml:space="preserve"><value>Window background</value></data>
+  <data name="Color_Surface" xml:space="preserve"><value>Surface / cards</value></data>
+  <data name="Color_SurfaceAlt" xml:space="preserve"><value>Surface (alternate)</value></data>
+  <data name="Color_Primary" xml:space="preserve"><value>Primary</value></data>
+  <data name="Color_PrimaryHover" xml:space="preserve"><value>Primary (hover)</value></data>
+  <data name="Color_PrimaryPressed" xml:space="preserve"><value>Primary (pressed)</value></data>
+  <data name="Color_PrimaryForeground" xml:space="preserve"><value>Primary text</value></data>
+  <data name="Color_TextPrimary" xml:space="preserve"><value>Main text</value></data>
+  <data name="Color_TextSecondary" xml:space="preserve"><value>Secondary text</value></data>
+  <data name="Color_TextDisabled" xml:space="preserve"><value>Disabled text</value></data>
+  <data name="Color_Border" xml:space="preserve"><value>Border</value></data>
+  <data name="Color_BorderStrong" xml:space="preserve"><value>Border (strong)</value></data>
+  <data name="Color_ControlHover" xml:space="preserve"><value>Control hover</value></data>
+  <data name="Color_FocusRing" xml:space="preserve"><value>Focus ring</value></data>
+  <data name="Color_SidebarBackground" xml:space="preserve"><value>Sidebar background</value></data>
+  <data name="Color_SidebarSelected" xml:space="preserve"><value>Sidebar selection</value></data>
+  <data name="Color_Danger" xml:space="preserve"><value>Danger</value></data>
+  <data name="Color_DangerForeground" xml:space="preserve"><value>Danger text</value></data>
+  <data name="FieldLabel_Layout" xml:space="preserve"><value>Label position</value></data>
+  <data name="FieldLabel_Inherit" xml:space="preserve"><value>Inherit (default)</value></data>
+  <data name="FieldLabel_Beside" xml:space="preserve"><value>Beside input</value></data>
+  <data name="FieldLabel_Above" xml:space="preserve"><value>Above input</value></data>
+  <data name="FieldLabel_Adaptive" xml:space="preserve"><value>Adaptive</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="CollectionSettings" xml:space="preserve"><value>Collection Settings</value></data>

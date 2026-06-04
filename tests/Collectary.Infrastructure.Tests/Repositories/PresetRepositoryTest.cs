@@ -601,6 +601,40 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task AddAsync_PersistsFieldLabelLayout()
+    {
+        var preset = new Preset { Name = "P", FieldLabelLayout = FieldLabelLayout.Above };
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(loaded!.FieldLabelLayout, Is.EqualTo(FieldLabelLayout.Above));
+    }
+
+    [Test]
+    public async Task AddAsync_FieldLabelLayout_DefaultsToNull()
+    {
+        var preset = new Preset { Name = "P" };
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(loaded!.FieldLabelLayout, Is.Null);
+    }
+
+    [Test]
+    public async Task UpdateAsync_PersistsFieldLabelLayout()
+    {
+        var preset = new Preset { Name = "P" };
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+        loaded!.FieldLabelLayout = FieldLabelLayout.Adaptive;
+        await _sut.UpdateAsync(loaded);
+
+        var reloaded = await _sut.GetByIdAsync(preset.Id);
+        Assert.That(reloaded!.FieldLabelLayout, Is.EqualTo(FieldLabelLayout.Adaptive));
+    }
+
+    [Test]
     public async Task UpdateAsync_PersistsGroupColumnCount()
     {
         var preset = MakePreset();

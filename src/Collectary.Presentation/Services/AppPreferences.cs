@@ -21,7 +21,17 @@ public record AppPreferencesData(
     string? OneDriveAccount = null,
     string? GoogleDriveRootFolderId = null,
     string? GoogleDriveRootFolderName = null,
-    string? GoogleDriveAccount = null);
+    string? GoogleDriveAccount = null,
+    string ColorTheme = "Light",
+    string Skin = "Windows11",
+    string? AccentColor = null,
+    Dictionary<string, string>? CustomColors = null,
+    bool ExpertColorMode = false,
+    FieldLabelLayout FieldLabelLayout = FieldLabelLayout.Adaptive)
+{
+    public string EffectiveColorTheme() =>
+        ColorTheme == "Light" && Theme == AppTheme.Dark ? "Dark" : ColorTheme;
+}
 
 public static class AppPreferences
 {
