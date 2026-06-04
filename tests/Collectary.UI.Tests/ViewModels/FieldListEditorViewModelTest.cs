@@ -20,7 +20,7 @@ public class FieldListEditorViewModelTest
     {
         _useCase = A.Fake<ISystemFieldUseCase>();
         _dialogService = A.Fake<IDialogService>();
-        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, onDone: () => { });
+        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
     }
 
     [Test]

@@ -1,6 +1,5 @@
 using Autofac.Features.Indexed;
 using Collectary.Core.Domain;
-using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.ViewModels.ListCells;
 
@@ -12,7 +11,7 @@ public class ListCellBuilder(IIndex<string, Func<FieldValue, FieldDefinition, Li
         IReadOnlyList<FieldValue> values,
         IReadOnlyList<FieldDefinition> listFields) =>
         listFields
-            .Where(field => field is not DisplayNameFieldDefinition)
+            .Where(field => !field.IsTitleField)
             .Select(field =>
             {
                 var fv = values.FirstOrDefault(v => v.FieldDefinitionId == field.Id);

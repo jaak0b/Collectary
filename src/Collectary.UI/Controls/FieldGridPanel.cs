@@ -47,7 +47,7 @@ public class FieldGridPanel : Panel
 
     private static int GetSpan(Control child) =>
         child.DataContext is FieldEditorViewModelBase vm
-            ? Math.Max(1, vm.Definition.ColumnSpan)
+            ? Math.Max(1, vm.ColumnSpan)
             : 1;
 
     private IReadOnlyList<FieldRow> GetRows(double availableWidth)

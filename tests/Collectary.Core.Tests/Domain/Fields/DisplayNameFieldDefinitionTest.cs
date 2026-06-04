@@ -16,4 +16,12 @@ public class DisplayNameFieldDefinitionTest
     [Test]
     public void CreateEmptyValue_Throws() =>
         Assert.Throws<NotSupportedException>(() => new DisplayNameFieldDefinition().CreateEmptyValue());
+
+    [Test]
+    public void IsTitleField_IsTrue() =>
+        Assert.That(new DisplayNameFieldDefinition().IsTitleField, Is.True);
+
+    [Test]
+    public void IsTitleField_IsFalse_ForNonTitleType() =>
+        Assert.That(new TextFieldDefinition().IsTitleField, Is.False);
 }

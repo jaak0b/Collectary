@@ -177,11 +177,13 @@ public partial class MainWindowViewModel : ViewModelBase
         AppLogger.Log.Debug("Navigate: PresetEditor existing={Id}", existing?.Id);
         var presetUseCase = _scope.Resolve<IPresetUseCase>();
         var systemFieldUseCase = _scope.Resolve<ISystemFieldUseCase>();
+        var fieldEditorMapper = _scope.Resolve<Mapping.IFieldEditorMapper>();
 
         var vm = new PresetEditorViewModel(
             presetUseCase,
             systemFieldUseCase,
             _dialogService,
+            fieldEditorMapper,
             onSaved: () => { _ = NavigateToHomeAsync(); },
             onCancelled: () => { _ = NavigateToHomeAsync(); },
             existing: existing);
@@ -198,6 +200,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var vm = new SystemFieldLibraryViewModel(
             systemFieldUseCase,
             _dialogService,
+            _scope.Resolve<Mapping.IFieldEditorMapper>(),
             onDone: () => { _ = NavigateToHomeAsync(); });
         ResetBreadcrumb(LocalizationService.Instance["SystemFields"], vm);
         _ = vm.LoadAsync();

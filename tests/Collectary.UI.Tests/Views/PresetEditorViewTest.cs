@@ -18,7 +18,8 @@ public class PresetEditorViewTest
         var presetUseCase = A.Fake<IPresetUseCase>();
         var systemFieldUseCase = A.Fake<ISystemFieldUseCase>();
         var dialogService = A.Fake<IDialogService>();
-        return new PresetEditorViewModel(presetUseCase, systemFieldUseCase, dialogService,
+        var mapper = new TestFieldEditorMapper().Create();
+        return new PresetEditorViewModel(presetUseCase, systemFieldUseCase, dialogService, mapper,
             onSaved: () => { }, onCancelled: () => { });
     }
 

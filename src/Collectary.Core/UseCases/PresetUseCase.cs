@@ -43,7 +43,7 @@ public class PresetUseCase : IPresetUseCase
         if (preset.ParentPresetId is not null)
         {
             var parent = await GetEffectiveFieldsAsync(preset.ParentPresetId.Value, visited);
-            foreach (var parentField in parent.Fields.Where(f => f is not DisplayNameFieldDefinition))
+            foreach (var parentField in parent.Fields.Where(f => !f.IsTitleField))
             {
                 fields.Add(parentField);
                 groupByFieldId[parentField.Id] = parent.GroupByFieldId.GetValueOrDefault(parentField.Id);

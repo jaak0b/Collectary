@@ -236,6 +236,39 @@ public class ItemRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task UpdateAsync_MixedAddRemoveEdit_AppliesAllInOnePass()
+    {
+        var fieldKeep = new TextFieldDefinition { Label = "Keep", PresetId = _preset.Id };
+        var fieldDrop = new TextFieldDefinition { Label = "Drop", PresetId = _preset.Id };
+        using (var db = DbFactory())
+        {
+            db.Presets.Attach(_preset);
+            _preset.Fields.Add(fieldKeep);
+            _preset.Fields.Add(fieldDrop);
+            db.SaveChanges();
+        }
+
+        var keepId = Guid.NewGuid();
+        var dropId = Guid.NewGuid();
+        var item = MakeItem();
+        item.Values.Add(new TextFieldValue { Id = keepId, FieldDefinitionId = fieldKeep.Id, Value = "before", ItemId = item.Id });
+        item.Values.Add(new TextFieldValue { Id = dropId, FieldDefinitionId = fieldDrop.Id, Value = "remove me", ItemId = item.Id });
+        await _sut.AddAsync(item);
+
+        var loaded = await _sut.GetByIdAsync(item.Id);
+        ((TextFieldValue)loaded!.Values.Single(v => v.Id == keepId)).Value = "after";     // edit
+        loaded.Values.Remove(loaded.Values.Single(v => v.Id == dropId));                   // remove
+        loaded.Values.Add(new TextFieldValue { FieldDefinitionId = _textField.Id, Value = "new", ItemId = item.Id }); // add
+        await _sut.UpdateAsync(loaded);
+
+        var reloaded = await _sut.GetByIdAsync(item.Id);
+        Assert.That(reloaded!.Values.Select(v => ((TextFieldValue)v).Value),
+            Is.EquivalentTo(new[] { "after", "new" }));
+        Assert.That(reloaded.Values.Any(v => v.Id == dropId), Is.False, "dropped value must be gone");
+        Assert.That(((TextFieldValue)reloaded.Values.Single(v => v.Id == keepId)).Value, Is.EqualTo("after"));
+    }
+
+    [Test]
     public async Task DeleteAsync_RemovesItem()
     {
         var item = MakeItem();

@@ -4,6 +4,7 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.Mapping;
 using Collectary.Presentation.ViewModels.SystemFields;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -26,8 +27,10 @@ public class PresetEditorViewModelTest
         A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Returns(new List<SystemField>());
     }
 
+    private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
+
     private PresetEditorViewModel CreateSut(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null) =>
-        new(_presetUseCase, _systemFieldUseCase, _dialogService,
+        new(_presetUseCase, _systemFieldUseCase, _dialogService, _mapper,
             onSaved: onSaved ?? (() => { }),
             onCancelled: onCancelled ?? (() => { }),
             existing: existing);

@@ -21,7 +21,7 @@ public class SystemFieldLibraryViewModelExtraTest
         _useCase = A.Fake<ISystemFieldUseCase>();
         _dialogService = A.Fake<IDialogService>();
         A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField>());
-        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, onDone: () => { });
+        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
     }
 
     private static SystemField MakeField(string name) =>

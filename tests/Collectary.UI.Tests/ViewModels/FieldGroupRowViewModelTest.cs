@@ -1,12 +1,15 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.Mapping;
 
 namespace Collectary.UI.Tests.ViewModels;
 
 [TestFixture]
 public class FieldGroupRowViewModelTest
 {
+    private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
+
     [Test]
     public void NameConstructor_DefaultsToCardAndShowInList()
     {
@@ -43,8 +46,8 @@ public class FieldGroupRowViewModelTest
     [Test]
     public void Build_TrimsNameAndAppliesDisplayOrder()
     {
-        var row = new FieldGroupRowViewModel("  Specs  ") { DisplayMode = GroupDisplayMode.Tab };
-        var built = row.Build(7);
+        var row = new FieldGroupRowViewModel("  Specs  ") { DisplayMode = GroupDisplayMode.Tab, DisplayOrder = 7 };
+        var built = _mapper.ToGroup(row, presetId: null, parentListFieldDefinitionId: null);
         Assert.That(built.Name, Is.EqualTo("Specs"));
         Assert.That(built.DisplayOrder, Is.EqualTo(7));
         Assert.That(built.DisplayMode, Is.EqualTo(GroupDisplayMode.Tab));
@@ -104,7 +107,7 @@ public class FieldGroupRowViewModelTest
     public void Build_PreservesColumnCount()
     {
         var row = new FieldGroupRowViewModel("G") { ColumnCount = 3 };
-        Assert.That(row.Build(0).ColumnCount, Is.EqualTo(3));
+        Assert.That(_mapper.ToGroup(row, presetId: null, parentListFieldDefinitionId: null).ColumnCount, Is.EqualTo(3));
     }
 
     [Test]

@@ -17,12 +17,16 @@ public class ItemRepository : IItemRepository
         _logger = logger ?? new NullAppLogger();
     }
 
+    private IQueryable<Item> WithDetails(IQueryable<Item> query) =>
+        query
+            .Include(i => i.Values)
+            .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues);
+
     public async Task<IReadOnlyList<Item>> GetByPresetAsync(Guid presetId)
     {
         using var db = _dbFactory();
-        return await db.Items
-            .Include(i => i.Values)
-            .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues)
+        return await WithDetails(db.Items)
+            .AsNoTracking()
             .Where(i => i.PresetId == presetId)
             .ToListAsync();
     }
@@ -30,9 +34,8 @@ public class ItemRepository : IItemRepository
     public async Task<Item?> GetByIdAsync(Guid id)
     {
         using var db = _dbFactory();
-        return await db.Items
-            .Include(i => i.Values)
-            .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues)
+        return await WithDetails(db.Items)
+            .AsNoTracking()
             .FirstOrDefaultAsync(i => i.Id == id);
     }
 
@@ -48,26 +51,25 @@ public class ItemRepository : IItemRepository
     public async Task UpdateAsync(Item item)
     {
         using var db = _dbFactory();
-        var tracked = await db.Items
-            .Include(i => i.Values)
-            .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues)
+        var tracked = await WithDetails(db.Items)
             .FirstOrDefaultAsync(i => i.Id == item.Id);
         if (tracked is null) return;
 
         tracked.DisplayName = item.DisplayName;
         tracked.UpdatedAt = item.UpdatedAt;
 
+        var updatedIds = item.Values.Select(v => v.Id).ToHashSet();
         var toRemove = tracked.Values
-            .Where(existing => item.Values.All(updated => updated.Id != existing.Id))
+            .Where(existing => !updatedIds.Contains(existing.Id))
             .ToList();
         db.FieldValues.RemoveRange(toRemove);
         _logger.Debug("Updating item id={Id} preset={PresetId} values={Values} removedValues={Removed}",
             item.Id, item.PresetId, item.Values.Count, toRemove.Count);
 
+        var existingById = tracked.Values.ToDictionary(v => v.Id);
         foreach (var updatedValue in item.Values)
         {
-            var existingValue = tracked.Values.FirstOrDefault(v => v.Id == updatedValue.Id);
-            if (existingValue is null)
+            if (!existingById.TryGetValue(updatedValue.Id, out var existingValue))
             {
                 updatedValue.ItemId = tracked.Id;
                 tracked.Values.Add(updatedValue);
@@ -84,17 +86,18 @@ public class ItemRepository : IItemRepository
         await db.SaveChangesAsync();
     }
 
-    private static void SyncListEntries(InventoryDbContext db, ListFieldValue existing, ListFieldValue updated)
+    private void SyncListEntries(InventoryDbContext db, ListFieldValue existing, ListFieldValue updated)
     {
+        var updatedIds = updated.Entries.Select(e => e.Id).ToHashSet();
         var toRemove = existing.Entries
-            .Where(e => updated.Entries.All(u => u.Id != e.Id))
+            .Where(e => !updatedIds.Contains(e.Id))
             .ToList();
         db.ListEntries.RemoveRange(toRemove);
 
+        var existingById = existing.Entries.ToDictionary(e => e.Id);
         foreach (var updatedEntry in updated.Entries)
         {
-            var existingEntry = existing.Entries.FirstOrDefault(e => e.Id == updatedEntry.Id);
-            if (existingEntry is null)
+            if (!existingById.TryGetValue(updatedEntry.Id, out var existingEntry))
             {
                 updatedEntry.ListFieldValueId = existing.Id;
                 foreach (var sv in updatedEntry.SubValues)
@@ -109,17 +112,18 @@ public class ItemRepository : IItemRepository
         }
     }
 
-    private static void SyncSubValues(InventoryDbContext db, ListEntry existing, ListEntry updated)
+    private void SyncSubValues(InventoryDbContext db, ListEntry existing, ListEntry updated)
     {
+        var updatedIds = updated.SubValues.Select(v => v.Id).ToHashSet();
         var toRemove = existing.SubValues
-            .Where(e => updated.SubValues.All(u => u.Id != e.Id))
+            .Where(e => !updatedIds.Contains(e.Id))
             .ToList();
         db.FieldValues.RemoveRange(toRemove);
 
+        var existingById = existing.SubValues.ToDictionary(v => v.Id);
         foreach (var updatedSub in updated.SubValues)
         {
-            var existingSub = existing.SubValues.FirstOrDefault(v => v.Id == updatedSub.Id);
-            if (existingSub is null)
+            if (!existingById.TryGetValue(updatedSub.Id, out var existingSub))
             {
                 updatedSub.ListEntryId = existing.Id;
                 existing.SubValues.Add(updatedSub);

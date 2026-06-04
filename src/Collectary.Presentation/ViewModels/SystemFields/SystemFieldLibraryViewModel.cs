@@ -13,15 +13,17 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
 {
     private readonly ISystemFieldUseCase _useCase;
     private readonly IDialogService _dialogService;
+    private readonly Mapping.IFieldEditorMapper _mapper;
     private readonly Action _onDone;
 
     private readonly ObservableCollection<IEditorNode> _rootRows = new();
     private readonly Dictionary<Guid, SystemField> _systemFieldsById = new();
 
-    public SystemFieldLibraryViewModel(ISystemFieldUseCase useCase, IDialogService dialogService, Action onDone)
+    public SystemFieldLibraryViewModel(ISystemFieldUseCase useCase, IDialogService dialogService, Mapping.IFieldEditorMapper mapper, Action onDone)
     {
         _useCase = useCase;
         _dialogService = dialogService;
+        _mapper = mapper;
         _onDone = onDone;
         InitRoot(LocalizationService.Instance["SystemFields"], _rootRows, supportsGroups: false);
     }
@@ -80,7 +82,7 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
             {
                 if (rootRow.SystemFieldOwnerId is not { } sfId) continue;
                 if (!_systemFieldsById.TryGetValue(sfId, out var systemField)) continue;
-                var def = rootRow.BuildDefinition();
+                var def = _mapper.ToDefinition(rootRow);
                 systemField.Name = def.Label;
                 systemField.Definition = def;
                 await _useCase.UpdateAsync(systemField);

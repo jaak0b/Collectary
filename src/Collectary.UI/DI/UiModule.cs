@@ -5,9 +5,11 @@ using Collectary.Presentation.Localization;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
-using Collectary.UI.Services;
 using Collectary.Presentation.ViewModels.ListCells;
+using Collectary.Presentation.ViewModels.Mapping;
+using Collectary.UI.Services;
 using Collectary.UI.Views;
+using MapsterMapper;
 
 namespace Collectary.UI.DI;
 
@@ -16,10 +18,18 @@ public class UiModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         RegisterInfrastructure(builder);
+        RegisterMapping(builder);
         RegisterFieldEditors(builder);
         RegisterListCells(builder);
         RegisterColorEditors(builder);
         RegisterNavigation(builder);
+    }
+
+    private void RegisterMapping(ContainerBuilder builder)
+    {
+        builder.RegisterInstance(new FieldEditorMappingConfig().Build()).SingleInstance();
+        builder.RegisterType<Mapper>().As<IMapper>().SingleInstance();
+        builder.RegisterType<FieldEditorMapper>().As<IFieldEditorMapper>().SingleInstance();
     }
 
     private void RegisterInfrastructure(ContainerBuilder builder)

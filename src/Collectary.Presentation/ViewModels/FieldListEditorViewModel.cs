@@ -135,7 +135,7 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
     private int ColumnCountForLevel(EditorLevel level) => level.OwnerNode switch
     {
         FieldGroupRowViewModel group => group.ColumnCount,
-        FieldDefinitionRowViewModel listField => listField.ListColumnCount,
+        FieldDefinitionRowViewModel listField => listField.ColumnCount,
         _ => GetRootColumnCount()
     };
 

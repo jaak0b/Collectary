@@ -46,7 +46,7 @@ public partial class PresetDetailView : UserControl
         var cellIndex = 0;
         foreach (var column in vm.ListColumns)
         {
-            if (column.Field is DisplayNameFieldDefinition)
+            if (column.Field.IsTitleField)
             {
                 ItemGrid.Columns.Add(new DataGridTextColumn
                 {

@@ -1,12 +1,15 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.Mapping;
 
 namespace Collectary.UI.Tests.ViewModels;
 
 [TestFixture]
 public class FieldDefinitionRowViewModelTest
 {
+    private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
+
     [Test]
     public void Constructor_LoadsLabelFromDefinition()
     {
@@ -31,7 +34,7 @@ public class FieldDefinitionRowViewModelTest
         var def = new TextFieldDefinition { ShowInList = true };
         var sut = new FieldDefinitionRowViewModel(def);
 
-        Assert.That(sut.IsShownInList, Is.True);
+        Assert.That(sut.ShowInList, Is.True);
     }
 
     [Test]
@@ -63,7 +66,7 @@ public class FieldDefinitionRowViewModelTest
         var def = new ColorFieldDefinition { Format = ColorFormat.Rgb };
         var sut = new FieldDefinitionRowViewModel(def);
 
-        Assert.That(sut.ColorFormat, Is.EqualTo(ColorFormat.Rgb));
+        Assert.That(sut.Format, Is.EqualTo(ColorFormat.Rgb));
     }
 
     [Test]
@@ -72,7 +75,7 @@ public class FieldDefinitionRowViewModelTest
         var def = new ImageFieldDefinition { SizeMode = ImageSizeMode.Min };
         var sut = new FieldDefinitionRowViewModel(def);
 
-        Assert.That(sut.ImageSizeMode, Is.EqualTo(ImageSizeMode.Min));
+        Assert.That(sut.SizeMode, Is.EqualTo(ImageSizeMode.Min));
     }
 
     [Test]
@@ -120,7 +123,7 @@ public class FieldDefinitionRowViewModelTest
         var sut = new FieldDefinitionRowViewModel(def);
         sut.Label = "Updated";
 
-        var result = sut.BuildDefinition();
+        var result = _mapper.ToDefinition(sut);
 
         Assert.That(result.Label, Is.EqualTo("Updated"));
     }
@@ -132,7 +135,7 @@ public class FieldDefinitionRowViewModelTest
         var sut = new FieldDefinitionRowViewModel(def);
         sut.IsRequired = true;
 
-        var result = sut.BuildDefinition();
+        var result = _mapper.ToDefinition(sut);
 
         Assert.That(result.IsRequired, Is.True);
     }
@@ -142,9 +145,9 @@ public class FieldDefinitionRowViewModelTest
     {
         var def = new TextFieldDefinition { ShowInList = false };
         var sut = new FieldDefinitionRowViewModel(def);
-        sut.IsShownInList = true;
+        sut.ShowInList = true;
 
-        var result = (TextFieldDefinition)sut.BuildDefinition();
+        var result = (TextFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.ShowInList, Is.True);
     }
@@ -159,7 +162,7 @@ public class FieldDefinitionRowViewModelTest
         sut.AddChoiceCommand.Execute(null);
         sut.ChoiceItems[1].Value = "Blue";
 
-        var result = (SingleChoiceFieldDefinition)sut.BuildDefinition();
+        var result = (SingleChoiceFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Choices.Select(c => c.Value), Is.EqualTo(new[] { "Red", "Blue" }));
     }
@@ -172,7 +175,7 @@ public class FieldDefinitionRowViewModelTest
         sut.AddChoiceCommand.Execute(null);
         sut.AddChoiceCommand.Execute(null);
 
-        var result = (SingleChoiceFieldDefinition)sut.BuildDefinition();
+        var result = (SingleChoiceFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Choices[0].DisplayOrder, Is.EqualTo(0));
         Assert.That(result.Choices[1].DisplayOrder, Is.EqualTo(1));
@@ -186,7 +189,7 @@ public class FieldDefinitionRowViewModelTest
         sut.DisplayWidth = 300;
         sut.DisplayHeight = 150;
 
-        var result = (ImageFieldDefinition)sut.BuildDefinition();
+        var result = (ImageFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.DisplayWidth, Is.EqualTo(300));
         Assert.That(result.DisplayHeight, Is.EqualTo(150));
@@ -197,9 +200,9 @@ public class FieldDefinitionRowViewModelTest
     {
         var def = new ImageFieldDefinition { SizeMode = ImageSizeMode.Fixed };
         var sut = new FieldDefinitionRowViewModel(def);
-        sut.ImageSizeMode = ImageSizeMode.Min;
+        sut.SizeMode = ImageSizeMode.Min;
 
-        var result = (ImageFieldDefinition)sut.BuildDefinition();
+        var result = (ImageFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.SizeMode, Is.EqualTo(ImageSizeMode.Min));
     }
@@ -211,7 +214,7 @@ public class FieldDefinitionRowViewModelTest
         var sut = new FieldDefinitionRowViewModel(def);
         sut.InlineStyle = ListInlineStyle.Grid;
 
-        var result = (ListFieldDefinition)sut.BuildDefinition();
+        var result = (ListFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.InlineStyle, Is.EqualTo(ListInlineStyle.Grid));
     }
@@ -224,7 +227,7 @@ public class FieldDefinitionRowViewModelTest
         var def = new ListFieldDefinition { SubFields = [sub1, sub2] };
         var sut = new FieldDefinitionRowViewModel(def);
 
-        var result = (ListFieldDefinition)sut.BuildDefinition();
+        var result = (ListFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.SubFields.Count, Is.EqualTo(2));
         Assert.That(result.SubFields[0].DisplayOrder, Is.EqualTo(0));
@@ -238,7 +241,7 @@ public class FieldDefinitionRowViewModelTest
         var sut = new FieldDefinitionRowViewModel(def, isSystemField: true);
         sut.Label = "Changed";
 
-        var result = sut.BuildDefinition();
+        var result = _mapper.ToDefinition(sut);
 
         Assert.That(result.Label, Is.EqualTo("System"));
     }
@@ -248,9 +251,9 @@ public class FieldDefinitionRowViewModelTest
     {
         var def = new ColorFieldDefinition { Format = ColorFormat.Hex };
         var sut = new FieldDefinitionRowViewModel(def);
-        sut.ColorFormat = ColorFormat.Rgb;
+        sut.Format = ColorFormat.Rgb;
 
-        var result = (ColorFieldDefinition)sut.BuildDefinition();
+        var result = (ColorFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Format, Is.EqualTo(ColorFormat.Rgb));
     }
@@ -489,6 +492,22 @@ public class FieldDefinitionRowViewModelTest
     }
 
     [Test]
+    public void SelectedGroup_Setter_ClampsSpanToNewGroupColumnCount()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut.SetParentColumnCount(4);
+        sut.ColumnSpan = 4;
+        var group = new FieldGroupRowViewModel("G") { ColumnCount = 2 };
+        sut.AvailableGroups.Add(group);
+        sut.GroupMoveRequested = null;
+
+        sut.SelectedGroup = group;
+
+        Assert.That(sut.ColumnSpan, Is.EqualTo(2),
+            "Assigning a narrower group must clamp the field's span (the previously-divergent SelectedGroup path)");
+    }
+
+    [Test]
     public void ClearGroupCommand_WithNoGroupMoveRequested_SetsAssignedGroupIdToNull()
     {
         var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
@@ -510,7 +529,7 @@ public class FieldDefinitionRowViewModelTest
         sut.AddChoiceCommand.Execute(null);
         sut.ChoiceItems[0].Value = "X";
 
-        var result = (MultiChoiceFieldDefinition)sut.BuildDefinition();
+        var result = (MultiChoiceFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Choices.Select(c => c.Value), Is.EqualTo(new[] { "X" }));
     }
@@ -522,7 +541,7 @@ public class FieldDefinitionRowViewModelTest
         var sut = new FieldDefinitionRowViewModel(def);
         sut.CurrencySymbol = "$";
 
-        var result = (CurrencyFieldDefinition)sut.BuildDefinition();
+        var result = (CurrencyFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.CurrencySymbol, Is.EqualTo("$"));
     }
@@ -535,7 +554,7 @@ public class FieldDefinitionRowViewModelTest
         var def = new ListFieldDefinition { Groups = [group], SubFields = [sub] };
         var sut = new FieldDefinitionRowViewModel(def);
 
-        var result = (ListFieldDefinition)sut.BuildDefinition();
+        var result = (ListFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Groups.Count, Is.EqualTo(1));
     }

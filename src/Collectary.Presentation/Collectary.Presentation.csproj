@@ -21,6 +21,7 @@
     <PackageReference Include="Autofac" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Mapster" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Sinks.Debug" />
     <PackageReference Include="Serilog.Sinks.File" />

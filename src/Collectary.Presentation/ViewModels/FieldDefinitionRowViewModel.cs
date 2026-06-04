@@ -11,6 +11,8 @@ namespace Collectary.Presentation.ViewModels;
 public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
 {
     private readonly FieldDefinition _definition;
+    internal FieldDefinition Definition => _definition;
+    public Guid Id => _definition.Id;
     public bool IsSystemField { get; }
     public bool IsEditable => !IsSystemField;
     public Guid? SystemFieldOwnerId => _definition.SystemFieldId;
@@ -38,7 +40,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public partial bool IsRequired { get; set; }
 
     [ObservableProperty]
-    public partial bool IsShownInList { get; set; }
+    public partial bool ShowInList { get; set; }
 
     public ObservableCollection<ChoiceOptionRowViewModel> ChoiceItems { get; } = new();
     public ObservableCollection<IEditorNode> SubFieldRows { get; } = new();
@@ -58,18 +60,14 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
             if (value is null)
             {
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(ColumnSpanOptions));
-                OnPropertyChanged(nameof(IsInMultiColumnContext));
-                if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
+                OnEffectiveColumnCountChanged();
                 return;
             }
             if (value.Id == AssignedGroupId) return;
             if (GroupMoveRequested is { } move) move(this, value);
             else AssignedGroupId = value.Id;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(ColumnSpanOptions));
-            OnPropertyChanged(nameof(IsInMultiColumnContext));
-            if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
+            OnEffectiveColumnCountChanged();
         }
     }
 
@@ -80,7 +78,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public int SubFieldCount => SubFieldRows.Count;
     public bool CanShowInList => _definition is IListDisplayable;
     public bool HasChoices => _definition is SingleChoiceFieldDefinition or MultiChoiceFieldDefinition;
-    public bool IsDisplayName => _definition is DisplayNameFieldDefinition;
+    public bool IsDisplayName => _definition.IsTitleField;
     public bool CanDelete => !IsDisplayName;
     public bool IsLabelEditable => !IsDisplayName;
     public string DisplayLabel => IsDisplayName
@@ -97,7 +95,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public IReadOnlyList<ListInlineStyle> InlineStyles { get; } = Enum.GetValues<ListInlineStyle>();
 
     [ObservableProperty]
-    public partial ColorFormat ColorFormat { get; set; }
+    public partial ColorFormat Format { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGridInline))]
@@ -112,7 +110,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public IReadOnlyList<ImageSizeMode> ImageSizeModes { get; } = Enum.GetValues<ImageSizeMode>();
 
     [ObservableProperty]
-    public partial ImageSizeMode ImageSizeMode { get; set; }
+    public partial ImageSizeMode SizeMode { get; set; }
 
     [ObservableProperty]
     public partial string CurrencySymbol { get; set; } = "€";
@@ -121,7 +119,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public partial int ColumnSpan { get; set; } = 1;
 
     [ObservableProperty]
-    public partial int ListColumnCount { get; set; } = 1;
+    public partial int ColumnCount { get; set; } = 1;
 
     private int _parentColumnCount = 1;
 
@@ -135,15 +133,14 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public void SetParentColumnCount(int count)
     {
         _parentColumnCount = count;
-        OnPropertyChanged(nameof(ColumnSpanOptions));
-        OnPropertyChanged(nameof(IsInMultiColumnContext));
-        if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
+        OnEffectiveColumnCountChanged();
     }
 
-    internal void RaiseColumnSpanChanged()
+    private void OnEffectiveColumnCountChanged()
     {
         OnPropertyChanged(nameof(ColumnSpanOptions));
         OnPropertyChanged(nameof(IsInMultiColumnContext));
+        if (ColumnSpan > EffectiveColumnCount) ColumnSpan = EffectiveColumnCount;
     }
 
     [ObservableProperty]
@@ -158,16 +155,16 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         AssignedGroupId = definition.GroupId;
         Label = definition.Label;
         IsRequired = definition.IsRequired;
-        IsShownInList = (_definition as IListDisplayable)?.ShowInList ?? false;
-        ColorFormat = (_definition as ColorFieldDefinition)?.Format ?? ColorFormat.Hex;
+        ShowInList = (_definition as IListDisplayable)?.ShowInList ?? false;
+        Format = (_definition as ColorFieldDefinition)?.Format ?? ColorFormat.Hex;
         InlineStyle = (_definition as ListFieldDefinition)?.InlineStyle ?? ListInlineStyle.Card;
         DisplayWidth = (_definition as ImageFieldDefinition)?.DisplayWidth ?? 200;
         DisplayHeight = (_definition as ImageFieldDefinition)?.DisplayHeight ?? 200;
-        ImageSizeMode = (_definition as ImageFieldDefinition)?.SizeMode ?? ImageSizeMode.Fixed;
+        SizeMode = (_definition as ImageFieldDefinition)?.SizeMode ?? ImageSizeMode.Fixed;
         CurrencySymbol = (_definition as CurrencyFieldDefinition)?.CurrencySymbol ?? "€";
         ColumnSpan = definition.ColumnSpan > 1 ? definition.ColumnSpan : definition.DefaultColumnSpan;
         MaxStars = (_definition as RatingFieldDefinition)?.MaxStars ?? 5;
-        ListColumnCount = (_definition as ListFieldDefinition)?.ColumnCount ?? 1;
+        ColumnCount = (_definition as ListFieldDefinition)?.ColumnCount ?? 1;
 
         SubFieldRows.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SubFieldCount));
         AvailableGroups.CollectionChanged += (_, _) =>
@@ -205,7 +202,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         }
     }
 
-    partial void OnListColumnCountChanged(int value)
+    partial void OnColumnCountChanged(int value)
     {
         foreach (var field in SubFieldRows.OfType<FieldDefinitionRowViewModel>()
             .Where(f => f.AssignedGroupId == null))
@@ -226,65 +223,4 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
 
     [RelayCommand]
     private void RemoveChoice(ChoiceOptionRowViewModel item) => ChoiceItems.Remove(item);
-
-    public FieldDefinition BuildDefinition()
-    {
-        if (IsSystemField) return _definition;
-        if (!IsDisplayName)
-            _definition.Label = Label;
-        _definition.IsRequired = IsRequired;
-        _definition.ColumnSpan = ColumnSpan;
-        _definition.GroupId = IsDisplayName ? null : AssignedGroupId;
-        if (_definition is IListDisplayable ld)
-            ld.ShowInList = IsShownInList;
-        if (_definition is ColorFieldDefinition cd)
-            cd.Format = ColorFormat;
-        if (_definition is ImageFieldDefinition imgDef)
-        {
-            imgDef.DisplayWidth = DisplayWidth;
-            imgDef.DisplayHeight = DisplayHeight;
-            imgDef.SizeMode = ImageSizeMode;
-        }
-        if (_definition is CurrencyFieldDefinition currDef)
-            currDef.CurrencySymbol = CurrencySymbol;
-        if (_definition is RatingFieldDefinition ratingDef)
-            ratingDef.MaxStars = MaxStars;
-        if (_definition is ListFieldDefinition listDef)
-            listDef.ColumnCount = ListColumnCount;
-
-        var options = ChoiceItems
-            .Select((item, index) => new ChoiceOption { Value = item.Value, DisplayOrder = index })
-            .ToList();
-
-        if (_definition is SingleChoiceFieldDefinition sc)
-            sc.Choices = options;
-        else if (_definition is MultiChoiceFieldDefinition mc)
-            mc.Choices = options;
-        else if (_definition is ListFieldDefinition lfd)
-        {
-            lfd.InlineStyle = InlineStyle;
-            var flat = new EditorNodeTreeBuilder().Flatten(SubFieldRows);
-            lfd.Groups = flat.Groups
-                .Select(g =>
-                {
-                    var built = g.Build(g.DisplayOrder);
-                    built.PresetId = null;
-                    built.ParentListFieldDefinitionId = lfd.Id;
-                    return built;
-                })
-                .ToList();
-            lfd.SubFields = flat.Fields
-                .Select(row =>
-                {
-                    var sub = row.BuildDefinition();
-                    sub.DisplayOrder = row.DisplayOrder;
-                    sub.ParentListFieldDefinitionId = lfd.Id;
-                    return sub;
-                })
-                .ToList();
-        }
-
-        return _definition;
-    }
-
 }

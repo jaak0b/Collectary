@@ -11,6 +11,7 @@ public abstract class FieldDefinition : DomainObject
     public int DisplayOrder { get; set; }
     public int ColumnSpan { get; set; } = 1;
     public virtual int DefaultColumnSpan => 1;
+    public virtual bool IsTitleField => false;
 
     public abstract Type ValueType { get; }
     public abstract FieldValue CreateEmptyValue();

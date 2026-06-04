@@ -19,10 +19,8 @@ public class PresetRepository : IPresetRepository
         _logger = logger ?? new NullAppLogger();
     }
 
-    public async Task<IReadOnlyList<Preset>> GetAllAsync()
-    {
-        using var db = _dbFactory();
-        return await db.Presets
+    private IQueryable<Preset> WithDetails(IQueryable<Preset> query) =>
+        query
             .Include(p => p.Fields)
             .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).SubFields)
             .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).Groups)
@@ -30,7 +28,13 @@ public class PresetRepository : IPresetRepository
             .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => sf.Definition)
             .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).SubFields)
             .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).Groups)
-            .AsSplitQuery()
+            .AsSplitQuery();
+
+    public async Task<IReadOnlyList<Preset>> GetAllAsync()
+    {
+        using var db = _dbFactory();
+        return await WithDetails(db.Presets)
+            .AsNoTracking()
             .OrderBy(p => p.DisplayOrder)
             .ToListAsync();
     }
@@ -38,30 +42,16 @@ public class PresetRepository : IPresetRepository
     public async Task<Preset?> GetByIdAsync(Guid id)
     {
         using var db = _dbFactory();
-        return await db.Presets
-            .Include(p => p.Fields)
-            .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).SubFields)
-            .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).Groups)
-            .Include(p => p.Groups)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => sf.Definition)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).SubFields)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).Groups)
-            .AsSplitQuery()
+        return await WithDetails(db.Presets)
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<IReadOnlyList<Preset>> GetChildrenAsync(Guid parentId)
     {
         using var db = _dbFactory();
-        return await db.Presets
-            .Include(p => p.Fields)
-            .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).SubFields)
-            .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).Groups)
-            .Include(p => p.Groups)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => sf.Definition)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).SubFields)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).Groups)
-            .AsSplitQuery()
+        return await WithDetails(db.Presets)
+            .AsNoTracking()
             .Where(p => p.ParentPresetId == parentId)
             .OrderBy(p => p.DisplayOrder)
             .ToListAsync();
@@ -79,12 +69,7 @@ public class PresetRepository : IPresetRepository
     public async Task UpdateAsync(Preset preset)
     {
         using var db = _dbFactory();
-        var tracked = await db.Presets
-            .Include(p => p.Fields)
-            .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).SubFields)
-            .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).Groups)
-            .Include(p => p.Groups)
-            .Include(p => p.SystemFieldRefs)
+        var tracked = await WithDetails(db.Presets)
             .FirstOrDefaultAsync(p => p.Id == preset.Id);
         if (tracked is null) return;
 

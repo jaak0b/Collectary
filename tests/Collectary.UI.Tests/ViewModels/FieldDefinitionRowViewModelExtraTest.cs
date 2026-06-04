@@ -1,12 +1,15 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.Mapping;
 
 namespace Collectary.UI.Tests.ViewModels;
 
 [TestFixture]
 public class FieldDefinitionRowViewModelExtraTest
 {
+    private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
+
     [Test]
     public void DisplayLabel_NormalField_IsPlainLabel()
     {
@@ -50,7 +53,7 @@ public class FieldDefinitionRowViewModelExtraTest
         var sut = new FieldDefinitionRowViewModel(def);
         Assert.That(sut.DisplayWidth, Is.EqualTo(321));
         Assert.That(sut.DisplayHeight, Is.EqualTo(123));
-        Assert.That(sut.ImageSizeMode, Is.EqualTo(ImageSizeMode.Min));
+        Assert.That(sut.SizeMode, Is.EqualTo(ImageSizeMode.Min));
     }
 
     [Test]
@@ -73,14 +76,14 @@ public class FieldDefinitionRowViewModelExtraTest
     {
         var gid = Guid.NewGuid();
         var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition()) { AssignedGroupId = gid };
-        Assert.That(sut.BuildDefinition().GroupId, Is.EqualTo(gid));
+        Assert.That(_mapper.ToDefinition(sut).GroupId, Is.EqualTo(gid));
     }
 
     [Test]
     public void BuildDefinition_DisplayNameField_ForcesNullGroupId()
     {
         var sut = new FieldDefinitionRowViewModel(new DisplayNameFieldDefinition()) { AssignedGroupId = Guid.NewGuid() };
-        Assert.That(sut.BuildDefinition().GroupId, Is.Null);
+        Assert.That(_mapper.ToDefinition(sut).GroupId, Is.Null);
     }
 
     [Test]
@@ -90,7 +93,7 @@ public class FieldDefinitionRowViewModelExtraTest
         var original = def.Label;
         var sut = new FieldDefinitionRowViewModel(def) { Label = "changed" };
 
-        var result = sut.BuildDefinition();
+        var result = _mapper.ToDefinition(sut);
 
         Assert.That(result.Label, Is.EqualTo(original));
         Assert.That(result.Label, Is.Not.EqualTo("changed"));
@@ -104,7 +107,7 @@ public class FieldDefinitionRowViewModelExtraTest
         var def = new ListFieldDefinition { Groups = [group], SubFields = [sub] };
         var sut = new FieldDefinitionRowViewModel(def);
 
-        var result = (ListFieldDefinition)sut.BuildDefinition();
+        var result = (ListFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Groups[0].ParentListFieldDefinitionId, Is.EqualTo(result.Id));
         Assert.That(result.SubFields[0].ParentListFieldDefinitionId, Is.EqualTo(result.Id));
@@ -241,7 +244,7 @@ public class FieldDefinitionRowViewModelExtraTest
         sut.ChoiceItems.Add(new ChoiceOptionRowViewModel("first"));
         sut.ChoiceItems.Add(new ChoiceOptionRowViewModel("second"));
 
-        var result = (SingleChoiceFieldDefinition)sut.BuildDefinition();
+        var result = (SingleChoiceFieldDefinition)_mapper.ToDefinition(sut);
 
         Assert.That(result.Choices[0].DisplayOrder, Is.EqualTo(0));
         Assert.That(result.Choices[1].DisplayOrder, Is.EqualTo(1));
@@ -323,8 +326,8 @@ public class FieldDefinitionRowViewModelExtraTest
     public void BuildDefinition_WritesListColumnCountToDefinition()
     {
         var def = new ListFieldDefinition();
-        var sut = new FieldDefinitionRowViewModel(def) { ListColumnCount = 3 };
-        var result = (ListFieldDefinition)sut.BuildDefinition();
+        var sut = new FieldDefinitionRowViewModel(def) { ColumnCount = 3 };
+        var result = (ListFieldDefinition)_mapper.ToDefinition(sut);
         Assert.That(result.ColumnCount, Is.EqualTo(3));
     }
 
@@ -333,6 +336,6 @@ public class FieldDefinitionRowViewModelExtraTest
     {
         var def = new ListFieldDefinition { ColumnCount = 4 };
         var sut = new FieldDefinitionRowViewModel(def);
-        Assert.That(sut.ListColumnCount, Is.EqualTo(4));
+        Assert.That(sut.ColumnCount, Is.EqualTo(4));
     }
 }

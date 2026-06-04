@@ -15,6 +15,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     private readonly IPresetUseCase _presetUseCase;
     private readonly ISystemFieldUseCase _systemFieldUseCase;
     private readonly IDialogService _dialogService;
+    private readonly Mapping.IFieldEditorMapper _mapper;
     private readonly Preset? _existing;
     private readonly Action _onSaved;
     private readonly Action _onCancelled;
@@ -47,6 +48,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         IPresetUseCase presetUseCase,
         ISystemFieldUseCase systemFieldUseCase,
         IDialogService dialogService,
+        Mapping.IFieldEditorMapper mapper,
         Action onSaved,
         Action onCancelled,
         Preset? existing = null)
@@ -54,6 +56,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         _presetUseCase = presetUseCase;
         _systemFieldUseCase = systemFieldUseCase;
         _dialogService = dialogService;
+        _mapper = mapper;
         _existing = existing;
         _onSaved = onSaved;
         _onCancelled = onCancelled;
@@ -158,20 +161,14 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         var flat = new EditorNodeTreeBuilder().Flatten(_rootRows);
 
         preset.Groups = flat.Groups
-            .Select(g =>
-            {
-                var built = g.Build(g.DisplayOrder);
-                built.ParentListFieldDefinitionId = null;
-                built.PresetId = preset.Id;
-                return built;
-            })
+            .Select(g => _mapper.ToGroup(g, presetId: preset.Id, parentListFieldDefinitionId: null))
             .ToList();
 
         preset.Fields = flat.Fields
             .Where(row => !row.IsSystemField)
             .Select(row =>
             {
-                var def = row.BuildDefinition();
+                var def = _mapper.ToDefinition(row);
                 def.DisplayOrder = row.DisplayOrder;
                 def.PresetId = preset.Id;
                 return def;

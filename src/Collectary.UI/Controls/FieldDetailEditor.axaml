@@ -48,7 +48,7 @@
             <StackPanel Orientation="Horizontal" Spacing="16">
                 <CheckBox IsChecked="{Binding IsRequired}"
                           Content="{Binding [Required], Source={x:Static loc:LocalizationService.Instance}}"/>
-                <CheckBox IsChecked="{Binding IsShownInList}"
+                <CheckBox IsChecked="{Binding ShowInList}"
                           Content="{Binding [InList], Source={x:Static loc:LocalizationService.Instance}}"
                           IsVisible="{Binding ShowInListCheckboxVisible}"/>
             </StackPanel>
@@ -120,7 +120,7 @@
                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontSize="12"/>
                         <ComboBox ItemsSource="{Binding ColorFormats}"
-                                  SelectedItem="{Binding ColorFormat}"
+                                  SelectedItem="{Binding Format}"
                                   MinWidth="160"/>
                     </StackPanel>
 
@@ -145,7 +145,7 @@
                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontSize="12"/>
                             <ComboBox ItemsSource="{Binding ImageSizeModes}"
-                                      SelectedItem="{Binding ImageSizeMode}"
+                                      SelectedItem="{Binding SizeMode}"
                                       MinWidth="160">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
@@ -204,7 +204,7 @@
                             <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontSize="12"/>
-                            <controls:SafeNumericUpDown Value="{Binding ListColumnCount}"
+                            <controls:SafeNumericUpDown Value="{Binding ColumnCount}"
                                            Minimum="1"
                                            Maximum="24"
                                            Increment="1"

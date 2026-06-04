@@ -31,11 +31,11 @@ public class SystemFieldLibraryViewModelTest
     {
         _useCase = A.Fake<ISystemFieldUseCase>();
         _dialogService = A.Fake<IDialogService>();
-        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, onDone: () => { });
+        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
     }
 
     private SystemFieldLibraryViewModel CreateSut(Action? onDone = null) =>
-        new(_useCase, _dialogService, onDone: onDone ?? (() => { }));
+        new(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: onDone ?? (() => { }));
 
     [Test]
     public async Task LoadAsync_PopulatesRowsFromUseCase()

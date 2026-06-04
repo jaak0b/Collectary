@@ -24,6 +24,7 @@
           <Exclude>
             [*.Tests]*,
             [Collectary.Infrastructure]Collectary.Infrastructure.Persistence.Migrations.*,
+            [Collectary.Infrastructure]Collectary.Infrastructure.Persistence.InventoryDbContext,
             [Collectary.UI]Collectary.UI.Views.*,
             [Collectary.UI]Collectary.UI.Controls.*,
             [Collectary.UI]Collectary.UI.App,
@@ -31,11 +32,10 @@
             [Collectary.UI]CompiledAvaloniaXaml.*,
             [Collectary.UI]XamlGeneratedNamespace.*,
             [Collectary.UI]Collectary.UI.DI.*,
-            [Collectary.UI]Collectary.UI.Services.AvaloniaDialogService,
-            [Collectary.Presentation]Collectary.UI.ViewModels.MainWindowViewModel,
-            [Collectary.Presentation]Collectary.UI.Services.DialogService,
-            [Collectary.Presentation]Collectary.UI.Services.AppLogger,
-            [Collectary.Presentation]Collectary.UI.Localization.ThemeService
+            [Collectary.Presentation]Collectary.Presentation.ViewModels.MainWindowViewModel,
+            [Collectary.Presentation]Collectary.Presentation.Services.DialogService,
+            [Collectary.Presentation]Collectary.Presentation.Services.AppLogger,
+            [Collectary.Presentation]Collectary.Presentation.Localization.ThemeService
           </Exclude>
         </Configuration>
       </DataCollector>

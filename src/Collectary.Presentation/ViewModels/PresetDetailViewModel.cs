@@ -86,7 +86,7 @@ public partial class PresetDetailViewModel : ViewModelBase
                 if (entry.Field is { } field)
                 {
                     if (field is not IListDisplayable { ShowInList: true }) continue;
-                    if (field is not DisplayNameFieldDefinition && !_listCellBuilder.HasListCellViewModel(field.GetType())) continue;
+                    if (!field.IsTitleField && !_listCellBuilder.HasListCellViewModel(field.GetType())) continue;
 
                     var prefix = scope is { } s && groupById.TryGetValue(s, out var direct) && direct.PrefixColumnHeaders && pathNames.Count > 0
                         ? string.Join(" › ", pathNames) + " › "

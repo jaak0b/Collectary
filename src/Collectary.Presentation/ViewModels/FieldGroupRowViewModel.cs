@@ -101,16 +101,4 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
         }
     }
 
-    public FieldGroup Build(int displayOrder) => new()
-    {
-        Id = Id,
-        Name = Name.Trim(),
-        DisplayOrder = displayOrder,
-        DisplayMode = DisplayMode,
-        ColumnCount = ColumnCount,
-        DefaultCollapsed = DefaultCollapsed,
-        ShowInList = ShowInList,
-        PrefixColumnHeaders = PrefixColumnHeaders,
-        ParentGroupId = ParentGroupId,
-    };
 }

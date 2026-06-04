@@ -44,6 +44,19 @@ This is a desktop GUI app. When a fix needs runtime confirmation (especially UI/
 
 **Rule: every UI bug fix MUST ship with a headless regression/end-to-end test.** When you fix a UI bug (rendering, binding, control behavior, view resolution, persistence-as-seen-through-the-editor, etc.), add a test that fails before the fix and passes after. Use the headless Avalonia harness (`Avalonia.Headless` + `HeadlessTestApp` in `Collectary.UI.Tests`, which loads `FluentTheme` so templated controls render) for control/rendering bugs, or a ViewModel/repository round-trip test for state/persistence bugs. Asking the user to verify is in *addition* to the test, never a substitute for it.
 
+**Rule: every new feature MUST ship with headless end-to-end tests covering full CRUD and all feature-specific options.** The developer is a single person who cannot manually verify every path after every change. Tests must stand in for that. Concrete guidance:
+
+- **New `FieldDefinition` subtype** → add ViewModel tests that exercise all type-specific options (e.g. for a `TodoFieldDefinition` with a `HasReminder` toggle: a test that opens the preset editor, configures `HasReminder = true`, saves, and confirms the persisted definition has `HasReminder = true`; another that opens the item editor with that field and confirms the correct editor VM is created with the right default). Test both the **preset panel** (definition configuration via `FieldDefinitionRowViewModel` + `FieldEditorMapper`) and the **item panel** (value editing via the field editor ViewModel and `FieldEditorRegistry`).
+- **New navigation path / view** → add a `ViewLocatorTest` entry and a smoke test that the resolved view renders without throwing.
+- **New repository operation** → add an `Infrastructure.Tests` integration test that round-trips through an in-memory SQLite DB.
+- **New use-case command** → add a `Core.Tests` unit test covering the happy path and at least one error/edge case.
+
+Test scope for a new `FieldDefinition` subtype at minimum:
+1. `<Type>FieldDefinitionTest` — `DefaultColumnSpan`, `ApplyTypeSpecificProperties` (copies type-specific props; ignores foreign type), `IsTitleField` (false for regular fields).
+2. `<Type>FieldValueTest` — `IsEmpty`, `CopyFrom`, `ToString`.
+3. `FieldEditorMapperTest` — `ToDefinition_EveryConcreteFieldType_MapsWithoutStrictModeError` already covers this reflectively; if the new type has renamed VM properties, add an explicit scalar test.
+4. `<Type>FieldEditorViewModelTest` — round-trip through the item editor: construct the VM with a definition + value, exercise type-specific bindings, confirm output state.
+
 ## Project Structure
 
 | Project | Role |
@@ -153,11 +166,10 @@ Use cases, repositories, and `FieldDefinitionMerger` take `IAppLogger? logger = 
 
 ### No static methods or properties
 
-Static members are almost never allowed. Permitted exceptions:
-- **Avalonia framework metadata** — `AvaloniaProperty.Register`, `DataFormat.CreateInProcessFormat` (must be `static readonly` per the Avalonia API)
-- **Private pure stateless helpers** — private methods with no service or singleton access where an instance method would be semantically identical
+**Static methods and properties are never allowed.** There is exactly one exception, and only because the framework API physically requires it:
+- **Avalonia framework metadata** — `AvaloniaProperty.Register` (and the `AffectsMeasure`/`AffectsRender`-style registrations in a `static` constructor), `DataFormat.CreateInProcessFormat`. These must be `static readonly` / static per the Avalonia API; there is no instance alternative.
 
-All factories, builders, and anything that reads DI services or singletons must be instance methods on a DI-registered class.
+Everything else — helpers (even private/pure/stateless), factories, builders, query helpers, mappers, extension methods — must be **instance members**. If a helper feels like it "should" be static, put it as a private instance method on the relevant class or inject a collaborator. Do not reach for `static` to avoid threading an instance through.
 
 ### Error Handling
 
@@ -220,12 +232,12 @@ A.CallTo(() => _repo.AddAsync(field)).MustHaveHappenedOnceExactly();
 | `Restore` | `dotnet restore` on the solution |
 | `Compile` | `dotnet build` (depends on Restore) |
 | `Test` | Runs all 3 test projects sequentially (depends on Compile) |
-| `Coverage` | Runs all 3 test projects with `--collect:"XPlat Code Coverage" --settings coverlet.runsettings`, merges via ReportGenerator, and **fails the build if merged line coverage < 80%** (`--CoverageThreshold` overrides). Depends on Compile. |
+| `Coverage` | Runs all 3 test projects with `--collect:"XPlat Code Coverage" --settings coverlet.runsettings`, merges via ReportGenerator, and **fails the build if merged line coverage < 95%** (`--CoverageThreshold` parameter overrides the default). Depends on Compile. |
 | `Mutate` | Runs Stryker on Core + Infrastructure + UI (depends on Test) |
 
 Default target is `Test`.
 
-**Coverage gate** (`Coverage` target): `coverlet.runsettings` at the repo root drives exclusions and `SkipAutoProps`. Three categories are excluded from the coverage denominator because they have no unit-testable logic: (1) EF Core migrations, (2) Avalonia Views / custom-control code-behind / generated XAML / `App` / `ViewLocator` plus the application shell that needs a running app (`MainWindowViewModel`, `DialogService`, `ThemeService`, `AppLogger`), and (3) DI modules. Test assemblies (`[*.Tests]*`) are also excluded so the number reflects production code only. Merged report (incl. HTML) lands in `TestResults/CoverageReport/`.
+**Coverage gate** (`Coverage` target): `coverlet.runsettings` at the repo root drives exclusions and `SkipAutoProps`. Four categories are excluded from the coverage denominator because they have no unit-testable logic: (1) EF Core migrations + `InventoryDbContext` scaffolding, (2) Avalonia Views / custom-control code-behind / generated XAML / `App` / `ViewLocator`, (3) application-shell pieces that require a running Avalonia app — `MainWindowViewModel`, `DialogService`, `ThemeService`, `AppLogger` (same set as `stryker-config.json`), and (4) DI modules. The excluded Presentation classes must use the actual assembly + full namespace (e.g. `[Collectary.Presentation]Collectary.Presentation.ViewModels.MainWindowViewModel`). Test assemblies (`[*.Tests]*`) are also excluded so the number reflects production code only. Merged report (incl. HTML) lands in `TestResults/CoverageReport/`.
 
 **Stryker** (`Mutate` target): config in `stryker-config.json` — `mutation-level: Advanced`, `thresholds` `{ high: 95, low: 75, break: 0 }` (note Stryker 4.x requires the nested `thresholds` object, not flat `threshold-*` keys). Output lands in `StrykerOutput/` (gitignored); HTML report at `StrykerOutput/reports/mutation-report.html`.
 

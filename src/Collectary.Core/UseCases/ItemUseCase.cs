@@ -53,12 +53,12 @@ public class ItemUseCase : IItemUseCase
     private static void EnsureRequiredFieldsPresent(Item item, IReadOnlyList<FieldDefinition> effectiveFields)
     {
         var missingRequired = effectiveFields
-            .Where(f => f.IsRequired && f is not DisplayNameFieldDefinition)
+            .Where(f => f.IsRequired && !f.IsTitleField)
             .Where(f => !item.Values.Any(v => v.FieldDefinitionId == f.Id && !v.IsEmpty))
             .Select(f => f.Label)
             .ToList();
 
-        if (effectiveFields.Any(f => f is DisplayNameFieldDefinition { IsRequired: true })
+        if (effectiveFields.Any(f => f.IsTitleField && f.IsRequired)
             && string.IsNullOrWhiteSpace(item.DisplayName))
             missingRequired.Insert(0, "Display Name");
 
