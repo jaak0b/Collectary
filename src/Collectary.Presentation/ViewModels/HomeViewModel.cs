@@ -15,6 +15,7 @@ public partial class HomeViewModel : ViewModelBase
 
     public Action<Core.Domain.Preset>? OnNavigateToPreset { get; set; }
     public Action? OnCreatePreset { get; set; }
+    public Action? OnCreateFromTemplate { get; set; }
     public Action<Core.Domain.Preset>? OnEditPreset { get; set; }
     public Func<Core.Domain.Preset, Task>? OnDeletePreset { get; set; }
     public Action? OnNavigateToSystemFields { get; set; }
@@ -82,6 +83,9 @@ public partial class HomeViewModel : ViewModelBase
 
     [RelayCommand]
     private void CreatePreset() => OnCreatePreset?.Invoke();
+
+    [RelayCommand]
+    private void CreateFromTemplate() => OnCreateFromTemplate?.Invoke();
 
     [RelayCommand]
     private void NavigateToSystemFields() => OnNavigateToSystemFields?.Invoke();

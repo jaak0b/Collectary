@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+
+  <data name="TemplateCategory_MediaEntertainment" xml:space="preserve"><value>Medien &amp; Unterhaltung</value></data>
+  <data name="TemplateCategory_Collectibles" xml:space="preserve"><value>Sammlerstücke</value></data>
+  <data name="TemplateCategory_Lifestyle" xml:space="preserve"><value>Lifestyle &amp; Hobbys</value></data>
+  <data name="TemplateCategory_Practical" xml:space="preserve"><value>Praktisch &amp; Zuhause</value></data>
+
+  <data name="Tmpl_books_Name" xml:space="preserve"><value>Bücher</value></data>
+  <data name="Tmpl_books_Desc" xml:space="preserve"><value>Verwalte deine persönliche Bibliothek</value></data>
+  <data name="Tmpl_books_f_Title" xml:space="preserve"><value>Titel</value></data>
+  <data name="Tmpl_books_f_Author" xml:space="preserve"><value>Autor</value></data>
+  <data name="Tmpl_books_f_Series" xml:space="preserve"><value>Reihe</value></data>
+  <data name="Tmpl_books_f_Format" xml:space="preserve"><value>Format</value></data>
+  <data name="Tmpl_books_c_Hardcover" xml:space="preserve"><value>Hardcover</value></data>
+  <data name="Tmpl_books_c_Paperback" xml:space="preserve"><value>Taschenbuch</value></data>
+  <data name="Tmpl_books_c_eBook" xml:space="preserve"><value>E-Book</value></data>
+  <data name="Tmpl_books_c_Audiobook" xml:space="preserve"><value>Hörbuch</value></data>
+  <data name="Tmpl_books_f_Pages" xml:space="preserve"><value>Seiten</value></data>
+  <data name="Tmpl_books_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_books_f_Read" xml:space="preserve"><value>Gelesen</value></data>
+  <data name="Tmpl_books_f_DateRead" xml:space="preserve"><value>Gelesen am</value></data>
+  <data name="Tmpl_books_f_Cover" xml:space="preserve"><value>Cover</value></data>
+  <data name="Tmpl_books_f_ISBN" xml:space="preserve"><value>ISBN</value></data>
+  <data name="Tmpl_books_f_Notes" xml:space="preserve"><value>Notizen</value></data>
+
+  <data name="Tmpl_movies_Name" xml:space="preserve"><value>Filme</value></data>
+  <data name="Tmpl_movies_Desc" xml:space="preserve"><value>Katalogisiere deine Filmsammlung</value></data>
+  <data name="Tmpl_movies_f_Title" xml:space="preserve"><value>Titel</value></data>
+  <data name="Tmpl_movies_f_Director" xml:space="preserve"><value>Regisseur</value></data>
+  <data name="Tmpl_movies_f_Year" xml:space="preserve"><value>Jahr</value></data>
+  <data name="Tmpl_movies_f_Genre" xml:space="preserve"><value>Genre</value></data>
+  <data name="Tmpl_movies_c_Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Tmpl_movies_c_Comedy" xml:space="preserve"><value>Komödie</value></data>
+  <data name="Tmpl_movies_c_Drama" xml:space="preserve"><value>Drama</value></data>
+  <data name="Tmpl_movies_c_SciFi" xml:space="preserve"><value>Sci-Fi</value></data>
+  <data name="Tmpl_movies_c_Horror" xml:space="preserve"><value>Horror</value></data>
+  <data name="Tmpl_movies_c_Documentary" xml:space="preserve"><value>Dokumentation</value></data>
+  <data name="Tmpl_movies_f_Runtime" xml:space="preserve"><value>Laufzeit</value></data>
+  <data name="Tmpl_movies_f_Format" xml:space="preserve"><value>Format</value></data>
+  <data name="Tmpl_movies_c_DVD" xml:space="preserve"><value>DVD</value></data>
+  <data name="Tmpl_movies_c_BluRay" xml:space="preserve"><value>Blu-ray</value></data>
+  <data name="Tmpl_movies_c_FourK" xml:space="preserve"><value>4K</value></data>
+  <data name="Tmpl_movies_c_Digital" xml:space="preserve"><value>Digital</value></data>
+  <data name="Tmpl_movies_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_movies_f_Watched" xml:space="preserve"><value>Gesehen</value></data>
+  <data name="Tmpl_movies_f_Poster" xml:space="preserve"><value>Poster</value></data>
+  <data name="Tmpl_movies_f_Notes" xml:space="preserve"><value>Notizen</value></data>
+
+  <data name="Tmpl_videogames_Name" xml:space="preserve"><value>Videospiele</value></data>
+  <data name="Tmpl_videogames_Desc" xml:space="preserve"><value>Behalte deine Spielesammlung im Blick</value></data>
+  <data name="Tmpl_videogames_f_Title" xml:space="preserve"><value>Titel</value></data>
+  <data name="Tmpl_videogames_f_Platform" xml:space="preserve"><value>Plattform</value></data>
+  <data name="Tmpl_videogames_c_PC" xml:space="preserve"><value>PC</value></data>
+  <data name="Tmpl_videogames_c_PlayStation" xml:space="preserve"><value>PlayStation</value></data>
+  <data name="Tmpl_videogames_c_Xbox" xml:space="preserve"><value>Xbox</value></data>
+  <data name="Tmpl_videogames_c_Switch" xml:space="preserve"><value>Switch</value></data>
+  <data name="Tmpl_videogames_c_Mobile" xml:space="preserve"><value>Mobil</value></data>
+  <data name="Tmpl_videogames_f_Genre" xml:space="preserve"><value>Genre</value></data>
+  <data name="Tmpl_videogames_c_Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Tmpl_videogames_c_RPG" xml:space="preserve"><value>Rollenspiel</value></data>
+  <data name="Tmpl_videogames_c_Strategy" xml:space="preserve"><value>Strategie</value></data>
+  <data name="Tmpl_videogames_c_Shooter" xml:space="preserve"><value>Shooter</value></data>
+  <data name="Tmpl_videogames_c_Puzzle" xml:space="preserve"><value>Puzzle</value></data>
+  <data name="Tmpl_videogames_c_Sports" xml:space="preserve"><value>Sport</value></data>
+  <data name="Tmpl_videogames_f_Completed" xml:space="preserve"><value>Durchgespielt</value></data>
+  <data name="Tmpl_videogames_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_videogames_f_HoursPlayed" xml:space="preserve"><value>Gespielte Stunden</value></data>
+  <data name="Tmpl_videogames_f_ReleaseDate" xml:space="preserve"><value>Erscheinungsdatum</value></data>
+  <data name="Tmpl_videogames_f_Cover" xml:space="preserve"><value>Cover</value></data>
+
+  <data name="Tmpl_boardgames_Name" xml:space="preserve"><value>Brettspiele</value></data>
+  <data name="Tmpl_boardgames_Desc" xml:space="preserve"><value>Organisiere deine Brettspielsammlung</value></data>
+  <data name="Tmpl_boardgames_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_boardgames_f_Designer" xml:space="preserve"><value>Designer</value></data>
+  <data name="Tmpl_boardgames_f_MinPlayers" xml:space="preserve"><value>Min. Spieler</value></data>
+  <data name="Tmpl_boardgames_f_MaxPlayers" xml:space="preserve"><value>Max. Spieler</value></data>
+  <data name="Tmpl_boardgames_f_PlayTime" xml:space="preserve"><value>Spieldauer</value></data>
+  <data name="Tmpl_boardgames_f_Complexity" xml:space="preserve"><value>Komplexität</value></data>
+  <data name="Tmpl_boardgames_f_Owned" xml:space="preserve"><value>Im Besitz</value></data>
+  <data name="Tmpl_boardgames_f_Cover" xml:space="preserve"><value>Cover</value></data>
+
+  <data name="Tmpl_music_Name" xml:space="preserve"><value>Musik &amp; Vinyl</value></data>
+  <data name="Tmpl_music_Desc" xml:space="preserve"><value>Verwalte Alben und Schallplatten</value></data>
+  <data name="Tmpl_music_f_Album" xml:space="preserve"><value>Album</value></data>
+  <data name="Tmpl_music_f_Artist" xml:space="preserve"><value>Künstler</value></data>
+  <data name="Tmpl_music_f_Year" xml:space="preserve"><value>Jahr</value></data>
+  <data name="Tmpl_music_f_Genre" xml:space="preserve"><value>Genre</value></data>
+  <data name="Tmpl_music_c_Rock" xml:space="preserve"><value>Rock</value></data>
+  <data name="Tmpl_music_c_Pop" xml:space="preserve"><value>Pop</value></data>
+  <data name="Tmpl_music_c_Jazz" xml:space="preserve"><value>Jazz</value></data>
+  <data name="Tmpl_music_c_Classical" xml:space="preserve"><value>Klassik</value></data>
+  <data name="Tmpl_music_c_Electronic" xml:space="preserve"><value>Elektronisch</value></data>
+  <data name="Tmpl_music_c_HipHop" xml:space="preserve"><value>Hip-Hop</value></data>
+  <data name="Tmpl_music_f_Format" xml:space="preserve"><value>Format</value></data>
+  <data name="Tmpl_music_c_Vinyl" xml:space="preserve"><value>Vinyl</value></data>
+  <data name="Tmpl_music_c_CD" xml:space="preserve"><value>CD</value></data>
+  <data name="Tmpl_music_c_Digital" xml:space="preserve"><value>Digital</value></data>
+  <data name="Tmpl_music_c_Cassette" xml:space="preserve"><value>Kassette</value></data>
+  <data name="Tmpl_music_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_music_f_Cover" xml:space="preserve"><value>Cover</value></data>
+
+  <data name="Tmpl_comics_Name" xml:space="preserve"><value>Comics &amp; Manga</value></data>
+  <data name="Tmpl_comics_Desc" xml:space="preserve"><value>Verwalte Ausgaben und Bände</value></data>
+  <data name="Tmpl_comics_f_Title" xml:space="preserve"><value>Titel</value></data>
+  <data name="Tmpl_comics_f_Series" xml:space="preserve"><value>Reihe</value></data>
+  <data name="Tmpl_comics_f_IssueNumber" xml:space="preserve"><value>Ausgabe Nr.</value></data>
+  <data name="Tmpl_comics_f_Writer" xml:space="preserve"><value>Autor</value></data>
+  <data name="Tmpl_comics_f_Artist" xml:space="preserve"><value>Zeichner</value></data>
+  <data name="Tmpl_comics_f_Publisher" xml:space="preserve"><value>Verlag</value></data>
+  <data name="Tmpl_comics_f_Condition" xml:space="preserve"><value>Zustand</value></data>
+  <data name="Tmpl_comics_c_Mint" xml:space="preserve"><value>Neuwertig</value></data>
+  <data name="Tmpl_comics_c_NearMint" xml:space="preserve"><value>Fast neuwertig</value></data>
+  <data name="Tmpl_comics_c_VeryGood" xml:space="preserve"><value>Sehr gut</value></data>
+  <data name="Tmpl_comics_c_Good" xml:space="preserve"><value>Gut</value></data>
+  <data name="Tmpl_comics_c_Fair" xml:space="preserve"><value>Mäßig</value></data>
+  <data name="Tmpl_comics_f_Value" xml:space="preserve"><value>Wert</value></data>
+  <data name="Tmpl_comics_f_Cover" xml:space="preserve"><value>Cover</value></data>
+
+  <data name="Tmpl_tradingcards_Name" xml:space="preserve"><value>Sammelkarten</value></data>
+  <data name="Tmpl_tradingcards_Desc" xml:space="preserve"><value>Verwalte deine Kartensammlung</value></data>
+  <data name="Tmpl_tradingcards_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_tradingcards_f_Set" xml:space="preserve"><value>Set</value></data>
+  <data name="Tmpl_tradingcards_f_CardNumber" xml:space="preserve"><value>Karten-Nr.</value></data>
+  <data name="Tmpl_tradingcards_f_Rarity" xml:space="preserve"><value>Seltenheit</value></data>
+  <data name="Tmpl_tradingcards_c_Common" xml:space="preserve"><value>Häufig</value></data>
+  <data name="Tmpl_tradingcards_c_Uncommon" xml:space="preserve"><value>Ungewöhnlich</value></data>
+  <data name="Tmpl_tradingcards_c_Rare" xml:space="preserve"><value>Selten</value></data>
+  <data name="Tmpl_tradingcards_c_Mythic" xml:space="preserve"><value>Mythisch</value></data>
+  <data name="Tmpl_tradingcards_f_Condition" xml:space="preserve"><value>Zustand</value></data>
+  <data name="Tmpl_tradingcards_c_Mint" xml:space="preserve"><value>Neuwertig</value></data>
+  <data name="Tmpl_tradingcards_c_NearMint" xml:space="preserve"><value>Fast neuwertig</value></data>
+  <data name="Tmpl_tradingcards_c_Played" xml:space="preserve"><value>Gespielt</value></data>
+  <data name="Tmpl_tradingcards_c_Damaged" xml:space="preserve"><value>Beschädigt</value></data>
+  <data name="Tmpl_tradingcards_f_Quantity" xml:space="preserve"><value>Menge</value></data>
+  <data name="Tmpl_tradingcards_f_Value" xml:space="preserve"><value>Wert</value></data>
+  <data name="Tmpl_tradingcards_f_Image" xml:space="preserve"><value>Bild</value></data>
+
+  <data name="Tmpl_coins_Name" xml:space="preserve"><value>Münzen</value></data>
+  <data name="Tmpl_coins_Desc" xml:space="preserve"><value>Katalogisiere deine Münzsammlung</value></data>
+  <data name="Tmpl_coins_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_coins_f_Country" xml:space="preserve"><value>Land</value></data>
+  <data name="Tmpl_coins_f_Year" xml:space="preserve"><value>Jahr</value></data>
+  <data name="Tmpl_coins_f_Denomination" xml:space="preserve"><value>Nennwert</value></data>
+  <data name="Tmpl_coins_f_Grade" xml:space="preserve"><value>Erhaltungsgrad</value></data>
+  <data name="Tmpl_coins_c_Poor" xml:space="preserve"><value>Schlecht</value></data>
+  <data name="Tmpl_coins_c_Fine" xml:space="preserve"><value>Schön</value></data>
+  <data name="Tmpl_coins_c_VeryFine" xml:space="preserve"><value>Sehr schön</value></data>
+  <data name="Tmpl_coins_c_ExtremelyFine" xml:space="preserve"><value>Vorzüglich</value></data>
+  <data name="Tmpl_coins_c_Uncirculated" xml:space="preserve"><value>Unzirkuliert</value></data>
+  <data name="Tmpl_coins_f_MintMark" xml:space="preserve"><value>Münzzeichen</value></data>
+  <data name="Tmpl_coins_f_Value" xml:space="preserve"><value>Wert</value></data>
+  <data name="Tmpl_coins_f_Image" xml:space="preserve"><value>Bild</value></data>
+
+  <data name="Tmpl_stamps_Name" xml:space="preserve"><value>Briefmarken</value></data>
+  <data name="Tmpl_stamps_Desc" xml:space="preserve"><value>Organisiere deine Briefmarkensammlung</value></data>
+  <data name="Tmpl_stamps_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_stamps_f_Country" xml:space="preserve"><value>Land</value></data>
+  <data name="Tmpl_stamps_f_Year" xml:space="preserve"><value>Jahr</value></data>
+  <data name="Tmpl_stamps_f_Denomination" xml:space="preserve"><value>Nennwert</value></data>
+  <data name="Tmpl_stamps_f_Condition" xml:space="preserve"><value>Zustand</value></data>
+  <data name="Tmpl_stamps_c_Mint" xml:space="preserve"><value>Postfrisch</value></data>
+  <data name="Tmpl_stamps_c_Used" xml:space="preserve"><value>Gestempelt</value></data>
+  <data name="Tmpl_stamps_c_Hinged" xml:space="preserve"><value>Falzspur</value></data>
+  <data name="Tmpl_stamps_c_Damaged" xml:space="preserve"><value>Beschädigt</value></data>
+  <data name="Tmpl_stamps_f_Value" xml:space="preserve"><value>Wert</value></data>
+  <data name="Tmpl_stamps_f_Image" xml:space="preserve"><value>Bild</value></data>
+
+  <data name="Tmpl_bricks_Name" xml:space="preserve"><value>Bausteine-Sets</value></data>
+  <data name="Tmpl_bricks_Desc" xml:space="preserve"><value>Verwalte deine Steinesammlung</value></data>
+  <data name="Tmpl_bricks_f_SetName" xml:space="preserve"><value>Set-Name</value></data>
+  <data name="Tmpl_bricks_f_SetNumber" xml:space="preserve"><value>Set-Nr.</value></data>
+  <data name="Tmpl_bricks_f_Theme" xml:space="preserve"><value>Thema</value></data>
+  <data name="Tmpl_bricks_c_Vehicles" xml:space="preserve"><value>Fahrzeuge</value></data>
+  <data name="Tmpl_bricks_c_Buildings" xml:space="preserve"><value>Gebäude</value></data>
+  <data name="Tmpl_bricks_c_Space" xml:space="preserve"><value>Weltraum</value></data>
+  <data name="Tmpl_bricks_c_Mechanical" xml:space="preserve"><value>Mechanik</value></data>
+  <data name="Tmpl_bricks_c_Figures" xml:space="preserve"><value>Figuren</value></data>
+  <data name="Tmpl_bricks_c_Other" xml:space="preserve"><value>Sonstiges</value></data>
+  <data name="Tmpl_bricks_f_Pieces" xml:space="preserve"><value>Teile</value></data>
+  <data name="Tmpl_bricks_f_Year" xml:space="preserve"><value>Jahr</value></data>
+  <data name="Tmpl_bricks_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_bricks_f_Built" xml:space="preserve"><value>Gebaut</value></data>
+  <data name="Tmpl_bricks_f_Box" xml:space="preserve"><value>Verpackung</value></data>
+
+  <data name="Tmpl_actionfigures_Name" xml:space="preserve"><value>Actionfiguren</value></data>
+  <data name="Tmpl_actionfigures_Desc" xml:space="preserve"><value>Verwalte Figuren und Sammelstücke</value></data>
+  <data name="Tmpl_actionfigures_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_actionfigures_f_Series" xml:space="preserve"><value>Reihe</value></data>
+  <data name="Tmpl_actionfigures_f_Number" xml:space="preserve"><value>Nummer</value></data>
+  <data name="Tmpl_actionfigures_f_Variant" xml:space="preserve"><value>Variante</value></data>
+  <data name="Tmpl_actionfigures_f_Boxed" xml:space="preserve"><value>In Verpackung</value></data>
+  <data name="Tmpl_actionfigures_f_Value" xml:space="preserve"><value>Wert</value></data>
+  <data name="Tmpl_actionfigures_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_modeltrains_Name" xml:space="preserve"><value>Modelleisenbahn</value></data>
+  <data name="Tmpl_modeltrains_Desc" xml:space="preserve"><value>Katalogisiere deine Loks und Wagen</value></data>
+  <data name="Tmpl_modeltrains_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_modeltrains_f_Scale" xml:space="preserve"><value>Spurweite</value></data>
+  <data name="Tmpl_modeltrains_c_Z" xml:space="preserve"><value>Z</value></data>
+  <data name="Tmpl_modeltrains_c_N" xml:space="preserve"><value>N</value></data>
+  <data name="Tmpl_modeltrains_c_TT" xml:space="preserve"><value>TT</value></data>
+  <data name="Tmpl_modeltrains_c_HO" xml:space="preserve"><value>H0</value></data>
+  <data name="Tmpl_modeltrains_c_OO" xml:space="preserve"><value>OO</value></data>
+  <data name="Tmpl_modeltrains_c_O" xml:space="preserve"><value>0</value></data>
+  <data name="Tmpl_modeltrains_c_G" xml:space="preserve"><value>G</value></data>
+  <data name="Tmpl_modeltrains_f_RoadName" xml:space="preserve"><value>Bahngesellschaft</value></data>
+  <data name="Tmpl_modeltrains_f_RoadNumber" xml:space="preserve"><value>Betriebsnummer</value></data>
+  <data name="Tmpl_modeltrains_f_Manufacturer" xml:space="preserve"><value>Hersteller</value></data>
+  <data name="Tmpl_modeltrains_c_Marklin" xml:space="preserve"><value>Märklin</value></data>
+  <data name="Tmpl_modeltrains_c_Roco" xml:space="preserve"><value>Roco</value></data>
+  <data name="Tmpl_modeltrains_c_Fleischmann" xml:space="preserve"><value>Fleischmann</value></data>
+  <data name="Tmpl_modeltrains_c_Trix" xml:space="preserve"><value>Trix</value></data>
+  <data name="Tmpl_modeltrains_c_Other" xml:space="preserve"><value>Sonstige</value></data>
+  <data name="Tmpl_modeltrains_f_DccAddress" xml:space="preserve"><value>DCC-Adresse</value></data>
+  <data name="Tmpl_modeltrains_f_DccEquipped" xml:space="preserve"><value>DCC-fähig</value></data>
+  <data name="Tmpl_modeltrains_f_Era" xml:space="preserve"><value>Epoche</value></data>
+  <data name="Tmpl_modeltrains_c_I" xml:space="preserve"><value>I</value></data>
+  <data name="Tmpl_modeltrains_c_II" xml:space="preserve"><value>II</value></data>
+  <data name="Tmpl_modeltrains_c_III" xml:space="preserve"><value>III</value></data>
+  <data name="Tmpl_modeltrains_c_IV" xml:space="preserve"><value>IV</value></data>
+  <data name="Tmpl_modeltrains_c_V" xml:space="preserve"><value>V</value></data>
+  <data name="Tmpl_modeltrains_c_VI" xml:space="preserve"><value>VI</value></data>
+  <data name="Tmpl_modeltrains_f_PurchaseDate" xml:space="preserve"><value>Kaufdatum</value></data>
+  <data name="Tmpl_modeltrains_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_modeltrains_f_Photo" xml:space="preserve"><value>Foto</value></data>
+  <data name="Tmpl_modeltrains_f_Notes" xml:space="preserve"><value>Notizen</value></data>
+
+  <data name="Tmpl_wine_Name" xml:space="preserve"><value>Weinkeller</value></data>
+  <data name="Tmpl_wine_Desc" xml:space="preserve"><value>Verwalte deine Weinsammlung</value></data>
+  <data name="Tmpl_wine_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_wine_f_Vintage" xml:space="preserve"><value>Jahrgang</value></data>
+  <data name="Tmpl_wine_f_Region" xml:space="preserve"><value>Region</value></data>
+  <data name="Tmpl_wine_f_Varietal" xml:space="preserve"><value>Rebsorte</value></data>
+  <data name="Tmpl_wine_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_wine_f_Bottles" xml:space="preserve"><value>Flaschen</value></data>
+  <data name="Tmpl_wine_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_wine_f_TastingNotes" xml:space="preserve"><value>Verkostungsnotizen</value></data>
+
+  <data name="Tmpl_whisky_Name" xml:space="preserve"><value>Whisky &amp; Spirituosen</value></data>
+  <data name="Tmpl_whisky_Desc" xml:space="preserve"><value>Verwalte deine Flaschen und Verkostungen</value></data>
+  <data name="Tmpl_whisky_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_whisky_f_Distillery" xml:space="preserve"><value>Destillerie</value></data>
+  <data name="Tmpl_whisky_f_Age" xml:space="preserve"><value>Alter</value></data>
+  <data name="Tmpl_whisky_f_Type" xml:space="preserve"><value>Typ</value></data>
+  <data name="Tmpl_whisky_c_SingleMalt" xml:space="preserve"><value>Single Malt</value></data>
+  <data name="Tmpl_whisky_c_Blend" xml:space="preserve"><value>Blend</value></data>
+  <data name="Tmpl_whisky_c_Bourbon" xml:space="preserve"><value>Bourbon</value></data>
+  <data name="Tmpl_whisky_c_Rye" xml:space="preserve"><value>Rye</value></data>
+  <data name="Tmpl_whisky_c_Other" xml:space="preserve"><value>Sonstige</value></data>
+  <data name="Tmpl_whisky_f_ABV" xml:space="preserve"><value>Alkoholgehalt</value></data>
+  <data name="Tmpl_whisky_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_whisky_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_whisky_f_TastingNotes" xml:space="preserve"><value>Verkostungsnotizen</value></data>
+
+  <data name="Tmpl_houseplants_Name" xml:space="preserve"><value>Zimmerpflanzen</value></data>
+  <data name="Tmpl_houseplants_Desc" xml:space="preserve"><value>Behalte deine Pflanzen und Pflege im Blick</value></data>
+  <data name="Tmpl_houseplants_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_houseplants_f_Species" xml:space="preserve"><value>Art</value></data>
+  <data name="Tmpl_houseplants_f_Location" xml:space="preserve"><value>Standort</value></data>
+  <data name="Tmpl_houseplants_f_Watering" xml:space="preserve"><value>Gießen</value></data>
+  <data name="Tmpl_houseplants_c_Daily" xml:space="preserve"><value>Täglich</value></data>
+  <data name="Tmpl_houseplants_c_Weekly" xml:space="preserve"><value>Wöchentlich</value></data>
+  <data name="Tmpl_houseplants_c_Biweekly" xml:space="preserve"><value>Alle zwei Wochen</value></data>
+  <data name="Tmpl_houseplants_c_Monthly" xml:space="preserve"><value>Monatlich</value></data>
+  <data name="Tmpl_houseplants_f_Acquired" xml:space="preserve"><value>Erworben</value></data>
+  <data name="Tmpl_houseplants_f_Photo" xml:space="preserve"><value>Foto</value></data>
+  <data name="Tmpl_houseplants_f_Notes" xml:space="preserve"><value>Notizen</value></data>
+
+  <data name="Tmpl_recipes_Name" xml:space="preserve"><value>Rezepte</value></data>
+  <data name="Tmpl_recipes_Desc" xml:space="preserve"><value>Sammle und organisiere deine Rezepte</value></data>
+  <data name="Tmpl_recipes_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_recipes_f_Cuisine" xml:space="preserve"><value>Küche</value></data>
+  <data name="Tmpl_recipes_c_Italian" xml:space="preserve"><value>Italienisch</value></data>
+  <data name="Tmpl_recipes_c_Asian" xml:space="preserve"><value>Asiatisch</value></data>
+  <data name="Tmpl_recipes_c_Mexican" xml:space="preserve"><value>Mexikanisch</value></data>
+  <data name="Tmpl_recipes_c_American" xml:space="preserve"><value>Amerikanisch</value></data>
+  <data name="Tmpl_recipes_c_French" xml:space="preserve"><value>Französisch</value></data>
+  <data name="Tmpl_recipes_c_Other" xml:space="preserve"><value>Sonstige</value></data>
+  <data name="Tmpl_recipes_f_PrepTime" xml:space="preserve"><value>Vorbereitungszeit</value></data>
+  <data name="Tmpl_recipes_f_CookTime" xml:space="preserve"><value>Kochzeit</value></data>
+  <data name="Tmpl_recipes_f_Servings" xml:space="preserve"><value>Portionen</value></data>
+  <data name="Tmpl_recipes_f_Ingredients" xml:space="preserve"><value>Zutaten</value></data>
+  <data name="Tmpl_recipes_f_IngredientName" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_recipes_f_IngredientAmount" xml:space="preserve"><value>Menge</value></data>
+  <data name="Tmpl_recipes_f_Instructions" xml:space="preserve"><value>Zubereitung</value></data>
+  <data name="Tmpl_recipes_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_recipes_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_watches_Name" xml:space="preserve"><value>Uhren</value></data>
+  <data name="Tmpl_watches_Desc" xml:space="preserve"><value>Verwalte deine Uhrensammlung</value></data>
+  <data name="Tmpl_watches_f_Model" xml:space="preserve"><value>Modell</value></data>
+  <data name="Tmpl_watches_f_Brand" xml:space="preserve"><value>Marke</value></data>
+  <data name="Tmpl_watches_f_Movement" xml:space="preserve"><value>Uhrwerk</value></data>
+  <data name="Tmpl_watches_c_Automatic" xml:space="preserve"><value>Automatik</value></data>
+  <data name="Tmpl_watches_c_Manual" xml:space="preserve"><value>Handaufzug</value></data>
+  <data name="Tmpl_watches_c_Quartz" xml:space="preserve"><value>Quarz</value></data>
+  <data name="Tmpl_watches_f_PurchaseDate" xml:space="preserve"><value>Kaufdatum</value></data>
+  <data name="Tmpl_watches_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_watches_f_Condition" xml:space="preserve"><value>Zustand</value></data>
+  <data name="Tmpl_watches_c_New" xml:space="preserve"><value>Neu</value></data>
+  <data name="Tmpl_watches_c_Excellent" xml:space="preserve"><value>Ausgezeichnet</value></data>
+  <data name="Tmpl_watches_c_Good" xml:space="preserve"><value>Gut</value></data>
+  <data name="Tmpl_watches_c_Worn" xml:space="preserve"><value>Getragen</value></data>
+  <data name="Tmpl_watches_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_sneakers_Name" xml:space="preserve"><value>Sneaker</value></data>
+  <data name="Tmpl_sneakers_Desc" xml:space="preserve"><value>Verwalte deine Sneaker-Sammlung</value></data>
+  <data name="Tmpl_sneakers_f_Model" xml:space="preserve"><value>Modell</value></data>
+  <data name="Tmpl_sneakers_f_Brand" xml:space="preserve"><value>Marke</value></data>
+  <data name="Tmpl_sneakers_f_Colorway" xml:space="preserve"><value>Farbvariante</value></data>
+  <data name="Tmpl_sneakers_f_Size" xml:space="preserve"><value>Größe</value></data>
+  <data name="Tmpl_sneakers_f_ReleaseDate" xml:space="preserve"><value>Erscheinungsdatum</value></data>
+  <data name="Tmpl_sneakers_f_RetailPrice" xml:space="preserve"><value>Verkaufspreis</value></data>
+  <data name="Tmpl_sneakers_f_Condition" xml:space="preserve"><value>Zustand</value></data>
+  <data name="Tmpl_sneakers_c_Deadstock" xml:space="preserve"><value>Ungetragen</value></data>
+  <data name="Tmpl_sneakers_c_Worn" xml:space="preserve"><value>Getragen</value></data>
+  <data name="Tmpl_sneakers_c_Beaters" xml:space="preserve"><value>Abgenutzt</value></data>
+  <data name="Tmpl_sneakers_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_makeup_Name" xml:space="preserve"><value>Make-up &amp; Kosmetik</value></data>
+  <data name="Tmpl_makeup_Desc" xml:space="preserve"><value>Verwalte deine Beauty-Produkte</value></data>
+  <data name="Tmpl_makeup_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_makeup_f_Brand" xml:space="preserve"><value>Marke</value></data>
+  <data name="Tmpl_makeup_f_Category" xml:space="preserve"><value>Kategorie</value></data>
+  <data name="Tmpl_makeup_c_Foundation" xml:space="preserve"><value>Foundation</value></data>
+  <data name="Tmpl_makeup_c_Lipstick" xml:space="preserve"><value>Lippenstift</value></data>
+  <data name="Tmpl_makeup_c_Mascara" xml:space="preserve"><value>Mascara</value></data>
+  <data name="Tmpl_makeup_c_Eyeshadow" xml:space="preserve"><value>Lidschatten</value></data>
+  <data name="Tmpl_makeup_c_Blush" xml:space="preserve"><value>Rouge</value></data>
+  <data name="Tmpl_makeup_c_Other" xml:space="preserve"><value>Sonstiges</value></data>
+  <data name="Tmpl_makeup_f_Shade" xml:space="preserve"><value>Farbton</value></data>
+  <data name="Tmpl_makeup_f_Color" xml:space="preserve"><value>Farbe</value></data>
+  <data name="Tmpl_makeup_f_PurchaseDate" xml:space="preserve"><value>Kaufdatum</value></data>
+  <data name="Tmpl_makeup_f_Expiry" xml:space="preserve"><value>Haltbar bis</value></data>
+  <data name="Tmpl_makeup_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_makeup_f_Rating" xml:space="preserve"><value>Bewertung</value></data>
+  <data name="Tmpl_makeup_f_Finished" xml:space="preserve"><value>Aufgebraucht</value></data>
+  <data name="Tmpl_makeup_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_tools_Name" xml:space="preserve"><value>Werkzeuge</value></data>
+  <data name="Tmpl_tools_Desc" xml:space="preserve"><value>Inventarisiere deine Werkstatt</value></data>
+  <data name="Tmpl_tools_f_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Tmpl_tools_f_Category" xml:space="preserve"><value>Kategorie</value></data>
+  <data name="Tmpl_tools_c_Hand" xml:space="preserve"><value>Handwerkzeug</value></data>
+  <data name="Tmpl_tools_c_Power" xml:space="preserve"><value>Elektrowerkzeug</value></data>
+  <data name="Tmpl_tools_c_Measuring" xml:space="preserve"><value>Messwerkzeug</value></data>
+  <data name="Tmpl_tools_c_Other" xml:space="preserve"><value>Sonstiges</value></data>
+  <data name="Tmpl_tools_f_Brand" xml:space="preserve"><value>Marke</value></data>
+  <data name="Tmpl_tools_f_Location" xml:space="preserve"><value>Standort</value></data>
+  <data name="Tmpl_tools_f_PurchaseDate" xml:space="preserve"><value>Kaufdatum</value></data>
+  <data name="Tmpl_tools_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_tools_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_cameragear_Name" xml:space="preserve"><value>Kameraausrüstung</value></data>
+  <data name="Tmpl_cameragear_Desc" xml:space="preserve"><value>Verwalte deine Fotoausrüstung</value></data>
+  <data name="Tmpl_cameragear_f_Model" xml:space="preserve"><value>Modell</value></data>
+  <data name="Tmpl_cameragear_f_Brand" xml:space="preserve"><value>Marke</value></data>
+  <data name="Tmpl_cameragear_f_Type" xml:space="preserve"><value>Typ</value></data>
+  <data name="Tmpl_cameragear_c_Body" xml:space="preserve"><value>Gehäuse</value></data>
+  <data name="Tmpl_cameragear_c_Lens" xml:space="preserve"><value>Objektiv</value></data>
+  <data name="Tmpl_cameragear_c_Accessory" xml:space="preserve"><value>Zubehör</value></data>
+  <data name="Tmpl_cameragear_f_SerialNumber" xml:space="preserve"><value>Seriennummer</value></data>
+  <data name="Tmpl_cameragear_f_PurchaseDate" xml:space="preserve"><value>Kaufdatum</value></data>
+  <data name="Tmpl_cameragear_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_cameragear_f_Photo" xml:space="preserve"><value>Foto</value></data>
+
+  <data name="Tmpl_homeinventory_Name" xml:space="preserve"><value>Hausrat</value></data>
+  <data name="Tmpl_homeinventory_Desc" xml:space="preserve"><value>Katalogisiere deinen Besitz für die Versicherung</value></data>
+  <data name="Tmpl_homeinventory_f_Item" xml:space="preserve"><value>Gegenstand</value></data>
+  <data name="Tmpl_homeinventory_f_Category" xml:space="preserve"><value>Kategorie</value></data>
+  <data name="Tmpl_homeinventory_c_Electronics" xml:space="preserve"><value>Elektronik</value></data>
+  <data name="Tmpl_homeinventory_c_Furniture" xml:space="preserve"><value>Möbel</value></data>
+  <data name="Tmpl_homeinventory_c_Appliance" xml:space="preserve"><value>Haushaltsgerät</value></data>
+  <data name="Tmpl_homeinventory_c_Jewelry" xml:space="preserve"><value>Schmuck</value></data>
+  <data name="Tmpl_homeinventory_c_Other" xml:space="preserve"><value>Sonstiges</value></data>
+  <data name="Tmpl_homeinventory_f_Room" xml:space="preserve"><value>Raum</value></data>
+  <data name="Tmpl_homeinventory_f_Brand" xml:space="preserve"><value>Marke</value></data>
+  <data name="Tmpl_homeinventory_f_PurchaseDate" xml:space="preserve"><value>Kaufdatum</value></data>
+  <data name="Tmpl_homeinventory_f_Price" xml:space="preserve"><value>Preis</value></data>
+  <data name="Tmpl_homeinventory_f_WarrantyUntil" xml:space="preserve"><value>Garantie bis</value></data>
+  <data name="Tmpl_homeinventory_f_Photo" xml:space="preserve"><value>Foto</value></data>
+  <data name="Tmpl_homeinventory_f_Notes" xml:space="preserve"><value>Notizen</value></data>
+</root>

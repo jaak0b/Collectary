@@ -51,7 +51,8 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         Mapping.IFieldEditorMapper mapper,
         Action onSaved,
         Action onCancelled,
-        Preset? existing = null)
+        Preset? existing = null,
+        Preset? seed = null)
     {
         _presetUseCase = presetUseCase;
         _systemFieldUseCase = systemFieldUseCase;
@@ -64,16 +65,17 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         var groupNodes = new List<FieldGroupRowViewModel>();
         var fieldRows = new List<FieldDefinitionRowViewModel>();
 
-        if (existing is not null)
+        var source = existing ?? seed;
+        if (source is not null)
         {
-            Name = existing.Name;
-            ColumnCount = existing.ColumnCount;
-            foreach (var g in existing.Groups)
+            Name = source.Name;
+            ColumnCount = source.ColumnCount;
+            foreach (var g in source.Groups)
                 groupNodes.Add(new FieldGroupRowViewModel(g));
 
-            foreach (var f in existing.Fields.Where(f => f.ParentListFieldDefinitionId == null))
+            foreach (var f in source.Fields.Where(f => f.ParentListFieldDefinitionId == null))
                 fieldRows.Add(new FieldDefinitionRowViewModel(f));
-            foreach (var r in existing.SystemFieldRefs)
+            foreach (var r in source.SystemFieldRefs)
             {
                 var row = new FieldDefinitionRowViewModel(r.SystemField.Definition, isSystemField: true)
                 {

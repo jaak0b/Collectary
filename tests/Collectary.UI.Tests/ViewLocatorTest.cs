@@ -34,6 +34,16 @@ public class ViewLocatorTest
     }
 
     [Test]
+    public void PresetTemplatePickerViewModel_MapsToResolvableView()
+    {
+        var name = MapToViewTypeName(typeof(PresetTemplatePickerViewModel));
+
+        Assert.That(name, Is.EqualTo("Collectary.UI.Views.PresetTemplatePickerView"));
+        Assert.That(_uiAssembly.GetType(name), Is.Not.Null,
+            "The template picker ViewModel must map to an existing View type");
+    }
+
+    [Test]
     public void SubNamespacedViewModel_MapsToViewInMatchingSubNamespace()
     {
         var name = MapToViewTypeName(typeof(SystemFieldLibraryViewModel));

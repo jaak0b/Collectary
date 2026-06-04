@@ -62,7 +62,7 @@ public abstract class FlowTestBase
 
     private InventoryDbContext CreateDb() => new(_options);
 
-    protected PresetEditorViewModel MakePresetEditorVm(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null)
+    protected PresetEditorViewModel MakePresetEditorVm(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null, Preset? seed = null)
     {
         A.CallTo(() => CellBuilder.HasListCellViewModel(A<Type>._)).Returns(true);
         return new PresetEditorViewModel(
@@ -72,7 +72,8 @@ public abstract class FlowTestBase
             Mapper,
             onSaved: onSaved ?? (() => { }),
             onCancelled: onCancelled ?? (() => { }),
-            existing: existing);
+            existing: existing,
+            seed: seed);
     }
 
     protected ItemEditingContext MakeItemContext(Func<Task>? saveAsync = null)

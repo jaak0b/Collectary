@@ -66,6 +66,11 @@
   <data name="MyCollections" xml:space="preserve"><value>Meine Sammlungen</value></data>
   <data name="NoCollectionsYet" xml:space="preserve"><value>Noch keine Sammlungen. Erstelle eine unten.</value></data>
   <data name="NewCollection" xml:space="preserve"><value>＋ Neue Sammlung</value></data>
+  <data name="NewFromTemplate" xml:space="preserve"><value>＋ Aus Vorlage</value></data>
+  <data name="BlankCollection" xml:space="preserve"><value>Leere Sammlung</value></data>
+  <data name="FromTemplate" xml:space="preserve"><value>Aus Vorlage</value></data>
+  <data name="TemplatePickerTitle" xml:space="preserve"><value>Vorlage wählen</value></data>
+  <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Starte mit einer vorkonfigurierten Sammlung und passe sie an deine Bedürfnisse an.</value></data>
   <data name="Collection" xml:space="preserve"><value>Sammlung</value></data>
   <data name="Item" xml:space="preserve"><value>Eintrag</value></data>
   <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>

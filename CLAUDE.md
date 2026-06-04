@@ -8,6 +8,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Adding a new `FieldDefinition` subtype must require zero changes to any class outside that subtype's own file.** Use virtual dispatch on `FieldDefinition` for type-specific behaviour (merge logic, layout defaults, etc.). A static registry or type-switch that must be updated when a new type is added violates this rule. The existing `FieldEditorRegistry` and `ListCellBuilder` keyed-registration pattern is the correct model for DI; apply the same philosophy to domain-level concerns.
 
+**Localization is resx-only.** Every user-visible, translatable string MUST live in the resx files (`Strings.en.resx` + `Strings.de.resx`, or a domain-specific pair like `TemplateStrings.en/de.resx`) and be referenced by key — `LocalizationService.Instance["Key"]` in C#, or `{Binding [Key], Source={x:Static loc:LocalizationService.Instance}}` in XAML. Never inline translatable text in C#, XAML, or data structures. Every key added must exist in **both** language files (the German value may be a stopgap, but the key must be present). When a feature would add a large block of strings (e.g. preset templates), give it its own resx pair rather than bloating the shared `Strings.*.resx`.
+
+**Every new feature ships unit/integration tests AND headless tests.** Reaffirms the rule below — a feature is not done until it has both: logic-level coverage (Core/Infrastructure unit/integration tests) *and* headless end-to-end tests covering full CRUD plus the feature-specific behavior. The developer is a single person who cannot manually verify every path.
+
+**Missing field type → stopgap + visible note.** If a feature (e.g. a preset template for a new hobby) needs a `FieldDefinition` type that doesn't exist yet, do **not** skip the use case. Add a *simple* version of the field type (following the FieldDefinition/FieldValue parallel-hierarchy rules) and surface an on-screen note so it can be refined later, rather than silently dropping the field.
+
 ## Build & Run
 
 ```powershell

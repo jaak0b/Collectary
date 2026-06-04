@@ -116,7 +116,8 @@ public partial class MainWindowViewModel : ViewModelBase
         var home = new HomeViewModel(_presetUseCase, _itemUseCase, _dialogService);
         home.OnNavigateToPreset = NavigateToPreset;
         home.OnCreatePreset = () => NavigateToPresetEditor(null);
-        home.OnEditPreset = NavigateToPresetEditor;
+        home.OnCreateFromTemplate = NavigateToTemplatePicker;
+        home.OnEditPreset = preset => NavigateToPresetEditor(preset);
         home.OnNavigateToSystemFields = NavigateToSystemFieldLibrary;
         home.OnDeletePreset = async (preset) =>
         {
@@ -172,9 +173,9 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private void NavigateToPresetEditor(Preset? existing)
+    private void NavigateToPresetEditor(Preset? existing, Preset? seed = null)
     {
-        AppLogger.Log.Debug("Navigate: PresetEditor existing={Id}", existing?.Id);
+        AppLogger.Log.Debug("Navigate: PresetEditor existing={Id} seed={Seed}", existing?.Id, seed?.Name);
         var presetUseCase = _scope.Resolve<IPresetUseCase>();
         var systemFieldUseCase = _scope.Resolve<ISystemFieldUseCase>();
         var fieldEditorMapper = _scope.Resolve<Mapping.IFieldEditorMapper>();
@@ -186,10 +187,22 @@ public partial class MainWindowViewModel : ViewModelBase
             fieldEditorMapper,
             onSaved: () => { _ = NavigateToHomeAsync(); },
             onCancelled: () => { _ = NavigateToHomeAsync(); },
-            existing: existing);
+            existing: existing,
+            seed: seed);
 
         ResetBreadcrumb(LocalizationService.Instance["CollectionSettings"], vm);
         _ = vm.LoadAsync();
+    }
+
+    private void NavigateToTemplatePicker()
+    {
+        AppLogger.Log.Debug("Navigate: TemplatePicker");
+        var library = _scope.Resolve<Templates.IPresetTemplateLibrary>();
+        var vm = new PresetTemplatePickerViewModel(
+            library,
+            onTemplateChosen: seed => NavigateToPresetEditor(existing: null, seed: seed),
+            onCancel: () => { _ = NavigateToHomeAsync(); });
+        ResetBreadcrumb(LocalizationService.Instance["TemplatePickerTitle"], vm);
     }
 
     [RelayCommand]

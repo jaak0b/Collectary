@@ -22,7 +22,19 @@ public class UiModule : Module
         RegisterFieldEditors(builder);
         RegisterListCells(builder);
         RegisterColorEditors(builder);
+        RegisterTemplates(builder);
         RegisterNavigation(builder);
+    }
+
+    private void RegisterTemplates(ContainerBuilder builder)
+    {
+        builder.RegisterAssemblyTypes(typeof(Collectary.Presentation.Templates.IPresetTemplate).Assembly)
+            .Where(t => typeof(Collectary.Presentation.Templates.IPresetTemplate).IsAssignableFrom(t) && !t.IsAbstract)
+            .As<Collectary.Presentation.Templates.IPresetTemplate>()
+            .SingleInstance();
+        builder.RegisterType<Collectary.Presentation.Templates.PresetTemplateLibrary>()
+            .As<Collectary.Presentation.Templates.IPresetTemplateLibrary>()
+            .SingleInstance();
     }
 
     private void RegisterMapping(ContainerBuilder builder)

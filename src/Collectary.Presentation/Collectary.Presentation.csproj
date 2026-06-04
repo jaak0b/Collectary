@@ -15,6 +15,14 @@
       <WithCulture>false</WithCulture>
       <LogicalName>Collectary.UI.Localization.Strings.de.resources</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Update="Localization\TemplateStrings.en.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>Collectary.UI.Localization.TemplateStrings.en.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Localization\TemplateStrings.de.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>Collectary.UI.Localization.TemplateStrings.de.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

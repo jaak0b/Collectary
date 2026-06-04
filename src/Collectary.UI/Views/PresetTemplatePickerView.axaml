@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.PresetTemplatePickerView"
+             x:DataType="vm:PresetTemplatePickerViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <StackPanel Grid.Row="0" Margin="24,20,24,8" Spacing="4">
+            <TextBlock Text="{Binding [TemplatePickerTitle], Source={x:Static loc:LocalizationService.Instance}}"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding [TemplatePickerSubtitle], Source={x:Static loc:LocalizationService.Instance}}"
+                       FontSize="13"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" Padding="16,8,16,16">
+            <ItemsControl ItemsSource="{Binding Categories}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PresetTemplateCategoryViewModel">
+                        <StackPanel Margin="8,12,8,4">
+                            <TextBlock Text="{Binding Header}"
+                                       FontSize="15"
+                                       FontWeight="Medium"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Margin="0,0,0,8"/>
+                            <ItemsControl ItemsSource="{Binding Templates}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:PresetTemplateRowViewModel">
+                                        <Button Command="{Binding SelectCommand}"
+                                                Width="220"
+                                                Height="120"
+                                                Margin="0,0,12,12"
+                                                Padding="14"
+                                                HorizontalContentAlignment="Left"
+                                                VerticalContentAlignment="Top"
+                                                Background="{DynamicResource SidebarBackgroundBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1">
+                                            <StackPanel Spacing="6">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding Icon}" FontSize="22"/>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontSize="15"
+                                                               FontWeight="SemiBold"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="12"
+                                                           TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <Button Command="{Binding CancelCommand}"
+                    Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
+                    Padding="12,6"
+                    HorizontalAlignment="Left"/>
+        </Border>
+
+    </Grid>
+</UserControl>

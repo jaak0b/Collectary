@@ -66,6 +66,11 @@
   <data name="MyCollections" xml:space="preserve"><value>My Collections</value></data>
   <data name="NoCollectionsYet" xml:space="preserve"><value>No collections yet. Create one below.</value></data>
   <data name="NewCollection" xml:space="preserve"><value>＋ New Collection</value></data>
+  <data name="NewFromTemplate" xml:space="preserve"><value>＋ From Template</value></data>
+  <data name="BlankCollection" xml:space="preserve"><value>Blank collection</value></data>
+  <data name="FromTemplate" xml:space="preserve"><value>From template</value></data>
+  <data name="TemplatePickerTitle" xml:space="preserve"><value>Choose a Template</value></data>
+  <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Start from a preconfigured collection and customize it to your needs.</value></data>
   <data name="Collection" xml:space="preserve"><value>Collection</value></data>
   <data name="Item" xml:space="preserve"><value>Item</value></data>
   <data name="Edit" xml:space="preserve"><value>Edit</value></data>

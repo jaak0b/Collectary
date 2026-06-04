@@ -8,16 +8,38 @@ public class LocalizationService : INotifyPropertyChanged
 {
     public static readonly LocalizationService Instance = new();
 
-    private ResourceManager _rm = new("Collectary.UI.Localization.Strings.en",
-        typeof(LocalizationService).Assembly);
+    private ResourceManager[] _managers;
 
     private string _currentCode = "en";
     public string CurrentCode => _currentCode;
 
-    private LocalizationService() { }
+    private LocalizationService() => _managers = BuildManagers("en");
 
-    public string this[string key] =>
-        _rm.GetString(key, CultureInfo.CurrentUICulture) ?? key;
+    private ResourceManager[] BuildManagers(string languageCode)
+    {
+        var baseNames = new[]
+        {
+            "Collectary.UI.Localization.Strings",
+            "Collectary.UI.Localization.TemplateStrings",
+        };
+        var suffix = languageCode == "de" ? ".de" : ".en";
+        return baseNames
+            .Select(b => new ResourceManager(b + suffix, typeof(LocalizationService).Assembly))
+            .ToArray();
+    }
+
+    public string this[string key]
+    {
+        get
+        {
+            foreach (var manager in _managers)
+            {
+                var value = manager.GetString(key, CultureInfo.CurrentUICulture);
+                if (value is not null) return value;
+            }
+            return key;
+        }
+    }
 
     public void Apply(string languageCode)
     {
@@ -26,11 +48,7 @@ public class LocalizationService : INotifyPropertyChanged
         CultureInfo.CurrentUICulture = culture;
         CultureInfo.CurrentCulture = culture;
 
-        _rm = languageCode == "de"
-            ? new ResourceManager("Collectary.UI.Localization.Strings.de",
-                typeof(LocalizationService).Assembly)
-            : new ResourceManager("Collectary.UI.Localization.Strings.en",
-                typeof(LocalizationService).Assembly);
+        _managers = BuildManagers(languageCode);
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         LanguageChanged?.Invoke(this, EventArgs.Empty);

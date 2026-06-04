@@ -29,11 +29,12 @@ public class PresetEditorViewModelTest
 
     private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
 
-    private PresetEditorViewModel CreateSut(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null) =>
+    private PresetEditorViewModel CreateSut(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null, Preset? seed = null) =>
         new(_presetUseCase, _systemFieldUseCase, _dialogService, _mapper,
             onSaved: onSaved ?? (() => { }),
             onCancelled: onCancelled ?? (() => { }),
-            existing: existing);
+            existing: existing,
+            seed: seed);
 
     [Test]
     public async Task SaveAndGoBackAsync_CallsCreateForNewPreset()
@@ -505,5 +506,56 @@ public class PresetEditorViewModelTest
             .Last(f => !f.IsDisplayName);
         Assert.That(added.IsInMultiColumnContext, Is.False);
         Assert.That(added.ColumnSpanOptions, Is.EqualTo(new[] { 1 }));
+    }
+
+    [Test]
+    public void Seed_PreFillsNameAndFields()
+    {
+        var seed = new Preset
+        {
+            Name = "Books",
+            ColumnCount = 2,
+            Fields =
+            [
+                new DisplayNameFieldDefinition { IsRequired = true },
+                new TextFieldDefinition { Label = "Author" }
+            ]
+        };
+
+        var sut = CreateSut(seed: seed);
+
+        Assert.That(sut.Name, Is.EqualTo("Books"));
+        Assert.That(sut.ColumnCount, Is.EqualTo(2));
+        Assert.That(sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Any(r => r.Label == "Author"), Is.True);
+    }
+
+    [Test]
+    public void Seed_DoesNotDuplicateDisplayNameField()
+    {
+        var seed = new Preset
+        {
+            Name = "P",
+            Fields = [new DisplayNameFieldDefinition { IsRequired = true }, new TextFieldDefinition { Label = "X" }]
+        };
+
+        var sut = CreateSut(seed: seed);
+
+        Assert.That(sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Count(r => r.IsDisplayName), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Seed_IsCreateMode_SaveCallsCreateNotUpdate()
+    {
+        var seed = new Preset
+        {
+            Name = "Movies",
+            Fields = [new DisplayNameFieldDefinition { IsRequired = true }, new TextFieldDefinition { Label = "Director" }]
+        };
+        var sut = CreateSut(seed: seed);
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _presetUseCase.UpdatePresetAsync(A<Preset>._)).MustNotHaveHappened();
     }
 }

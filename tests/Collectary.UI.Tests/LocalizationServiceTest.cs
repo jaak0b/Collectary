@@ -28,6 +28,29 @@ public class LocalizationServiceTest
         Assert.That(LocalizationService.Instance["___no_such_key___"], Is.EqualTo("___no_such_key___"));
 
     [Test]
+    public void Indexer_ResolvesKeyFromTemplateStringsResource()
+    {
+        LocalizationService.Instance.Apply("en");
+        Assert.That(LocalizationService.Instance["Tmpl_books_Name"], Is.EqualTo("Books"));
+    }
+
+    [Test]
+    public void Indexer_ResolvesTemplateKeyInGerman()
+    {
+        LocalizationService.Instance.Apply("de");
+        Assert.That(LocalizationService.Instance["Tmpl_books_Name"], Is.EqualTo("Bücher"));
+    }
+
+    [Test]
+    public void Indexer_ResolvesAcrossBothResourceFiles()
+    {
+        LocalizationService.Instance.Apply("en");
+        Assert.That(LocalizationService.Instance["Save"], Is.EqualTo("Save"), "main Strings resource");
+        Assert.That(LocalizationService.Instance["TemplateCategory_Collectibles"], Is.EqualTo("Collectibles"),
+            "TemplateStrings resource");
+    }
+
+    [Test]
     public void Apply_RaisesLanguageChangedAndPropertyChanged()
     {
         var languageChanged = false;
