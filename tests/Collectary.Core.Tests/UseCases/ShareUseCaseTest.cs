@@ -121,15 +121,14 @@ public class ShareUseCaseTest
     }
 
     [Test]
-    public async Task TransferAsync_WhenOwner_ChangesOwnerAndUpdates()
+    public async Task TransferAsync_WhenOwner_PersistsNewOwnerViaRepository()
     {
         var preset = OwnedPreset();
         var bob = KnownUser("bob");
 
         await _sut.TransferAsync(preset.Id, "bob");
 
-        Assert.That(preset.OwnerId, Is.EqualTo(bob.Id));
-        A.CallTo(() => _presets.UpdateAsync(preset)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _presets.TransferOwnershipAsync(preset.Id, bob.Id)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _shares.RemoveAsync(preset.Id, bob.Id)).MustHaveHappenedOnceExactly();
     }
 

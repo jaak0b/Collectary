@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Collectary.Presentation.ViewModels"
+        xmlns:loc="using:Collectary.Presentation.Localization"
+        x:Class="Collectary.UI.Views.SyncConflictsDialog"
+        x:DataType="vm:SyncViewModel"
+        Width="460"
+        SizeToContent="Height"
+        MaxHeight="600"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundBrush}"
+        Title="{Binding [Sync_ConflictsTitle], Source={x:Static loc:LocalizationService.Instance}}">
+
+    <StackPanel Margin="24" Spacing="14">
+
+        <TextBlock Text="{Binding [Sync_ConflictsHint], Source={x:Static loc:LocalizationService.Instance}}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   TextWrapping="Wrap"/>
+
+        <ItemsControl ItemsSource="{Binding Conflicts}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:SyncConflictViewModel">
+                    <Border BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,4">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding KindText}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <Grid ColumnDefinitions="*,*" >
+                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding [Sync_Mine], Source={x:Static loc:LocalizationService.Instance}}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding LocalLabel}" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                    <TextBlock Text="{Binding [Sync_Theirs], Source={x:Static loc:LocalizationService.Instance}}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding RemoteLabel}" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                <Button Content="{Binding [Sync_KeepMine], Source={x:Static loc:LocalizationService.Instance}}"
+                                        Command="{Binding KeepMineCommand}"
+                                        Padding="10,5"/>
+                                <Button Content="{Binding [Sync_KeepTheirs], Source={x:Static loc:LocalizationService.Instance}}"
+                                        Command="{Binding KeepTheirsCommand}"
+                                        Padding="10,5"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="{Binding [Done], Source={x:Static loc:LocalizationService.Instance}}"
+                   IsVisible="{Binding !HasConflicts}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   HorizontalAlignment="Center"/>
+
+    </StackPanel>
+</Window>

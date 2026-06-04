@@ -33,4 +33,21 @@ public class FileSystemImageStore : IImageStore
 
     public bool Exists(string imageKey) =>
         File.Exists(Path.Combine(_basePath, imageKey));
+
+    public Task<IReadOnlyList<string>> ListKeysAsync()
+    {
+        IReadOnlyList<string> keys = Directory.EnumerateFiles(_basePath)
+            .Select(Path.GetFileName)
+            .Where(n => n is not null)
+            .Select(n => n!)
+            .ToList();
+        return Task.FromResult(keys);
+    }
+
+    public async Task ImportAsync(string imageKey, Stream content)
+    {
+        var fullPath = Path.Combine(_basePath, imageKey);
+        await using var file = File.Create(fullPath);
+        await content.CopyToAsync(file);
+    }
 }

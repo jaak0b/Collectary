@@ -44,13 +44,12 @@ public class ShareUseCase : IShareUseCase
 
     public async Task TransferAsync(Guid presetId, string newOwnerUsername)
     {
-        var preset = await RequireOwnedPresetAsync(presetId);
+        await RequireOwnedPresetAsync(presetId);
         var newOwner = await RequireUserAsync(newOwnerUsername);
         if (newOwner.Id == _currentUser.UserId)
             throw new InvalidOperationException("You already own this collection.");
 
-        preset.OwnerId = newOwner.Id;
-        await _presets.UpdateAsync(preset);
+        await _presets.TransferOwnershipAsync(presetId, newOwner.Id);
         await _shares.RemoveAsync(presetId, newOwner.Id);
     }
 

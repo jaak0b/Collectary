@@ -28,4 +28,14 @@ public class InMemoryImageStore : IImageStore
     }
 
     public bool Exists(string imageKey) => _images.ContainsKey(imageKey);
+
+    public Task<IReadOnlyList<string>> ListKeysAsync() =>
+        Task.FromResult<IReadOnlyList<string>>(_images.Keys.ToList());
+
+    public async Task ImportAsync(string imageKey, Stream content)
+    {
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer);
+        _images[imageKey] = buffer.ToArray();
+    }
 }

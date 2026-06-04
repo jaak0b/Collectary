@@ -86,6 +86,7 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("SystemFields");
             e.HasKey(sf => sf.Id);
+            e.HasQueryFilter(sf => !sf.IsDeleted);
             e.HasOne(sf => sf.Definition)
              .WithOne()
              .HasForeignKey<FieldDefinition>(f => f.SystemFieldId)

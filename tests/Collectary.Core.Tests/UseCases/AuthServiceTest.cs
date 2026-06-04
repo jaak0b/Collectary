@@ -28,6 +28,22 @@ public class AuthServiceTest
     private static PasswordHash AnyHash() => new(new byte[] { 1 }, new byte[] { 2 }, 1, "PBKDF2-HMAC-SHA512");
 
     [Test]
+    public async Task ChangePasswordAsync_SavesNewHashForUser()
+    {
+        var userId = Guid.NewGuid();
+        var newHash = AnyHash();
+        A.CallTo(() => _hasher.Hash("newpw")).Returns(newHash);
+
+        await _sut.ChangePasswordAsync(userId, "newpw");
+
+        A.CallTo(() => _credentials.SaveAsync(userId, newHash)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public void ChangePasswordAsync_WhenPasswordEmpty_Throws() =>
+        Assert.ThrowsAsync<ArgumentException>(() => _sut.ChangePasswordAsync(Guid.NewGuid(), ""));
+
+    [Test]
     public async Task RegisterAsync_WhenUsernameFree_AddsUserAndSetsSession()
     {
         A.CallTo(() => _users.GetByUsernameAsync("alice")).Returns((User?)null);

@@ -59,5 +59,13 @@ public class AuthService : IAuthService
         return user;
     }
 
+    public async Task ChangePasswordAsync(Guid userId, string newPassword)
+    {
+        if (string.IsNullOrEmpty(newPassword))
+            throw new ArgumentException("Password is required.", nameof(newPassword));
+
+        await _credentials.SaveAsync(userId, _hasher.Hash(newPassword));
+    }
+
     public void Logout() => _session.Clear();
 }

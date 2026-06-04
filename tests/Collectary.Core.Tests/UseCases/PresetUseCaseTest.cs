@@ -11,6 +11,7 @@ public class PresetUseCaseTest
 {
     private IPresetRepository _presets = null!;
     private IItemRepository _items = null!;
+    private ICollectionAuthorization _auth = null!;
     private PresetUseCase _sut = null!;
 
     [SetUp]
@@ -18,7 +19,11 @@ public class PresetUseCaseTest
     {
         _presets = A.Fake<IPresetRepository>();
         _items = A.Fake<IItemRepository>();
-        _sut = new PresetUseCase(_presets, _items);
+        _auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => _auth.CanWriteAsync(A<Guid>._)).Returns(true);
+        A.CallTo(() => _auth.CanReadAsync(A<Guid>._)).Returns(true);
+        A.CallTo(() => _auth.IsOwnerAsync(A<Guid>._)).Returns(true);
+        _sut = new PresetUseCase(_presets, _items, _auth);
     }
 
     [Test]
@@ -249,7 +254,7 @@ public class PresetUseCaseTest
     public async Task GetEffectiveFieldsAsync_CallsLoggerDebug()
     {
         var logger = A.Fake<IAppLogger>();
-        var sut = new PresetUseCase(_presets, _items, logger);
+        var sut = new PresetUseCase(_presets, _items, _auth, logger);
         var presetId = Guid.NewGuid();
         A.CallTo(() => _presets.GetByIdAsync(presetId)).Returns(new Preset { Name = "P" });
 
@@ -261,7 +266,7 @@ public class PresetUseCaseTest
     [Test]
     public void Constructor_WhenLoggerIsNull_UsesNullAppLogger()
     {
-        var sut = new PresetUseCase(_presets, _items, null);
+        var sut = new PresetUseCase(_presets, _items, _auth, null);
 
         Assert.DoesNotThrowAsync(async () =>
         {
@@ -277,7 +282,7 @@ public class PresetUseCaseTest
         var preset = new Preset { Name = "P" };
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(preset.Id)).Returns(false);
-        var sut = new PresetUseCase(_presets, _items, null, auth);
+        var sut = new PresetUseCase(_presets, _items, auth);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.UpdatePresetAsync(preset));
     }
@@ -288,7 +293,7 @@ public class PresetUseCaseTest
         var preset = new Preset { Name = "P" };
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(preset.Id)).Returns(true);
-        var sut = new PresetUseCase(_presets, _items, null, auth);
+        var sut = new PresetUseCase(_presets, _items, auth);
 
         await sut.UpdatePresetAsync(preset);
 
@@ -301,7 +306,7 @@ public class PresetUseCaseTest
         var id = Guid.NewGuid();
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.IsOwnerAsync(id)).Returns(false);
-        var sut = new PresetUseCase(_presets, _items, null, auth);
+        var sut = new PresetUseCase(_presets, _items, auth);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.DeletePresetAsync(id));
     }
@@ -312,7 +317,7 @@ public class PresetUseCaseTest
         var id = Guid.NewGuid();
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.IsOwnerAsync(id)).Returns(true);
-        var sut = new PresetUseCase(_presets, _items, null, auth);
+        var sut = new PresetUseCase(_presets, _items, auth);
 
         await sut.DeletePresetAsync(id);
 

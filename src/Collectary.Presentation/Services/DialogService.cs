@@ -9,5 +9,6 @@ public static class DialogService
         public Task<bool> ConfirmDeleteAsync(string itemName) => Task.FromResult(false);
         public Task ShowMessageAsync(string message, string title = "") => Task.CompletedTask;
         public Task ShowShareDialogAsync(ViewModels.ShareDialogViewModel viewModel) => Task.CompletedTask;
+        public Task ShowSyncConflictsAsync(ViewModels.SyncViewModel viewModel) => Task.CompletedTask;
     }
 }

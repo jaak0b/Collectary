@@ -10,14 +10,14 @@ public class ItemUseCase : IItemUseCase
     private readonly IItemRepository _items;
     private readonly IPresetUseCase _presets;
     private readonly IAppLogger _logger;
-    private readonly ICollectionAuthorization? _authorization;
+    private readonly ICollectionAuthorization _authorization;
 
-    public ItemUseCase(IItemRepository items, IPresetUseCase presets, IAppLogger? logger = null, ICollectionAuthorization? authorization = null)
+    public ItemUseCase(IItemRepository items, IPresetUseCase presets, ICollectionAuthorization authorization, IAppLogger? logger = null)
     {
         _items = items;
         _presets = presets;
-        _logger = logger ?? new NullAppLogger();
         _authorization = authorization;
+        _logger = logger ?? new NullAppLogger();
     }
 
     public Task<IReadOnlyList<Item>> GetItemsForPresetAsync(Guid presetId) =>
@@ -50,11 +50,9 @@ public class ItemUseCase : IItemUseCase
 
     public async Task DeleteItemAsync(Guid id)
     {
-        if (_authorization is not null)
-        {
-            var existing = await _items.GetByIdAsync(id);
-            if (existing is not null) await EnsureCanWriteAsync(existing.PresetId);
-        }
+        var existing = await _items.GetByIdAsync(id);
+        if (existing is null) return;
+        await EnsureCanWriteAsync(existing.PresetId);
 
         _logger.Debug("Deleting item id={ItemId}", id);
         await _items.DeleteAsync(id);
@@ -62,7 +60,7 @@ public class ItemUseCase : IItemUseCase
 
     private async Task EnsureCanWriteAsync(Guid presetId)
     {
-        if (_authorization is not null && !await _authorization.CanWriteAsync(presetId))
+        if (!await _authorization.CanWriteAsync(presetId))
             throw new UnauthorizedAccessException("You do not have edit access to this collection.");
     }
 

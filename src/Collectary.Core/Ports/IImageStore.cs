@@ -6,4 +6,6 @@ public interface IImageStore
     Stream Open(string imageKey);
     Task DeleteAsync(string imageKey);
     bool Exists(string imageKey);
+    Task<IReadOnlyList<string>> ListKeysAsync();
+    Task ImportAsync(string imageKey, Stream content);
 }

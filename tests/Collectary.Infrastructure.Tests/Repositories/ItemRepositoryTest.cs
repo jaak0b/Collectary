@@ -495,4 +495,85 @@ public class ItemRepositoryTest : DbIntegrationTestBase
         Assert.That(verify.FieldValues.Count(), Is.EqualTo(0), "Values (and sub-values) must cascade-delete");
         Assert.That(verify.ListEntries.Count(), Is.EqualTo(0), "List entries must cascade-delete");
     }
+
+    private async Task<(Guid presetId, Guid itemId)> AddForeignItemAsync(Guid ownerId)
+    {
+        var preset = new Preset { Name = "Foreign", OwnerId = ownerId };
+        var item = new Item { PresetId = preset.Id, DisplayName = "Secret" };
+        using var db = DbFactory();
+        db.Presets.Add(preset);
+        db.Items.Add(item);
+        await db.SaveChangesAsync();
+        return (preset.Id, item.Id);
+    }
+
+    [Test]
+    public async Task GetByPresetAsync_WhenScoped_ReturnsItemsForOwnedPreset()
+    {
+        var me = Guid.NewGuid();
+        var scoped = new ItemRepository(DbFactory, null, new FixedItemUser(me));
+        var owned = new Preset { Name = "Mine", OwnerId = me };
+        using (var db = DbFactory()) { db.Presets.Add(owned); await db.SaveChangesAsync(); }
+        var item = new Item { PresetId = owned.Id, DisplayName = "Loco" };
+        await scoped.AddAsync(item);
+
+        var result = await scoped.GetByPresetAsync(owned.Id);
+
+        Assert.That(result.Select(i => i.Id), Does.Contain(item.Id));
+    }
+
+    [Test]
+    public async Task GetByPresetAsync_WhenScoped_HidesUnauthorizedPresetItems()
+    {
+        var me = Guid.NewGuid();
+        var (foreignPresetId, _) = await AddForeignItemAsync(Guid.NewGuid());
+        var scoped = new ItemRepository(DbFactory, null, new FixedItemUser(me));
+
+        var result = await scoped.GetByPresetAsync(foreignPresetId);
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetByIdAsync_WhenScoped_ReturnsNullForUnauthorizedItem()
+    {
+        var me = Guid.NewGuid();
+        var (_, foreignItemId) = await AddForeignItemAsync(Guid.NewGuid());
+        var scoped = new ItemRepository(DbFactory, null, new FixedItemUser(me));
+
+        var result = await scoped.GetByIdAsync(foreignItemId);
+
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetByPresetAsync_WhenScoped_ReturnsItemsForSharedPreset()
+    {
+        var me = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var (sharedPresetId, sharedItemId) = await AddForeignItemAsync(other);
+        using (var db = DbFactory())
+        {
+            db.CollectionShares.Add(new CollectionShare
+            {
+                PresetId = sharedPresetId,
+                SharedWithUserId = me,
+                GrantedByUserId = other,
+                Permission = SharePermission.Read,
+            });
+            await db.SaveChangesAsync();
+        }
+        var scoped = new ItemRepository(DbFactory, null, new FixedItemUser(me));
+
+        var result = await scoped.GetByPresetAsync(sharedPresetId);
+
+        Assert.That(result.Select(i => i.Id), Does.Contain(sharedItemId));
+    }
+}
+
+file sealed class FixedItemUser : ICurrentUser
+{
+    public FixedItemUser(Guid userId) => UserId = userId;
+    public Guid UserId { get; }
+    public bool IsAuthenticated => UserId != Guid.Empty;
 }

@@ -11,7 +11,7 @@
                 Background="{DynamicResource SurfaceBrush}"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,Auto,*" Margin="4,0">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="4,0">
 
                 <!-- Sidebar toggle -->
                 <Button Grid.Column="0"
@@ -81,6 +81,33 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                </StackPanel>
+
+                <!-- Sync indicator -->
+                <StackPanel Grid.Column="3"
+                            Orientation="Horizontal"
+                            Spacing="6"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            IsVisible="{Binding Sync.IsConfigured}">
+                    <Button Command="{Binding ResolveConflictsCommand}"
+                            IsVisible="{Binding Sync.HasConflicts}"
+                            Background="{DynamicResource DangerBrush}"
+                            Foreground="{DynamicResource DangerForegroundBrush}"
+                            Padding="8,4"
+                            Content="{Binding [Sync_ResolveConflicts], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Text="{Binding Sync.LastSyncText}"
+                               VerticalAlignment="Center"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <Button Command="{Binding Sync.SyncNowCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8,4"
+                            IsEnabled="{Binding !Sync.IsSyncing}"
+                            ToolTip.Tip="{Binding [Sync_Now], Source={x:Static loc:LocalizationService.Instance}}">
+                        <TextBlock Text="⟳" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Button>
                 </StackPanel>
 
             </Grid>

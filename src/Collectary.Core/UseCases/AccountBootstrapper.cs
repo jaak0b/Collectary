@@ -7,6 +7,7 @@ namespace Collectary.Core.UseCases;
 public class AccountBootstrapper : IAccountBootstrapper
 {
     public const string DefaultUsername = "default";
+    public const string DefaultPassword = "default";
 
     private readonly IAuthService _auth;
     private readonly IUserRepository _users;
@@ -30,7 +31,7 @@ public class AccountBootstrapper : IAccountBootstrapper
             return existing;
         }
 
-        return await _auth.RegisterAsync(DefaultUsername, "Default", Guid.NewGuid().ToString("N"));
+        return await _auth.RegisterAsync(DefaultUsername, "Default", DefaultPassword);
     }
 
     public Task BackfillOwnerlessAsync(Guid ownerId) =>

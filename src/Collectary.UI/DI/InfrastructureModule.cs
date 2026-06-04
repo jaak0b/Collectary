@@ -1,7 +1,9 @@
 using Autofac;
 using Collectary.Core.Ports;
+using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
 using Collectary.Infrastructure.Storage;
+using Collectary.Infrastructure.Sync;
 using Collectary.Presentation.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,5 +44,13 @@ public class InfrastructureModule : Module
         builder.Register(_ => new FileSystemImageStore(_imageStorePath))
                .As<IImageStore>()
                .SingleInstance();
+
+        builder.RegisterType<Services.PreferencesSyncStatus>().As<ISyncStatus>().SingleInstance();
+        builder.RegisterType<SyncSerializer>().As<ISyncSerializer>().SingleInstance();
+        builder.RegisterType<EfSyncStore>().As<ISyncStore>().SingleInstance();
+        builder.Register(_ => new FileSystemSyncBackend(() => AppPreferences.Load().SyncLocation))
+               .As<ISyncBackend>()
+               .SingleInstance();
+        builder.RegisterType<SyncService>().As<ISyncService>().SingleInstance();
     }
 }

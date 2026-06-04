@@ -24,8 +24,10 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username)
     {
+        var normalized = (username ?? string.Empty).ToLowerInvariant();
         using var db = _dbFactory();
-        return await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
+        return await db.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == normalized);
     }
 
     public async Task AddAsync(User user)

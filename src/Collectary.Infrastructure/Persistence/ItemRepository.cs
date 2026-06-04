@@ -11,12 +11,14 @@ public class ItemRepository : IItemRepository
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IAppLogger _logger;
     private readonly ICurrentUser? _currentUser;
+    private readonly ISyncStatus? _syncStatus;
 
-    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null)
+    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null, ISyncStatus? syncStatus = null)
     {
         _dbFactory = dbFactory;
         _logger = logger ?? new NullAppLogger();
         _currentUser = currentUser;
+        _syncStatus = syncStatus;
     }
 
     private IQueryable<Item> WithDetails(IQueryable<Item> query) =>
@@ -27,28 +29,38 @@ public class ItemRepository : IItemRepository
     public async Task<IReadOnlyList<Item>> GetByPresetAsync(Guid presetId)
     {
         using var db = _dbFactory();
-        return await WithDetails(db.Items)
-            .AsNoTracking()
-            .Where(i => i.PresetId == presetId)
-            .ToListAsync();
+        var query = await ScopedAsync(db, WithDetails(db.Items).AsNoTracking());
+        return await query.Where(i => i.PresetId == presetId).ToListAsync();
     }
 
     public async Task<Item?> GetByIdAsync(Guid id)
     {
         using var db = _dbFactory();
-        return await WithDetails(db.Items)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(i => i.Id == id);
+        var query = await ScopedAsync(db, WithDetails(db.Items).AsNoTracking());
+        return await query.FirstOrDefaultAsync(i => i.Id == id);
+    }
+
+    private async Task<IQueryable<Item>> ScopedAsync(InventoryDbContext db, IQueryable<Item> query)
+    {
+        if (_currentUser?.IsAuthenticated != true) return query;
+
+        var uid = _currentUser.UserId;
+        var sharedIds = await db.CollectionShares
+            .Where(s => s.SharedWithUserId == uid)
+            .Select(s => s.PresetId)
+            .ToListAsync();
+        var authorizedPresetIds = await db.Presets
+            .Where(p => p.OwnerId == uid || sharedIds.Contains(p.Id))
+            .Select(p => p.Id)
+            .ToListAsync();
+        return query.Where(i => authorizedPresetIds.Contains(i.PresetId));
     }
 
     public async Task AddAsync(Item item)
     {
         using var db = _dbFactory();
         item.UpdatedAt = DateTime.UtcNow;
-        item.IsDirty = true;
-        item.Revision++;
-        if (_currentUser?.IsAuthenticated == true)
-            item.LastModifiedByUserId = _currentUser.UserId;
+        ((ISyncable)item).StampModified(_currentUser?.AuthenticatedId);
         db.Items.Add(item);
         await db.SaveChangesAsync();
         _logger.Debug("Persisted new item id={Id} preset={PresetId} values={Values}",
@@ -64,10 +76,7 @@ public class ItemRepository : IItemRepository
 
         tracked.DisplayName = item.DisplayName;
         tracked.UpdatedAt = item.UpdatedAt;
-        tracked.IsDirty = true;
-        tracked.Revision++;
-        if (_currentUser?.IsAuthenticated == true)
-            tracked.LastModifiedByUserId = _currentUser.UserId;
+        ((ISyncable)tracked).StampModified(_currentUser?.AuthenticatedId);
 
         var updatedIds = item.Values.Select(v => v.Id).ToHashSet();
         var toRemove = tracked.Values
@@ -153,18 +162,32 @@ public class ItemRepository : IItemRepository
     {
         using var db = _dbFactory();
         var item = await db.Items.FindAsync(id);
-        if (item is not null)
-        {
+        if (item is null) return;
+
+        if (_syncStatus?.IsConfigured == true)
+            SoftDelete(item);
+        else
             db.Items.Remove(item);
-            await db.SaveChangesAsync();
-        }
+
+        await db.SaveChangesAsync();
     }
 
     public async Task DeleteByPresetAsync(Guid presetId)
     {
         using var db = _dbFactory();
         var items = await db.Items.Where(i => i.PresetId == presetId).ToListAsync();
-        db.Items.RemoveRange(items);
+        if (_syncStatus?.IsConfigured == true)
+        {
+            foreach (var item in items) SoftDelete(item);
+        }
+        else
+        {
+            db.Items.RemoveRange(items);
+        }
+
         await db.SaveChangesAsync();
     }
+
+    private void SoftDelete(Item item) =>
+        ((ISyncable)item).StampDeleted(_currentUser?.AuthenticatedId);
 }

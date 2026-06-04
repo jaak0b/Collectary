@@ -36,7 +36,7 @@ public sealed class ResponsiveSplitLayout
     public void Detach()
     {
         CaptureRatio();
-        AppPreferences.Save(AppPreferences.Load() with { FieldPaneRatio = _ratio });
+        AppPreferences.Update(p => p with { FieldPaneRatio = _ratio });
     }
 
     public void Apply(double width)

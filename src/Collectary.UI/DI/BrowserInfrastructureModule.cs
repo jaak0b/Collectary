@@ -1,7 +1,9 @@
 using Autofac;
 using Collectary.Core.Logging;
 using Collectary.Core.Ports;
+using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
+using Collectary.Infrastructure.Sync;
 using Collectary.UI.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -33,5 +35,11 @@ public class BrowserInfrastructureModule : Module
         builder.RegisterType<ShareRepository>().As<IShareRepository>().SingleInstance();
 
         builder.RegisterType<InMemoryImageStore>().As<IImageStore>().SingleInstance();
+
+        builder.RegisterType<Services.PreferencesSyncStatus>().As<ISyncStatus>().SingleInstance();
+        builder.RegisterType<SyncSerializer>().As<ISyncSerializer>().SingleInstance();
+        builder.RegisterType<EfSyncStore>().As<ISyncStore>().SingleInstance();
+        builder.Register(_ => new FileSystemSyncBackend(string.Empty)).As<ISyncBackend>().SingleInstance();
+        builder.RegisterType<SyncService>().As<ISyncService>().SingleInstance();
     }
 }

@@ -39,4 +39,11 @@ public class AvaloniaDialogService : IDialogService
         var dialog = new ShareDialog { DataContext = viewModel };
         await dialog.ShowDialog(Owner);
     }
+
+    public async Task ShowSyncConflictsAsync(SyncViewModel viewModel)
+    {
+        if (Owner is null) return;
+        var dialog = new SyncConflictsDialog { DataContext = viewModel };
+        await dialog.ShowDialog(Owner);
+    }
 }

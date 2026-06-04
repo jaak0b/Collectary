@@ -9,15 +9,41 @@ public record AppPreferencesData(
     double FieldPaneRatio = 0.4,
     bool SidebarOpen = true,
     double SidebarWidth = 260,
-    bool RequireLogin = true);
+    bool RequireLogin = true,
+    string? SyncLocation = null,
+    bool AutoSyncEnabled = false,
+    int AutoSyncIntervalMinutes = 5,
+    int TombstoneRetentionDays = 30);
 
 public static class AppPreferences
 {
+    private static readonly object Gate = new();
+
     internal static string FilePath { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Collectary", "preferences.json");
 
     public static AppPreferencesData Load()
+    {
+        lock (Gate) return LoadUnlocked();
+    }
+
+    public static void Save(AppPreferencesData data)
+    {
+        lock (Gate) SaveUnlocked(data);
+    }
+
+    public static AppPreferencesData Update(Func<AppPreferencesData, AppPreferencesData> mutate)
+    {
+        lock (Gate)
+        {
+            var updated = mutate(LoadUnlocked());
+            SaveUnlocked(updated);
+            return updated;
+        }
+    }
+
+    private static AppPreferencesData LoadUnlocked()
     {
         try
         {
@@ -32,7 +58,7 @@ public static class AppPreferences
         }
     }
 
-    public static void Save(AppPreferencesData data)
+    private static void SaveUnlocked(AppPreferencesData data)
     {
         try
         {

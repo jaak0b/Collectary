@@ -137,6 +137,8 @@ public class UiModule : Module
 
     private void RegisterNavigation(ContainerBuilder builder)
     {
+        builder.RegisterType<Services.DispatcherSyncScheduler>()
+            .As<Collectary.Presentation.Services.ISyncScheduler>();
         builder.RegisterType<MainWindowViewModel>().AsSelf().SingleInstance();
         builder.RegisterType<MainWindow>().AsSelf().SingleInstance();
     }

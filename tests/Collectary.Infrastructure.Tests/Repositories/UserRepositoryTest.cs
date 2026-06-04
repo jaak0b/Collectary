@@ -32,6 +32,18 @@ public class UserRepositoryTest : DbIntegrationTestBase
         Assert.That(await _sut.GetByUsernameAsync("ghost"), Is.Null);
 
     [Test]
+    public async Task GetByUsernameAsync_IsCaseInsensitive()
+    {
+        var user = new User { Username = "Alice", DisplayName = "Alice" };
+        await _sut.AddAsync(user);
+
+        var loaded = await _sut.GetByUsernameAsync("alice");
+
+        Assert.That(loaded, Is.Not.Null);
+        Assert.That(loaded!.Id, Is.EqualTo(user.Id));
+    }
+
+    [Test]
     public async Task GetByIdAsync_ReturnsUser()
     {
         var user = new User { Username = "bob" };

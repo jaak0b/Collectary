@@ -73,8 +73,7 @@ public partial class MainView : UserControl
         var width = SidebarColumn.Width;
         if (!width.IsAbsolute || width.Value <= 0) return;
         _vm.SidebarWidth = width.Value;
-        var prefs = AppPreferences.Load();
-        AppPreferences.Save(prefs with { SidebarWidth = width.Value });
+        AppPreferences.Update(p => p with { SidebarWidth = width.Value });
     }
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)

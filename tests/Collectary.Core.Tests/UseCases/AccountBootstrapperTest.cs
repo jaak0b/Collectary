@@ -46,12 +46,14 @@ public class AccountBootstrapperTest
     {
         A.CallTo(() => _users.GetByUsernameAsync(AccountBootstrapper.DefaultUsername)).Returns((User?)null);
         var registered = new User { Username = AccountBootstrapper.DefaultUsername };
-        A.CallTo(() => _auth.RegisterAsync(AccountBootstrapper.DefaultUsername, "Default", A<string>._, A<string?>._))
+        A.CallTo(() => _auth.RegisterAsync(AccountBootstrapper.DefaultUsername, "Default", AccountBootstrapper.DefaultPassword, A<string?>._))
             .Returns(registered);
 
         var result = await _sut.EnsureDefaultUserAsync();
 
         Assert.That(result, Is.SameAs(registered));
+        A.CallTo(() => _auth.RegisterAsync(AccountBootstrapper.DefaultUsername, "Default", AccountBootstrapper.DefaultPassword, A<string?>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Test]

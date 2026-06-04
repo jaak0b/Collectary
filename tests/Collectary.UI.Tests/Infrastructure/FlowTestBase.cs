@@ -43,8 +43,12 @@ public abstract class FlowTestBase
         ItemRepo = new ItemRepository(CreateDb);
         SystemFieldRepo = new SystemFieldRepository(CreateDb, merger);
 
-        PresetUseCase = new PresetUseCase(PresetRepo, ItemRepo);
-        ItemUseCase = new ItemUseCase(ItemRepo, PresetUseCase);
+        var auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => auth.CanWriteAsync(A<Guid>._)).Returns(true);
+        A.CallTo(() => auth.CanReadAsync(A<Guid>._)).Returns(true);
+        A.CallTo(() => auth.IsOwnerAsync(A<Guid>._)).Returns(true);
+        PresetUseCase = new PresetUseCase(PresetRepo, ItemRepo, auth);
+        ItemUseCase = new ItemUseCase(ItemRepo, PresetUseCase, auth);
         SystemFieldUseCase = new SystemFieldUseCase(SystemFieldRepo);
 
         Mapper = new TestFieldEditorMapper().Create();

@@ -12,4 +12,5 @@ public interface IPresetRepository
     Task DeleteAsync(Guid id);
     Task UpdateDisplayOrdersAsync(IReadOnlyList<Preset> ordered);
     Task BackfillOwnerlessAsync(Guid ownerId);
+    Task TransferOwnershipAsync(Guid presetId, Guid newOwnerId);
 }

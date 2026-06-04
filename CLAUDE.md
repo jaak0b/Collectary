@@ -5,7 +5,7 @@
 1. **No git commits.** Never run `git commit`. Only the user commits.
 2. **No static methods or properties.** Exception: Avalonia `AvaloniaProperty.Register` and framework metadata only.
 3. **Localization is resx-only.** All translatable strings live in `Strings.en/de.resx` or a domain-specific resx pair. Reference via `LocalizationService.Instance["Key"]` / `{Binding [Key], Source=…}`. Both language files must have every key.
-4. **TDD mandatory.** Write a failing test → fix → confirm pass. No exceptions, no rubber-stamping.
+4. **TDD mandatory, test-first, no exceptions.** For EVERY behavior change incl. bug fixes: commit the test before the production code. Order is non-negotiable: (a) write the test, (b) run it and PASTE the failing output, (c) only then touch production code, (d) re-run to green. A red run you can quote is the gate — no red proof = the fix does not start. Writing the fix first, or "I'll add a test after", is a rule violation; if you catch yourself having edited production code first, revert it and restart from (a).
 5. **Three test layers per change.** Every feature and bug fix needs unit + integration + headless tests.
 6. **Coverage and mutation scores must not drop.** `.\build.ps1 --target Coverage` (≥95%) and `.\build.ps1 --target Mutate` after every change.
 7. **No test touches the developer's DB or filesystem.** In-memory SQLite (`Data Source=:memory:`) and `Path.GetTempPath()` temp dirs, disposed in teardown.

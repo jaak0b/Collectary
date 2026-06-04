@@ -2,6 +2,7 @@ using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Collectary.Infrastructure.Tests.Repositories;
 
@@ -156,6 +157,39 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task DeleteAsync_WhenSyncConfigured_SoftDeletesAsTombstone()
+    {
+        var sut = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger(), null, new ConfiguredSyncStatus());
+        var field = MakeField("Rating");
+        await sut.AddAsync(field);
+
+        await sut.DeleteAsync(field.Id);
+
+        Assert.That(await sut.GetByIdAsync(field.Id), Is.Null, "Tombstoned field must be hidden from normal reads");
+        using var db = DbFactory();
+        var tombstone = db.SystemFields.IgnoreQueryFilters().Single(sf => sf.Id == field.Id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(tombstone.IsDeleted, Is.True);
+            Assert.That(tombstone.IsDirty, Is.True);
+            Assert.That(tombstone.DeletedAt, Is.Not.Null);
+            Assert.That(tombstone.Revision, Is.GreaterThan(0));
+        });
+    }
+
+    [Test]
+    public async Task DeleteAsync_WhenSyncNotConfigured_HardDeletes()
+    {
+        var field = MakeField("Rating");
+        await _sut.AddAsync(field);
+
+        await _sut.DeleteAsync(field.Id);
+
+        using var db = DbFactory();
+        Assert.That(db.SystemFields.IgnoreQueryFilters().Any(sf => sf.Id == field.Id), Is.False);
+    }
+
+    [Test]
     public async Task GetAllAsync_OrdersBySortOrderThenName()
     {
         await _sut.AddAsync(MakeField("Bravo"));
@@ -241,4 +275,10 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
         Assert.That(db.SystemFields.Count(), Is.EqualTo(0), "System field removed");
         Assert.That(db.FieldDefinitions.Count(), Is.EqualTo(0), "Its definition must cascade-delete");
     }
+}
+
+file sealed class ConfiguredSyncStatus : ISyncStatus
+{
+    public bool IsConfigured => true;
+    public int TombstoneRetentionDays => 30;
 }

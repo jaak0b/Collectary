@@ -15,7 +15,7 @@ using Collectary.Presentation.ViewModels.SystemFields;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private readonly ILifetimeScope _scope;
     private readonly IPresetUseCase _presetUseCase;
@@ -25,6 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly IFieldEditorRegistry _editorRegistry;
     private readonly IImageStore _imageStore;
     private readonly IDialogService _dialogService;
+    private readonly ISyncScheduler _syncScheduler;
 
     public Visual? Host { get; set; }
 
@@ -42,12 +43,16 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public HomeViewModel? SidebarViewModel { get; private set; }
 
+    public SyncViewModel Sync { get; }
+
+    [RelayCommand]
+    private async Task ResolveConflicts() => await _dialogService.ShowSyncConflictsAsync(Sync);
+
     [RelayCommand]
     private void ToggleSidebar()
     {
         IsSidebarOpen = !IsSidebarOpen;
-        var prefs = AppPreferences.Load();
-        AppPreferences.Save(prefs with { SidebarOpen = IsSidebarOpen });
+        AppPreferences.Update(p => p with { SidebarOpen = IsSidebarOpen });
     }
 
     [RelayCommand]
@@ -56,8 +61,18 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void NavigateToSettings()
     {
-        var vm = new SettingsViewModel(navigateToSystemFields: NavigateToSystemFieldLibrary);
+        var vm = new SettingsViewModel(
+            navigateToSystemFields: NavigateToSystemFieldLibrary,
+            pickFolder: PickSyncFolderAsync,
+            onSyncChanged: OnSyncSettingsChanged);
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
+    }
+
+    private void OnSyncSettingsChanged()
+    {
+        Sync.Refresh();
+        ConfigureAutoSyncTimer(AppPreferences.Load());
+        if (Sync.IsConfigured) _ = SyncThenReloadAsync();
     }
 
     public ObservableCollection<BreadcrumbNode> Breadcrumbs { get; } = new();
@@ -94,7 +109,7 @@ public partial class MainWindowViewModel : ViewModelBase
         ContentViewModel = node.Content;
     }
 
-    public MainWindowViewModel(ILifetimeScope scope, IPresetUseCase presetUseCase, IItemUseCase itemUseCase, ISystemFieldUseCase systemFieldUseCase, IListCellBuilder listCellBuilder, IFieldEditorRegistry editorRegistry, IImageStore imageStore, IDialogService dialogService)
+    public MainWindowViewModel(ILifetimeScope scope, IPresetUseCase presetUseCase, IItemUseCase itemUseCase, ISystemFieldUseCase systemFieldUseCase, IListCellBuilder listCellBuilder, IFieldEditorRegistry editorRegistry, IImageStore imageStore, IDialogService dialogService, ISyncScheduler syncScheduler)
     {
         _scope = scope;
         _presetUseCase = presetUseCase;
@@ -104,7 +119,18 @@ public partial class MainWindowViewModel : ViewModelBase
         _editorRegistry = editorRegistry;
         _imageStore = imageStore;
         _dialogService = dialogService;
+        _syncScheduler = syncScheduler;
+        Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>());
+        Sync.Synced += OnSynced;
         Breadcrumbs.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasBreadcrumbs));
+    }
+
+    private async Task<string?> PickSyncFolderAsync()
+    {
+        var storage = TopLevel.GetTopLevel(Host)?.StorageProvider;
+        if (storage is null) return null;
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
+        return folders.FirstOrDefault()?.TryGetLocalPath();
     }
 
     public async Task InitializeAsync()
@@ -133,6 +159,45 @@ public partial class MainWindowViewModel : ViewModelBase
 
         ContentViewModel = new WelcomeViewModel();
         await home.LoadAsync();
+
+        StartSync(prefs);
+    }
+
+    private void StartSync(AppPreferencesData prefs)
+    {
+        ConfigureAutoSyncTimer(prefs);
+        if (Sync.IsConfigured) _ = SyncThenReloadAsync();
+    }
+
+    private void ConfigureAutoSyncTimer(AppPreferencesData prefs)
+    {
+        _syncScheduler.Stop();
+
+        if (!Sync.IsConfigured || !prefs.AutoSyncEnabled) return;
+
+        _syncScheduler.Start(
+            TimeSpan.FromMinutes(Math.Max(1, prefs.AutoSyncIntervalMinutes)),
+            SyncThenReloadAsync);
+    }
+
+    private async Task SyncThenReloadAsync() => await Sync.SyncNowCommand.ExecuteAsync(null);
+
+    private async void OnSynced()
+    {
+        try
+        {
+            if (SidebarViewModel is not null) await SidebarViewModel.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Reload after sync failed");
+        }
+    }
+
+    public void Dispose()
+    {
+        _syncScheduler.Dispose();
+        Sync.Synced -= OnSynced;
     }
 
     private async Task NavigateToHomeAsync()
@@ -142,8 +207,7 @@ public partial class MainWindowViewModel : ViewModelBase
         ContentViewModel = new WelcomeViewModel();
         SidebarViewModel?.ClearSelection();
         IsSidebarOpen = true;
-        var prefs = AppPreferences.Load();
-        AppPreferences.Save(prefs with { SidebarOpen = true });
+        AppPreferences.Update(p => p with { SidebarOpen = true });
         if (SidebarViewModel is not null)
             await SidebarViewModel.LoadAsync();
     }
@@ -189,8 +253,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (IsNarrow)
         {
             IsSidebarOpen = false;
-            var prefs = AppPreferences.Load();
-            AppPreferences.Save(prefs with { SidebarOpen = false });
+            AppPreferences.Update(p => p with { SidebarOpen = false });
         }
     }
 

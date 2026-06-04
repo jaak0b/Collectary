@@ -11,6 +11,7 @@ public class ItemUseCaseTest
 {
     private IItemRepository _items = null!;
     private IPresetUseCase _presets = null!;
+    private ICollectionAuthorization _auth = null!;
     private ItemUseCase _sut = null!;
 
     [SetUp]
@@ -18,7 +19,11 @@ public class ItemUseCaseTest
     {
         _items = A.Fake<IItemRepository>();
         _presets = A.Fake<IPresetUseCase>();
-        _sut = new ItemUseCase(_items, _presets);
+        _auth = A.Fake<ICollectionAuthorization>();
+        A.CallTo(() => _auth.CanWriteAsync(A<Guid>._)).Returns(true);
+        A.CallTo(() => _auth.CanReadAsync(A<Guid>._)).Returns(true);
+        A.CallTo(() => _auth.IsOwnerAsync(A<Guid>._)).Returns(true);
+        _sut = new ItemUseCase(_items, _presets, _auth);
     }
 
     [Test]
@@ -49,10 +54,22 @@ public class ItemUseCaseTest
     public async Task DeleteItemAsync_DelegatesToRepository()
     {
         var id = Guid.NewGuid();
+        A.CallTo(() => _items.GetByIdAsync(id)).Returns(new Item { Id = id, PresetId = Guid.NewGuid() });
 
         await _sut.DeleteItemAsync(id);
 
         A.CallTo(() => _items.DeleteAsync(id)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task DeleteItemAsync_WhenItemNotVisible_DoesNotDelete()
+    {
+        var id = Guid.NewGuid();
+        A.CallTo(() => _items.GetByIdAsync(id)).Returns((Item?)null);
+
+        await _sut.DeleteItemAsync(id);
+
+        A.CallTo(() => _items.DeleteAsync(A<Guid>._)).MustNotHaveHappened();
     }
 
     [Test]
@@ -209,7 +226,7 @@ public class ItemUseCaseTest
     public async Task CreateItemAsync_CallsLoggerDebug()
     {
         var logger = A.Fake<IAppLogger>();
-        var sut = new ItemUseCase(_items, _presets, logger);
+        var sut = new ItemUseCase(_items, _presets, _auth, logger);
         var presetId = Guid.NewGuid();
         A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId)).Returns(new EffectiveFields());
 
@@ -222,7 +239,7 @@ public class ItemUseCaseTest
     public async Task UpdateItemAsync_CallsLoggerDebug()
     {
         var logger = A.Fake<IAppLogger>();
-        var sut = new ItemUseCase(_items, _presets, logger);
+        var sut = new ItemUseCase(_items, _presets, _auth, logger);
         var presetId = Guid.NewGuid();
         A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId)).Returns(new EffectiveFields());
 
@@ -235,7 +252,7 @@ public class ItemUseCaseTest
     public async Task DeleteItemAsync_CallsLoggerDebug()
     {
         var logger = A.Fake<IAppLogger>();
-        var sut = new ItemUseCase(_items, _presets, logger);
+        var sut = new ItemUseCase(_items, _presets, _auth, logger);
 
         await sut.DeleteItemAsync(Guid.NewGuid());
 
@@ -245,7 +262,7 @@ public class ItemUseCaseTest
     [Test]
     public void Constructor_WhenLoggerIsNull_UsesNullAppLogger()
     {
-        var sut = new ItemUseCase(_items, _presets, null);
+        var sut = new ItemUseCase(_items, _presets, _auth, null);
 
         Assert.DoesNotThrowAsync(async () =>
         {
@@ -261,7 +278,7 @@ public class ItemUseCaseTest
         var presetId = Guid.NewGuid();
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(false);
-        var sut = new ItemUseCase(_items, _presets, null, auth);
+        var sut = new ItemUseCase(_items, _presets, auth);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => sut.CreateItemAsync(new Item { PresetId = presetId }));
@@ -273,7 +290,7 @@ public class ItemUseCaseTest
         var presetId = Guid.NewGuid();
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(false);
-        var sut = new ItemUseCase(_items, _presets, null, auth);
+        var sut = new ItemUseCase(_items, _presets, auth);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => sut.UpdateItemAsync(new Item { PresetId = presetId }));
@@ -287,7 +304,7 @@ public class ItemUseCaseTest
         A.CallTo(() => _items.GetByIdAsync(id)).Returns(new Item { Id = id, PresetId = presetId });
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(false);
-        var sut = new ItemUseCase(_items, _presets, null, auth);
+        var sut = new ItemUseCase(_items, _presets, auth);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.DeleteItemAsync(id));
     }
@@ -299,7 +316,7 @@ public class ItemUseCaseTest
         A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId)).Returns(new EffectiveFields());
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(presetId)).Returns(true);
-        var sut = new ItemUseCase(_items, _presets, null, auth);
+        var sut = new ItemUseCase(_items, _presets, auth);
         var item = new Item { PresetId = presetId };
 
         await sut.CreateItemAsync(item);

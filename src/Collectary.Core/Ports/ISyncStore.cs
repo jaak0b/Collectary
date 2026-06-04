@@ -1,0 +1,17 @@
+using Collectary.Core.Domain;
+
+namespace Collectary.Core.Ports;
+
+public interface ISyncStore
+{
+    Task<IReadOnlyList<Preset>> GetAllPresetsAsync();
+    Task<IReadOnlyList<Item>> GetAllItemsAsync();
+    Task<IReadOnlyList<SystemField>> GetAllSystemFieldsAsync();
+    Task ApplyPresetAsync(Preset preset);
+    Task ApplyItemAsync(Item item);
+    Task ApplySystemFieldAsync(SystemField systemField);
+    Task MarkSyncedAsync(SyncEntityKind kind, Guid id, long baseRevision, bool dirty, long? revision = null);
+    Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff);
+    Task<IReadOnlyList<string>> GetReferencedImageKeysAsync();
+    Task DeleteLocallyAsync(SyncEntityKind kind, Guid id);
+}

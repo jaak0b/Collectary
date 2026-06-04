@@ -692,6 +692,46 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task TransferOwnershipAsync_PersistsNewOwner()
+    {
+        var alice = Guid.NewGuid();
+        var bob = Guid.NewGuid();
+        var scoped = new PresetRepository(DbFactory, new FieldDefinitionMerger(), null, new FixedCurrentUser(alice));
+        var preset = MakePreset("Trains");
+        await scoped.AddAsync(preset);
+
+        await scoped.TransferOwnershipAsync(preset.Id, bob);
+
+        using var db = DbFactory();
+        var reloaded = await db.Presets.FindAsync(preset.Id);
+        Assert.That(reloaded!.OwnerId, Is.EqualTo(bob));
+    }
+
+    [Test]
+    public async Task TransferOwnershipAsync_ReOwnsDescendantSubtree()
+    {
+        var alice = Guid.NewGuid();
+        var bob = Guid.NewGuid();
+        var scoped = new PresetRepository(DbFactory, new FieldDefinitionMerger(), null, new FixedCurrentUser(alice));
+        var parent = MakePreset("Parent");
+        await scoped.AddAsync(parent);
+        var child = new Preset { Name = "Child", ParentPresetId = parent.Id };
+        await scoped.AddAsync(child);
+        var grandchild = new Preset { Name = "Grandchild", ParentPresetId = child.Id };
+        await scoped.AddAsync(grandchild);
+
+        await scoped.TransferOwnershipAsync(parent.Id, bob);
+
+        using var db = DbFactory();
+        Assert.Multiple(() =>
+        {
+            Assert.That(db.Presets.Find(parent.Id)!.OwnerId, Is.EqualTo(bob));
+            Assert.That(db.Presets.Find(child.Id)!.OwnerId, Is.EqualTo(bob));
+            Assert.That(db.Presets.Find(grandchild.Id)!.OwnerId, Is.EqualTo(bob));
+        });
+    }
+
+    [Test]
     public async Task GetAllAsync_WhenScoped_ReturnsOnlyOwnedAndShared()
     {
         var me = Guid.NewGuid();
