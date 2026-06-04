@@ -22,5 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Collectary.UI\Collectary.UI.csproj" />
+    <ProjectReference Include="..\Collectary.Infrastructure.Cloud\Collectary.Infrastructure.Cloud.csproj" />
   </ItemGroup>
 </Project>

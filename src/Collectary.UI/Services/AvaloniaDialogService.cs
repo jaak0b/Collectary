@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Collectary.Core.Ports;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
@@ -45,5 +46,13 @@ public class AvaloniaDialogService : IDialogService
         if (Owner is null) return;
         var dialog = new SyncConflictsDialog { DataContext = viewModel };
         await dialog.ShowDialog(Owner);
+    }
+
+    public async Task<CloudFolder?> ShowCloudFolderPickerAsync(CloudFolderPickerViewModel viewModel)
+    {
+        if (Owner is null) return null;
+        var dialog = new CloudFolderPicker { DataContext = viewModel };
+        await viewModel.InitializeAsync();
+        return await dialog.ShowDialog<CloudFolder?>(Owner);
     }
 }

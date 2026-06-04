@@ -64,8 +64,59 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         var vm = new SettingsViewModel(
             navigateToSystemFields: NavigateToSystemFieldLibrary,
             pickFolder: PickSyncFolderAsync,
-            onSyncChanged: OnSyncSettingsChanged);
+            onSyncChanged: OnSyncSettingsChanged,
+            connectCloud: ConnectCloudAsync,
+            pickCloudFolder: SetUpCloudFolderAsync,
+            disconnectCloud: DisconnectCloudAsync,
+            detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect());
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
+    }
+
+    private async Task<string?> ConnectCloudAsync(CloudProvider provider)
+    {
+        var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+        if (auth is null) return null;
+        try
+        {
+            await auth.SignInInteractiveAsync(CancellationToken.None);
+            return auth.Account;
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud sign-in failed for {Provider}", provider);
+            await ShowCloudErrorAsync(ex);
+            return null;
+        }
+    }
+
+    private async Task<CloudFolder?> SetUpCloudFolderAsync(CloudProvider provider)
+    {
+        var rootProvider = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudRootProvider>(_scope, provider);
+        var store = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudFileStore>(_scope, provider);
+        if (rootProvider is null || store is null) return null;
+        try
+        {
+            var root = await rootProvider.GetRootFolderAsync(CancellationToken.None);
+            var picker = new CloudFolderPickerViewModel(store, root);
+            return await _dialogService.ShowCloudFolderPickerAsync(picker);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud folder selection failed for {Provider}", provider);
+            await ShowCloudErrorAsync(ex);
+            return null;
+        }
+    }
+
+    private Task ShowCloudErrorAsync(Exception ex) =>
+        _dialogService.ShowMessageAsync(
+            $"{LocalizationService.Instance["Cloud_AuthFailed"]}\n\n{ex.Message}",
+            LocalizationService.Instance["Settings"]);
+
+    private async Task DisconnectCloudAsync(CloudProvider provider)
+    {
+        var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+        if (auth is not null) await auth.SignOutAsync();
     }
 
     private void OnSyncSettingsChanged()

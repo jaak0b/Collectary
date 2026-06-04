@@ -10,5 +10,7 @@ public static class DialogService
         public Task ShowMessageAsync(string message, string title = "") => Task.CompletedTask;
         public Task ShowShareDialogAsync(ViewModels.ShareDialogViewModel viewModel) => Task.CompletedTask;
         public Task ShowSyncConflictsAsync(ViewModels.SyncViewModel viewModel) => Task.CompletedTask;
+        public Task<Core.Ports.CloudFolder?> ShowCloudFolderPickerAsync(ViewModels.CloudFolderPickerViewModel viewModel) =>
+            Task.FromResult<Core.Ports.CloudFolder?>(null);
     }
 }

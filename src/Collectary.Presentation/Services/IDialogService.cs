@@ -1,3 +1,4 @@
+using Collectary.Core.Ports;
 using Collectary.Presentation.ViewModels;
 
 namespace Collectary.Presentation.Services;
@@ -8,4 +9,5 @@ public interface IDialogService
     Task ShowMessageAsync(string message, string title = "");
     Task ShowShareDialogAsync(ShareDialogViewModel viewModel);
     Task ShowSyncConflictsAsync(SyncViewModel viewModel);
+    Task<CloudFolder?> ShowCloudFolderPickerAsync(CloudFolderPickerViewModel viewModel);
 }

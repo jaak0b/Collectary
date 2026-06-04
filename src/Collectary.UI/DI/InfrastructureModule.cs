@@ -1,4 +1,5 @@
 using Autofac;
+using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
@@ -49,8 +50,26 @@ public class InfrastructureModule : Module
         builder.RegisterType<SyncSerializer>().As<ISyncSerializer>().SingleInstance();
         builder.RegisterType<EfSyncStore>().As<ISyncStore>().SingleInstance();
         builder.Register(_ => new FileSystemSyncBackend(() => AppPreferences.Load().SyncLocation))
-               .As<ISyncBackend>()
+               .Keyed<ISyncBackend>(CloudProvider.Folder)
                .SingleInstance();
+
+        // The single backend SyncService consumes: routes to the active provider's backend,
+        // resolving cloud backends lazily (only when selected) so MSAL/Graph never spin up for
+        // Folder-only users, and tolerating providers whose backend isn't registered on this platform.
+        builder.Register(c =>
+        {
+            var context = c.Resolve<IComponentContext>();
+            var backends = new Dictionary<CloudProvider, Func<ISyncBackend>>
+            {
+                [CloudProvider.Folder] = () => context.ResolveKeyed<ISyncBackend>(CloudProvider.Folder),
+            };
+            foreach (var provider in new[] { CloudProvider.OneDrive, CloudProvider.GoogleDrive })
+                if (context.IsRegisteredWithKey<ISyncBackend>(provider))
+                    backends[provider] = () => context.ResolveKeyed<ISyncBackend>(provider);
+
+            return new RoutingSyncBackend(() => AppPreferences.Load().SyncProvider, backends);
+        }).As<ISyncBackend>().SingleInstance();
+
         builder.RegisterType<SyncService>().As<ISyncService>().SingleInstance();
     }
 }

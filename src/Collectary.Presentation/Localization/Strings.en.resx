@@ -228,4 +228,21 @@
   <data name="Sync_Disable" xml:space="preserve"><value>Disable sync</value></data>
   <data name="Sync_AutoSync" xml:space="preserve"><value>Auto-sync</value></data>
   <data name="Sync_IntervalMinutes" xml:space="preserve"><value>Interval (minutes)</value></data>
+  <data name="Settings_SyncProvider" xml:space="preserve"><value>Storage provider</value></data>
+  <data name="Settings_Provider_Folder" xml:space="preserve"><value>Local / mounted folder</value></data>
+  <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>
+  <data name="Settings_Provider_GoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="Cloud_Connect" xml:space="preserve"><value>Connect…</value></data>
+  <data name="Cloud_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Cloud_Connected_As" xml:space="preserve"><value>Connected as {0}</value></data>
+  <data name="Cloud_NotConnected" xml:space="preserve"><value>Not connected</value></data>
+  <data name="Cloud_ChooseFolder" xml:space="preserve"><value>Set up sync folder</value></data>
+  <data name="Cloud_FolderReady" xml:space="preserve"><value>Sync folder ready</value></data>
+  <data name="Cloud_AutoDetectFolder" xml:space="preserve"><value>Use installed OneDrive folder</value></data>
+  <data name="Cloud_AuthFailed" xml:space="preserve"><value>Could not connect. Please try again.</value></data>
+  <data name="Cloud_FolderPicker_Title" xml:space="preserve"><value>Choose a sync folder</value></data>
+  <data name="Cloud_NewFolderName" xml:space="preserve"><value>New folder name</value></data>
+  <data name="Cloud_CreateFolder" xml:space="preserve"><value>Create</value></data>
+  <data name="Cloud_UseThisFolder" xml:space="preserve"><value>Use this folder</value></data>
+  <data name="Cloud_SyncFolder" xml:space="preserve"><value>Sync folder:</value></data>
 </root>

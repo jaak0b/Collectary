@@ -3,8 +3,14 @@
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:conv="using:Collectary.UI.Converters"
+             xmlns:domain="using:Collectary.Core.Domain"
              x:Class="Collectary.UI.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
+
+    <UserControl.Resources>
+        <conv:CloudProviderDisplayConverter x:Key="ProviderConv"/>
+    </UserControl.Resources>
 
     <ScrollViewer>
         <StackPanel Spacing="28" Margin="24,20,24,24" MaxWidth="520" HorizontalAlignment="Left">
@@ -66,7 +72,26 @@
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            LetterSpacing="1"/>
 
+                <!-- Storage provider -->
                 <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding [Settings_SyncProvider], Source={x:Static loc:LocalizationService.Instance}}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding ProviderOptions}"
+                              SelectedItem="{Binding SyncProvider}"
+                              MinWidth="220">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="domain:CloudProvider">
+                                <TextBlock Text="{Binding Converter={StaticResource ProviderConv}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+
+                <!-- Folder provider -->
+                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center" IsVisible="{Binding !IsCloudProvider}">
                     <TextBlock Grid.Column="0"
                                Text="{Binding [Sync_Location], Source={x:Static loc:LocalizationService.Instance}}"
                                VerticalAlignment="Center"
@@ -84,9 +109,47 @@
                             <Button Content="{Binding [Sync_ChooseFolder], Source={x:Static loc:LocalizationService.Instance}}"
                                     Command="{Binding ChooseSyncFolderCommand}"
                                     Padding="12,6"/>
+                            <Button Content="{Binding [Cloud_AutoDetectFolder], Source={x:Static loc:LocalizationService.Instance}}"
+                                    Command="{Binding AutoDetectLocalCloudFolderCommand}"
+                                    Padding="12,6"/>
                             <Button Content="{Binding [Sync_Disable], Source={x:Static loc:LocalizationService.Instance}}"
                                     Command="{Binding DisableSyncCommand}"
                                     IsVisible="{Binding IsSyncConfigured}"
+                                    Padding="12,6"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Cloud provider -->
+                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center" IsVisible="{Binding IsCloudProvider}">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding [Settings_SyncProvider], Source={x:Static loc:LocalizationService.Instance}}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <StackPanel Grid.Column="1" Spacing="6">
+                        <TextBlock Text="{Binding ConnectionStatus}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                    IsVisible="{Binding IsCloudFolderChosen}">
+                            <TextBlock Text="{Binding [Cloud_SyncFolder], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding SelectedFolderName}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="{Binding [Cloud_Connect], Source={x:Static loc:LocalizationService.Instance}}"
+                                    Command="{Binding ConnectCommand}"
+                                    IsVisible="{Binding !IsCloudConnected}"
+                                    Padding="12,6"/>
+                            <Button Content="{Binding [Cloud_ChooseFolder], Source={x:Static loc:LocalizationService.Instance}}"
+                                    Command="{Binding ChooseCloudFolderCommand}"
+                                    IsVisible="{Binding IsCloudConnected}"
+                                    Padding="12,6"/>
+                            <Button Content="{Binding [Cloud_Disconnect], Source={x:Static loc:LocalizationService.Instance}}"
+                                    Command="{Binding DisconnectCommand}"
+                                    IsVisible="{Binding IsCloudConnected}"
                                     Padding="12,6"/>
                         </StackPanel>
                     </StackPanel>

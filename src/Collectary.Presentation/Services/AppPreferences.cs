@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Collectary.Core.Domain;
 using Collectary.Presentation.Localization;
 
 namespace Collectary.Presentation.Services;
@@ -13,7 +14,14 @@ public record AppPreferencesData(
     string? SyncLocation = null,
     bool AutoSyncEnabled = false,
     int AutoSyncIntervalMinutes = 5,
-    int TombstoneRetentionDays = 30);
+    int TombstoneRetentionDays = 30,
+    CloudProvider SyncProvider = CloudProvider.Folder,
+    string? OneDriveRootFolderId = null,
+    string? OneDriveRootFolderName = null,
+    string? OneDriveAccount = null,
+    string? GoogleDriveRootFolderId = null,
+    string? GoogleDriveRootFolderName = null,
+    string? GoogleDriveAccount = null);
 
 public static class AppPreferences
 {

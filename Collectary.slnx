@@ -4,6 +4,7 @@
   <Project Path="tests/Collectary.UI.Tests/Collectary.UI.Tests.csproj" />
   <Project Path="src/Collectary.Core/Collectary.Core.csproj" />
   <Project Path="src/Collectary.Infrastructure/Collectary.Infrastructure.csproj" />
+  <Project Path="src/Collectary.Infrastructure.Cloud/Collectary.Infrastructure.Cloud.csproj" />
   <Project Path="src/Collectary.Presentation/Collectary.Presentation.csproj" />
   <Project Path="src/Collectary.UI.Android/Collectary.UI.Android.csproj" />
   <Project Path="src/Collectary.UI.Browser/Collectary.UI.Browser.csproj" />
