@@ -98,7 +98,25 @@ public class LoginViewModelTest
 
         await vm.SubmitCommand.ExecuteAsync(null);
 
-        Assert.That(vm.HasError, Is.True);
+        Assert.That(vm.ErrorMessage,
+            Is.EqualTo(Presentation.Localization.LocalizationService.Instance["Login_FieldsRequired"]));
+    }
+
+    [Test]
+    public async Task Submit_Register_InvalidEmail_SetsEmailSpecificError()
+    {
+        A.CallTo(() => _auth.RegisterAsync(A<string>._, A<string>._, A<string>._, A<string?>._))
+            .Throws(new ArgumentException("Email is not a valid address.", "email"));
+        var vm = Make();
+        vm.IsRegisterMode = true;
+        vm.Username = "alice";
+        vm.Password = "pw";
+        vm.Email = "not-an-email";
+
+        await vm.SubmitCommand.ExecuteAsync(null);
+
+        Assert.That(vm.ErrorMessage,
+            Is.EqualTo(Presentation.Localization.LocalizationService.Instance["Login_InvalidEmail"]));
     }
 
     [Test]

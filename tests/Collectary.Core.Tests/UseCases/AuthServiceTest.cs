@@ -28,20 +28,46 @@ public class AuthServiceTest
     private static PasswordHash AnyHash() => new(new byte[] { 1 }, new byte[] { 2 }, 1, "PBKDF2-HMAC-SHA512");
 
     [Test]
-    public async Task ChangePasswordAsync_SavesNewHashForUser()
+    public async Task ChangePasswordAsync_WithCorrectCurrentPassword_SavesNewHashForUser()
     {
         var userId = Guid.NewGuid();
+        var current = AnyHash();
         var newHash = AnyHash();
+        A.CallTo(() => _credentials.GetAsync(userId)).Returns(current);
+        A.CallTo(() => _hasher.Verify("oldpw", current)).Returns(true);
         A.CallTo(() => _hasher.Hash("newpw")).Returns(newHash);
 
-        await _sut.ChangePasswordAsync(userId, "newpw");
+        await _sut.ChangePasswordAsync(userId, "oldpw", "newpw");
 
         A.CallTo(() => _credentials.SaveAsync(userId, newHash)).MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public void ChangePasswordAsync_WhenPasswordEmpty_Throws() =>
-        Assert.ThrowsAsync<ArgumentException>(() => _sut.ChangePasswordAsync(Guid.NewGuid(), ""));
+    public void ChangePasswordAsync_WithWrongCurrentPassword_ThrowsAndDoesNotSave()
+    {
+        var userId = Guid.NewGuid();
+        var current = AnyHash();
+        A.CallTo(() => _credentials.GetAsync(userId)).Returns(current);
+        A.CallTo(() => _hasher.Verify("wrong", current)).Returns(false);
+
+        Assert.ThrowsAsync<InvalidCredentialsException>(
+            () => _sut.ChangePasswordAsync(userId, "wrong", "newpw"));
+        A.CallTo(() => _credentials.SaveAsync(userId, A<PasswordHash>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public void ChangePasswordAsync_WhenNoCredentialStored_Throws()
+    {
+        var userId = Guid.NewGuid();
+        A.CallTo(() => _credentials.GetAsync(userId)).Returns((PasswordHash?)null);
+
+        Assert.ThrowsAsync<InvalidCredentialsException>(
+            () => _sut.ChangePasswordAsync(userId, "oldpw", "newpw"));
+    }
+
+    [Test]
+    public void ChangePasswordAsync_WhenNewPasswordEmpty_Throws() =>
+        Assert.ThrowsAsync<ArgumentException>(() => _sut.ChangePasswordAsync(Guid.NewGuid(), "oldpw", ""));
 
     [Test]
     public async Task RegisterAsync_WhenUsernameFree_AddsUserAndSetsSession()
@@ -110,6 +136,26 @@ public class AuthServiceTest
     }
 
     [Test]
+    public async Task RegisterAsync_WithValidEmail_StoresIt()
+    {
+        A.CallTo(() => _users.GetByUsernameAsync("alice")).Returns((User?)null);
+        A.CallTo(() => _hasher.Hash(A<string>._)).Returns(AnyHash());
+
+        var user = await _sut.RegisterAsync("alice", "Alice", "pw", "alice@example.com");
+
+        Assert.That(user.Email, Is.EqualTo("alice@example.com"));
+    }
+
+    [Test]
+    public void RegisterAsync_WithInvalidEmail_Throws()
+    {
+        A.CallTo(() => _users.GetByUsernameAsync("alice")).Returns((User?)null);
+
+        Assert.ThrowsAsync<ArgumentException>(
+            () => _sut.RegisterAsync("alice", "Alice", "pw", "not-an-email"));
+    }
+
+    [Test]
     public async Task LoginAsync_WithValidCredentials_ReturnsUserAndSetsSession()
     {
         var user = new User { Username = "alice" };
@@ -139,6 +185,18 @@ public class AuthServiceTest
             Assert.That(result, Is.Null);
             Assert.That(_session.IsAuthenticated, Is.False);
         });
+    }
+
+    [Test]
+    public async Task LoginAsync_WithUnknownUser_StillRunsAHashVerify()
+    {
+        // Equalises timing between existing and non-existing usernames so the response
+        // time cannot be used to enumerate accounts.
+        A.CallTo(() => _users.GetByUsernameAsync("ghost")).Returns((User?)null);
+
+        await _sut.LoginAsync("ghost", "pw");
+
+        A.CallTo(() => _hasher.Verify("pw", A<PasswordHash>._)).MustHaveHappened();
     }
 
     [Test]

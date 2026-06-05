@@ -56,3 +56,21 @@ polymorphic resolver so every field type round-trips through JSON correctly. A n
 
 On the desktop, a dispatcher-based scheduler runs auto-sync on the configured interval (default 5
 minutes; `0` disables it).
+
+## Cloud-provider auth hardening
+
+The API-based cloud backends (OneDrive via MSAL, Google Drive via Google.Apis) carry a few
+deliberate guardrails:
+
+- **OAuth tokens are encrypted at rest.** MSAL uses its DPAPI-backed cache; the Google client routes
+  its token store through `DpapiSecretStore` (DPAPI, `CurrentUser` scope) instead of the SDK's
+  default plaintext file store.
+- **Least-privilege scopes.** Google uses `drive.file`, so the app only ever sees files it created
+  (an app-owned `Collectary` folder), never the user's whole drive.
+- **The Google `id_token` is signature-verified.** When we read the signed-in account's email for
+  display, `GoogleAuthClient` validates the token via `GoogleJsonWebSignature.ValidateAsync`
+  (signature, issuer, expiry) rather than trusting an unsigned payload; on any failure it falls back
+  to a generic label and trusts nothing from the token.
+- **Drive folder ids are validated before they reach a query.** `GoogleDriveCloudFileStore` only
+  interpolates ids matching Drive's `[A-Za-z0-9_-]` charset into its `Q` filter, so a stray quote
+  can't break out of the query.

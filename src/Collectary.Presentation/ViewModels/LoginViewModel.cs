@@ -87,9 +87,10 @@ public partial class LoginViewModel : ViewModelBase
         {
             ErrorMessage = LocalizationService.Instance["Login_UsernameTaken"];
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
-            ErrorMessage = LocalizationService.Instance["Login_FieldsRequired"];
+            ErrorMessage = LocalizationService.Instance[
+                ex.ParamName == "email" ? "Login_InvalidEmail" : "Login_FieldsRequired"];
         }
         finally
         {

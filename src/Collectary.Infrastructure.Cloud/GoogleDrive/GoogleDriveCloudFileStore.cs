@@ -104,10 +104,19 @@ public class GoogleDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
     private async Task<IReadOnlyList<DriveData.File>> ChildrenAsync(string folderId, CancellationToken ct)
     {
         var request = _drive.Files.List();
-        request.Q = $"'{folderId}' in parents and trashed = false";
+        request.Q = $"'{ValidId(folderId)}' in parents and trashed = false";
         request.Fields = "files(id,name,mimeType,size)";
         request.PageSize = 1000;
         var response = await request.ExecuteAsync(ct);
         return (IReadOnlyList<DriveData.File>?)response.Files ?? Array.Empty<DriveData.File>();
+    }
+
+    // Drive file ids (and the "root" alias) are limited to letters, digits, '-' and '_'. Rejecting
+    // anything else keeps a stray quote from breaking out of the interpolated `Q` query.
+    private string ValidId(string folderId)
+    {
+        if (!string.IsNullOrEmpty(folderId) && folderId.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_'))
+            return folderId;
+        throw new ArgumentException($"Unsafe Drive folder id: '{folderId}'", nameof(folderId));
     }
 }

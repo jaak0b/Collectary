@@ -1,8 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using System.Text.Json;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
+using Google.Apis.Auth;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Drive.v3;
@@ -48,7 +47,7 @@ public class GoogleAuthClient : ICloudAuthClient
     public async Task SignInInteractiveAsync(CancellationToken ct)
     {
         _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(_secrets, Scopes, UserId, ct, _dataStore);
-        _account = EmailFromIdToken(_credential.Token.IdToken) ?? "Google Drive";
+        _account = await EmailFromIdTokenAsync(_credential.Token.IdToken) ?? "Google Drive";
     }
 
     public async Task SignOutAsync()
@@ -72,26 +71,23 @@ public class GoogleAuthClient : ICloudAuthClient
     {
         var token = await _flow.LoadTokenAsync(UserId, ct);
         if (token is null) return null;
-        _account ??= EmailFromIdToken(token.IdToken) ?? "Google Drive";
+        _account ??= await EmailFromIdTokenAsync(token.IdToken) ?? "Google Drive";
         return new UserCredential(_flow, UserId, token);
     }
 
-    private static string? EmailFromIdToken(string? idToken)
+    // Validate the id_token's signature, issuer and expiry against Google's published certs before
+    // trusting any claim from it — the previous code decoded the unsigned payload, so a tampered token
+    // could have spoofed the displayed account. On any validation failure we trust nothing and the
+    // caller falls back to a generic label.
+    private async Task<string?> EmailFromIdTokenAsync(string? idToken)
     {
         if (string.IsNullOrEmpty(idToken)) return null;
-        var parts = idToken.Split('.');
-        if (parts.Length < 2) return null;
-
-        var payload = parts[1].Replace('-', '+').Replace('_', '/');
-        payload += (payload.Length % 4) switch { 2 => "==", 3 => "=", _ => string.Empty };
-
         try
         {
-            var json = Encoding.UTF8.GetString(Convert.FromBase64String(payload));
-            using var doc = JsonDocument.Parse(json);
-            return doc.RootElement.TryGetProperty("email", out var email) ? email.GetString() : null;
+            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+            return string.IsNullOrEmpty(payload.Email) ? null : payload.Email;
         }
-        catch
+        catch (InvalidJwtException)
         {
             return null;
         }

@@ -239,6 +239,7 @@
   <data name="Login_Failed" xml:space="preserve"><value>Benutzername oder Passwort ist falsch.</value></data>
   <data name="Login_UsernameTaken" xml:space="preserve"><value>Dieser Benutzername ist bereits vergeben.</value></data>
   <data name="Login_FieldsRequired" xml:space="preserve"><value>Benutzername und Passwort sind erforderlich.</value></data>
+  <data name="Login_InvalidEmail" xml:space="preserve"><value>Bitte geben Sie eine gültige E-Mail-Adresse ein.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Sammlung teilen</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Mit einem Benutzer teilen</value></data>
   <data name="Share_Username" xml:space="preserve"><value>Benutzername</value></data>

@@ -142,6 +142,15 @@ public class GoogleDriveCloudFileStoreTest
     }
 
     [Test]
+    public void ListFilesAsync_WithMalformedFolderId_ThrowsBeforeQuerying()
+    {
+        // A folder id with a quote would corrupt the interpolated Drive `Q` query; reject it.
+        Assert.ThrowsAsync<ArgumentException>(
+            () => Build().ListFilesAsync("root' or '1'='1", CancellationToken.None));
+        Assert.That(_stub.CountRequests(HttpMethod.Get, "drive/v3/files"), Is.EqualTo(0));
+    }
+
+    [Test]
     public async Task UploadAsync_NewFile_UsesResumableUpload()
     {
         _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""")

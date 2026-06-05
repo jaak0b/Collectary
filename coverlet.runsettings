@@ -32,6 +32,8 @@
             [Collectary.UI]CompiledAvaloniaXaml.*,
             [Collectary.UI]XamlGeneratedNamespace.*,
             [Collectary.UI]Collectary.UI.DI.*,
+            [Collectary.UI]Collectary.UI.Services.AvaloniaDialogService,
+            [Collectary.Infrastructure.Cloud]Collectary.Infrastructure.Cloud.CloudModule,
             [Collectary.Presentation]Collectary.Presentation.ViewModels.MainWindowViewModel,
             [Collectary.Presentation]Collectary.Presentation.Services.DialogService,
             [Collectary.Presentation]Collectary.Presentation.Services.AppLogger,
