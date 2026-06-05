@@ -1023,14 +1023,19 @@ collections can be <a href="../sharing/">shared</a> between users.</p>
 <li><strong>Username</strong> — used to log in.</li>
 <li><strong>Display name</strong> — shown in the UI and on shared collections.</li>
 <li><strong>Password</strong> — see security note below.</li>
-<li><strong>Email</strong> (optional).</li>
+<li><strong>Email</strong> (optional) — if you fill it in, it has to look like a real address (e.g.
+  <code>you@example.com</code>); leave it blank to skip it entirely.</li>
 </ul>
 <h2 id="logging-in">Logging in<a class="headerlink" href="#logging-in" title="Permanent link">&para;</a></h2>
 <p>On launch you log in with your username and password. The logged-in user determines which
 collections you see: your own, plus any that other users have shared with you.</p>
+<p>A failed login looks and takes the same whether the username exists or not, so the sign-in screen
+can't be used to fish for which usernames are registered.</p>
 <h2 id="changing-your-password">Changing your password<a class="headerlink" href="#changing-your-password" title="Permanent link">&para;</a></h2>
-<p>You can change your password from your account at any time. The new password is re-hashed with a
-fresh random salt.</p>
+<p>You can change your password from your account at any time. You'll be asked for your <strong>current</strong>
+password first — changing it only succeeds if that matches, so someone who walks up to an unlocked
+session can't silently swap your password without knowing the old one. The new password is then
+re-hashed with a fresh random salt.</p>
 <h2 id="password-security">Password security<a class="headerlink" href="#password-security" title="Permanent link">&para;</a></h2>
 <div class="admonition info">
 <p class="admonition-title">Your password is never stored in a readable form</p>
