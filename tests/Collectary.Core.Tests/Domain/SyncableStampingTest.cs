@@ -33,6 +33,20 @@ public class SyncableStampingTest
     }
 
     [Test]
+    public void MarkPulled_SetsBaseRevisionToRevisionAndClearsDirty()
+    {
+        ISyncable item = new Item { Revision = 9, BaseRevision = 4, IsDirty = true };
+
+        item.MarkPulled();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.BaseRevision, Is.EqualTo(9));
+            Assert.That(item.IsDirty, Is.False);
+        });
+    }
+
+    [Test]
     public void StampDeleted_SetsTombstoneFields()
     {
         var user = Guid.NewGuid();

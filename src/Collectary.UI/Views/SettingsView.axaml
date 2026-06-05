@@ -252,6 +252,34 @@
                 </Grid>
             </StackPanel>
 
+            <Separator/>
+
+            <StackPanel Spacing="14">
+                <TextBlock Text="{Binding [Backup_Title], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           LetterSpacing="1"/>
+
+                <TextBlock Text="{Binding [Backup_Hint], Source={x:Static loc:LocalizationService.Instance}}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{Binding [Backup_Export], Source={x:Static loc:LocalizationService.Instance}}"
+                            Command="{Binding ExportBackupCommand}"
+                            Padding="12,6"/>
+                    <Button Content="{Binding [Backup_Import], Source={x:Static loc:LocalizationService.Instance}}"
+                            Command="{Binding ImportBackupCommand}"
+                            Padding="12,6"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding BackupStatus}"
+                           IsVisible="{Binding BackupStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+            </StackPanel>
+
         </StackPanel>
     </ScrollViewer>
 

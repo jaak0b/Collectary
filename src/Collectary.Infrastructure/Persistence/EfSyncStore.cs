@@ -142,26 +142,23 @@ public class EfSyncStore : ISyncStore
         await db.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyList<string>> GetReferencedImageKeysAsync()
+    public Task<IReadOnlyList<string>> GetReferencedImageKeysAsync() =>
+        CollectImageKeysAsync(includeDeleted: true);
+
+    public Task<IReadOnlyList<string>> GetLiveReferencedImageKeysAsync() =>
+        CollectImageKeysAsync(includeDeleted: false);
+
+    private async Task<IReadOnlyList<string>> CollectImageKeysAsync(bool includeDeleted)
     {
         using var db = _dbFactory();
-        var items = await WithItemDetails(db.Items.AsNoTracking()).ToListAsync();
+        var source = db.Items.AsNoTracking();
+        if (includeDeleted) source = source.IgnoreQueryFilters();
+        var items = await WithItemDetails(source).ToListAsync();
         var keys = new HashSet<string>();
         foreach (var item in items)
             foreach (var value in item.Values)
-                CollectImageKeys(value, keys);
+                keys.UnionWith(value.ReferencedBlobKeys());
         return keys.ToList();
-    }
-
-    private void CollectImageKeys(FieldValue value, HashSet<string> keys)
-    {
-        if (value is ImageFieldValue image && !string.IsNullOrEmpty(image.ImageKey))
-            keys.Add(image.ImageKey);
-
-        if (value is ListFieldValue list)
-            foreach (var entry in list.Entries)
-                foreach (var sub in entry.SubValues)
-                    CollectImageKeys(sub, keys);
     }
 
     private void CopySyncMetadata(ISyncable source, ISyncable target)

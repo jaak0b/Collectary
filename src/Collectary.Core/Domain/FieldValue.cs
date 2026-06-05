@@ -7,6 +7,7 @@ public abstract class FieldValue : DomainObject
     public Guid? ListEntryId { get; set; }
     public abstract bool IsEmpty { get; }
     public abstract void CopyFrom(FieldValue source);
+    public virtual IEnumerable<string> ReferencedBlobKeys() => Enumerable.Empty<string>();
 }
 
 public abstract class FieldValue<TDefinition> : FieldValue

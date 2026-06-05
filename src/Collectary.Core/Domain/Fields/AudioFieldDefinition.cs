@@ -25,5 +25,10 @@ public class AudioFieldValue : FieldValue<AudioFieldDefinition>
         }
     }
 
+    public override IEnumerable<string> ReferencedBlobKeys()
+    {
+        if (!string.IsNullOrEmpty(AudioKey)) yield return AudioKey;
+    }
+
     public override string ToString() => IsEmpty ? "" : $"{DurationSeconds ?? 0}s";
 }

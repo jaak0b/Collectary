@@ -84,13 +84,13 @@ public class SyncService : ISyncService
         switch (conflict.Kind)
         {
             case SyncEntityKind.Preset:
-                await _store.ApplyPresetAsync(MarkPulled(_serializer.Deserialize<Preset>(content)));
+                await _store.ApplyPresetAsync(Pull<Preset>(content));
                 break;
             case SyncEntityKind.Item:
-                await _store.ApplyItemAsync(MarkPulled(_serializer.Deserialize<Item>(content)));
+                await _store.ApplyItemAsync(Pull<Item>(content));
                 break;
             default:
-                await _store.ApplySystemFieldAsync(MarkPulled(_serializer.Deserialize<SystemField>(content)));
+                await _store.ApplySystemFieldAsync(Pull<SystemField>(content));
                 break;
         }
     }
@@ -142,7 +142,8 @@ public class SyncService : ISyncService
             else if (remoteChanged)
             {
                 var remote = _serializer.Deserialize<T>((await _backend.ReadAsync(kind, id))!);
-                await applyLocal(MarkPulled(remote));
+                remote.MarkPulled();
+                await applyLocal(remote);
                 pulled++;
             }
         }
@@ -154,7 +155,7 @@ public class SyncService : ISyncService
     {
         if (_imageStore is null) return;
 
-        var referenced = (await _store.GetReferencedImageKeysAsync()).ToHashSet();
+        var referenced = (await _store.GetLiveReferencedImageKeysAsync()).ToHashSet();
         var localSet = (await _imageStore.ListKeysAsync()).ToHashSet();
         var remoteSet = (await _backend.ListBlobKeysAsync(ImageKind)).ToHashSet();
 
@@ -190,10 +191,10 @@ public class SyncService : ISyncService
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind"),
     };
 
-    private T MarkPulled<T>(T aggregate) where T : ISyncable
+    private T Pull<T>(string content) where T : ISyncable
     {
-        aggregate.BaseRevision = aggregate.Revision;
-        aggregate.IsDirty = false;
-        return aggregate;
+        var entity = _serializer.Deserialize<T>(content);
+        entity.MarkPulled();
+        return entity;
     }
 }

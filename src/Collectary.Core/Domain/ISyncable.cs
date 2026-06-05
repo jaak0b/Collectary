@@ -24,4 +24,10 @@ public interface ISyncable
         UpdatedAt = DateTime.UtcNow;
         StampModified(userId);
     }
+
+    void MarkPulled()
+    {
+        BaseRevision = Revision;
+        IsDirty = false;
+    }
 }

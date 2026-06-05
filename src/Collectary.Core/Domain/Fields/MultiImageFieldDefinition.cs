@@ -20,5 +20,7 @@ public class MultiImageFieldValue : FieldValue<MultiImageFieldDefinition>
         if (source is MultiImageFieldValue s) ImageKeys = new List<string>(s.ImageKeys);
     }
 
+    public override IEnumerable<string> ReferencedBlobKeys() => ImageKeys.Where(k => !string.IsNullOrEmpty(k));
+
     public override string ToString() => ImageKeys.Count.ToString();
 }

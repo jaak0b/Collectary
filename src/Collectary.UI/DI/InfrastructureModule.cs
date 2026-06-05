@@ -73,5 +73,6 @@ public class InfrastructureModule : Module
         }).As<ISyncBackend>().SingleInstance();
 
         builder.RegisterType<SyncService>().As<ISyncService>().SingleInstance();
+        builder.RegisterType<BackupService>().As<IBackupService>().SingleInstance();
     }
 }

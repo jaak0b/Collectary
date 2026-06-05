@@ -30,4 +30,11 @@ public class MultiImageFieldValueTest
         Assert.That(new MultiImageFieldValue { ImageKeys = ["a", "b"] }.ToString(), Is.EqualTo("2"));
         Assert.That(new MultiImageFieldValue().ToString(), Is.EqualTo("0"));
     }
+
+    [Test]
+    public void ReferencedBlobKeys_ReturnsAllKeys()
+    {
+        Assert.That(new MultiImageFieldValue { ImageKeys = ["a", "b"] }.ReferencedBlobKeys(), Is.EqualTo(new[] { "a", "b" }));
+        Assert.That(new MultiImageFieldValue().ReferencedBlobKeys(), Is.Empty);
+    }
 }

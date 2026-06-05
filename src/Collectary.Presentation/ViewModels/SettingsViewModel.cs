@@ -20,6 +20,8 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Func<CloudProvider, Task<CloudFolder?>>? _pickCloudFolder;
     private readonly Func<CloudProvider, Task>? _disconnectCloud;
     private readonly Func<string?>? _detectInstalledCloudFolder;
+    private readonly Func<Task<bool>>? _exportBackup;
+    private readonly Func<Task<BackupImportResult?>>? _importBackup;
     private bool _loadingSync;
     private bool _loadingAppearance;
 
@@ -342,6 +344,49 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private void DisableSync() => SyncLocation = null;
 
+    [ObservableProperty]
+    public partial string? BackupStatus { get; set; }
+
+    [RelayCommand]
+    private async Task ExportBackup()
+    {
+        if (_exportBackup is null) return;
+        BackupStatus = null;
+        try
+        {
+            if (await _exportBackup())
+                BackupStatus = LocalizationService.Instance["Backup_Exported"];
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Backup export failed");
+            BackupStatus = LocalizationService.Instance["Backup_Error"];
+        }
+    }
+
+    [RelayCommand]
+    private async Task ImportBackup()
+    {
+        if (_importBackup is null) return;
+        BackupStatus = null;
+        try
+        {
+            var result = await _importBackup();
+            if (result is null) return;
+            BackupStatus = result.HasConflicts
+                ? string.Format(
+                    LocalizationService.Instance["Backup_ImportedWithConflicts"],
+                    result.Applied,
+                    string.Join(", ", result.Conflicts.Select(c => c.LocalLabel)))
+                : string.Format(LocalizationService.Instance["Backup_Imported"], result.Applied);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Backup import failed");
+            BackupStatus = LocalizationService.Instance["Backup_Error"];
+        }
+    }
+
     private void SaveSyncPreferences()
     {
         if (_loadingSync) return;
@@ -361,7 +406,9 @@ public partial class SettingsViewModel : ViewModelBase
         Func<CloudProvider, Task<string?>>? connectCloud = null,
         Func<CloudProvider, Task<CloudFolder?>>? pickCloudFolder = null,
         Func<CloudProvider, Task>? disconnectCloud = null,
-        Func<string?>? detectInstalledCloudFolder = null)
+        Func<string?>? detectInstalledCloudFolder = null,
+        Func<Task<bool>>? exportBackup = null,
+        Func<Task<BackupImportResult?>>? importBackup = null)
     {
         _navigateToSystemFields = navigateToSystemFields;
         _pickFolder = pickFolder;
@@ -370,6 +417,8 @@ public partial class SettingsViewModel : ViewModelBase
         _pickCloudFolder = pickCloudFolder;
         _disconnectCloud = disconnectCloud;
         _detectInstalledCloudFolder = detectInstalledCloudFolder;
+        _exportBackup = exportBackup;
+        _importBackup = importBackup;
         var currentCode = LocalizationService.Instance.CurrentCode;
         SelectedLanguage = LanguageOptions.FirstOrDefault(o => o.Code == currentCode) ?? LanguageOptions[0];
 

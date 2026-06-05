@@ -281,6 +281,14 @@
   <data name="Sync_Disable" xml:space="preserve"><value>Sync deaktivieren</value></data>
   <data name="Sync_AutoSync" xml:space="preserve"><value>Automatische Synchronisierung</value></data>
   <data name="Sync_IntervalMinutes" xml:space="preserve"><value>Intervall (Minuten)</value></data>
+  <data name="Backup_Title" xml:space="preserve"><value>Sichern &amp; wiederherstellen</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Speichere deine ganze Sammlung — Einträge, Bilder und Dokumente — in einer einzigen Datei, die du verschieben, teilen oder sicher aufbewahren kannst. Beim Import wird sie wieder zusammengeführt.</value></data>
+  <data name="Backup_Export" xml:space="preserve"><value>In Datei exportieren…</value></data>
+  <data name="Backup_Import" xml:space="preserve"><value>Aus Datei importieren…</value></data>
+  <data name="Backup_Exported" xml:space="preserve"><value>Sicherung gespeichert.</value></data>
+  <data name="Backup_Imported" xml:space="preserve"><value>{0} Einträge importiert.</value></data>
+  <data name="Backup_ImportedWithConflicts" xml:space="preserve"><value>{0} Einträge importiert. Diese behielten deine lokale Version: {1}</value></data>
+  <data name="Backup_Error" xml:space="preserve"><value>Sicherung fehlgeschlagen. Bitte erneut versuchen.</value></data>
   <data name="Settings_SyncProvider" xml:space="preserve"><value>Speicheranbieter</value></data>
   <data name="Settings_Provider_Folder" xml:space="preserve"><value>Lokaler / eingebundener Ordner</value></data>
   <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>

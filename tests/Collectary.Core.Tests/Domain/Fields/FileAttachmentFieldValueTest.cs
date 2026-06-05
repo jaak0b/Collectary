@@ -28,4 +28,12 @@ public class FileAttachmentFieldValueTest
     [Test]
     public void ToString_ReportsCount() =>
         Assert.That(new FileAttachmentFieldValue { Files = [new("k", "a"), new("k2", "b")] }.ToString(), Is.EqualTo("2"));
+
+    [Test]
+    public void ReferencedBlobKeys_ReturnsFileKeys()
+    {
+        Assert.That(new FileAttachmentFieldValue { Files = [new("k1", "a.pdf"), new("k2", "b.pdf")] }.ReferencedBlobKeys(),
+            Is.EqualTo(new[] { "k1", "k2" }));
+        Assert.That(new FileAttachmentFieldValue().ReferencedBlobKeys(), Is.Empty);
+    }
 }

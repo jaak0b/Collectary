@@ -27,4 +27,11 @@ public class AudioFieldValueTest
         Assert.That(target.AudioKey, Is.EqualTo("k"));
         Assert.That(target.DurationSeconds, Is.EqualTo(5));
     }
+
+    [Test]
+    public void ReferencedBlobKeys_ReturnsAudioKeyOrNothing()
+    {
+        Assert.That(new AudioFieldValue { AudioKey = "k" }.ReferencedBlobKeys(), Is.EqualTo(new[] { "k" }));
+        Assert.That(new AudioFieldValue().ReferencedBlobKeys(), Is.Empty);
+    }
 }

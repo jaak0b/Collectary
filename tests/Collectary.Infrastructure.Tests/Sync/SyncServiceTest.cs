@@ -334,6 +334,9 @@ internal sealed class InMemorySyncStore : ISyncStore
     public Task<IReadOnlyList<string>> GetReferencedImageKeysAsync() =>
         Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
 
+    public Task<IReadOnlyList<string>> GetLiveReferencedImageKeysAsync() =>
+        Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+
     public Task DeleteLocallyAsync(SyncEntityKind kind, Guid id)
     {
         switch (kind)

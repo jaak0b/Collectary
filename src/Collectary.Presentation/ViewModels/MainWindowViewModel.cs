@@ -75,8 +75,57 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             connectCloud: ConnectCloudAsync,
             pickCloudFolder: SetUpCloudFolderAsync,
             disconnectCloud: DisconnectCloudAsync,
-            detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect());
+            detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect(),
+            exportBackup: ExportBackupAsync,
+            importBackup: ImportBackupAsync);
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
+    }
+
+    private async Task<bool> ExportBackupAsync()
+    {
+        var storage = TopLevel.GetTopLevel(Host)?.StorageProvider;
+        if (storage is null)
+        {
+            AppLogger.Log.Warning("Backup export skipped: no storage provider on the current top level");
+            return false;
+        }
+        var dest = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            SuggestedFileName = "collection-backup.collectary",
+            FileTypeChoices = [new FilePickerFileType("Collectary backup") { Patterns = ["*.collectary"] }],
+        });
+        if (dest is null) return false;
+
+        await using var output = await dest.OpenWriteAsync();
+        await _scope.Resolve<IBackupService>().ExportAsync(output);
+        return true;
+    }
+
+    private async Task<BackupImportResult?> ImportBackupAsync()
+    {
+        var storage = TopLevel.GetTopLevel(Host)?.StorageProvider;
+        if (storage is null)
+        {
+            AppLogger.Log.Warning("Backup import skipped: no storage provider on the current top level");
+            return null;
+        }
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType("Collectary backup") { Patterns = ["*.collectary"] }],
+        });
+        var file = files.FirstOrDefault();
+        if (file is null) return null;
+
+        using var buffer = new MemoryStream();
+        await using (var input = await file.OpenReadAsync())
+            await input.CopyToAsync(buffer);
+        buffer.Position = 0;
+
+        var result = await _scope.Resolve<IBackupService>().ImportAsync(buffer);
+        if (result.Applied > 0 && SidebarViewModel is not null)
+            await SidebarViewModel.LoadAsync();
+        return result;
     }
 
     private async Task<string?> ConnectCloudAsync(CloudProvider provider)

@@ -23,5 +23,8 @@ public class FileAttachmentFieldValue : FieldValue<FileAttachmentFieldDefinition
         if (source is FileAttachmentFieldValue s) Files = new List<FileAttachment>(s.Files);
     }
 
+    public override IEnumerable<string> ReferencedBlobKeys() =>
+        Files.Select(f => f.Key).Where(k => !string.IsNullOrEmpty(k));
+
     public override string ToString() => Files.Count.ToString();
 }

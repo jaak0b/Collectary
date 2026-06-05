@@ -73,6 +73,7 @@ nav:
       - user-guide/field-types.md
       - user-guide/sharing.md
       - user-guide/sync.md
+      - user-guide/backup.md
       - user-guide/settings.md
   - Developer Guide:
       - dev-guide/architecture.md

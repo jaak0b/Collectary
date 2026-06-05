@@ -281,6 +281,14 @@
   <data name="Sync_Disable" xml:space="preserve"><value>Disable sync</value></data>
   <data name="Sync_AutoSync" xml:space="preserve"><value>Auto-sync</value></data>
   <data name="Sync_IntervalMinutes" xml:space="preserve"><value>Interval (minutes)</value></data>
+  <data name="Backup_Title" xml:space="preserve"><value>Backup &amp; restore</value></data>
+  <data name="Backup_Hint" xml:space="preserve"><value>Save your whole collection — entries, images and documents — to a single file you can move, share or keep safe. Importing merges it back in.</value></data>
+  <data name="Backup_Export" xml:space="preserve"><value>Export to file…</value></data>
+  <data name="Backup_Import" xml:space="preserve"><value>Import from file…</value></data>
+  <data name="Backup_Exported" xml:space="preserve"><value>Backup saved.</value></data>
+  <data name="Backup_Imported" xml:space="preserve"><value>Imported {0} entries.</value></data>
+  <data name="Backup_ImportedWithConflicts" xml:space="preserve"><value>Imported {0} entries. These kept your local version: {1}</value></data>
+  <data name="Backup_Error" xml:space="preserve"><value>Backup failed. Please try again.</value></data>
   <data name="Settings_SyncProvider" xml:space="preserve"><value>Storage provider</value></data>
   <data name="Settings_Provider_Folder" xml:space="preserve"><value>Local / mounted folder</value></data>
   <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>

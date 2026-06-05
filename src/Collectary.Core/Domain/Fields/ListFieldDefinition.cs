@@ -30,4 +30,7 @@ public class ListFieldValue : FieldValue<ListFieldDefinition>
     {
         if (source is ListFieldValue s) Entries = s.Entries;
     }
+
+    public override IEnumerable<string> ReferencedBlobKeys() =>
+        Entries.SelectMany(e => e.SubValues).SelectMany(v => v.ReferencedBlobKeys());
 }

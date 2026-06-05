@@ -32,4 +32,9 @@ public class ImageFieldValue : FieldValue<ImageFieldDefinition>
     {
         if (source is ImageFieldValue s) { ImageKey = s.ImageKey; FileName = s.FileName; }
     }
+
+    public override IEnumerable<string> ReferencedBlobKeys()
+    {
+        if (!string.IsNullOrEmpty(ImageKey)) yield return ImageKey;
+    }
 }

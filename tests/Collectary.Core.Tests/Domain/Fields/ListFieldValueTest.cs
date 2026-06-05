@@ -27,4 +27,26 @@ public class ListFieldValueTest
 
         Assert.That(target.Entries, Has.Count.EqualTo(2));
     }
+
+    [Test]
+    public void ReferencedBlobKeys_RecursesSubValuesAndIgnoresNonBlob()
+    {
+        var value = new ListFieldValue();
+        value.Entries.Add(new ListEntry
+        {
+            SubValues =
+            {
+                new ImageFieldValue { ImageKey = "img" },
+                new TextFieldValue { Value = "nope" },
+            }
+        });
+        value.Entries.Add(new ListEntry { SubValues = { new AudioFieldValue { AudioKey = "aud" } } });
+
+        Assert.That(value.ReferencedBlobKeys(), Is.EqualTo(new[] { "img", "aud" }));
+        Assert.That(new ListFieldValue().ReferencedBlobKeys(), Is.Empty);
+    }
+
+    [Test]
+    public void ReferencedBlobKeys_DefaultsToEmptyForNonBlobValue() =>
+        Assert.That(new TextFieldValue { Value = "x" }.ReferencedBlobKeys(), Is.Empty);
 }

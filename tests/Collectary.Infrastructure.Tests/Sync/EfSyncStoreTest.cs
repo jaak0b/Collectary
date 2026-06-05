@@ -67,6 +67,83 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task GetReferencedImageKeysAsync_IncludesImageMultiImageDocumentAndAudioKeys()
+    {
+        var presetId = Guid.NewGuid();
+        var imageId = Guid.NewGuid();
+        var multiId = Guid.NewGuid();
+        var fileId = Guid.NewGuid();
+        var audioId = Guid.NewGuid();
+        var preset = new Preset { Id = presetId, Name = "P", Revision = 1 };
+        preset.Fields.Add(new ImageFieldDefinition { Id = imageId, Label = "Img", PresetId = presetId });
+        preset.Fields.Add(new MultiImageFieldDefinition { Id = multiId, Label = "Gallery", PresetId = presetId });
+        preset.Fields.Add(new FileAttachmentFieldDefinition { Id = fileId, Label = "Docs", PresetId = presetId });
+        preset.Fields.Add(new AudioFieldDefinition { Id = audioId, Label = "Note", PresetId = presetId });
+        await _sut.ApplyPresetAsync(preset);
+
+        var itemId = Guid.NewGuid();
+        var item = new Item { Id = itemId, DisplayName = "X", PresetId = presetId, Revision = 1 };
+        item.Values.Add(new ImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = imageId, ItemId = itemId, ImageKey = "img-key" });
+        item.Values.Add(new MultiImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = multiId, ItemId = itemId, ImageKeys = ["m1", "m2"] });
+        item.Values.Add(new FileAttachmentFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = fileId, ItemId = itemId, Files = [new("doc-key", "manual.pdf")] });
+        item.Values.Add(new AudioFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = audioId, ItemId = itemId, AudioKey = "aud-key" });
+        await _sut.ApplyItemAsync(item);
+
+        var keys = await _sut.GetReferencedImageKeysAsync();
+
+        Assert.That(keys, Is.SupersetOf(new[] { "img-key", "m1", "m2", "doc-key", "aud-key" }));
+    }
+
+    [Test]
+    public async Task GetReferencedImageKeysAsync_IncludesKeysFromSoftDeletedItems()
+    {
+        var presetId = Guid.NewGuid();
+        var imageId = Guid.NewGuid();
+        var preset = new Preset { Id = presetId, Name = "P", Revision = 1 };
+        preset.Fields.Add(new ImageFieldDefinition { Id = imageId, Label = "Img", PresetId = presetId });
+        await _sut.ApplyPresetAsync(preset);
+
+        var itemId = Guid.NewGuid();
+        var item = new Item { Id = itemId, DisplayName = "X", PresetId = presetId, Revision = 1, IsDeleted = true, DeletedAt = DateTime.UtcNow };
+        item.Values.Add(new ImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = imageId, ItemId = itemId, ImageKey = "tombstone-key" });
+        await _sut.ApplyItemAsync(item);
+
+        var keys = await _sut.GetReferencedImageKeysAsync();
+
+        Assert.That(keys, Does.Contain("tombstone-key"));
+    }
+
+    [Test]
+    public async Task GetLiveReferencedImageKeysAsync_ExcludesKeysFromSoftDeletedItems()
+    {
+        var presetId = Guid.NewGuid();
+        var liveImg = Guid.NewGuid();
+        var delImg = Guid.NewGuid();
+        var preset = new Preset { Id = presetId, Name = "P", Revision = 1 };
+        preset.Fields.Add(new ImageFieldDefinition { Id = liveImg, Label = "L", PresetId = presetId });
+        preset.Fields.Add(new ImageFieldDefinition { Id = delImg, Label = "D", PresetId = presetId });
+        await _sut.ApplyPresetAsync(preset);
+
+        var liveId = Guid.NewGuid();
+        var live = new Item { Id = liveId, DisplayName = "Live", PresetId = presetId, Revision = 1 };
+        live.Values.Add(new ImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = liveImg, ItemId = liveId, ImageKey = "live-key" });
+        await _sut.ApplyItemAsync(live);
+
+        var delId = Guid.NewGuid();
+        var del = new Item { Id = delId, DisplayName = "Gone", PresetId = presetId, Revision = 1, IsDeleted = true, DeletedAt = DateTime.UtcNow };
+        del.Values.Add(new ImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = delImg, ItemId = delId, ImageKey = "deleted-key" });
+        await _sut.ApplyItemAsync(del);
+
+        var keys = await _sut.GetLiveReferencedImageKeysAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(keys, Does.Contain("live-key"));
+            Assert.That(keys, Does.Not.Contain("deleted-key"));
+        });
+    }
+
+    [Test]
     public void MarkSyncedAsync_WithUnknownKind_Throws()
     {
         Assert.That(async () => await _sut.MarkSyncedAsync((SyncEntityKind)999, Guid.NewGuid(), 1, false),

@@ -21,4 +21,12 @@ public class ImageFieldValueTest
         Assert.That(target.ImageKey, Is.EqualTo("k"));
         Assert.That(target.FileName, Is.EqualTo("f.png"));
     }
+
+    [Test]
+    public void ReferencedBlobKeys_ReturnsImageKeyOrNothing()
+    {
+        Assert.That(new ImageFieldValue { ImageKey = "k" }.ReferencedBlobKeys(), Is.EqualTo(new[] { "k" }));
+        Assert.That(new ImageFieldValue { ImageKey = null }.ReferencedBlobKeys(), Is.Empty);
+        Assert.That(new ImageFieldValue { ImageKey = "" }.ReferencedBlobKeys(), Is.Empty);
+    }
 }

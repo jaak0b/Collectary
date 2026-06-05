@@ -13,5 +13,6 @@ public interface ISyncStore
     Task MarkSyncedAsync(SyncEntityKind kind, Guid id, long baseRevision, bool dirty, long? revision = null);
     Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff);
     Task<IReadOnlyList<string>> GetReferencedImageKeysAsync();
+    Task<IReadOnlyList<string>> GetLiveReferencedImageKeysAsync();
     Task DeleteLocallyAsync(SyncEntityKind kind, Guid id);
 }
