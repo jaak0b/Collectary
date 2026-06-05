@@ -73,6 +73,11 @@ jobs:
           mkdir -p docs/app
           cp -r ./browser-publish/wwwroot/. docs/app/
 
+      # GitHub Pages runs Jekyll, which strips underscore-prefixed paths like the
+      # WASM runtime's _framework/ dir. .nojekyll disables that for the whole site.
+      - name: Disable Jekyll processing
+        run: touch docs/.nojekyll
+
       - name: Commit generated docs
         run: |
           git config user.name 'github-actions[bot]'
