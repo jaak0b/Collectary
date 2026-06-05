@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,9 +13,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Collectary.UI\Collectary.UI.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TrimmerRootAssembly Include="Collectary.UI" />
   </ItemGroup>
 </Project>
