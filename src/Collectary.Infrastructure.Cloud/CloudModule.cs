@@ -21,15 +21,19 @@ namespace Collectary.Infrastructure.Cloud;
 public class CloudModule : Module
 {
     private readonly string _tokenCacheDirectory;
+    private readonly MsalPlatformOptions _oneDriveMsalOptions;
     private readonly Func<string?> _oneDriveRootFolderId;
     private readonly Func<string?> _googleDriveRootFolderId;
+    private readonly ClientIdResolver _clientIds = new();
 
     public CloudModule(
         string tokenCacheDirectory,
+        MsalPlatformOptions oneDriveMsalOptions,
         Func<string?> oneDriveRootFolderId,
         Func<string?> googleDriveRootFolderId)
     {
         _tokenCacheDirectory = tokenCacheDirectory;
+        _oneDriveMsalOptions = oneDriveMsalOptions;
         _oneDriveRootFolderId = oneDriveRootFolderId;
         _googleDriveRootFolderId = googleDriveRootFolderId;
     }
@@ -46,9 +50,9 @@ public class CloudModule : Module
 
     private void RegisterOneDrive(ContainerBuilder builder)
     {
-        var clientId = ResolveClientId("COLLECTARY_ONEDRIVE_CLIENT_ID", CloudClientIds.OneDrive);
+        var clientId = _clientIds.Resolve("COLLECTARY_ONEDRIVE_CLIENT_ID", CloudClientIds.OneDrive);
 
-        builder.Register(_ => new MsalAuthClient(clientId, _tokenCacheDirectory))
+        builder.Register(_ => new MsalAuthClient(clientId, _oneDriveMsalOptions))
             .Keyed<ICloudAuthClient>(CloudProvider.OneDrive)
             .SingleInstance();
 
@@ -71,8 +75,8 @@ public class CloudModule : Module
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     private void RegisterGoogleDrive(ContainerBuilder builder)
     {
-        var clientId = ResolveClientId("COLLECTARY_GOOGLE_CLIENT_ID", CloudClientIds.GoogleDrive);
-        var clientSecret = ResolveClientId("COLLECTARY_GOOGLE_CLIENT_SECRET", CloudClientIds.GoogleDriveSecret);
+        var clientId = _clientIds.Resolve("COLLECTARY_GOOGLE_CLIENT_ID", CloudClientIds.GoogleDrive);
+        var clientSecret = _clientIds.Resolve("COLLECTARY_GOOGLE_CLIENT_SECRET", CloudClientIds.GoogleDriveSecret);
         var dataStore = new DpapiDataStore(new DpapiSecretStore(Path.Combine(_tokenCacheDirectory, "google")));
 
         builder.Register(_ => new GoogleAuthClient(clientId, clientSecret, dataStore))
@@ -96,13 +100,5 @@ public class CloudModule : Module
         builder.Register(c => new CloudSyncBackend(c.ResolveKeyed<ICloudFileStore>(CloudProvider.GoogleDrive)))
             .Keyed<ISyncBackend>(CloudProvider.GoogleDrive)
             .SingleInstance();
-    }
-
-    // Prefer an environment variable so testers/CI can supply credentials without editing source;
-    // fall back to the shipped placeholder otherwise.
-    private static string ResolveClientId(string environmentVariable, string fallback)
-    {
-        var value = Environment.GetEnvironmentVariable(environmentVariable);
-        return string.IsNullOrWhiteSpace(value) ? fallback : value;
     }
 }

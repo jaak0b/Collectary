@@ -26,6 +26,8 @@ public class DpapiDataStore : IDataStore
     public Task<T> GetAsync<T>(string key)
     {
         var json = _store.Get(Encode(key));
+        // Stryker disable once all: equivalent mutant — the serializer maps a null payload to default(T),
+        // so forcing the false branch (Deserialize(null)) yields the same result as the null guard.
         return Task.FromResult(json is null ? default! : NewtonsoftJsonSerializer.Instance.Deserialize<T>(json));
     }
 

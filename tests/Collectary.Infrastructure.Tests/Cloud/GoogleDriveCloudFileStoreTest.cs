@@ -30,6 +30,7 @@ public class GoogleDriveCloudFileStoreTest
         {
             HttpClientFactory = new StubGoogleHttpClientFactory(_stub),
             ApplicationName = "CollectaryTests",
+            GZipEnabled = false, // keep request bodies as plain JSON so tests can assert on them
         });
         return new GoogleDriveCloudFileStore(drive, _auth, () => rootFolderId);
     }
@@ -41,14 +42,50 @@ public class GoogleDriveCloudFileStoreTest
     public void IsAvailable_NoRoot_False() => Assert.That(Build(rootFolderId: null).IsAvailable, Is.False);
 
     [Test]
+    public void RootFolderId_ReturnsConfiguredValue() =>
+        Assert.That(Build("my-root").RootFolderId, Is.EqualTo("my-root"));
+
+    [Test]
+    public void RootFolderId_NoRoot_ReturnsEmpty() =>
+        Assert.That(Build(rootFolderId: null).RootFolderId, Is.Empty);
+
+    [Test]
     public async Task ListFilesAsync_ReturnsNonFolders()
     {
         _stub.OnJson(HttpMethod.Get, "drive/v3/files",
-            """{"files":[{"id":"f1","name":"a.json","mimeType":"application/octet-stream"},{"id":"d1","name":"sub","mimeType":"application/vnd.google-apps.folder"}]}""");
+            """{"files":[{"id":"f1","name":"a.json","mimeType":"application/octet-stream","size":7},{"id":"d1","name":"sub","mimeType":"application/vnd.google-apps.folder"}]}""");
 
         var files = await Build().ListFilesAsync("root", CancellationToken.None);
 
-        Assert.That(files.Select(f => f.Name), Is.EquivalentTo(new[] { "a.json" }));
+        Assert.Multiple(() =>
+        {
+            Assert.That(files.Select(f => f.Name), Is.EquivalentTo(new[] { "a.json" }));
+            Assert.That(files.Single().Size, Is.EqualTo(7));
+            // The query must scope to the parent folder and skip trashed items, projecting mimeType.
+            Assert.That(_stub.Requests.Any(r => (r.RequestUri?.ToString() ?? "").Contains("trashed")), Is.True);
+            Assert.That(_stub.Requests.Any(r => (r.RequestUri?.ToString() ?? "").Contains("mimeType")), Is.True);
+        });
+    }
+
+    [Test]
+    public async Task ListFilesAsync_FileWithoutSize_DefaultsToZero()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files",
+            """{"files":[{"id":"f1","name":"a.json","mimeType":"application/octet-stream"}]}""");
+
+        var files = await Build().ListFilesAsync("root", CancellationToken.None);
+
+        Assert.That(files.Single().Size, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task ListFilesAsync_NoFilesInResponse_ReturnsEmpty()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files", "{}");
+
+        var files = await Build().ListFilesAsync("root", CancellationToken.None);
+
+        Assert.That(files, Is.Empty);
     }
 
     [Test]
@@ -81,6 +118,28 @@ public class GoogleDriveCloudFileStoreTest
     public async Task EnsureFolderAsync_Missing_CreatesAndReturnsId()
     {
         _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""")
+             .OnJson(HttpMethod.Post, "drive/v3/files", """{"id":"new-items"}""");
+
+        var id = await Build().EnsureFolderAsync("root", "items", CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(id, Is.EqualTo("new-items"));
+            Assert.That(_stub.CountRequests(HttpMethod.Post, "drive/v3/files"), Is.EqualTo(1));
+            // Create body must carry the folder name, the folder mime type and the parent.
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "drive/v3/files", "items"), Is.True, "name");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "drive/v3/files", "application/vnd.google-apps.folder"), Is.True, "folder mime");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "drive/v3/files", "root"), Is.True, "parent");
+            // Asking only for the id keeps the response small.
+            Assert.That(_stub.Requests.Any(r => r.Method == HttpMethod.Post && (r.RequestUri?.ToString() ?? "").Contains("fields=id")), Is.True);
+        });
+    }
+
+    [Test]
+    public async Task EnsureFolderAsync_FileWithSameName_IsNotTreatedAsExistingFolder()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files",
+                 """{"files":[{"id":"file-items","name":"items","mimeType":"application/octet-stream"}]}""")
              .OnJson(HttpMethod.Post, "drive/v3/files", """{"id":"new-items"}""");
 
         var id = await Build().EnsureFolderAsync("root", "items", CancellationToken.None);
@@ -127,6 +186,16 @@ public class GoogleDriveCloudFileStoreTest
     }
 
     [Test]
+    public async Task DeleteAsync_MissingFile_IssuesNoDelete()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""");
+
+        await Build().DeleteAsync("root", "missing.json", CancellationToken.None);
+
+        Assert.That(_stub.CountRequests(HttpMethod.Delete, "files/"), Is.EqualTo(0));
+    }
+
+    [Test]
     public async Task GetRootFolderAsync_EnsuresCollectaryFolder()
     {
         _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""")
@@ -138,6 +207,9 @@ public class GoogleDriveCloudFileStoreTest
         {
             Assert.That(root.Id, Is.EqualTo("collectary-root"));
             Assert.That(root.Name, Is.EqualTo("Collectary"));
+            // Provisioned under the drive's "root", named "Collectary".
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "drive/v3/files", "Collectary"), Is.True, "name");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "drive/v3/files", "root"), Is.True, "parent");
         });
     }
 
@@ -167,6 +239,43 @@ public class GoogleDriveCloudFileStoreTest
 
         await Build().UploadAsync("root", "a.json", Encoding.UTF8.GetBytes("hi"), CancellationToken.None);
 
-        Assert.That(_stub.CountRequests(HttpMethod.Post, "upload/drive/v3/files"), Is.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(_stub.CountRequests(HttpMethod.Post, "upload/drive/v3/files"), Is.EqualTo(1));
+            // New-file metadata carries the name and parent folder.
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "upload/drive/v3/files", "a.json"), Is.True, "name");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "upload/drive/v3/files", "root"), Is.True, "parent");
+            // The resumable session is told the media is octet-stream.
+            Assert.That(_stub.Requests.Any(r =>
+                r.Headers.TryGetValues("X-Upload-Content-Type", out var v) && v.Any(x => x.Contains("octet-stream"))),
+                Is.True, "upload content type");
+            // Only the new file's id is requested back, keeping the response minimal.
+            Assert.That(_stub.Requests.Any(r => r.Method == HttpMethod.Post
+                && (r.RequestUri?.ToString() ?? "").Contains("fields=id")), Is.True, "fields=id");
+        });
+    }
+
+    [Test]
+    public async Task UploadAsync_ExistingFile_UpdatesInPlace()
+    {
+        // A file already named "a.json" must be updated (by id), not created a second time.
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files",
+                 """{"files":[{"id":"existing-id","name":"a.json","mimeType":"application/octet-stream"}]}""")
+             .On(HttpMethod.Patch, "upload/drive/v3/files", () =>
+             {
+                 var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                 response.Headers.Location = new Uri("https://upload.test/session");
+                 return response;
+             })
+             .OnJson(HttpMethod.Put, "upload.test", """{"id":"existing-id","name":"a.json"}""");
+
+        await Build().UploadAsync("root", "a.json", Encoding.UTF8.GetBytes("hi"), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            // Update goes through the existing id and not a create.
+            Assert.That(_stub.Requests.Any(r => (r.RequestUri?.ToString() ?? "").Contains("existing-id")), Is.True);
+            Assert.That(_stub.CountRequests(HttpMethod.Post, "upload/drive/v3/files"), Is.EqualTo(0));
+        });
     }
 }

@@ -2,14 +2,13 @@ using System.Diagnostics.CodeAnalysis;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Microsoft.Identity.Client;
-using Microsoft.Identity.Client.Extensions.Msal;
 
 namespace Collectary.Infrastructure.Cloud.Auth;
 
 /// <summary>
-/// OneDrive auth via MSAL. The interactive sign-in opens the system browser and uses MSAL's
-/// built-in loopback redirect; tokens are cached by <c>Microsoft.Identity.Client.Extensions.Msal</c>
-/// (DPAPI-encrypted on Windows). Refresh is handled silently by MSAL.
+/// OneDrive auth via MSAL. The interactive sign-in opens the system browser (desktop) or a Chrome
+/// Custom Tab (Android); the platform-specific redirect, interactive parent and token cache come
+/// from <see cref="MsalPlatformOptions"/>. Refresh is handled silently by MSAL.
 /// </summary>
 [ExcludeFromCodeCoverage(Justification = "Interactive OAuth requires a browser and a real account; verified manually.")]
 public class MsalAuthClient : ICloudAuthClient
@@ -17,19 +16,20 @@ public class MsalAuthClient : ICloudAuthClient
     private static readonly string[] Scopes = { "Files.ReadWrite", "User.Read" };
 
     private readonly IPublicClientApplication _app;
+    private readonly MsalPlatformOptions _options;
     private IAccount? _account;
 
-    public MsalAuthClient(string clientId, string cacheDirectory)
+    public MsalAuthClient(string clientId, MsalPlatformOptions options)
     {
+        _options = options;
         _app = PublicClientApplicationBuilder.Create(clientId)
             // "consumers" — personal Microsoft accounts only. They always have consumer OneDrive,
             // which avoids work/school tenants that lack a OneDrive/SharePoint license.
             .WithAuthority(AzureCloudInstance.AzurePublic, AadAuthorityAudience.PersonalMicrosoftAccount)
-            .WithRedirectUri("http://localhost")
+            .WithRedirectUri(options.RedirectUri)
             .Build();
 
-        var storage = new StorageCreationPropertiesBuilder("collectary_msal.cache", cacheDirectory).Build();
-        MsalCacheHelper.CreateAsync(storage).GetAwaiter().GetResult().RegisterCache(_app.UserTokenCache);
+        options.ConfigureTokenCache?.Invoke(_app);
     }
 
     public CloudProvider Provider => CloudProvider.OneDrive;
@@ -40,9 +40,11 @@ public class MsalAuthClient : ICloudAuthClient
 
     public async Task SignInInteractiveAsync(CancellationToken ct)
     {
-        var result = await _app.AcquireTokenInteractive(Scopes)
-            .WithUseEmbeddedWebView(false)
-            .ExecuteAsync(ct);
+        var request = _app.AcquireTokenInteractive(Scopes)
+            .WithUseEmbeddedWebView(false);
+        if (_options.ParentActivityProvider is not null)
+            request = request.WithParentActivityOrWindow(_options.ParentActivityProvider());
+        var result = await request.ExecuteAsync(ct);
         _account = result.Account;
     }
 

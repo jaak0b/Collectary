@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using Collectary.Core.Ports;
 using Google.Apis.Http;
@@ -9,7 +8,6 @@ namespace Collectary.Infrastructure.Cloud.Auth;
 /// Attaches a bearer token (obtained/refreshed via <see cref="ICloudAuthClient"/>) to every Google
 /// Drive request — the Google.Apis equivalent of the Graph auth provider.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "Thin Google.Apis transport glue; exercised via manual verification.")]
 public class GoogleTokenInitializer : IConfigurableHttpClientInitializer, IHttpExecuteInterceptor
 {
     private readonly ICloudAuthClient _auth;

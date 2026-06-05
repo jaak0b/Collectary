@@ -24,5 +24,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Collectary.UI\Collectary.UI.csproj" />
+    <!-- Brings the OneDrive cloud-sync provider (MSAL/Graph). Because this head targets
+         net10.0-android, NuGet resolves MSAL's Android asset (Chrome Custom Tabs, Keystore-backed
+         token cache), even though the Cloud library itself is net8.0. -->
+    <ProjectReference Include="..\Collectary.Infrastructure.Cloud\Collectary.Infrastructure.Cloud.csproj" />
   </ItemGroup>
 </Project>

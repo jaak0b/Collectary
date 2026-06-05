@@ -13,4 +13,12 @@ namespace Collectary.UI.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
+    // MSAL's interactive sign-in needs the foreground Activity to launch its Chrome Custom Tab.
+    // Publish it to the Application so the cloud module's parent-activity provider can hand it to MSAL.
+    protected override void OnResume()
+    {
+        base.OnResume();
+        if (this.Application is Application app)
+            app.CurrentActivity = this;
+    }
 }

@@ -55,6 +55,10 @@ public class OneDriveCloudFileStoreTest
         Assert.That(Build("my-root").RootFolderId, Is.EqualTo("my-root"));
 
     [Test]
+    public void RootFolderId_NoRoot_ReturnsEmpty() =>
+        Assert.That(Build(rootFolderId: null).RootFolderId, Is.Empty);
+
+    [Test]
     public async Task ListFilesAsync_ReturnsFilesNotFolders()
     {
         _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
@@ -104,6 +108,27 @@ public class OneDriveCloudFileStoreTest
     {
         _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
              .OnJson(HttpMethod.Get, "/children", """{"value":[]}""")
+             .OnJson(HttpMethod.Post, "/children", """{"id":"new-items","name":"items","folder":{"childCount":0}}""");
+
+        var id = await Build().EnsureFolderAsync("root", "items", CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(id, Is.EqualTo("new-items"));
+            Assert.That(_stub.CountRequests(HttpMethod.Post, "/children"), Is.EqualTo(1));
+            // Body must request a folder named "items" that fails (not merges) on a name clash.
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "/children", "items"), Is.True, "folder name");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "/children", "folder"), Is.True, "folder facet");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "/children", "fail"), Is.True, "conflictBehavior fail");
+        });
+    }
+
+    [Test]
+    public async Task EnsureFolderAsync_FileWithSameName_IsNotTreatedAsExistingFolder()
+    {
+        // A *file* called "items" (no folder facet) must not satisfy the lookup — a new folder is made.
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "/children", """{"value":[{"id":"file-items","name":"items","size":3}]}""")
              .OnJson(HttpMethod.Post, "/children", """{"id":"new-items","name":"items","folder":{"childCount":0}}""");
 
         var id = await Build().EnsureFolderAsync("root", "items", CancellationToken.None);
@@ -167,6 +192,25 @@ public class OneDriveCloudFileStoreTest
         {
             Assert.That(_stub.CountRequests(HttpMethod.Post, "createUploadSession"), Is.EqualTo(1));
             Assert.That(_stub.CountRequests(HttpMethod.Put, "/content"), Is.EqualTo(0));
+            // The session must actually be driven (bytes PUT to the upload URL) and replace on clash.
+            Assert.That(_stub.CountRequests(HttpMethod.Put, "upload.test"), Is.GreaterThanOrEqualTo(1), "uploads slices");
+            Assert.That(_stub.BodyContains(HttpMethod.Post, "createUploadSession", "replace"), Is.True, "conflictBehavior replace");
+        });
+    }
+
+    [Test]
+    public async Task UploadAsync_ContentEqualToThreshold_UsesSimplePut()
+    {
+        // Boundary: length == threshold must take the simple-PUT path (the comparison is <=, not <).
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Put, "/content", """{"id":"uploaded","name":"a.json"}""");
+
+        await Build(largeUploadThreshold: 4).UploadAsync("root", "a.json", new byte[] { 1, 2, 3, 4 }, CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_stub.CountRequests(HttpMethod.Put, "/content"), Is.EqualTo(1));
+            Assert.That(_stub.CountRequests(HttpMethod.Post, "createUploadSession"), Is.EqualTo(0));
         });
     }
 
@@ -228,7 +272,43 @@ public class OneDriveCloudFileStoreTest
              .OnJson(HttpMethod.Get, "/children", """{"value":[]}""");
 
         Assert.That(async () => await Build().ListFilesAsync("root", CancellationToken.None),
-            Throws.InstanceOf<InvalidOperationException>());
+            Throws.InstanceOf<InvalidOperationException>().With.Message.Contains("drive id"));
+    }
+
+    [Test]
+    public async Task GetRootFolderAsync_ReturnsRootIdAndName()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "items/root", """{"id":"root-id","name":"My OneDrive"}""");
+
+        var root = await Build().GetRootFolderAsync(CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(root.Id, Is.EqualTo("root-id"));
+            Assert.That(root.Name, Is.EqualTo("My OneDrive"));
+        });
+    }
+
+    [Test]
+    public async Task GetRootFolderAsync_RootWithoutName_FallsBackToOneDrive()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "items/root", """{"id":"root-id"}""");
+
+        var root = await Build().GetRootFolderAsync(CancellationToken.None);
+
+        Assert.That(root.Name, Is.EqualTo("OneDrive"));
+    }
+
+    [Test]
+    public void GetRootFolderAsync_RootWithoutId_Throws()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "items/root", "{}");
+
+        Assert.That(async () => await Build().GetRootFolderAsync(CancellationToken.None),
+            Throws.InstanceOf<InvalidOperationException>().With.Message.Contains("root folder"));
     }
 
     [Test]

@@ -14,6 +14,7 @@
       "!**/Controls/**/*.cs",
       "!**/Migrations/**/*.cs",
       "!**/DI/**/*.cs",
+      "!**/CloudModule.cs",
       "!**/Persistence/InventoryDbContext.cs",
       "!**/ViewModels/MainWindowViewModel.cs",
       "!**/Localization/ThemeService.cs",

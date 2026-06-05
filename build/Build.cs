@@ -122,7 +122,7 @@ class Build : NukeBuild
         .DependsOn(Test)
         .Executes(() =>
         {
-            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Presentation" })
+            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation" })
                 DotNet($"stryker -p \"{RootDirectory / "src" / project / $"{project}.csproj"}\"",
                     workingDirectory: RootDirectory);
         });

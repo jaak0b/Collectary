@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
-using Google.Apis.Auth;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Drive.v3;
@@ -13,28 +12,40 @@ namespace Collectary.Infrastructure.Cloud.Auth;
 /// Google Drive auth via Google.Apis. Interactive sign-in opens the system browser (loopback
 /// redirect); tokens are persisted through the supplied <see cref="IDataStore"/>
 /// (<see cref="DpapiDataStore"/> = DPAPI-encrypted). Uses the least-privilege <c>drive.file</c> scope.
+/// The account email is read through an <see cref="IIdTokenEmailReader"/> that validates the
+/// id_token's signature before any claim is trusted.
 /// </summary>
-[ExcludeFromCodeCoverage(Justification = "Interactive OAuth requires a browser and a real account; verified manually.")]
 public class GoogleAuthClient : ICloudAuthClient
 {
+    private const string DefaultAccountLabel = "Google Drive";
+    // Stryker disable once all: the scope list only feeds the excluded interactive sign-in flow
+    // (GoogleWebAuthorizationBroker); it is not exercised by the non-interactive token paths under test.
     private static readonly string[] Scopes = { DriveService.Scope.DriveFile, "email" };
     private const string UserId = "user";
 
     private readonly GoogleAuthorizationCodeFlow _flow;
     private readonly ClientSecrets _secrets;
     private readonly IDataStore _dataStore;
+    private readonly IIdTokenEmailReader _emailReader;
     private UserCredential? _credential;
     private string? _account;
 
-    public GoogleAuthClient(string clientId, string clientSecret, IDataStore dataStore)
+    public GoogleAuthClient(
+        string clientId,
+        string clientSecret,
+        IDataStore dataStore,
+        Google.Apis.Http.IHttpClientFactory? httpClientFactory = null,
+        IIdTokenEmailReader? emailReader = null)
     {
         _secrets = new ClientSecrets { ClientId = clientId, ClientSecret = clientSecret };
         _dataStore = dataStore;
+        _emailReader = emailReader ?? new GoogleIdTokenEmailReader();
         _flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
         {
             ClientSecrets = _secrets,
             Scopes = Scopes,
             DataStore = dataStore,
+            HttpClientFactory = httpClientFactory,
         });
     }
 
@@ -44,10 +55,11 @@ public class GoogleAuthClient : ICloudAuthClient
 
     public string? Account => _account;
 
+    [ExcludeFromCodeCoverage(Justification = "GoogleWebAuthorizationBroker opens a browser and needs a real account; verified manually.")]
     public async Task SignInInteractiveAsync(CancellationToken ct)
     {
         _credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(_secrets, Scopes, UserId, ct, _dataStore);
-        _account = await EmailFromIdTokenAsync(_credential.Token.IdToken) ?? "Google Drive";
+        _account = await _emailReader.ReadEmailAsync(_credential.Token.IdToken, ct) ?? DefaultAccountLabel;
     }
 
     public async Task SignOutAsync()
@@ -71,25 +83,9 @@ public class GoogleAuthClient : ICloudAuthClient
     {
         var token = await _flow.LoadTokenAsync(UserId, ct);
         if (token is null) return null;
-        _account ??= await EmailFromIdTokenAsync(token.IdToken) ?? "Google Drive";
+        // Stryker disable once all: equivalent mutant — _account is always null when this runs (the
+        // credential is cached after the first restore), so "??=" and "=" behave identically here.
+        _account ??= await _emailReader.ReadEmailAsync(token.IdToken, ct) ?? DefaultAccountLabel;
         return new UserCredential(_flow, UserId, token);
-    }
-
-    // Validate the id_token's signature, issuer and expiry against Google's published certs before
-    // trusting any claim from it — the previous code decoded the unsigned payload, so a tampered token
-    // could have spoofed the displayed account. On any validation failure we trust nothing and the
-    // caller falls back to a generic label.
-    private async Task<string?> EmailFromIdTokenAsync(string? idToken)
-    {
-        if (string.IsNullOrEmpty(idToken)) return null;
-        try
-        {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
-            return string.IsNullOrEmpty(payload.Email) ? null : payload.Email;
-        }
-        catch (InvalidJwtException)
-        {
-            return null;
-        }
     }
 }

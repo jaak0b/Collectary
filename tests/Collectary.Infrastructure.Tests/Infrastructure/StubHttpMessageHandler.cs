@@ -13,6 +13,15 @@ public class StubHttpMessageHandler : HttpMessageHandler
 
     public List<HttpRequestMessage> Requests { get; } = new();
 
+    /// <summary>The body each request was sent with, captured at send time (before disposal).</summary>
+    public List<(HttpMethod Method, string Url, string Body)> Bodies { get; } = new();
+
+    /// <summary>True when a request matching method + URL substring carried a body containing the text.</summary>
+    public bool BodyContains(HttpMethod method, string pathContains, string text) =>
+        Bodies.Any(b => b.Method == method
+            && b.Url.Contains(pathContains, StringComparison.OrdinalIgnoreCase)
+            && b.Body.Contains(text, StringComparison.Ordinal));
+
     private sealed record Rule(
         HttpMethod Method,
         string PathContains,
@@ -59,6 +68,11 @@ public class StubHttpMessageHandler : HttpMessageHandler
         Requests.Add(request);
 
         var url = request.RequestUri?.ToString() ?? string.Empty;
+        if (request.Content is not null)
+        {
+            var body = request.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+            Bodies.Add((request.Method, url, body));
+        }
         foreach (var rule in _rules)
             if (rule.Method == request.Method
                 && url.Contains(rule.PathContains, StringComparison.OrdinalIgnoreCase))

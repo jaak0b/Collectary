@@ -42,6 +42,13 @@ When you delete something, Collectary records a **tombstone** so the deletion pr
 devices instead of the item reappearing on the next pull. Tombstones are kept for the retention
 period you configured, then cleaned up.
 
-!!! note "Sync needs a real filesystem"
-    Sync works on the desktop app. The in-browser [demo](../demo.md) has no persistent filesystem,
-    so sync isn't meaningful there.
+## Where sync works
+
+Sync runs on the **desktop** app (shared folder, OneDrive, or Google Drive) and on **Android**
+(shared folder or OneDrive). The in-browser [demo](../demo.md) has no persistent filesystem, so sync
+isn't meaningful there.
+
+!!! note "Signing in to OneDrive on Android"
+    The first time you choose OneDrive on Android, sign-in opens a secure browser tab and returns to
+    Collectary automatically. Your sign-in is stored in the device's encrypted keystore, so you stay
+    signed in between launches.

@@ -3,6 +3,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.Logging;
 using Collectary.Infrastructure.Cloud;
+using Collectary.Infrastructure.Cloud.Auth;
 using Collectary.Presentation.Services;
 
 namespace Collectary.UI.Desktop;
@@ -47,10 +48,13 @@ sealed class Program
 
         var cacheDirectory = AppDataPaths.Root;
 
+        var oneDriveMsalOptions = new DesktopMsalPlatformOptionsFactory(cacheDirectory).Create();
+
         app.PlatformModules = new Autofac.Core.IModule[]
         {
             new CloudModule(
                 cacheDirectory,
+                oneDriveMsalOptions,
                 () => AppPreferences.Load().OneDriveRootFolderId,
                 () => AppPreferences.Load().GoogleDriveRootFolderId),
         };

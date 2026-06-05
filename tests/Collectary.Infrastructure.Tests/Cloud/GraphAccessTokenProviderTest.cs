@@ -26,6 +26,11 @@ public class GraphAccessTokenProviderTest
 
         Assert.That(
             async () => await sut.GetAuthorizationTokenAsync(new Uri("https://graph.microsoft.com/v1.0/me"), null, CancellationToken.None),
-            Throws.InstanceOf<InvalidOperationException>());
+            Throws.InstanceOf<InvalidOperationException>().With.Message.Contains("token"));
     }
+
+    [Test]
+    public void AllowedHostsValidator_AllowsGraphHost() =>
+        Assert.That(new GraphAccessTokenProvider(new FakeCloudAuthClient()).AllowedHostsValidator.AllowedHosts,
+            Does.Contain("graph.microsoft.com"));
 }

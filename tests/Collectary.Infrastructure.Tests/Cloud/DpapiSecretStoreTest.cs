@@ -72,6 +72,42 @@ public class DpapiSecretStoreTest : FileSystemTestBase
     [TestCase(".")]
     [TestCase("..")]
     [TestCase("a*b")]
+    [TestCase("*ab")] // invalid char at index 0 — guards the ">= 0" (not "> 0") boundary
     public void Set_UnsafeKey_Throws(string key) =>
-        Assert.That(() => _sut.Set(key, "x"), Throws.InstanceOf<ArgumentException>());
+        Assert.That(() => _sut.Set(key, "x"),
+            Throws.InstanceOf<ArgumentException>().With.Message.Contains("Unsafe secret key"));
+
+    [Test]
+    public void Set_WritesFileWithSecretExtension()
+    {
+        _sut.Set("token", "value");
+
+        Assert.That(File.Exists(Path.Combine(TempDir, "token.secret")), Is.True);
+    }
+
+    [Test]
+    public void Clear_RemovesSecretFiles_ButLeavesOthers()
+    {
+        _sut.Set("a", "1");
+        _sut.Set("b", "2");
+        var foreign = Path.Combine(TempDir, "keep.txt");
+        File.WriteAllText(foreign, "not a secret");
+
+        _sut.Clear();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_sut.Get("a"), Is.Null);
+            Assert.That(_sut.Get("b"), Is.Null);
+            Assert.That(File.Exists(foreign), Is.True, "non-secret files must be left alone");
+        });
+    }
+
+    [Test]
+    public void Clear_MissingDirectory_DoesNotThrow()
+    {
+        var store = new DpapiSecretStore(Path.Combine(TempDir, "does-not-exist"));
+
+        Assert.That(() => store.Clear(), Throws.Nothing);
+    }
 }
