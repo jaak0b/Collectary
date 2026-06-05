@@ -823,6 +823,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#icons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Icons
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#required-tests" class="md-nav__link">
     <span class="md-ellipsis">
       Required tests
@@ -964,6 +973,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#icons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Icons
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#required-tests" class="md-nav__link">
     <span class="md-ellipsis">
       Required tests
@@ -1008,7 +1026,8 @@ update anywhere in the codebase.</p>
    <code>src/Collectary.Core/Domain/Fields/</code>, plus its corresponding field-value type. Put all
    type-specific behaviour here via virtual dispatch. Decorate the class with three attributes:</li>
 <li><code>[LocalizedName("FieldType_Rating")]</code> — the resx key for the type's display name.</li>
-<li><code>[FieldIcon("★")]</code> — the glyph shown beside it in the menu.</li>
+<li><code>[FieldIcon(IconGlyphs.Star)]</code> — the icon shown beside it in the menu. Reference a named
+     constant from <code>IconGlyphs</code> (see "Icons" below) rather than a literal — never an emoji.</li>
 <li><code>[FieldCatalog(order, FieldCategory.Visual)]</code> — marks it as <strong>user-addable</strong> and places it in
      the "Add field" menu. Omit this attribute only for types that must never be added by hand
      (the way <code>DisplayNameFieldDefinition</code> does).</li>
@@ -1028,6 +1047,23 @@ carrying a <code>[FieldCatalog]</code> attribute by reflection and orders them b
 <strong>preset editor</strong> (Collection Settings) and the <strong>System Fields library</strong> render this one catalog, so
 their menus are always identical — a type added with <code>[FieldCatalog]</code> appears in both automatically.
 A guard test (<code>FieldCatalogAttributeTest</code>) fails the build if a new addable type forgets the attribute.</p>
+<h2 id="icons">Icons<a class="headerlink" href="#icons" title="Permanent link">&para;</a></h2>
+<p>Every icon in the app — field types, collection templates, and bits of chrome like the sidebar
+toggle — comes from a single embedded icon font, <code>CollectaryIcons.ttf</code>
+(<code>src/Collectary.UI/Assets/Fonts/</code>). It's a slimmed-down, renamed subset of Microsoft's MIT-licensed
+<a href="https://github.com/microsoft/fluentui-system-icons">FluentUI System Icons</a>, carrying only the glyphs
+we actually use. We moved away from emoji because the browser (WASM) build has no system fonts to fall
+back on, so emoji rendered as empty boxes there; vector glyphs from an embedded font look identical on
+every platform and recolour with the theme.</p>
+<p>Each glyph has a friendly name in <code>IconGlyphs</code> (<code>src/Collectary.Core/Domain/Fields/IconGlyphs.cs</code>),
+e.g. <code>IconGlyphs.Star</code>. In C# you reference the constant (<code>[FieldIcon(IconGlyphs.Star)]</code>); in XAML you
+bind it and tag the <code>TextBlock</code> with <code>Classes="icon"</code> so it picks up the icon font:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;TextBlock</span><span class="w"> </span><span class="na">Text=</span><span class="s">&quot;{x:Static icons:IconGlyphs.Folder}&quot;</span><span class="w"> </span><span class="na">Classes=</span><span class="s">&quot;icon&quot;</span><span class="nt">/&gt;</span>
+</code></pre></div>
+<p><strong>To add a new icon:</strong> pick one from the Fluent set, find its <code>_20_regular</code> codepoint in the font's
+metadata, add it to the subset list and re-run the subsetting step, then add a named constant to
+<code>IconGlyphs</code>. The <code>IconFontTest</code> guard fails if any <code>IconGlyphs</code> constant has no matching glyph in the
+embedded font, so a typo or a missing-from-subset codepoint can't slip through.</p>
 <h2 id="required-tests">Required tests<a class="headerlink" href="#required-tests" title="Permanent link">&para;</a></h2>
 <p>Per the project's testing rules, a new field type needs at minimum:</p>
 <ul>
