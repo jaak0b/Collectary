@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Collectary.UI.Controls;
 using Collectary.Presentation.Localization;
+using Collectary.Presentation.ViewModels;
 using Collectary.Presentation.ViewModels.SystemFields;
 
 namespace Collectary.UI.Views.SystemFields;
@@ -67,5 +68,7 @@ public partial class SystemFieldLibraryView : UserControl
     {
         base.OnSizeChanged(e);
         _layout.Apply(e.NewSize.Width);
+        if (DataContext is FieldListEditorViewModel vm)
+            vm.IsNarrow = e.NewSize.Width < ResponsiveSplitLayout.NarrowThreshold;
     }
 }

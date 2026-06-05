@@ -52,10 +52,29 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SelectedFieldRow))]
     [NotifyPropertyChangedFor(nameof(SelectedGroupRow))]
+    [NotifyPropertyChangedFor(nameof(IsMasterPanelVisible))]
+    [NotifyPropertyChangedFor(nameof(IsDetailPanelVisible))]
     public partial IEditorNode? SelectedNode { get; set; }
 
     public FieldDefinitionRowViewModel? SelectedFieldRow => SelectedNode as FieldDefinitionRowViewModel;
     public FieldGroupRowViewModel? SelectedGroupRow => SelectedNode as FieldGroupRowViewModel;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMasterPanelVisible))]
+    [NotifyPropertyChangedFor(nameof(IsDetailPanelVisible))]
+    public partial bool IsNarrow { get; set; }
+
+    public bool IsMasterPanelVisible => !IsNarrow || SelectedNode == null;
+    public bool IsDetailPanelVisible => !IsNarrow || SelectedNode != null;
+
+    [RelayCommand]
+    private void MobileNavigateBack()
+    {
+        if (Levels.Count > 1)
+            NavigateToLevel(Levels[^2]);
+        else
+            SelectedNode = null;
+    }
 
     [ObservableProperty]
     public partial bool CurrentLevelSupportsGroups { get; set; }

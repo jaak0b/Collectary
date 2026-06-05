@@ -33,10 +33,17 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public partial ViewModelBase? ContentViewModel { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMobileSidebarVisible))]
+    [NotifyPropertyChangedFor(nameof(IsDesktopSidebarVisible))]
     public partial bool IsSidebarOpen { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMobileSidebarVisible))]
+    [NotifyPropertyChangedFor(nameof(IsDesktopSidebarVisible))]
     public partial bool IsNarrow { get; set; }
+
+    public bool IsMobileSidebarVisible => IsNarrow && IsSidebarOpen;
+    public bool IsDesktopSidebarVisible => !IsNarrow && IsSidebarOpen;
 
     [ObservableProperty]
     public partial double SidebarWidth { get; set; } = 260;

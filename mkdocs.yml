@@ -3,25 +3,46 @@ site_description: User and developer documentation for Collectary — a cross-pl
 docs_dir: docs-src
 site_dir: docs
 
+repo_url: https://github.com/jaak0b/Collectary
+repo_name: jaak0b/Collectary
+
+extra_css:
+  - assets/extra.css
+
 theme:
   name: material
+  font: false
+  icon:
+    logo: material/bookshelf
+    repo: fontawesome/brands/github
   features:
     - navigation.tabs
     - navigation.sections
     - navigation.top
     - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.footer
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
     - toc.follow
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to light mode

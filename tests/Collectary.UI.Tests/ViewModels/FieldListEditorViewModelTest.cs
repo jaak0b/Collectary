@@ -337,4 +337,127 @@ public class FieldListEditorViewModelTest
         Assert.That(field.AssignedGroupId, Is.Null);
         Assert.That(group.ChildNodes, Does.Not.Contain(field));
     }
+
+    [Test]
+    public async Task IsMasterPanelVisible_WhenNarrowWithSelection_ReturnsFalse()
+    {
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        _sut.IsNarrow = true;
+
+        _sut.SelectedNode = _sut.CurrentRows[0];
+
+        Assert.That(_sut.IsMasterPanelVisible, Is.False);
+    }
+
+    [Test]
+    public void IsMasterPanelVisible_WhenNarrowNoSelection_ReturnsTrue()
+    {
+        _sut.IsNarrow = true;
+        _sut.SelectedNode = null;
+
+        Assert.That(_sut.IsMasterPanelVisible, Is.True);
+    }
+
+    [Test]
+    public async Task IsMasterPanelVisible_WhenWideWithSelection_ReturnsTrue()
+    {
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        _sut.IsNarrow = false;
+
+        _sut.SelectedNode = _sut.CurrentRows[0];
+
+        Assert.That(_sut.IsMasterPanelVisible, Is.True);
+    }
+
+    [Test]
+    public void IsDetailPanelVisible_WhenNarrowNoSelection_ReturnsFalse()
+    {
+        _sut.IsNarrow = true;
+        _sut.SelectedNode = null;
+
+        Assert.That(_sut.IsDetailPanelVisible, Is.False);
+    }
+
+    [Test]
+    public async Task IsDetailPanelVisible_WhenNarrowWithSelection_ReturnsTrue()
+    {
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        _sut.IsNarrow = true;
+
+        _sut.SelectedNode = _sut.CurrentRows[0];
+
+        Assert.That(_sut.IsDetailPanelVisible, Is.True);
+    }
+
+    [Test]
+    public async Task IsDetailPanelVisible_WhenWideNoSelection_ReturnsTrue()
+    {
+        _sut.IsNarrow = false;
+
+        Assert.That(_sut.IsDetailPanelVisible, Is.True);
+    }
+
+    [Test]
+    public async Task MobileNavigateBackCommand_WhenNodeSelected_ClearsSelection()
+    {
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        _sut.IsNarrow = true;
+        _sut.SelectedNode = _sut.CurrentRows[0];
+
+        _sut.MobileNavigateBackCommand.Execute(null);
+
+        Assert.That(_sut.SelectedNode, Is.Null);
+    }
+
+    [Test]
+    public async Task MobileNavigateBackCommand_WhenDrilledLevel_PopsToPreviousLevel()
+    {
+        await _sut.AddFieldAsync<ListFieldDefinition>();
+        _sut.IsNarrow = true;
+        _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
+        Assert.That(_sut.Levels.Count, Is.EqualTo(2));
+
+        _sut.MobileNavigateBackCommand.Execute(null);
+
+        Assert.That(_sut.Levels.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task MobileNavigateBackCommand_WhenDrilledLevel_PrefersPoppingOverClearingSelection()
+    {
+        await _sut.AddFieldAsync<ListFieldDefinition>();
+        _sut.IsNarrow = true;
+        _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        _sut.SelectedNode = _sut.CurrentRows[0];
+
+        _sut.MobileNavigateBackCommand.Execute(null);
+
+        Assert.That(_sut.Levels.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void IsMasterPanelVisible_RaisesPropertyChanged_WhenIsNarrowChanges()
+    {
+        var raised = new List<string>();
+        _sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        _sut.IsNarrow = true;
+
+        Assert.That(raised, Does.Contain(nameof(SystemFieldLibraryViewModel.IsMasterPanelVisible)));
+    }
+
+    [Test]
+    public async Task IsMasterPanelVisible_RaisesPropertyChanged_WhenSelectedNodeChanges()
+    {
+        await _sut.AddFieldAsync<TextFieldDefinition>();
+        _sut.IsNarrow = true;
+        _sut.SelectedNode = null;
+        var raised = new List<string>();
+        _sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        _sut.SelectedNode = _sut.CurrentRows[0];
+
+        Assert.That(raised, Does.Contain(nameof(SystemFieldLibraryViewModel.IsMasterPanelVisible)));
+    }
 }

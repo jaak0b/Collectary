@@ -76,7 +76,8 @@
         <Grid x:Name="SplitGrid" Grid.Row="2" ColumnDefinitions="2*,Auto,3*">
 
             <!-- Master: field list + add -->
-            <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto">
+            <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto"
+                  IsVisible="{Binding IsMasterPanelVisible}">
                 <Border Grid.Row="0"
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
@@ -212,9 +213,25 @@
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     CornerRadius="4"
-                    Padding="16">
+                    Padding="16"
+                    IsVisible="{Binding IsDetailPanelVisible}">
 
                 <Panel>
+
+                <!-- Mobile back button -->
+                <Button IsVisible="{Binding IsNarrow}"
+                        Command="{Binding MobileNavigateBackCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Padding="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="←" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{Binding [Back], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </StackPanel>
+                </Button>
 
                 <!-- Empty state -->
                 <TextBlock Text="{Binding [SelectFieldHint], Source={x:Static loc:LocalizationService.Instance}}"

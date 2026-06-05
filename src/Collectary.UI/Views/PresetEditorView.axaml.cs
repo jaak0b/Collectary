@@ -100,5 +100,7 @@ public partial class PresetEditorView : UserControl
     {
         base.OnSizeChanged(e);
         _layout.Apply(e.NewSize.Width);
+        if (DataContext is FieldListEditorViewModel vm)
+            vm.IsNarrow = e.NewSize.Width < ResponsiveSplitLayout.NarrowThreshold;
     }
 }

@@ -115,35 +115,67 @@
         </Border>
 
         <!-- Body: sidebar + content -->
-        <Grid Grid.Row="1" x:Name="BodyGrid">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260" MinWidth="180" MaxWidth="480"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <Panel Grid.Row="1">
 
-            <!-- Sidebar -->
-            <Border Grid.Column="0"
-                    IsVisible="{Binding IsSidebarOpen}"
-                    Background="{DynamicResource SidebarBackgroundBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="0,0,1,0">
-                <ContentControl Content="{Binding SidebarViewModel}"/>
-            </Border>
+            <Grid x:Name="BodyGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260" MinWidth="180" MaxWidth="480"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Splitter -->
-            <GridSplitter Grid.Column="1"
-                          x:Name="SidebarSplitter"
-                          Width="4"
-                          IsVisible="{Binding IsSidebarOpen}"
-                          Background="Transparent"
-                          ResizeBehavior="PreviousAndNext"
-                          ResizeDirection="Columns"/>
+                <!-- Sidebar (desktop only — hidden on narrow screens) -->
+                <Border Grid.Column="0"
+                        IsVisible="{Binding IsDesktopSidebarVisible}"
+                        Background="{DynamicResource SidebarBackgroundBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,1,0">
+                    <ContentControl Content="{Binding SidebarViewModel}"/>
+                </Border>
 
-            <!-- Main content -->
-            <ContentControl Grid.Column="2" Content="{Binding ContentViewModel}"/>
+                <!-- Splitter -->
+                <GridSplitter Grid.Column="1"
+                              x:Name="SidebarSplitter"
+                              Width="4"
+                              IsVisible="{Binding IsDesktopSidebarVisible}"
+                              Background="Transparent"
+                              ResizeBehavior="PreviousAndNext"
+                              ResizeDirection="Columns"/>
 
-        </Grid>
+                <!-- Main content -->
+                <ContentControl Grid.Column="2" Content="{Binding ContentViewModel}"/>
+
+            </Grid>
+
+            <!-- Mobile sidebar overlay (narrow screens only) -->
+            <Grid IsVisible="{Binding IsMobileSidebarVisible}"
+                  RowDefinitions="48,*"
+                  ZIndex="10"
+                  Background="{DynamicResource SidebarBackgroundBrush}">
+                <Border Grid.Row="0"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto" Margin="8,0">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding [MyCollections], Source={x:Static loc:LocalizationService.Instance}}"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <Button Grid.Column="1"
+                                Command="{Binding ToggleSidebarCommand}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="10,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="✕" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </Button>
+                    </Grid>
+                </Border>
+                <ContentControl Grid.Row="1" Content="{Binding SidebarViewModel}"/>
+            </Grid>
+
+        </Panel>
 
     </Grid>
 </UserControl>

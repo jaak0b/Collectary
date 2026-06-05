@@ -44,3 +44,36 @@ Navigation is **callback-based** rather than going through a global navigation s
 below the root are not registered in DI; `MainWindowViewModel` constructs them and hands them
 `Action`/`Func` callbacks for navigating onward. `ViewLocator` maps `XxxViewModel` → `XxxView` by
 convention. More in [Dependency Injection](dependency-injection.md).
+
+## Responsive layout
+
+All three heads (Desktop, Android, Browser/WASM) share the same XAML and ViewModels. Layout
+adapts at runtime based on the window width — there is no separate mobile codebase.
+
+The breakpoint is **720 px**, handled by the `ResponsiveSplitLayout` helper
+(`src/Collectary.UI/Controls/ResponsiveSplitLayout.cs`) and by the `IsNarrow` property on
+`MainWindowViewModel`. Views hook `OnSizeChanged` to update `IsNarrow` on resize.
+
+### Sidebar (collections panel)
+
+| Width | Behaviour |
+|---|---|
+| ≥ 720 px | Side panel, resizable with a `GridSplitter`. Persistent width saved in `AppPreferences`. |
+| < 720 px | Tapping ☰ opens a **full-screen overlay** covering the body. A ✕ button (or tapping ☰ again) dismisses it. |
+
+The two modes are driven by `MainWindowViewModel.IsDesktopSidebarVisible` (wide only) and
+`IsMobileSidebarVisible` (narrow only). Both are derived from `IsNarrow` and `IsSidebarOpen`.
+
+### Field editor (Collection Settings / System Fields)
+
+`FieldListEditorViewModel` exposes `IsMasterPanelVisible` and `IsDetailPanelVisible`, computed
+from `IsNarrow` and `SelectedNode`:
+
+| | Wide | Narrow, nothing selected | Narrow, field selected |
+|---|---|---|---|
+| Master list | visible | visible | hidden |
+| Detail panel | visible | hidden | visible |
+
+A "← Back" button appears at the top of the detail panel in narrow mode. It calls
+`MobileNavigateBackCommand`, which pops a drilled editor level if there is one, or clears the
+selection otherwise.

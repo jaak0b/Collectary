@@ -26,6 +26,7 @@
   <data name="EditItem" xml:space="preserve"><value>Edit Item</value></data>
   <data name="DeleteItem" xml:space="preserve"><value>Delete Item</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
