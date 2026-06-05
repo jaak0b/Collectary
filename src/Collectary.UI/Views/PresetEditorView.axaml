@@ -5,6 +5,7 @@
              xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:converters="using:Collectary.Presentation.Converters"
              xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              x:Class="Collectary.UI.Views.PresetEditorView"
              x:DataType="vm:PresetEditorViewModel">
 
@@ -89,7 +90,7 @@
                             <DataTemplate DataType="vm:FieldDefinitionRowViewModel">
                                 <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
                                     <TextBlock Grid.Column="0"
-                                               Text="⠿"
+                                               Text="{x:Static icons:IconGlyphs.ReOrderDotsVertical}" Classes="icon"
                                                Tag="DragHandle"
                                                Background="Transparent"
                                                Cursor="SizeAll"
@@ -99,15 +100,19 @@
                                                Margin="0,0,8,0"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding TypeIcon}"
-                                               FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji"
+                                               Classes="icon"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,0"/>
-                                    <TextBlock Grid.Column="2"
-                                               Text="{Binding DisplayLabel}"
-                                               FontWeight="Medium"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               VerticalAlignment="Center"/>
+                                    <Grid Grid.Column="2" ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0" Text="{Binding LockGlyph}" Classes="icon"
+                                                   VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding DisplayLabel}"
+                                                   FontWeight="Medium"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
                                     <TextBlock Grid.Column="3"
                                                Text="●"
                                                FontSize="10"
@@ -117,14 +122,14 @@
                                                VerticalAlignment="Center"
                                                Margin="4,0"/>
                                     <TextBlock Grid.Column="4"
-                                               Text="›"
+                                               Text="{x:Static icons:IconGlyphs.ChevronRight}" Classes="icon"
                                                FontSize="16"
                                                IsVisible="{Binding IsDrillable}"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
                                                Margin="4,0"/>
                                     <Button Grid.Column="5"
-                                            Content="✕"
+                                            Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                                             IsVisible="{Binding CanDelete}"
                                             Background="Transparent"
                                             BorderThickness="0"
@@ -137,7 +142,7 @@
                             <DataTemplate DataType="vm:FieldGroupRowViewModel">
                                 <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                                     <TextBlock Grid.Column="0"
-                                               Text="⠿"
+                                               Text="{x:Static icons:IconGlyphs.ReOrderDotsVertical}" Classes="icon"
                                                Tag="DragHandle"
                                                Background="Transparent"
                                                Cursor="SizeAll"
@@ -146,7 +151,7 @@
                                                Margin="0,0,8,0"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding TypeIcon}"
-                                               FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji"
+                                               Classes="icon"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,0"/>
                                     <TextBlock Grid.Column="2"
@@ -157,13 +162,13 @@
                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="3"
-                                               Text="›"
+                                               Text="{x:Static icons:IconGlyphs.ChevronRight}" Classes="icon"
                                                FontSize="16"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
                                                Margin="4,0"/>
                                     <Button Grid.Column="4"
-                                            Content="✕"
+                                            Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,2"
@@ -226,7 +231,8 @@
                             HorizontalAlignment="Center"
                             Spacing="8"
                             Margin="16">
-                    <TextBlock Text="🔒"
+                    <TextBlock Text="{x:Static icons:IconGlyphs.LockClosed}"
+                               Classes="icon"
                                FontSize="32"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="{Binding [EditInSystemFields], Source={x:Static loc:LocalizationService.Instance}}"
@@ -253,7 +259,7 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                             <Button Grid.Column="1"
-                                    Content="✕"
+                                    Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                                     Padding="6,2"
                                     Command="{Binding SelectedFieldRow.ClearGroupCommand}"/>
                         </Grid>

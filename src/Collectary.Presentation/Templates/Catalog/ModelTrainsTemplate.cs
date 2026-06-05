@@ -7,7 +7,7 @@ public sealed class ModelTrainsTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "modeltrains";
     public PresetTemplateCategory Category => PresetTemplateCategory.Collectibles;
-    public string Icon => "🚂";
+    public string Icon => IconGlyphs.VehicleSubway;
     public string NameKey => "Tmpl_modeltrains_Name";
     public string DescriptionKey => "Tmpl_modeltrains_Desc";
 

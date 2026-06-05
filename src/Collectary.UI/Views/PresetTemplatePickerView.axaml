@@ -48,7 +48,7 @@
                                                 BorderThickness="1">
                                             <StackPanel Spacing="6">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                    <TextBlock Text="{Binding Icon}" FontSize="22"/>
+                                                    <TextBlock Text="{Binding Icon}" Classes="icon" FontSize="22"/>
                                                     <TextBlock Text="{Binding Name}"
                                                                FontSize="15"
                                                                FontWeight="SemiBold"

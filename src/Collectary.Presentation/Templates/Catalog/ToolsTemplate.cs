@@ -7,7 +7,7 @@ public sealed class ToolsTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "tools";
     public PresetTemplateCategory Category => PresetTemplateCategory.Practical;
-    public string Icon => "🔧";
+    public string Icon => IconGlyphs.Wrench;
     public string NameKey => "Tmpl_tools_Name";
     public string DescriptionKey => "Tmpl_tools_Desc";
 

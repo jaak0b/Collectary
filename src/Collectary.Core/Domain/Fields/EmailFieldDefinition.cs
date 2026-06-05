@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Email")]
-[FieldIcon("✉️")]
+[FieldIcon(IconGlyphs.Mail)]
 [FieldCatalog(11, FieldCategory.TextAndNumbers)]
 public class EmailFieldDefinition : FieldDefinition<EmailFieldValue>, IListDisplayable
 {

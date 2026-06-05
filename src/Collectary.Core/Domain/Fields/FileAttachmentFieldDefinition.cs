@@ -5,7 +5,7 @@ public sealed record FileAttachment(string Key, string FileName);
 
 /// <summary>Attaches documents to an item — manuals, warranties, certificates, receipts, instructions.</summary>
 [LocalizedName("FieldType_FileAttachment")]
-[FieldIcon("📎")]
+[FieldIcon(IconGlyphs.Attach)]
 [FieldCatalog(13, FieldCategory.TextAndNumbers)]
 public class FileAttachmentFieldDefinition : FieldDefinition<FileAttachmentFieldValue>
 {

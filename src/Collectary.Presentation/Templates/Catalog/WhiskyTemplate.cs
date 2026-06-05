@@ -7,7 +7,7 @@ public sealed class WhiskyTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "whisky";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "🥃";
+    public string Icon => IconGlyphs.DrinkMargarita;
     public string NameKey => "Tmpl_whisky_Name";
     public string DescriptionKey => "Tmpl_whisky_Desc";
 

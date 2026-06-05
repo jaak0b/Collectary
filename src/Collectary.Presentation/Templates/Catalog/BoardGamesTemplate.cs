@@ -7,7 +7,7 @@ public sealed class BoardGamesTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "boardgames";
     public PresetTemplateCategory Category => PresetTemplateCategory.MediaEntertainment;
-    public string Icon => "🎲";
+    public string Icon => IconGlyphs.BoardGames;
     public string NameKey => "Tmpl_boardgames_Name";
     public string DescriptionKey => "Tmpl_boardgames_Desc";
 

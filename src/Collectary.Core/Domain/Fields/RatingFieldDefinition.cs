@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Rating")]
-[FieldIcon("★")]
+[FieldIcon(IconGlyphs.Star)]
 [FieldCatalog(1, FieldCategory.Visual)]
 public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDisplayable
 {

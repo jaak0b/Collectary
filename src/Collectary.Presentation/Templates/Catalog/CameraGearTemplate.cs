@@ -7,7 +7,7 @@ public sealed class CameraGearTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "cameragear";
     public PresetTemplateCategory Category => PresetTemplateCategory.Practical;
-    public string Icon => "📷";
+    public string Icon => IconGlyphs.Camera;
     public string NameKey => "Tmpl_cameragear_Name";
     public string DescriptionKey => "Tmpl_cameragear_Desc";
 

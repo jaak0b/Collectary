@@ -7,7 +7,7 @@ public sealed class RecipesTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "recipes";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "🍳";
+    public string Icon => IconGlyphs.Food;
     public string NameKey => "Tmpl_recipes_Name";
     public string DescriptionKey => "Tmpl_recipes_Desc";
 

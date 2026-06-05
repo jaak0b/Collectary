@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Percentage")]
-[FieldIcon("💯")]
+[FieldIcon(IconGlyphs.Percent)]
 [FieldCatalog(4, FieldCategory.TextAndNumbers)]
 public class PercentageFieldDefinition : FieldDefinition<PercentageFieldValue>, IListDisplayable
 {

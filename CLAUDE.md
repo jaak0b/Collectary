@@ -2,41 +2,41 @@
 
 ## Hard Rules
 
-1. **No git commits.** Never run `git commit`. Only the user commits.
-2. **No static methods or properties.** Exception: Avalonia `AvaloniaProperty.Register` and framework metadata only.
-3. **Localization is resx-only.** All translatable strings live in `Strings.en/de.resx` or a domain-specific resx pair. Reference via `LocalizationService.Instance["Key"]` / `{Binding [Key], Source=…}`. Both language files must have every key.
-4. **TDD mandatory, test-first, no exceptions.** For EVERY behavior change incl. bug fixes: commit the test before the production code. Order is non-negotiable: (a) write the test, (b) run it and PASTE the failing output, (c) only then touch production code, (d) re-run to green. A red run you can quote is the gate — no red proof = the fix does not start. Writing the fix first, or "I'll add a test after", is a rule violation; if you catch yourself having edited production code first, revert it and restart from (a).
-5. **Three test layers per change.** Every feature and bug fix needs unit + integration + headless tests. "It's only a small change" is not an exemption — if it changes behavior, all three layers apply. Untestable-by-design code (pure XAML, generated code) is the only exception, and you must say so explicitly.
-6. **Verification gate — mandatory, every change, no exceptions.** A change is NOT done until all four steps below have actually been run and their real output quoted. Never claim a feature is finished, never hand back to the user, and (when authorized) never commit until this whole gate is green. Skipping, deferring ("I'll run it after"), or *assuming* a result is a rule violation.
+1. **No static methods or properties.** Exception: Avalonia `AvaloniaProperty.Register` and framework metadata only.
+2. **Localization is resx-only.** All translatable strings live in `Strings.en/de.resx` or a domain-specific resx pair. Reference via `LocalizationService.Instance["Key"]` / `{Binding [Key], Source=…}`. Both language files must have every key.
+3. **TDD mandatory, test-first, no exceptions.** For EVERY behavior change incl. bug fixes: commit the test before the production code. Order is non-negotiable: (a) write the test, (b) run it and PASTE the failing output, (c) only then touch production code, (d) re-run to green. A red run you can quote is the gate — no red proof = the fix does not start. Writing the fix first, or "I'll add a test after", is a rule violation; if you catch yourself having edited production code first, revert it and restart from (a).
+4. **Three test layers per change.** Every feature and bug fix needs unit + integration + headless tests. "It's only a small change" is not an exemption — if it changes behavior, all three layers apply. Untestable-by-design code (pure XAML, generated code) is the only exception, and you must say so explicitly.
+5. **Verification gate — mandatory, every change, no exceptions.** A change is NOT done until all four steps below have actually been run and their real output quoted. Never claim a feature is finished, never hand back to the user, and never commit until this whole gate is green. Skipping, deferring ("I'll run it after"), or *assuming* a result is a rule violation.
    1. **Full suite green.** Run the complete `.\build.ps1 --target Test` (not just the fixtures you touched) and paste the pass/fail totals. A single failure blocks everything.
    2. **Coverage ≥95% and not dropped.** Run `.\build.ps1 --target Coverage`, quote the exact merged line-coverage number. If it dropped versus the baseline — even while still ≥95% — that is a regression: add tests until it recovers, or state precisely why (e.g. pre-existing untested code in an unrelated assembly) with the measured baseline to prove it.
    3. **Mutation testing run and surviving mutants addressed.** Run `.\build.ps1 --target Mutate`. Stop the running Desktop app first (`Get-Process Collectary.UI.Desktop | Stop-Process -Force`) — a live instance locks `Collectary.UI.dll` and fails Stryker's build. Quote the mutation score and review survivors in the code you changed; kill them with tests or justify each explicitly.
    4. **Manual UI verification (for UI changes).** Ask the user to run the app with exact repro steps (see "Verifying UI Fixes"). Tests do not replace this; they are in addition to it.
 
    If any gate cannot be completed (e.g. a pre-existing failure you did not introduce), STOP and surface it to the user with the evidence — do not quietly proceed as if it passed.
-7. **No test touches the developer's DB or filesystem.** In-memory SQLite (`Data Source=:memory:`) and `Path.GetTempPath()` temp dirs, disposed in teardown.
-8. **No empty catch blocks.** Log via `AppLogger.Log.Error` and surface via `IDialogService.ShowMessageAsync` for user-initiated operations.
-9. **New `FieldDefinition` subtype = zero changes outside its own file.** Virtual dispatch only; one keyed Autofac registration in `UiModule`, no type-switches.
-10. **Missing field type → add a simple version + on-screen note.** Never silently skip a use case.
-11. **No trademarked words in files.**
-12. **NuGet packages: official Microsoft or highly-regarded community only.** No niche/unmaintained single-author packages. Prefer built-in BCL APIs (e.g. PBKDF2 via `System.Security.Cryptography.Rfc2898DeriveBytes`) over third-party dependencies.
-13. **Credentials are bullet-proof.** Passwords hashed with built-in PBKDF2-HMAC-SHA512, per-user random salt, iteration count + algorithm stored with the hash. Never store/log plaintext; never store anything reversible.
-14. **Every new feature is documented.** Add/update the relevant `docs-src/**` page in the same change. Write in a human, conversational style — not terse machine-speak.
-15. **No code comments.** Code self-explains via names and structure, in all we author (C#, XAML, YAML, JSON, `.csproj`). Banned: *what*-narration (`// build the menu`), divider banners, commented-out code (git is the history), and default XML doc-comments. Only allowed: a short non-obvious **why** the code can't express (external-bug workaround, Avalonia gotcha). Tempted to write *what*? Rename until the comment is redundant, then delete it. Markdown docs are exempt.
+6. **No test touches the developer's DB or filesystem.** In-memory SQLite (`Data Source=:memory:`) and `Path.GetTempPath()` temp dirs, disposed in teardown.
+7. **No empty catch blocks.** Log via `AppLogger.Log.Error` and surface via `IDialogService.ShowMessageAsync` for user-initiated operations.
+8. **New `FieldDefinition` subtype = zero changes outside its own file.** Virtual dispatch only; one keyed Autofac registration in `UiModule`, no type-switches.
+9. **Missing field type → add a simple version + on-screen note.** Never silently skip a use case.
+10. **No trademarked words in files.**
+11. **NuGet packages: official Microsoft or highly-regarded community only.** No niche/unmaintained single-author packages. Prefer built-in BCL APIs (e.g. PBKDF2 via `System.Security.Cryptography.Rfc2898DeriveBytes`) over third-party dependencies.
+12. **Credentials are bullet-proof.** Passwords hashed with built-in PBKDF2-HMAC-SHA512, per-user random salt, iteration count + algorithm stored with the hash. Never store/log plaintext; never store anything reversible.
+13. **Every new feature is documented.** Add/update the relevant `docs-src/**` page in the same change. Write in a human, conversational style — not terse machine-speak.
+14. **No code comments.** Code self-explains via names and structure, in all we author (C#, XAML, YAML, JSON, `.csproj`). Banned: *what*-narration (`// build the menu`), divider banners, commented-out code (git is the history), and default XML doc-comments. Only allowed: a short non-obvious **why** the code can't express (external-bug workaround, Avalonia gotcha). Tempted to write *what*? Rename until the comment is redundant, then delete it. Markdown docs are exempt.
+15. **Commits are allowed — but never add yourself as a contributor.** You may run `git commit`/`git push` once the verification gate (rule #5) is green. Never attribute the work to Claude or any AI: no `Co-Authored-By` trailer, no "Generated with" line, no AI author/committer identity, in commit messages or PR bodies. Commits carry the human's authorship only.
 
 ## Definition of Done — run this checklist before calling any change "finished"
 
 A feature or fix is complete **only** when every box below is genuinely ticked, with real command output quoted (not assumed, not "should pass"). If you cannot tick a box, the work is not done — say so and stop.
 
-- [ ] **Tests written first** (rule #4) — red output quoted before the production code existed.
-- [ ] **All three layers present** (rule #5) — unit + integration + headless, or an explicit note on why a layer doesn't apply.
-- [ ] **Full test suite green** (rule #6.1) — `.\build.ps1 --target Test`, totals quoted.
-- [ ] **Coverage ≥95% and not dropped** (rule #6.2) — exact number quoted; regressions explained with a measured baseline.
-- [ ] **Mutation run, survivors handled** (rule #6.3) — Desktop app stopped first; score quoted; new survivors killed or justified.
-- [ ] **Manual UI verification requested** (rule #6.4) — for any UI change, exact repro steps handed to the user.
-- [ ] **Docs updated** (rule #14).
-- [ ] **Localization complete** (rule #3) — every new key in both `Strings.en.resx` and `Strings.de.resx`.
-- [ ] **No code comments added** (rule #15) — re-read the diff; the only comments left are genuine non-obvious *why* notes, never *what*-narration or commented-out code.
+- [ ] **Tests written first** (rule #3) — red output quoted before the production code existed.
+- [ ] **All three layers present** (rule #4) — unit + integration + headless, or an explicit note on why a layer doesn't apply.
+- [ ] **Full test suite green** (rule #5.1) — `.\build.ps1 --target Test`, totals quoted.
+- [ ] **Coverage ≥95% and not dropped** (rule #5.2) — exact number quoted; regressions explained with a measured baseline.
+- [ ] **Mutation run, survivors handled** (rule #5.3) — Desktop app stopped first; score quoted; new survivors killed or justified.
+- [ ] **Manual UI verification requested** (rule #5.4) — for any UI change, exact repro steps handed to the user.
+- [ ] **Docs updated** (rule #13).
+- [ ] **Localization complete** (rule #2) — every new key in both `Strings.en.resx` and `Strings.de.resx`.
+- [ ] **No code comments added** (rule #14) — re-read the diff; the only comments left are genuine non-obvious *why* notes, never *what*-narration or commented-out code.
 
 Do not compress this gate to save time. "Looks done" is not done; the checklist is what makes it done.
 

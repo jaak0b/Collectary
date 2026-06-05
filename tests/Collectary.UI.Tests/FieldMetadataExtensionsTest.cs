@@ -16,7 +16,7 @@ public class FieldMetadataExtensionsTest
 
     [Test]
     public void GetFieldIcon_ReadsFieldIconAttribute() =>
-        Assert.That(typeof(CurrencyFieldDefinition).GetFieldIcon(), Is.EqualTo("💰"));
+        Assert.That(typeof(CurrencyFieldDefinition).GetFieldIcon(), Is.EqualTo(IconGlyphs.Money));
 
     [Test]
     public void ToLocalizedString_Throws_WhenAttributeMissing() =>

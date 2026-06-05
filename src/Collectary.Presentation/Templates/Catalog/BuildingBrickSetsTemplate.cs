@@ -7,7 +7,7 @@ public sealed class BuildingBrickSetsTemplate : PresetTemplateBase, IPresetTempl
 {
     public string Key => "bricks";
     public PresetTemplateCategory Category => PresetTemplateCategory.Collectibles;
-    public string Icon => "🧱";
+    public string Icon => IconGlyphs.PuzzlePiece;
     public string NameKey => "Tmpl_bricks_Name";
     public string DescriptionKey => "Tmpl_bricks_Desc";
 

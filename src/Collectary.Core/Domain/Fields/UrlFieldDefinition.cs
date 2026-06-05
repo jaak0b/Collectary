@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Url")]
-[FieldIcon("🔗")]
+[FieldIcon(IconGlyphs.Link)]
 [FieldCatalog(9, FieldCategory.TextAndNumbers)]
 public class UrlFieldDefinition : FieldDefinition<UrlFieldValue>, IListDisplayable
 {

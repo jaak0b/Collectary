@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Decimal")]
-[FieldIcon("#")]
+[FieldIcon(IconGlyphs.NumberSymbol)]
 [FieldCatalog(3, FieldCategory.TextAndNumbers)]
 public class DecimalFieldDefinition : FieldDefinition<DecimalFieldValue>, IListDisplayable
 {

@@ -7,7 +7,7 @@ public sealed class BooksTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "books";
     public PresetTemplateCategory Category => PresetTemplateCategory.MediaEntertainment;
-    public string Icon => "📚";
+    public string Icon => IconGlyphs.Book;
     public string NameKey => "Tmpl_books_Name";
     public string DescriptionKey => "Tmpl_books_Desc";
 

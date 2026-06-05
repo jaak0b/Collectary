@@ -19,7 +19,7 @@ public class FieldGroupRowViewModelTest
         Assert.That(row.ShowInList, Is.True);
         Assert.That(row.IsGroupNode, Is.True);
         Assert.That(row.IsDrillable, Is.True);
-        Assert.That(row.TypeIcon, Is.EqualTo("🗂"));
+        Assert.That(row.TypeIcon, Is.EqualTo(IconGlyphs.Folder));
     }
 
     [Test]

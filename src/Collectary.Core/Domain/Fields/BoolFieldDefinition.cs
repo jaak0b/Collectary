@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Bool")]
-[FieldIcon("☑")]
+[FieldIcon(IconGlyphs.Checkbox)]
 [FieldCatalog(0, FieldCategory.Choice)]
 public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable
 {

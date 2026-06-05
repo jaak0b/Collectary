@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Time")]
-[FieldIcon("🕐")]
+[FieldIcon(IconGlyphs.Clock)]
 [FieldCatalog(7, FieldCategory.TextAndNumbers)]
 public class TimeFieldDefinition : FieldDefinition<TimeFieldValue>, IListDisplayable
 {

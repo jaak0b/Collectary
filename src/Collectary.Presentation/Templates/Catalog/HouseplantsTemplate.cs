@@ -7,7 +7,7 @@ public sealed class HouseplantsTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "houseplants";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "🌿";
+    public string Icon => IconGlyphs.LeafOne;
     public string NameKey => "Tmpl_houseplants_Name";
     public string DescriptionKey => "Tmpl_houseplants_Desc";
 

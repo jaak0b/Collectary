@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Integer")]
-[FieldIcon("#")]
+[FieldIcon(IconGlyphs.NumberSymbol)]
 [FieldCatalog(2, FieldCategory.TextAndNumbers)]
 public class IntegerFieldDefinition : FieldDefinition<IntegerFieldValue>, IListDisplayable
 {

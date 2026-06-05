@@ -2,7 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 /// <summary>Tracks "owned X of Y" completion — cards in a set, pieces of a build, issues in a run.</summary>
 [LocalizedName("FieldType_Progress")]
-[FieldIcon("📊")]
+[FieldIcon(IconGlyphs.DataBar)]
 [FieldCatalog(6, FieldCategory.Visual)]
 public class ProgressFieldDefinition : FieldDefinition<ProgressFieldValue>, IListDisplayable
 {

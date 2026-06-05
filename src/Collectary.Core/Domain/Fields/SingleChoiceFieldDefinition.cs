@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_SingleChoice")]
-[FieldIcon("◉")]
+[FieldIcon(IconGlyphs.RadioButton)]
 [FieldCatalog(1, FieldCategory.Choice)]
 public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValue>, IListDisplayable
 {

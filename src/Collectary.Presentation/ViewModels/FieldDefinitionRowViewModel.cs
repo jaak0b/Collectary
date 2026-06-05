@@ -83,7 +83,8 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public bool IsLabelEditable => !IsDisplayName;
     public string DisplayLabel => IsDisplayName
         ? _definition.GetType().ToLocalizedString()
-        : IsSystemField ? $"🔒 {Label}" : Label;
+        : Label;
+    public string LockGlyph => IsSystemField && !IsDisplayName ? IconGlyphs.LockClosed : string.Empty;
     public bool IsColor => _definition is ColorFieldDefinition;
     public bool IsPicture => _definition is ImageFieldDefinition;
     public bool IsList => _definition is ListFieldDefinition;

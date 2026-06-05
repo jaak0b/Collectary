@@ -7,7 +7,7 @@ public sealed class TradingCardsTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "tradingcards";
     public PresetTemplateCategory Category => PresetTemplateCategory.Collectibles;
-    public string Icon => "🃏";
+    public string Icon => IconGlyphs.PlayingCards;
     public string NameKey => "Tmpl_tradingcards_Name";
     public string DescriptionKey => "Tmpl_tradingcards_Desc";
 

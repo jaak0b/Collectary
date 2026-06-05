@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
@@ -13,10 +14,10 @@
             <Button Command="{Binding RecordCommand}"
                     Content="{Binding [Audio_Record], Source={x:Static loc:LocalizationService.Instance}}"/>
             <Button Command="{Binding PlayCommand}"
-                    Content="▶"
+                    Content="{x:Static icons:IconGlyphs.Play}" Classes="icon"
                     IsVisible="{Binding HasAudio, FallbackValue=False}"/>
             <Button Command="{Binding DeleteCommand}"
-                    Content="✕"
+                    Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                     IsVisible="{Binding HasAudio, FallbackValue=False}"/>
             <TextBlock Text="{Binding DurationSeconds, StringFormat={}{0}s}"
                        VerticalAlignment="Center"

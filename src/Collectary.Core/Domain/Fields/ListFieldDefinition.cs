@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_List")]
-[FieldIcon("▤")]
+[FieldIcon(IconGlyphs.BulletList)]
 [FieldCatalog(0, FieldCategory.Structural)]
 public class ListFieldDefinition : FieldDefinition<ListFieldValue>
 {

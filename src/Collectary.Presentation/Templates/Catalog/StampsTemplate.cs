@@ -7,7 +7,7 @@ public sealed class StampsTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "stamps";
     public PresetTemplateCategory Category => PresetTemplateCategory.Collectibles;
-    public string Icon => "📮";
+    public string Icon => IconGlyphs.TicketHorizontal;
     public string NameKey => "Tmpl_stamps_Name";
     public string DescriptionKey => "Tmpl_stamps_Desc";
 

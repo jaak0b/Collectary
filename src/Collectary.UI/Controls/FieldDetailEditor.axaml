@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:converters="using:Collectary.Presentation.Converters"
@@ -12,7 +13,7 @@
 
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{Binding TypeIcon}"
-                           FontFamily="Segoe UI Emoji,Noto Color Emoji,Apple Color Emoji" FontSize="16" VerticalAlignment="Center"/>
+                           Classes="icon" FontSize="16" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding [FieldSettings], Source={x:Static loc:LocalizationService.Instance}}"
                            FontWeight="SemiBold"
                            FontSize="15"
@@ -38,10 +39,14 @@
                 <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{Binding [FieldLabelWatermark], Source={x:Static loc:LocalizationService.Instance}}"
                          IsVisible="{Binding IsLabelEditable}"/>
-                <TextBlock Text="{Binding DisplayLabel}"
-                           FontWeight="Medium"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
-                           IsVisible="{Binding !IsLabelEditable}"/>
+                <StackPanel Orientation="Horizontal" Spacing="4"
+                            IsVisible="{Binding !IsLabelEditable}">
+                    <TextBlock Text="{Binding LockGlyph}" Classes="icon" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding DisplayLabel}"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
 
             <!-- Flags -->
@@ -87,7 +92,7 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Button Grid.Column="1"
-                            Content="✕"
+                            Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                             Padding="6,2"
                             Command="{Binding ClearGroupCommand}"/>
                 </Grid>
@@ -183,7 +188,7 @@
                                                  Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
                                                  PlaceholderText="{Binding [OptionLabelWatermark], Source={x:Static loc:LocalizationService.Instance}}"/>
                                         <Button Grid.Column="1"
-                                                Content="✕"
+                                                Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                                                 Padding="6,2"
                                                 Margin="4,0,0,0"
                                                 Command="{Binding $parent[ItemsControl].((vm:FieldDefinitionRowViewModel)DataContext).RemoveChoiceCommand}"

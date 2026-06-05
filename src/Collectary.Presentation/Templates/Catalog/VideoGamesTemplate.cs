@@ -7,7 +7,7 @@ public sealed class VideoGamesTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "videogames";
     public PresetTemplateCategory Category => PresetTemplateCategory.MediaEntertainment;
-    public string Icon => "🎮";
+    public string Icon => IconGlyphs.Games;
     public string NameKey => "Tmpl_videogames_Name";
     public string DescriptionKey => "Tmpl_videogames_Desc";
 

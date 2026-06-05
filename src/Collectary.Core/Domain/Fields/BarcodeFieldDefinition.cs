@@ -20,7 +20,7 @@ public enum BarcodeSymbology
 }
 
 [LocalizedName("FieldType_Barcode")]
-[FieldIcon("🔳")]
+[FieldIcon(IconGlyphs.Barcode)]
 [FieldCatalog(12, FieldCategory.TextAndNumbers)]
 public class BarcodeFieldDefinition : FieldDefinition<BarcodeFieldValue>, IListDisplayable
 {

@@ -18,11 +18,20 @@ public class FieldDefinitionRowViewModelExtraTest
     }
 
     [Test]
-    public void DisplayLabel_SystemField_IsLockPrefixed()
+    public void SystemField_ExposesLockGlyph_AndPlainDisplayLabel()
     {
         var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "Tag" }, isSystemField: true);
-        Assert.That(sut.DisplayLabel, Is.EqualTo("🔒 Tag"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.DisplayLabel, Is.EqualTo("Tag"));
+            Assert.That(sut.LockGlyph, Is.EqualTo(IconGlyphs.LockClosed));
+        });
     }
+
+    [Test]
+    public void NormalField_HasEmptyLockGlyph() =>
+        Assert.That(new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "Foo" }).LockGlyph,
+            Is.Empty);
 
     [Test]
     public void DisplayLabel_DisplayNameField_UsesLocalizedTypeName()

@@ -7,7 +7,7 @@ public sealed class WineTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "wine";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "🍷";
+    public string Icon => IconGlyphs.DrinkWine;
     public string NameKey => "Tmpl_wine_Name";
     public string DescriptionKey => "Tmpl_wine_Desc";
 

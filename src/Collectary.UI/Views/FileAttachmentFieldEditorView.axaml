@@ -3,6 +3,7 @@
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              x:Class="Collectary.UI.Views.FileAttachmentFieldEditorView"
              x:DataType="vm:FileAttachmentFieldEditorViewModel">
 
@@ -14,11 +15,11 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:FileAttachmentEntryViewModel">
                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                            <TextBlock Text="📎" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static icons:IconGlyphs.Attach}" Classes="icon" VerticalAlignment="Center"/>
                             <Button Content="{Binding FileName}"
                                     Command="{Binding $parent[ItemsControl].((vm:FileAttachmentFieldEditorViewModel)DataContext).OpenFileCommand}"
                                     CommandParameter="{Binding}"/>
-                            <Button Content="✕"
+                            <Button Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                                     Command="{Binding $parent[ItemsControl].((vm:FileAttachmentFieldEditorViewModel)DataContext).RemoveFileCommand}"
                                     CommandParameter="{Binding}"/>
                         </StackPanel>

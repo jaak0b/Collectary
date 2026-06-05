@@ -1,4 +1,5 @@
 using Collectary.Core.Domain;
+using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 using Collectary.UI.Tests.Templates;
@@ -41,7 +42,7 @@ public class PresetTemplatePickerViewModelTest
         var allRows = sut.Categories.SelectMany(c => c.Templates).ToList();
         var books = allRows.Single(r => r.Template.Key == "books");
         Assert.That(books.Name, Is.EqualTo("Books"));
-        Assert.That(books.Icon, Is.EqualTo("📚"));
+        Assert.That(books.Icon, Is.EqualTo(IconGlyphs.Book));
         Assert.That(books.Description, Is.Not.Empty.And.Not.StartsWith("Tmpl_"));
     }
 

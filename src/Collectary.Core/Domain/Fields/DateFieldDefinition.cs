@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Date")]
-[FieldIcon("📅")]
+[FieldIcon(IconGlyphs.Calendar)]
 [FieldCatalog(6, FieldCategory.TextAndNumbers)]
 public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplayable
 {

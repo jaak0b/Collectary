@@ -7,7 +7,7 @@ public sealed class CoinsTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "coins";
     public PresetTemplateCategory Category => PresetTemplateCategory.Collectibles;
-    public string Icon => "🪙";
+    public string Icon => IconGlyphs.CoinMultiple;
     public string NameKey => "Tmpl_coins_Name";
     public string DescriptionKey => "Tmpl_coins_Desc";
 

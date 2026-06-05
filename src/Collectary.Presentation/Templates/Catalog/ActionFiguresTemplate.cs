@@ -7,7 +7,7 @@ public sealed class ActionFiguresTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "actionfigures";
     public PresetTemplateCategory Category => PresetTemplateCategory.Collectibles;
-    public string Icon => "🎯";
+    public string Icon => IconGlyphs.Target;
     public string NameKey => "Tmpl_actionfigures_Name";
     public string DescriptionKey => "Tmpl_actionfigures_Desc";
 

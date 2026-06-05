@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Text")]
-[FieldIcon("🔤")]
+[FieldIcon(IconGlyphs.TextField)]
 [FieldCatalog(0, FieldCategory.TextAndNumbers)]
 public class TextFieldDefinition : FieldDefinition<TextFieldValue>, IListDisplayable
 {

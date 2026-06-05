@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Controls.EditorBreadcrumb"
              x:DataType="vm:FieldListEditorViewModel">
@@ -17,7 +18,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:EditorLevel">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="▸"
+                        <TextBlock Text="{x:Static icons:IconGlyphs.ChevronRight}" Classes="icon"
                                    Margin="4,0"
                                    VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}"/>

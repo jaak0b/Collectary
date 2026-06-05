@@ -3,6 +3,7 @@
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              x:Class="Collectary.UI.Views.ImageFieldEditorView"
              x:DataType="vm:ImageFieldEditorViewModel">
 
@@ -27,7 +28,7 @@
                         <MenuItem Command="{Binding SaveAsCommand}">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="💾" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static icons:IconGlyphs.Save}" Classes="icon" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding [SaveAs], Source={x:Static loc:LocalizationService.Instance}}"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
@@ -36,7 +37,7 @@
                         <MenuItem Command="{Binding DeleteImageCommand}">
                             <MenuItem.Header>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="🗑" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Static icons:IconGlyphs.Delete}" Classes="icon" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding [DeleteImage], Source={x:Static loc:LocalizationService.Instance}}"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>

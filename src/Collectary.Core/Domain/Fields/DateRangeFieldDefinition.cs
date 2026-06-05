@@ -2,7 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 /// <summary>A from–to date pair — an ownership period, a drink-window, a manufacturing era.</summary>
 [LocalizedName("FieldType_DateRange")]
-[FieldIcon("📆")]
+[FieldIcon(IconGlyphs.DateRange)]
 [FieldCatalog(17, FieldCategory.TextAndNumbers)]
 public class DateRangeFieldDefinition : FieldDefinition<DateRangeFieldValue>, IListDisplayable
 {

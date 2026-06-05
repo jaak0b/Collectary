@@ -7,7 +7,7 @@ public sealed class MusicTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "music";
     public PresetTemplateCategory Category => PresetTemplateCategory.MediaEntertainment;
-    public string Icon => "💿";
+    public string Icon => IconGlyphs.MusicNote;
     public string NameKey => "Tmpl_music_Name";
     public string DescriptionKey => "Tmpl_music_Desc";
 

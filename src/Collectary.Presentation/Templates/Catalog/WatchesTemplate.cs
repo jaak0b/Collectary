@@ -7,7 +7,7 @@ public sealed class WatchesTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "watches";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "⌚";
+    public string Icon => IconGlyphs.Smartwatch;
     public string NameKey => "Tmpl_watches_Name";
     public string DescriptionKey => "Tmpl_watches_Desc";
 

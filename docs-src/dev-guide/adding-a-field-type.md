@@ -13,7 +13,8 @@ To add a new field type (say `RatingFieldDefinition`):
    `src/Collectary.Core/Domain/Fields/`, plus its corresponding field-value type. Put all
    type-specific behaviour here via virtual dispatch. Decorate the class with three attributes:
    - `[LocalizedName("FieldType_Rating")]` — the resx key for the type's display name.
-   - `[FieldIcon("★")]` — the glyph shown beside it in the menu.
+   - `[FieldIcon(IconGlyphs.Star)]` — the icon shown beside it in the menu. Reference a named
+     constant from `IconGlyphs` (see "Icons" below) rather than a literal — never an emoji.
    - `[FieldCatalog(order, FieldCategory.Visual)]` — marks it as **user-addable** and places it in
      the "Add field" menu. Omit this attribute only for types that must never be added by hand
      (the way `DisplayNameFieldDefinition` does).
@@ -35,6 +36,29 @@ carrying a `[FieldCatalog]` attribute by reflection and orders them by `(categor
 **preset editor** (Collection Settings) and the **System Fields library** render this one catalog, so
 their menus are always identical — a type added with `[FieldCatalog]` appears in both automatically.
 A guard test (`FieldCatalogAttributeTest`) fails the build if a new addable type forgets the attribute.
+
+## Icons
+
+Every icon in the app — field types, collection templates, and bits of chrome like the sidebar
+toggle — comes from a single embedded icon font, `CollectaryIcons.ttf`
+(`src/Collectary.UI/Assets/Fonts/`). It's a slimmed-down, renamed subset of Microsoft's MIT-licensed
+[FluentUI System Icons](https://github.com/microsoft/fluentui-system-icons), carrying only the glyphs
+we actually use. We moved away from emoji because the browser (WASM) build has no system fonts to fall
+back on, so emoji rendered as empty boxes there; vector glyphs from an embedded font look identical on
+every platform and recolour with the theme.
+
+Each glyph has a friendly name in `IconGlyphs` (`src/Collectary.Core/Domain/Fields/IconGlyphs.cs`),
+e.g. `IconGlyphs.Star`. In C# you reference the constant (`[FieldIcon(IconGlyphs.Star)]`); in XAML you
+bind it and tag the `TextBlock` with `Classes="icon"` so it picks up the icon font:
+
+```xml
+<TextBlock Text="{x:Static icons:IconGlyphs.Folder}" Classes="icon"/>
+```
+
+**To add a new icon:** pick one from the Fluent set, find its `_20_regular` codepoint in the font's
+metadata, add it to the subset list and re-run the subsetting step, then add a named constant to
+`IconGlyphs`. The `IconFontTest` guard fails if any `IconGlyphs` constant has no matching glyph in the
+embedded font, so a typo or a missing-from-subset codepoint can't slip through.
 
 ## Required tests
 

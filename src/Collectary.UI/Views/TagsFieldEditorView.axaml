@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.TagsFieldEditorView"
@@ -26,7 +27,7 @@
                                            Foreground="{DynamicResource PrimaryForegroundBrush}"
                                            VerticalAlignment="Center"
                                            FontSize="12"/>
-                                <Button Content="✕"
+                                <Button Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
                                         Padding="2,0"
                                         Background="Transparent"
                                         BorderThickness="0"

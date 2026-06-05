@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Color")]
-[FieldIcon("🎨")]
+[FieldIcon(IconGlyphs.Color)]
 [FieldCatalog(0, FieldCategory.Visual)]
 public class ColorFieldDefinition : FieldDefinition<ColorFieldValue>, IListDisplayable
 {

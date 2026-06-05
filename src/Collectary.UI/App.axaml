@@ -83,5 +83,11 @@
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml"/>
+        <Style Selector="TextBlock.icon">
+            <Setter Property="FontFamily" Value="avares://Collectary.UI/Assets/Fonts/CollectaryIcons.ttf#CollectaryIcons"/>
+        </Style>
+        <Style Selector="Button.icon">
+            <Setter Property="FontFamily" Value="avares://Collectary.UI/Assets/Fonts/CollectaryIcons.ttf#CollectaryIcons"/>
+        </Style>
     </Application.Styles>
 </Application>

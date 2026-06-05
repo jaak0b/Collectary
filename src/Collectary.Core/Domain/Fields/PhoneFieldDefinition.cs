@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Phone")]
-[FieldIcon("📞")]
+[FieldIcon(IconGlyphs.Call)]
 [FieldCatalog(10, FieldCategory.TextAndNumbers)]
 public class PhoneFieldDefinition : FieldDefinition<PhoneFieldValue>, IListDisplayable
 {

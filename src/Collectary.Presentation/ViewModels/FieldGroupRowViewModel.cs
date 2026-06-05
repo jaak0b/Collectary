@@ -46,7 +46,7 @@ public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
     public bool IsDrillable => true;
     public bool CanDelete => true;
     public string DisplayLabel => Name;
-    public string TypeIcon => "🗂";
+    public string TypeIcon => IconGlyphs.Folder;
     public ObservableCollection<IEditorNode> DrillChildren => ChildNodes;
 
     private bool _ancestorListAllowed = true;

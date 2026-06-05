@@ -7,7 +7,7 @@ public sealed class MakeupTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "makeup";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "💄";
+    public string Icon => IconGlyphs.PaintBrush;
     public string NameKey => "Tmpl_makeup_Name";
     public string DescriptionKey => "Tmpl_makeup_Desc";
 

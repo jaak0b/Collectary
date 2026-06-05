@@ -5,7 +5,7 @@ namespace Collectary.Core.Domain.Fields;
 /// you print and stick on a box, then scan back with a <see cref="BarcodeFieldDefinition"/> field.
 /// </summary>
 [LocalizedName("FieldType_QrCode")]
-[FieldIcon("🔲")]
+[FieldIcon(IconGlyphs.QrCode)]
 [FieldCatalog(4, FieldCategory.Visual)]
 public class QrCodeFieldDefinition : FieldDefinition<QrCodeFieldValue>, IListDisplayable
 {

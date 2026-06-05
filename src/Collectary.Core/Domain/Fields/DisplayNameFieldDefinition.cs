@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("DisplayNameField")]
-[FieldIcon("🏷")]
+[FieldIcon(IconGlyphs.Tag)]
 public class DisplayNameFieldDefinition : FieldDefinition, IListDisplayable
 {
     public override int DefaultColumnSpan => 2;

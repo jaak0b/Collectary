@@ -7,7 +7,7 @@ public sealed class SneakersTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "sneakers";
     public PresetTemplateCategory Category => PresetTemplateCategory.Lifestyle;
-    public string Icon => "👟";
+    public string Icon => IconGlyphs.PersonWalking;
     public string NameKey => "Tmpl_sneakers_Name";
     public string DescriptionKey => "Tmpl_sneakers_Desc";
 

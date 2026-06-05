@@ -2,7 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 /// <summary>A short recorded audio note — spoken tasting notes, condition narration, a sound sample.</summary>
 [LocalizedName("FieldType_Audio")]
-[FieldIcon("🎙")]
+[FieldIcon(IconGlyphs.Microphone)]
 [FieldCatalog(7, FieldCategory.Visual)]
 public class AudioFieldDefinition : FieldDefinition<AudioFieldValue>
 {

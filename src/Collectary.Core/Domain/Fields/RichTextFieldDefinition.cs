@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_RichText")]
-[FieldIcon("📝")]
+[FieldIcon(IconGlyphs.TextEditStyle)]
 [FieldCatalog(1, FieldCategory.TextAndNumbers)]
 public class RichTextFieldDefinition : FieldDefinition<RichTextFieldValue>, IListDisplayable
 {

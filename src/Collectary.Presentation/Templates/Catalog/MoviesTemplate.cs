@@ -7,7 +7,7 @@ public sealed class MoviesTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "movies";
     public PresetTemplateCategory Category => PresetTemplateCategory.MediaEntertainment;
-    public string Icon => "🎬";
+    public string Icon => IconGlyphs.MoviesAndTv;
     public string NameKey => "Tmpl_movies_Name";
     public string DescriptionKey => "Tmpl_movies_Desc";
 

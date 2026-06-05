@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_MultiChoice")]
-[FieldIcon("☰")]
+[FieldIcon(IconGlyphs.Multiselect)]
 [FieldCatalog(2, FieldCategory.Choice)]
 public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable
 {

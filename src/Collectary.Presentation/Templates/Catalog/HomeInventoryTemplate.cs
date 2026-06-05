@@ -7,7 +7,7 @@ public sealed class HomeInventoryTemplate : PresetTemplateBase, IPresetTemplate
 {
     public string Key => "homeinventory";
     public PresetTemplateCategory Category => PresetTemplateCategory.Practical;
-    public string Icon => "🏠";
+    public string Icon => IconGlyphs.Home;
     public string NameKey => "Tmpl_homeinventory_Name";
     public string DescriptionKey => "Tmpl_homeinventory_Desc";
 

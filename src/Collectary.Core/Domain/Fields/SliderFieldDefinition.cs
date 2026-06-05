@@ -2,7 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 /// <summary>A 0–100 value set with a visual slider — handy for condition, intensity, or any bounded score.</summary>
 [LocalizedName("FieldType_Slider")]
-[FieldIcon("🎚")]
+[FieldIcon(IconGlyphs.Options)]
 [FieldCatalog(16, FieldCategory.TextAndNumbers)]
 public class SliderFieldDefinition : FieldDefinition<SliderFieldValue>, IListDisplayable
 {
