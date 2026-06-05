@@ -13,4 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Collectary.UI\Collectary.UI.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Collectary.UI" />
+  </ItemGroup>
 </Project>
