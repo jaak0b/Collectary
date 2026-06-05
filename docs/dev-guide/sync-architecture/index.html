@@ -897,6 +897,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cloud-provider-auth-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloud-provider auth hardening
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1053,6 +1062,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cloud-provider-auth-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloud-provider auth hardening
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1139,6 +1157,23 @@ polymorphic resolver so every field type round-trips through JSON correctly. A n
 <h2 id="scheduling">Scheduling<a class="headerlink" href="#scheduling" title="Permanent link">&para;</a></h2>
 <p>On the desktop, a dispatcher-based scheduler runs auto-sync on the configured interval (default 5
 minutes; <code>0</code> disables it).</p>
+<h2 id="cloud-provider-auth-hardening">Cloud-provider auth hardening<a class="headerlink" href="#cloud-provider-auth-hardening" title="Permanent link">&para;</a></h2>
+<p>The API-based cloud backends (OneDrive via MSAL, Google Drive via Google.Apis) carry a few
+deliberate guardrails:</p>
+<ul>
+<li><strong>OAuth tokens are encrypted at rest.</strong> MSAL uses its DPAPI-backed cache; the Google client routes
+  its token store through <code>DpapiSecretStore</code> (DPAPI, <code>CurrentUser</code> scope) instead of the SDK's
+  default plaintext file store.</li>
+<li><strong>Least-privilege scopes.</strong> Google uses <code>drive.file</code>, so the app only ever sees files it created
+  (an app-owned <code>Collectary</code> folder), never the user's whole drive.</li>
+<li><strong>The Google <code>id_token</code> is signature-verified.</strong> When we read the signed-in account's email for
+  display, <code>GoogleAuthClient</code> validates the token via <code>GoogleJsonWebSignature.ValidateAsync</code>
+  (signature, issuer, expiry) rather than trusting an unsigned payload; on any failure it falls back
+  to a generic label and trusts nothing from the token.</li>
+<li><strong>Drive folder ids are validated before they reach a query.</strong> <code>GoogleDriveCloudFileStore</code> only
+  interpolates ids matching Drive's <code>[A-Za-z0-9_-]</code> charset into its <code>Q</code> filter, so a stray quote
+  can't break out of the query.</li>
+</ul>
 
 
 
