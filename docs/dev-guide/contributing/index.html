@@ -914,9 +914,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#hard-rules" class="md-nav__link">
+  <a href="#coding-conventions" class="md-nav__link">
     <span class="md-ellipsis">
-      Hard rules
+      Coding conventions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-are-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tests are required
     </span>
   </a>
   
@@ -983,9 +992,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#hard-rules" class="md-nav__link">
+  <a href="#coding-conventions" class="md-nav__link">
     <span class="md-ellipsis">
-      Hard rules
+      Coding conventions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-are-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tests are required
     </span>
   </a>
   
@@ -1028,48 +1046,48 @@
 
 
 <h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h1>
-<p>Collectary has a small set of <strong>hard rules</strong> that every change must respect. They're summarized
-here; the authoritative copy is <code>CLAUDE.md</code> at the repo root.</p>
-<h2 id="hard-rules">Hard rules<a class="headerlink" href="#hard-rules" title="Permanent link">&para;</a></h2>
-<ol>
-<li><strong>No automatic commits.</strong> Only the repository owner commits.</li>
+<p>Thanks for your interest in improving Collectary! This page covers the conventions every change is
+expected to follow. They exist to keep the codebase consistent, well-tested, and portable across the
+desktop, browser, and mobile heads.</p>
+<h2 id="coding-conventions">Coding conventions<a class="headerlink" href="#coding-conventions" title="Permanent link">&para;</a></h2>
+<ul>
 <li><strong>No static methods or properties</strong> — except Avalonia <code>AvaloniaProperty.Register</code> and framework
-   metadata.</li>
+  metadata. Prefer instance members so everything stays injectable and testable.</li>
 <li><strong>Localization is resx-only.</strong> All translatable strings live in <code>Strings.en/de.resx</code> (or a
-   domain-specific resx pair), referenced via <code>LocalizationService</code>. Both languages must have every
-   key. See <a href="../localization/">Localization</a>.</li>
-<li><strong>TDD is mandatory and test-first.</strong> Red proof before production code, every time. See
-   <a href="../testing/">Testing</a>.</li>
-<li><strong>Three test layers per change</strong> — unit + integration + headless.</li>
-<li><strong>Coverage (≥95%) and mutation scores must not drop.</strong></li>
-<li><strong>No test touches the developer's DB or filesystem</strong> — in-memory SQLite and temp dirs only.</li>
-<li><strong>No empty catch blocks.</strong> Log via the app logger and surface user-facing failures through the
-   dialog service.</li>
-<li><strong>A new <code>FieldDefinition</code> subtype changes nothing outside its own files</strong> — virtual dispatch,
-   one keyed registration. See <a href="../adding-a-field-type/">Adding a field type</a>.</li>
-<li><strong>Missing field type → ship a simple version plus an on-screen note.</strong> Never silently skip a
-    use case.</li>
-<li><strong>No trademarked words in files.</strong></li>
-<li><strong>NuGet packages: official Microsoft or highly-regarded community only.</strong> Prefer built-in BCL
-    APIs over niche third-party dependencies.</li>
-<li><strong>Credentials are bullet-proof</strong> — PBKDF2-HMAC-SHA512, per-user random salt, iteration count +
-    algorithm stored with the hash; never plaintext, never reversible. See
-    <a href="../../user-guide/accounts/">Accounts</a>.</li>
-</ol>
+  domain-specific resx pair) and are referenced through <code>LocalizationService</code>. Both languages must
+  carry every key. See <a href="../localization/">Localization</a>.</li>
+<li><strong>No empty catch blocks.</strong> Log through the app logger and surface user-facing failures through the
+  dialog service.</li>
+<li><strong>A new <code>FieldDefinition</code> subtype changes nothing outside its own files</strong> — dispatch is virtual and
+  registration is by type name, so there are no type-switches to update. See
+  <a href="../adding-a-field-type/">Adding a field type</a>.</li>
+<li><strong>Missing a field type? Ship a simple version plus an on-screen note</strong> rather than silently
+  skipping the use case.</li>
+<li><strong>No trademarked words in source files.</strong></li>
+<li><strong>Keep dependencies conservative</strong> — official Microsoft or well-regarded community packages only,
+  and prefer the built-in BCL over niche third-party libraries.</li>
+<li><strong>Credentials are handled carefully.</strong> Passwords use PBKDF2-HMAC-SHA512 with a per-user random
+  salt, and the iteration count and algorithm are stored alongside the hash. Nothing is ever kept in
+  plaintext or in any reversible form. See <a href="../../user-guide/accounts/">Accounts</a>.</li>
+</ul>
+<h2 id="tests-are-required">Tests are required<a class="headerlink" href="#tests-are-required" title="Permanent link">&para;</a></h2>
+<p>Every behaviour change — features and bug fixes alike — is developed <strong>test-first</strong>, and ships with
+all three test layers: unit, integration, and headless. Line coverage and the mutation score must
+not drop. The <a href="../testing/">Testing</a> page walks through the workflow in detail.</p>
 <h2 id="avalonia-gotchas-worth-knowing">Avalonia gotchas worth knowing<a class="headerlink" href="#avalonia-gotchas-worth-knowing" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Dynamic <code>MenuItem</code> submenus</strong> must be built in code-behind; XAML <code>ItemsSource</code> binding doesn't
   render submenus in this Avalonia version.</li>
 <li><strong><code>IsVisible</code> on a null sub-path</strong> evaluates <code>true</code> when the object is null — add
   <code>FallbackValue=False</code>.</li>
-<li><strong>Never replace an <code>ObservableCollection</code> instance</strong> — mutate in place (<code>Clear()</code> + <code>Add()</code>).</li>
+<li><strong>Never replace an <code>ObservableCollection</code> instance</strong> — mutate it in place (<code>Clear()</code> + <code>Add()</code>).</li>
 <li><strong>Compiled bindings are on by default</strong> — every <code>DataTemplate</code> needs <code>x:DataType</code>.</li>
 </ul>
 <h2 id="before-you-open-a-change">Before you open a change<a class="headerlink" href="#before-you-open-a-change" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Read <code>CLAUDE.md</code> in full.</li>
-<li>Make sure the three test layers are green and the coverage/mutation gates still pass.</li>
-<li>For UI changes, verify manually in the running app with explicit repro steps.</li>
+<li>Make sure all three test layers are green and the coverage and mutation gates still pass.</li>
+<li>For UI changes, verify manually in the running app with explicit repro steps — see
+  <a href="../building/">Building</a>.</li>
 </ul>
 
 
