@@ -889,6 +889,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cloud-providers-onedrive-google-drive" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloud providers (OneDrive / Google Drive)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cloud providers (OneDrive / Google Drive)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#msal-platform-options-onedrive" class="md-nav__link">
+    <span class="md-ellipsis">
+      MSAL platform options (OneDrive)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-onedrive-on-android" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting up OneDrive on Android
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#scheduling" class="md-nav__link">
     <span class="md-ellipsis">
       Scheduling
@@ -1054,6 +1087,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cloud-providers-onedrive-google-drive" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloud providers (OneDrive / Google Drive)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cloud providers (OneDrive / Google Drive)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#msal-platform-options-onedrive" class="md-nav__link">
+    <span class="md-ellipsis">
+      MSAL platform options (OneDrive)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-onedrive-on-android" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setting up OneDrive on Android
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#scheduling" class="md-nav__link">
     <span class="md-ellipsis">
       Scheduling
@@ -1154,6 +1220,82 @@ remote (<code>ResolveAsync(conflict, keepLocal)</code>); the resolution is writt
 <p>Because a collection's fields are a polymorphic <code>FieldDefinition</code> hierarchy, the serializer uses a
 polymorphic resolver so every field type round-trips through JSON correctly. A newly
 <a href="../adding-a-field-type/">added field type</a> is handled by the same resolver with no special-casing.</p>
+<h2 id="cloud-providers-onedrive-google-drive">Cloud providers (OneDrive / Google Drive)<a class="headerlink" href="#cloud-providers-onedrive-google-drive" title="Permanent link">&para;</a></h2>
+<p>Beyond a plain shared folder, sync can talk to a cloud provider's API directly. These live in
+<code>Collectary.Infrastructure.Cloud</code> and plug in behind the same <code>ISyncBackend</code> port via a small set of
+extra ports:</p>
+<table>
+<thead>
+<tr>
+<th>Port (Core)</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ICloudAuthClient</code></td>
+<td>Per-provider OAuth — sign in/out, hand back an access token, expose the account label.</td>
+</tr>
+<tr>
+<td><code>ICloudFileStore</code></td>
+<td>Per-provider file/folder CRUD; <code>CloudSyncBackend</code> adapts it to the <code>{id}.{revision}.json</code> layout.</td>
+</tr>
+<tr>
+<td><code>ICloudRootProvider</code></td>
+<td>The starting folder for the folder picker.</td>
+</tr>
+</tbody>
+</table>
+<p><code>RoutingSyncBackend</code> picks the active provider at runtime from app preferences, so the rest of the
+app never branches on which cloud you chose. Each head registers the providers it supports through a
+<code>CloudModule</code> set on <code>App.PlatformModules</code> — the Browser build registers none, keeping the cloud
+SDKs out of the WebAssembly graph.</p>
+<h3 id="msal-platform-options-onedrive">MSAL platform options (OneDrive)<a class="headerlink" href="#msal-platform-options-onedrive" title="Permanent link">&para;</a></h3>
+<p>OneDrive auth (<code>MsalAuthClient</code>) is the same code on every platform, but three things differ per
+platform and are supplied through <code>MsalPlatformOptions</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Knob</th>
+<th>Desktop</th>
+<th>Android</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redirect URI</td>
+<td>loopback <code>http://localhost</code> (system browser)</td>
+<td><code>msauth://com.collectary.app/&lt;hash&gt;</code> (Chrome Custom Tab)</td>
+</tr>
+<tr>
+<td>Interactive parent</td>
+<td>none</td>
+<td>the current <code>Activity</code></td>
+</tr>
+<tr>
+<td>Token cache</td>
+<td>DPAPI-backed <code>MsalCacheHelper</code></td>
+<td>MSAL's built-in Android Keystore cache (none configured)</td>
+</tr>
+</tbody>
+</table>
+<p>Each head builds the options with a factory — <code>DesktopMsalPlatformOptionsFactory</code> or
+<code>AndroidMsalPlatformOptionsFactory</code> — and passes them into <code>CloudModule</code>. The Cloud library stays
+<code>net8.0</code>; because the Android head targets <code>net10.0-android</code>, NuGet still ships MSAL's
+<code>net8.0-android</code> runtime asset (Custom Tabs + Keystore), so no multi-targeting is needed.</p>
+<p>Google Drive remains desktop-only for now: its sign-in uses a loopback HTTP listener and a
+DPAPI-encrypted token store, both of which need reworking before it can run on mobile.</p>
+<h3 id="setting-up-onedrive-on-android">Setting up OneDrive on Android<a class="headerlink" href="#setting-up-onedrive-on-android" title="Permanent link">&para;</a></h3>
+<p>Two one-time steps outside the code, because they depend on your signing certificate and app
+registration:</p>
+<ol>
+<li><strong>Azure app registration</strong> — add an <strong>Android</strong> platform with package name <code>com.collectary.app</code>
+   and the <strong>signature hash</strong> of your APK signing key. MSAL prints the expected hash in the error
+   message on the first sign-in attempt if it's wrong.</li>
+<li><strong>Manifest + build</strong> — put that same hash into the <code>BrowserTabActivity</code> <code>android:path</code> in
+   <code>AndroidManifest.xml</code>, and supply it to the redirect via the <code>COLLECTARY_ANDROID_SIGNATURE_HASH</code>
+   environment variable at build time (it defaults to a placeholder otherwise).</li>
+</ol>
 <h2 id="scheduling">Scheduling<a class="headerlink" href="#scheduling" title="Permanent link">&para;</a></h2>
 <p>On the desktop, a dispatcher-based scheduler runs auto-sync on the configured interval (default 5
 minutes; <code>0</code> disables it).</p>

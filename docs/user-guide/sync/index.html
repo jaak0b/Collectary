@@ -649,6 +649,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#where-sync-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where sync works
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -981,6 +990,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#where-sync-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where sync works
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1047,10 +1065,15 @@ sync. Collectary can't know which version you want, so it asks:</p>
 <p>When you delete something, Collectary records a <strong>tombstone</strong> so the deletion propagates to other
 devices instead of the item reappearing on the next pull. Tombstones are kept for the retention
 period you configured, then cleaned up.</p>
+<h2 id="where-sync-works">Where sync works<a class="headerlink" href="#where-sync-works" title="Permanent link">&para;</a></h2>
+<p>Sync runs on the <strong>desktop</strong> app (shared folder, OneDrive, or Google Drive) and on <strong>Android</strong>
+(shared folder or OneDrive). The in-browser <a href="../../demo/">demo</a> has no persistent filesystem, so sync
+isn't meaningful there.</p>
 <div class="admonition note">
-<p class="admonition-title">Sync needs a real filesystem</p>
-<p>Sync works on the desktop app. The in-browser <a href="../../demo/">demo</a> has no persistent filesystem,
-so sync isn't meaningful there.</p>
+<p class="admonition-title">Signing in to OneDrive on Android</p>
+<p>The first time you choose OneDrive on Android, sign-in opens a secure browser tab and returns to
+Collectary automatically. Your sign-in is stored in the device's encrypted keystore, so you stay
+signed in between launches.</p>
 </div>
 
 
