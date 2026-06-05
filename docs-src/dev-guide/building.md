@@ -77,10 +77,10 @@ mkdocs build     # builds the static site into ./docs
 ```
 
 Markdown source lives in `docs-src/`; `mkdocs build` outputs into `docs/` (configured via
-`site_dir` in `mkdocs.yml`). On `main`, the
+`site_dir` in `mkdocs.yml`). On `master`, once the `quality` job (build + tests + format) passes, the
 [`docs.yml`](https://docs.github.com/en/actions) GitHub Action rebuilds the site, publishes the
 WASM app into `docs/app/`, and commits `docs/` back to the branch.
 
 !!! info "One-time GitHub setup"
     For the published site to go live, set the repository's
-    **Settings → Pages → Source** to **Deploy from a branch**, branch **`main`**, folder **`/docs`**.
+    **Settings → Pages → Source** to **Deploy from a branch**, branch **`master`**, folder **`/docs`**.
