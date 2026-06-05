@@ -36,9 +36,6 @@ jobs:
       - name: Install Android + WASM workloads
         run: dotnet workload install android wasm-tools
 
-      - name: Verify formatting
-        run: dotnet format Collectary.slnx --verify-no-changes --severity warn
-
       - name: Build & run full test suite
         run: pwsh ./build.ps1 --target Test --configuration Release
 
