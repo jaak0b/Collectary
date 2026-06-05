@@ -45,6 +45,7 @@ nav:
   - Live Demo: demo.md
   - User Guide:
       - user-guide/getting-started.md
+      - user-guide/android.md
       - user-guide/accounts.md
       - user-guide/collections.md
       - user-guide/items.md

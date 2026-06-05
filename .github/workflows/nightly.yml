@@ -1,0 +1,73 @@
+name: Nightly coverage & mutation
+
+# Slow gates kept off the per-push path: coverage (>=95%) and Stryker mutation.
+# Reporting only - these do not block the docs publish gate in docs.yml.
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Install Android + WASM workloads
+        run: dotnet workload install android wasm-tools
+
+      - name: Coverage gate
+        run: pwsh ./build.ps1 --target Coverage --configuration Release
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: TestResults/CoverageReport
+          if-no-files-found: warn
+
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Install Android + WASM workloads
+        run: dotnet workload install android wasm-tools
+
+      - name: Mutation testing
+        run: pwsh ./build.ps1 --target Mutate --configuration Release
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: StrykerOutput
+          if-no-files-found: warn

@@ -1,7 +1,8 @@
 # Getting Started
 
 This page covers installing and launching the **desktop** version of Collectary. If you just want
-to try the app without installing anything, use the [Live Demo](../demo.md) instead.
+to try the app without installing anything, use the [Live Demo](../demo.md) instead. On a phone or
+tablet? See [Installing on Android](android.md).
 
 ## Install & run
 

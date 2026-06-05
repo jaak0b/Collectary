@@ -14,7 +14,7 @@ depends on nothing.
 | `Collectary.UI` | UI framework | Avalonia XAML views, DI composition, dialogs, controls. |
 | `Collectary.UI.Desktop` | Entry point | Desktop (WinExe) host. |
 | `Collectary.UI.Browser` | Entry point | WebAssembly host — the [Live Demo](../demo.md). |
-| `Collectary.UI.Android` / `.iOS` | Entry point | Mobile hosts. |
+| `Collectary.UI.Android` | Entry point | Android mobile host. |
 | `*.Tests` | Tests | Unit (Core), Integration (Infrastructure), Headless (UI). |
 
 ## The dependency rule

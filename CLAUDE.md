@@ -22,6 +22,7 @@
 12. **NuGet packages: official Microsoft or highly-regarded community only.** No niche/unmaintained single-author packages. Prefer built-in BCL APIs (e.g. PBKDF2 via `System.Security.Cryptography.Rfc2898DeriveBytes`) over third-party dependencies.
 13. **Credentials are bullet-proof.** Passwords hashed with built-in PBKDF2-HMAC-SHA512, per-user random salt, iteration count + algorithm stored with the hash. Never store/log plaintext; never store anything reversible.
 14. **Every new feature is documented.** Add/update the relevant `docs-src/**` page in the same change. Write in a human, conversational style — not terse machine-speak.
+15. **No code comments.** Code self-explains via names and structure, in all we author (C#, XAML, YAML, JSON, `.csproj`). Banned: *what*-narration (`// build the menu`), divider banners, commented-out code (git is the history), and default XML doc-comments. Only allowed: a short non-obvious **why** the code can't express (external-bug workaround, Avalonia gotcha). Tempted to write *what*? Rename until the comment is redundant, then delete it. Markdown docs are exempt.
 
 ## Definition of Done — run this checklist before calling any change "finished"
 
@@ -35,6 +36,7 @@ A feature or fix is complete **only** when every box below is genuinely ticked, 
 - [ ] **Manual UI verification requested** (rule #6.4) — for any UI change, exact repro steps handed to the user.
 - [ ] **Docs updated** (rule #14).
 - [ ] **Localization complete** (rule #3) — every new key in both `Strings.en.resx` and `Strings.de.resx`.
+- [ ] **No code comments added** (rule #15) — re-read the diff; the only comments left are genuine non-obvious *why* notes, never *what*-narration or commented-out code.
 
 Do not compress this gate to save time. "Looks done" is not done; the checklist is what makes it done.
 

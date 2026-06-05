@@ -9,6 +9,5 @@
   <Project Path="src/Collectary.UI.Android/Collectary.UI.Android.csproj" />
   <Project Path="src/Collectary.UI.Browser/Collectary.UI.Browser.csproj" />
   <Project Path="src/Collectary.UI.Desktop/Collectary.UI.Desktop.csproj" />
-  <Project Path="src/Collectary.UI.iOS/Collectary.UI.iOS.csproj" />
   <Project Path="src/Collectary.UI/Collectary.UI.csproj" />
 </Solution>

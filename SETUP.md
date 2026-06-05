@@ -9,7 +9,7 @@ Keep it short. Add an entry the moment something costs you more than 10 minutes.
 - **Workloads** (only what you actually build):
   - Desktop only → none needed.
   - **Browser (WASM) head → `dotnet workload install wasm-tools`** (see gotcha below).
-  - Mobile heads → `android` / `ios` (already present via Visual Studio install).
+  - Android head → `dotnet workload install android` (the JDK + Android SDK come with Visual Studio / Android Studio). The app does **not** target iOS.
 - Check installed workloads: `dotnet workload list`.
 
 ## Build & Run
@@ -113,6 +113,6 @@ and refuses the "Default" browser.
 - Fix: Run → Edit Configurations → Collectary.UI.Browser → set **Browser** to Chrome/Edge
   (not "Default"). Or run from the terminal with `dotnet run`.
 
-### Solution didn't show the Browser/iOS projects
-`Collectary.slnx` was missing the Browser and iOS heads (the `.csproj` files existed on disk).
-They're added now; if a head goes missing from Rider, check it's listed in `Collectary.slnx`.
+### Solution didn't show the Browser project
+`Collectary.slnx` was once missing the Browser head (the `.csproj` existed on disk). It's listed
+now; if a head goes missing from Rider, check it's referenced in `Collectary.slnx`.

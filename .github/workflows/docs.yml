@@ -1,12 +1,8 @@
 name: Build & publish documentation
 
-# Builds the MkDocs site and the Avalonia WASM app, then commits the generated
-# static site into the /docs folder on `main`. GitHub Pages is configured to
-# "Deploy from a branch" -> main -> /docs, so committing /docs publishes the site.
-#
-# Loop guard: this workflow's own commit only touches docs/**, and `paths-ignore`
-# below excludes docs/**, so the bot commit does NOT re-trigger the workflow.
-# The commit message also carries [skip ci] as a second line of defence.
+# Docs publish only after `quality` is green. Pages deploys from main -> /docs.
+# Loop guard: the bot commit touches only docs/**, which paths-ignore excludes,
+# and carries [skip ci], so it does not re-trigger this workflow.
 
 on:
   push:
@@ -23,7 +19,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Install Android + WASM workloads
+        run: dotnet workload install android wasm-tools
+
+      - name: Verify formatting
+        run: dotnet format Collectary.slnx --verify-no-changes --severity warn
+
+      - name: Build & run full test suite
+        run: pwsh ./build.ps1 --target Test --configuration Release
+
   build-docs:
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,7 +68,7 @@ jobs:
       - name: Publish WASM app
         run: dotnet publish src/Collectary.UI.Browser/Collectary.UI.Browser.csproj -c Release -o ./browser-publish
 
-      - name: Build MkDocs site (into docs/)
+      - name: Build MkDocs site
         run: mkdocs build
 
       - name: Copy WASM app into docs/app/
