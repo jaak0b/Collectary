@@ -403,6 +403,67 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             },
             deleteImageAsync: key => _imageStore.DeleteAsync(key));
 
+        var barcodeDecoder = _scope.Resolve<IBarcodeImageDecoder>();
+        context.ScanBarcodeAsync = async () =>
+        {
+            // Snapshot model: the user supplies a still image of the code (a photo or webcam frame
+            // exported to a file); ZXing decodes it. Live in-app webcam capture is a future addition.
+            var sp = TopLevel.GetTopLevel(Host)?.StorageProvider;
+            if (sp is null) return null;
+            var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                AllowMultiple = false,
+                FileTypeFilter = [FilePickerFileTypes.ImageAll]
+            });
+            var file = files.FirstOrDefault();
+            if (file is null) return null;
+            await using var stream = await file.OpenReadAsync();
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+            return barcodeDecoder.Decode(buffer.ToArray());
+        };
+
+        var qrGenerator = _scope.Resolve<IBarcodeImageGenerator>();
+        context.GenerateQrBitmap = content =>
+        {
+            if (string.IsNullOrWhiteSpace(content)) return null;
+            using var stream = new MemoryStream(qrGenerator.GenerateQrPng(content, 320));
+            return new Bitmap(stream);
+        };
+
+        context.PickAndStoreFileAsync = async () =>
+        {
+            var sp = TopLevel.GetTopLevel(Host)?.StorageProvider;
+            if (sp is null) return null;
+            var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions { AllowMultiple = false });
+            var file = files.FirstOrDefault();
+            if (file is null) return null;
+            await using var stream = await file.OpenReadAsync();
+            var key = await _imageStore.SaveAsync(stream, file.Name);
+            return (key, file.Name);
+        };
+        context.ExportFileAsync = async (key, suggestedFileName) =>
+        {
+            var sp = TopLevel.GetTopLevel(Host)?.StorageProvider;
+            if (sp is null) return;
+            var dest = await sp.SaveFilePickerAsync(new FilePickerSaveOptions { SuggestedFileName = suggestedFileName });
+            if (dest is null) return;
+            using var src = _imageStore.Open(key);
+            await using var dst = await dest.OpenWriteAsync();
+            await src.CopyToAsync(dst);
+        };
+        context.DeleteFileAsync = key => _imageStore.DeleteAsync(key);
+
+        context.LoadLinkableItemsAsync = async () =>
+        {
+            var options = new List<LinkedItemOption>();
+            foreach (var p in await presetUseCase.GetAllPresetsAsync())
+            foreach (var it in await itemUseCase.GetItemsForPresetAsync(p.Id))
+                if (existing is null || it.Id != existing.Id)
+                    options.Add(new LinkedItemOption(it.Id, it.DisplayName));
+            return options;
+        };
+
         context.GlobalFieldLabelLayout = AppPreferences.Load().FieldLabelLayout;
 
         var rootEditor = new ItemEditorViewModel(

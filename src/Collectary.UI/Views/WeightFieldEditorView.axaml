@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Views.WeightFieldEditorView"
+             x:DataType="vm:WeightFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+            <controls:SafeNumericUpDown Value="{Binding Amount}"
+                                        Minimum="0"
+                                        Maximum="9999999"
+                                        Increment="0.1"
+                                        MinWidth="120"/>
+            <ComboBox ItemsSource="{Binding Units}"
+                      SelectedItem="{Binding SelectedUnit}"
+                      MinWidth="80"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

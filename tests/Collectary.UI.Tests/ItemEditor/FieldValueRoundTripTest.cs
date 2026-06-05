@@ -172,6 +172,142 @@ public class FieldValueRoundTripTest : FlowTestBase
     }
 
     [Test]
+    public async Task BarcodeField_Value_RoundTrips()
+    {
+        var def = new BarcodeFieldDefinition { Label = "Barcode" };
+        var reloaded = await RoundTrip<BarcodeFieldEditorViewModel>(def, e => e.Code = "5901234123457");
+        Assert.That(reloaded.Code, Is.EqualTo("5901234123457"));
+    }
+
+    [Test]
+    public async Task QrCodeField_Value_RoundTrips()
+    {
+        var def = new QrCodeFieldDefinition { Label = "Label" };
+        var reloaded = await RoundTrip<QrCodeFieldEditorViewModel>(def, e => e.Content = "SHELF-A1");
+        Assert.That(reloaded.Content, Is.EqualTo("SHELF-A1"));
+    }
+
+    [Test]
+    public async Task MultiImageField_Keys_RoundTrip()
+    {
+        var def = new MultiImageFieldDefinition { Label = "Photos" };
+        var reloaded = await RoundTrip<MultiImageFieldEditorViewModel>(def, e =>
+        {
+            e.Images.Add(new MultiImageEntryViewModel("img-1", null));
+            e.Images.Add(new MultiImageEntryViewModel("img-2", null));
+        });
+        Assert.That(reloaded.Images.Select(i => i.Key), Is.EqualTo(new[] { "img-1", "img-2" }));
+    }
+
+    [Test]
+    public async Task FileAttachmentField_Files_RoundTrip()
+    {
+        var def = new FileAttachmentFieldDefinition { Label = "Docs" };
+        var reloaded = await RoundTrip<FileAttachmentFieldEditorViewModel>(def, e =>
+        {
+            e.Attachments.Add(new FileAttachmentEntryViewModel("k1", "manual.pdf"));
+            e.Attachments.Add(new FileAttachmentEntryViewModel("k2", "warranty.pdf"));
+        });
+        Assert.That(reloaded.Attachments.Select(a => a.FileName), Is.EqualTo(new[] { "manual.pdf", "warranty.pdf" }));
+        Assert.That(reloaded.Attachments.Select(a => a.Key), Is.EqualTo(new[] { "k1", "k2" }));
+    }
+
+    [Test]
+    public async Task CountryField_Value_RoundTrips()
+    {
+        var def = new CountryFieldDefinition { Label = "Origin" };
+        var reloaded = await RoundTrip<CountryFieldEditorViewModel>(def,
+            e => e.SelectedCountry = e.Countries.First(c => c.Code == "JP"));
+        Assert.That(reloaded.SelectedCountry?.Code, Is.EqualTo("JP"));
+    }
+
+    [Test]
+    public async Task MeasurementField_Value_RoundTrips()
+    {
+        var def = new MeasurementFieldDefinition { Label = "Diameter" };
+        var reloaded = await RoundTrip<MeasurementFieldEditorViewModel>(def, e =>
+        {
+            e.Amount = 38m;
+            e.SelectedUnit = "cm";
+        });
+        Assert.That(reloaded.Amount, Is.EqualTo(38m));
+        Assert.That(reloaded.SelectedUnit, Is.EqualTo("cm"));
+    }
+
+    [Test]
+    public async Task WeightField_Value_RoundTrips()
+    {
+        var def = new WeightFieldDefinition { Label = "Weight" };
+        var reloaded = await RoundTrip<WeightFieldEditorViewModel>(def, e =>
+        {
+            e.Amount = 31.1m;
+            e.SelectedUnit = "oz";
+        });
+        Assert.That(reloaded.Amount, Is.EqualTo(31.1m));
+        Assert.That(reloaded.SelectedUnit, Is.EqualTo("oz"));
+    }
+
+    [Test]
+    public async Task SliderField_Value_RoundTrips()
+    {
+        var def = new SliderFieldDefinition { Label = "Condition" };
+        var reloaded = await RoundTrip<SliderFieldEditorViewModel>(def, e => e.Number = 80);
+        Assert.That(reloaded.Number, Is.EqualTo(80));
+    }
+
+    [Test]
+    public async Task ProgressField_Value_RoundTrips()
+    {
+        var def = new ProgressFieldDefinition { Label = "Collected" };
+        var reloaded = await RoundTrip<ProgressFieldEditorViewModel>(def, e =>
+        {
+            e.Have = 42;
+            e.Total = 151;
+        });
+        Assert.That(reloaded.Have, Is.EqualTo(42));
+        Assert.That(reloaded.Total, Is.EqualTo(151));
+    }
+
+    [Test]
+    public async Task DateRangeField_Value_RoundTrips()
+    {
+        var from = new DateTimeOffset(2018, 5, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2020, 6, 30, 0, 0, 0, TimeSpan.Zero);
+        var def = new DateRangeFieldDefinition { Label = "Period" };
+        var reloaded = await RoundTrip<DateRangeFieldEditorViewModel>(def, e =>
+        {
+            e.From = from;
+            e.To = to;
+        });
+        Assert.That(reloaded.From, Is.EqualTo(from));
+        Assert.That(reloaded.To, Is.EqualTo(to));
+    }
+
+    [Test]
+    public async Task LinkedItemField_Value_RoundTrips()
+    {
+        var targetId = Guid.NewGuid();
+        var def = new LinkedItemFieldDefinition { Label = "Belongs to" };
+        var reloaded = await RoundTrip<LinkedItemFieldEditorViewModel>(def,
+            e => e.SelectedItem = new LinkedItemOption(targetId, "Millennium Falcon"));
+        Assert.That(reloaded.SelectedItem?.Id, Is.EqualTo(targetId));
+        Assert.That(reloaded.SelectedItem?.Display, Is.EqualTo("Millennium Falcon"));
+    }
+
+    [Test]
+    public async Task AudioField_Value_RoundTrips()
+    {
+        var def = new AudioFieldDefinition { Label = "Voice note" };
+        var reloaded = await RoundTrip<AudioFieldEditorViewModel>(def, e =>
+        {
+            e.AudioKey = "audio-1";
+            e.DurationSeconds = 8;
+        });
+        Assert.That(reloaded.AudioKey, Is.EqualTo("audio-1"));
+        Assert.That(reloaded.DurationSeconds, Is.EqualTo(8));
+    }
+
+    [Test]
     public async Task PhoneField_Value_RoundTrips()
     {
         var def = new PhoneFieldDefinition { Label = "Phone" };

@@ -27,6 +27,10 @@ public class TestFieldEditorRegistry : IFieldEditorRegistry
                 new DurationFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             CurrencyFieldDefinition d =>
                 new CurrencyFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
+            BarcodeFieldDefinition d =>
+                new BarcodeFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
+            QrCodeFieldDefinition d =>
+                new QrCodeFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
             PercentageFieldDefinition d =>
                 new PercentageFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             RatingFieldDefinition d =>
@@ -52,6 +56,27 @@ public class TestFieldEditorRegistry : IFieldEditorRegistry
                 new ListFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
             ImageFieldDefinition d =>
                 new ImageFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
+            MultiImageFieldDefinition d =>
+                new MultiImageFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
+            FileAttachmentFieldDefinition d =>
+                new FileAttachmentFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
+            CountryFieldDefinition d =>
+                new CountryFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing),
+                    new Collectary.Presentation.Services.CountryCatalog()),
+            MeasurementFieldDefinition d =>
+                new MeasurementFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
+            WeightFieldDefinition d =>
+                new WeightFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
+            SliderFieldDefinition d =>
+                new SliderFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
+            ProgressFieldDefinition d =>
+                new ProgressFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
+            DateRangeFieldDefinition d =>
+                new DateRangeFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
+            LinkedItemFieldDefinition d =>
+                new LinkedItemFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
+            AudioFieldDefinition d =>
+                new AudioFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing), context),
             _ => null
         };
     }

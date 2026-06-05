@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:svc="using:Collectary.Presentation.Services"
+             x:Class="Collectary.UI.Views.CountryFieldEditorView"
+             x:DataType="vm:CountryFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <ComboBox ItemsSource="{Binding Countries}"
+                  SelectedItem="{Binding SelectedCountry}"
+                  MinWidth="220"
+                  VerticalAlignment="Top">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="svc:CountryOption">
+                    <TextBlock Text="{Binding Display}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+    </controls:FieldEditorScaffold>
+</UserControl>

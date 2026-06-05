@@ -50,6 +50,8 @@ public class UiModule : Module
         builder.RegisterInstance(ThemeService.Instance).SingleInstance();
         builder.RegisterInstance(AvaloniaDialogService.Instance).As<IDialogService>().SingleInstance();
         builder.RegisterType<ListCellBuilder>().As<IListCellBuilder>().AsSelf().SingleInstance();
+        builder.RegisterType<Collectary.Presentation.Services.CountryCatalog>()
+            .As<Collectary.Presentation.Services.ICountryCatalog>().SingleInstance();
         builder.RegisterType<FieldEditorRegistry>().As<IFieldEditorRegistry>().AsSelf().SingleInstance();
     }
 
@@ -74,6 +76,18 @@ public class UiModule : Module
         builder.RegisterType<DurationFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(DurationFieldDefinition));
         builder.RegisterType<TimeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(TimeFieldDefinition));
         builder.RegisterType<CurrencyFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(CurrencyFieldDefinition));
+        builder.RegisterType<BarcodeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(BarcodeFieldDefinition));
+        builder.RegisterType<QrCodeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(QrCodeFieldDefinition));
+        builder.RegisterType<MultiImageFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(MultiImageFieldDefinition));
+        builder.RegisterType<FileAttachmentFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(FileAttachmentFieldDefinition));
+        builder.RegisterType<CountryFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(CountryFieldDefinition));
+        builder.RegisterType<MeasurementFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(MeasurementFieldDefinition));
+        builder.RegisterType<WeightFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(WeightFieldDefinition));
+        builder.RegisterType<SliderFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(SliderFieldDefinition));
+        builder.RegisterType<ProgressFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(ProgressFieldDefinition));
+        builder.RegisterType<DateRangeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(DateRangeFieldDefinition));
+        builder.RegisterType<LinkedItemFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(LinkedItemFieldDefinition));
+        builder.RegisterType<AudioFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(AudioFieldDefinition));
         builder.RegisterType<TagsFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(TagsFieldDefinition));
     }
 
@@ -104,6 +118,15 @@ public class UiModule : Module
 
         TextCell(nameof(PhoneFieldDefinition));
         TextCell(nameof(EmailFieldDefinition));
+        TextCell(nameof(BarcodeFieldDefinition));
+        TextCell(nameof(QrCodeFieldDefinition));
+        TextCell(nameof(CountryFieldDefinition));
+        TextCell(nameof(MeasurementFieldDefinition));
+        TextCell(nameof(WeightFieldDefinition));
+        TextCell(nameof(SliderFieldDefinition));
+        TextCell(nameof(ProgressFieldDefinition));
+        TextCell(nameof(DateRangeFieldDefinition));
+        TextCell(nameof(LinkedItemFieldDefinition));
 
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new PercentageListCellViewModel(fv, fd))

@@ -217,6 +217,18 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<DurationFieldDefinition>().ToTable("DurationFieldDefinitions");
         modelBuilder.Entity<TimeFieldDefinition>().ToTable("TimeFieldDefinitions");
         modelBuilder.Entity<CurrencyFieldDefinition>().ToTable("CurrencyFieldDefinitions");
+        modelBuilder.Entity<BarcodeFieldDefinition>().ToTable("BarcodeFieldDefinitions");
+        modelBuilder.Entity<QrCodeFieldDefinition>().ToTable("QrCodeFieldDefinitions");
+        modelBuilder.Entity<MultiImageFieldDefinition>().ToTable("MultiImageFieldDefinitions");
+        modelBuilder.Entity<FileAttachmentFieldDefinition>().ToTable("FileAttachmentFieldDefinitions");
+        modelBuilder.Entity<CountryFieldDefinition>().ToTable("CountryFieldDefinitions");
+        modelBuilder.Entity<MeasurementFieldDefinition>().ToTable("MeasurementFieldDefinitions");
+        modelBuilder.Entity<WeightFieldDefinition>().ToTable("WeightFieldDefinitions");
+        modelBuilder.Entity<SliderFieldDefinition>().ToTable("SliderFieldDefinitions");
+        modelBuilder.Entity<ProgressFieldDefinition>().ToTable("ProgressFieldDefinitions");
+        modelBuilder.Entity<DateRangeFieldDefinition>().ToTable("DateRangeFieldDefinitions");
+        modelBuilder.Entity<LinkedItemFieldDefinition>().ToTable("LinkedItemFieldDefinitions");
+        modelBuilder.Entity<AudioFieldDefinition>().ToTable("AudioFieldDefinitions");
         modelBuilder.Entity<TagsFieldDefinition>().ToTable("TagsFieldDefinitions");
         modelBuilder.Entity<SingleChoiceFieldDefinition>(e =>
         {
@@ -341,6 +353,77 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<CurrencyFieldValue>(e =>
         {
             e.ToTable("CurrencyFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<BarcodeFieldValue>(e =>
+        {
+            e.ToTable("BarcodeFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<QrCodeFieldValue>(e =>
+        {
+            e.ToTable("QrCodeFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<MultiImageFieldValue>(e =>
+        {
+            e.ToTable("MultiImageFieldValues");
+            e.Ignore(v => v.Definition);
+            e.Property(v => v.ImageKeys).HasConversion(
+                v => string.Join('\n', v),
+                v => v.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList());
+        });
+        modelBuilder.Entity<FileAttachmentFieldValue>(e =>
+        {
+            e.ToTable("FileAttachmentFieldValues");
+            e.Ignore(v => v.Definition);
+            e.OwnsMany(v => v.Files, b =>
+            {
+                b.ToTable("FileAttachmentEntries");
+                b.WithOwner().HasForeignKey("OwnerValueId");
+                b.Property(f => f.Key).IsRequired();
+                b.Property(f => f.FileName);
+                b.HasKey("OwnerValueId", "Key");
+            });
+        });
+        modelBuilder.Entity<CountryFieldValue>(e =>
+        {
+            e.ToTable("CountryFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<MeasurementFieldValue>(e =>
+        {
+            e.ToTable("MeasurementFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<WeightFieldValue>(e =>
+        {
+            e.ToTable("WeightFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<SliderFieldValue>(e =>
+        {
+            e.ToTable("SliderFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<ProgressFieldValue>(e =>
+        {
+            e.ToTable("ProgressFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<DateRangeFieldValue>(e =>
+        {
+            e.ToTable("DateRangeFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<LinkedItemFieldValue>(e =>
+        {
+            e.ToTable("LinkedItemFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<AudioFieldValue>(e =>
+        {
+            e.ToTable("AudioFieldValues");
             e.Ignore(v => v.Definition);
         });
         modelBuilder.Entity<TagsFieldValue>(e =>

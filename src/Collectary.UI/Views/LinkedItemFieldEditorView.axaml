@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Views.LinkedItemFieldEditorView"
+             x:DataType="vm:LinkedItemFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <ComboBox ItemsSource="{Binding Candidates}"
+                  SelectedItem="{Binding SelectedItem}"
+                  MinWidth="220"
+                  VerticalAlignment="Top"
+                  DropDownOpened="OnDropDownOpened">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:LinkedItemOption">
+                    <TextBlock Text="{Binding Display}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+    </controls:FieldEditorScaffold>
+</UserControl>

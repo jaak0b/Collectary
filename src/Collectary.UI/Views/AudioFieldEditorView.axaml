@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.AudioFieldEditorView"
+             x:DataType="vm:AudioFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+            <Button Command="{Binding RecordCommand}"
+                    Content="{Binding [Audio_Record], Source={x:Static loc:LocalizationService.Instance}}"/>
+            <Button Command="{Binding PlayCommand}"
+                    Content="▶"
+                    IsVisible="{Binding HasAudio, FallbackValue=False}"/>
+            <Button Command="{Binding DeleteCommand}"
+                    Content="✕"
+                    IsVisible="{Binding HasAudio, FallbackValue=False}"/>
+            <TextBlock Text="{Binding DurationSeconds, StringFormat={}{0}s}"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding HasAudio, FallbackValue=False}"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

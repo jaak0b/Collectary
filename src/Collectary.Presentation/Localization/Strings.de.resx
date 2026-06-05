@@ -54,6 +54,24 @@
   <data name="FieldType_Time" xml:space="preserve"><value>Uhrzeit</value></data>
   <data name="FieldType_Currency" xml:space="preserve"><value>Währung</value></data>
   <data name="FieldType_Tags" xml:space="preserve"><value>Stichwörter</value></data>
+  <data name="FieldType_Barcode" xml:space="preserve"><value>Barcode / QR</value></data>
+  <data name="Barcode_Scan" xml:space="preserve"><value>Scannen…</value></data>
+  <data name="Barcode_Placeholder" xml:space="preserve"><value>Code scannen oder eingeben</value></data>
+  <data name="FieldType_QrCode" xml:space="preserve"><value>QR-Code</value></data>
+  <data name="QrCode_Placeholder" xml:space="preserve"><value>Text für den QR-Code</value></data>
+  <data name="FieldType_MultiImage" xml:space="preserve"><value>Bildergalerie</value></data>
+  <data name="MultiImage_Add" xml:space="preserve"><value>Bild hinzufügen…</value></data>
+  <data name="FieldType_FileAttachment" xml:space="preserve"><value>Dateianhang</value></data>
+  <data name="FileAttachment_Add" xml:space="preserve"><value>Datei hinzufügen…</value></data>
+  <data name="FieldType_Country" xml:space="preserve"><value>Land</value></data>
+  <data name="FieldType_Measurement" xml:space="preserve"><value>Maß</value></data>
+  <data name="FieldType_Weight" xml:space="preserve"><value>Gewicht</value></data>
+  <data name="FieldType_Slider" xml:space="preserve"><value>Schieberegler</value></data>
+  <data name="FieldType_Progress" xml:space="preserve"><value>Fortschritt</value></data>
+  <data name="FieldType_DateRange" xml:space="preserve"><value>Zeitraum</value></data>
+  <data name="FieldType_LinkedItem" xml:space="preserve"><value>Verknüpftes Objekt</value></data>
+  <data name="FieldType_Audio" xml:space="preserve"><value>Audionotiz</value></data>
+  <data name="Audio_Record" xml:space="preserve"><value>Aufnehmen…</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Erscheinungsbild</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Hell</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dunkel</value></data>

@@ -407,6 +407,23 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("UserCredentials", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AudioFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.ToTable("AudioFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("BarcodeFieldDefinitions", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BoolFieldDefinition", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
@@ -428,6 +445,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.ToTable("ColorFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.CountryFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("CountryFieldDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.CurrencyFieldDefinition", b =>
@@ -458,6 +485,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.ToTable("DateFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.DateRangeFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("DateRangeFieldDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.DecimalFieldDefinition", b =>
@@ -503,6 +540,13 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("EmailFieldDefinitions", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.FileAttachmentFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.ToTable("FileAttachmentFieldDefinitions", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ImageFieldDefinition", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
@@ -535,6 +579,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("IntegerFieldDefinitions", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.LinkedItemFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("LinkedItemFieldDefinitions", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ListFieldDefinition", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
@@ -548,6 +602,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("ListFieldDefinitions", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MeasurementFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("MeasurementFieldDefinitions", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiChoiceFieldDefinition", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
@@ -556,6 +620,13 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.ToTable("MultiChoiceFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiImageFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.ToTable("MultiImageFieldDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.PercentageFieldDefinition", b =>
@@ -576,6 +647,26 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.ToTable("PhoneFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.ProgressFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("ProgressFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.QrCodeFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("QrCodeFieldDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.RatingFieldDefinition", b =>
@@ -609,6 +700,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.ToTable("SingleChoiceFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.SliderFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("SliderFieldDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.TagsFieldDefinition", b =>
@@ -654,6 +755,42 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("UrlFieldDefinitions", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.WeightFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("WeightFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AudioFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<string>("AudioKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("AudioFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Symbology")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("BarcodeFieldValues", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BoolFieldValue", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldValue");
@@ -674,6 +811,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("ColorFieldValues", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.CountryFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("CountryFieldValues", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.CurrencyFieldValue", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldValue");
@@ -692,6 +839,19 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.ToTable("DateFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.DateRangeFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<DateTime?>("From")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("To")
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("DateRangeFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.DecimalFieldValue", b =>
@@ -724,6 +884,13 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("EmailFieldValues", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.FileAttachmentFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.ToTable("FileAttachmentFieldValues", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ImageFieldValue", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldValue");
@@ -747,11 +914,38 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("IntegerFieldValues", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.LinkedItemFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<string>("TargetDisplay")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("TargetItemId")
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("LinkedItemFieldValues", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ListFieldValue", b =>
                 {
                     b.HasBaseType("Collectary.Core.Domain.FieldValue");
 
                     b.ToTable("ListFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MeasurementFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("MeasurementFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiChoiceFieldValue", b =>
@@ -763,6 +957,17 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.ToTable("MultiChoiceFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiImageFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<string>("ImageKeys")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("MultiImageFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.PercentageFieldValue", b =>
@@ -783,6 +988,29 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.ToTable("PhoneFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.ProgressFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<int?>("Have")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Total")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("ProgressFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.QrCodeFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("QrCodeFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.RatingFieldValue", b =>
@@ -813,6 +1041,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.ToTable("SingleChoiceFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.SliderFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<int?>("Value")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("SliderFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.TagsFieldValue", b =>
@@ -854,6 +1092,20 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.ToTable("UrlFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.WeightFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("WeightFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.FieldDefinition", b =>
@@ -962,6 +1214,24 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Navigation("SystemField");
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AudioFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.AudioFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.BarcodeFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BoolFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
@@ -980,6 +1250,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.CountryFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.CountryFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.CurrencyFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
@@ -994,6 +1273,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.DateFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.DateRangeFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.DateRangeFieldDefinition", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1034,6 +1322,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.FileAttachmentFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.FileAttachmentFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ImageFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
@@ -1052,11 +1349,29 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.LinkedItemFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.LinkedItemFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ListFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.ListFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MeasurementFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.MeasurementFieldDefinition", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1097,6 +1412,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Navigation("Choices");
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiImageFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.MultiImageFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.PercentageFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
@@ -1111,6 +1435,24 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.PhoneFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.ProgressFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.ProgressFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.QrCodeFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.QrCodeFieldDefinition", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1169,6 +1511,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Navigation("Choices");
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.SliderFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.SliderFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.TagsFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
@@ -1205,6 +1556,33 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.WeightFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.WeightFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AudioFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.AudioFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.BarcodeFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BoolFieldValue", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
@@ -1223,6 +1601,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.CountryFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.CountryFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.CurrencyFieldValue", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
@@ -1237,6 +1624,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.DateFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.DateRangeFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.DateRangeFieldValue", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1268,6 +1664,37 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.FileAttachmentFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.FileAttachmentFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("Collectary.Core.Domain.Fields.FileAttachment", "Files", b1 =>
+                        {
+                            b1.Property<Guid>("OwnerValueId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Key")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("FileName")
+                                .IsRequired()
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("OwnerValueId", "Key");
+
+                            b1.ToTable("FileAttachmentEntries", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("OwnerValueId");
+                        });
+
+                    b.Navigation("Files");
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ImageFieldValue", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
@@ -1286,6 +1713,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.LinkedItemFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.LinkedItemFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.ListFieldValue", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
@@ -1295,11 +1731,29 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MeasurementFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.MeasurementFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiChoiceFieldValue", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.MultiChoiceFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.MultiImageFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.MultiImageFieldValue", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1318,6 +1772,24 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.PhoneFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.ProgressFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.ProgressFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.QrCodeFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.QrCodeFieldValue", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1345,6 +1817,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.SingleChoiceFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.SliderFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.SliderFieldValue", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1381,6 +1862,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.UrlFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.WeightFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.WeightFieldValue", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

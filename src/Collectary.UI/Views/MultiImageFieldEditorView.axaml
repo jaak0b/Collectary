@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.MultiImageFieldEditorView"
+             x:DataType="vm:MultiImageFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Spacing="6" VerticalAlignment="Top">
+            <ItemsControl ItemsSource="{Binding Images}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MultiImageEntryViewModel">
+                        <Border Margin="4" Padding="2" BorderThickness="1"
+                                BorderBrush="{DynamicResource BorderBrush}">
+                            <StackPanel Spacing="2">
+                                <Image Source="{Binding Bitmap}" Width="96" Height="96"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Command="{Binding AddImageCommand}"
+                    Content="{Binding [MultiImage_Add], Source={x:Static loc:LocalizationService.Instance}}"
+                    HorizontalAlignment="Left"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

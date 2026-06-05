@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.QrCodeFieldEditorView"
+             x:DataType="vm:QrCodeFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Spacing="6" VerticalAlignment="Top">
+            <TextBox Text="{Binding Content}"
+                     PlaceholderText="{Binding [QrCode_Placeholder], Source={x:Static loc:LocalizationService.Instance}}"
+                     MinWidth="180"/>
+            <Image Source="{Binding Preview}"
+                   IsVisible="{Binding HasPreview, FallbackValue=False}"
+                   Width="160" Height="160"
+                   HorizontalAlignment="Left"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.BarcodeFieldEditorView"
+             x:DataType="vm:BarcodeFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+            <TextBox Text="{Binding Code}"
+                     PlaceholderText="{Binding [Barcode_Placeholder], Source={x:Static loc:LocalizationService.Instance}}"
+                     MinWidth="180"
+                     VerticalAlignment="Top"/>
+            <Button Command="{Binding ScanCommand}"
+                    Content="{Binding [Barcode_Scan], Source={x:Static loc:LocalizationService.Instance}}"
+                    VerticalAlignment="Top"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

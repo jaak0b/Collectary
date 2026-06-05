@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.FileAttachmentFieldEditorView"
+             x:DataType="vm:FileAttachmentFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Spacing="6" VerticalAlignment="Top">
+            <ItemsControl ItemsSource="{Binding Attachments}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FileAttachmentEntryViewModel">
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                            <TextBlock Text="📎" VerticalAlignment="Center"/>
+                            <Button Content="{Binding FileName}"
+                                    Command="{Binding $parent[ItemsControl].((vm:FileAttachmentFieldEditorViewModel)DataContext).OpenFileCommand}"
+                                    CommandParameter="{Binding}"/>
+                            <Button Content="✕"
+                                    Command="{Binding $parent[ItemsControl].((vm:FileAttachmentFieldEditorViewModel)DataContext).RemoveFileCommand}"
+                                    CommandParameter="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Command="{Binding AddFileCommand}"
+                    Content="{Binding [FileAttachment_Add], Source={x:Static loc:LocalizationService.Instance}}"
+                    HorizontalAlignment="Left"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

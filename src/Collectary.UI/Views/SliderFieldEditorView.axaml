@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Views.SliderFieldEditorView"
+             x:DataType="vm:SliderFieldEditorViewModel">
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+            <Slider Value="{Binding Number}"
+                    Minimum="{Binding Minimum}"
+                    Maximum="{Binding Maximum}"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    MinWidth="200"
+                    VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Number, StringFormat={}{0:0}}"
+                       VerticalAlignment="Center"
+                       MinWidth="30"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>
