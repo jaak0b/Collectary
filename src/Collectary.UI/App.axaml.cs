@@ -63,6 +63,7 @@ public partial class App : Application
                     EnsureMigrationsCompatibility(db);
                     db.Database.Migrate();
                     DropObsoleteColumns(db);
+                    new OrphanedFieldDefinitionCleaner().CleanAsync(db).GetAwaiter().GetResult();
                 }
             }
 

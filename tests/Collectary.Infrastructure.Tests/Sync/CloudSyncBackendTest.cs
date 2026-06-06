@@ -71,6 +71,52 @@ public class CloudSyncBackendTest
     }
 
     [Test]
+    public async Task ReadAsync_WithMultipleRevisionsPresent_ReturnsHighest()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ListAsync("items"); // provisions the kind folder
+        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
+        var naming = new SyncFileNaming();
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 1), System.Text.Encoding.UTF8.GetBytes("rev1"), CancellationToken.None);
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 2), System.Text.Encoding.UTF8.GetBytes("rev2"), CancellationToken.None);
+
+        Assert.That(await _sut.ReadAsync("items", id), Is.EqualTo("rev2"),
+            "a lingering lower revision must never shadow the newest one");
+    }
+
+    [Test]
+    public async Task WriteAsync_DoesNotDeleteAHigherConcurrentRevision()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ListAsync("items");
+        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
+        var naming = new SyncFileNaming();
+        // a concurrent writer has already landed revision 3
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 3), System.Text.Encoding.UTF8.GetBytes("rev3"), CancellationToken.None);
+
+        await _sut.WriteAsync("items", id, "rev2", 2);
+
+        Assert.That(await _sut.ReadAsync("items", id), Is.EqualTo("rev3"),
+            "an in-flight older write must not prune a newer concurrent revision");
+    }
+
+    [Test]
+    public async Task ReadAndWrite_AreScopedToTheirOwnId()
+    {
+        var a = Guid.NewGuid();
+        var b = Guid.NewGuid();
+        await _sut.WriteAsync("items", a, "A1", 1);
+        await _sut.WriteAsync("items", b, "B5", 5);   // a different id at a higher revision
+        await _sut.WriteAsync("items", a, "A2", 2);    // rewriting A must not read or prune B
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_sut.ReadAsync("items", a).Result, Is.EqualTo("A2"), "a read must never pick another id's revision");
+            Assert.That(_sut.ReadAsync("items", b).Result, Is.EqualTo("B5"), "another id's document must survive a write");
+        });
+    }
+
+    [Test]
     public async Task ListAsync_WhenKindEmpty_ReturnsEmpty() =>
         Assert.That(await _sut.ListAsync("presets"), Is.Empty);
 

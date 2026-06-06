@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 
@@ -12,7 +13,7 @@ public class RoutingSyncBackend : ISyncBackend
 {
     private readonly Func<CloudProvider> _activeProvider;
     private readonly IReadOnlyDictionary<CloudProvider, Func<ISyncBackend>> _backends;
-    private readonly Dictionary<CloudProvider, ISyncBackend> _resolved = new();
+    private readonly ConcurrentDictionary<CloudProvider, ISyncBackend> _resolved = new();
     private readonly NullSyncBackend _fallback = new();
 
     public RoutingSyncBackend(Func<CloudProvider> activeProvider, IReadOnlyDictionary<CloudProvider, Func<ISyncBackend>> backends)
@@ -27,12 +28,7 @@ public class RoutingSyncBackend : ISyncBackend
         {
             var provider = _activeProvider();
             if (!_backends.TryGetValue(provider, out var factory)) return _fallback;
-            if (!_resolved.TryGetValue(provider, out var backend))
-            {
-                backend = factory();
-                _resolved[provider] = backend;
-            }
-            return backend;
+            return _resolved.GetOrAdd(provider, _ => factory());
         }
     }
 

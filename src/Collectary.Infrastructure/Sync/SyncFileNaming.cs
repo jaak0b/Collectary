@@ -28,11 +28,15 @@ public class SyncFileNaming
         fileName.StartsWith($"{id:N}.", StringComparison.OrdinalIgnoreCase)
         && fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
 
+    // A fixed set of disallowed characters rather than Path.GetInvalidFileNameChars(), which varies by
+    // OS — a blob key stored on Android (Linux) must validate identically on a Windows desktop.
+    private static readonly char[] ReservedChars = "\\/:*?\"<>|".ToCharArray();
+
     public string SafeKey(string key)
     {
         if (string.IsNullOrWhiteSpace(key) || key is "." or ".."
-            || Path.GetFileName(key) != key
-            || key.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            || key.IndexOfAny(ReservedChars) >= 0
+            || key.Any(char.IsControl))
             throw new ArgumentException($"Unsafe blob key: '{key}'", nameof(key));
         return key;
     }

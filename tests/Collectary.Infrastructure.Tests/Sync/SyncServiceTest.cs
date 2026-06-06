@@ -222,6 +222,24 @@ public class SyncServiceTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task SyncAsync_WhenRemoteRevisionOlderThanBase_DoesNotClobberLocal()
+    {
+        var id = await EstablishSharedPresetAsync();
+        var a = _storeA.Presets[id];
+        a.Name = "A-v2"; a.Revision = 2; a.IsDirty = true;
+        await _clientA.SyncAsync();
+
+        var stale = _serializer.Deserialize<Preset>((await _backend.ReadAsync(SyncService.PresetKind, id))!);
+        stale.Name = "Rolled-back"; stale.Revision = 1;
+        await _backend.WriteAsync(SyncService.PresetKind, id, _serializer.Serialize(stale), 1);
+
+        await _clientA.SyncAsync();
+
+        Assert.That(_storeA.Presets[id].Name, Is.EqualTo("A-v2"),
+            "a lower-revision remote must never overwrite newer local content");
+    }
+
+    [Test]
     public void ResolveAsync_WithUnknownKind_Throws()
     {
         var conflict = new SyncConflict((SyncEntityKind)999, Guid.NewGuid(), "a", "b", 1, 1);
@@ -254,6 +272,53 @@ public class SyncServiceTest : FileSystemTestBase
             Assert.That(_backend.ReadAsync(SyncService.PresetKind, p.Id).Result, Is.Null, "backend doc deleted");
         });
     }
+
+    [Test]
+    public async Task SyncAsync_WhenOneRemoteDocumentCannotDeserialize_StillSyncsTheRest()
+    {
+        var poison = DirtyPreset("Poison");
+        var good = DirtyPreset("Good");
+        _storeA.Presets[poison.Id] = poison;
+        _storeA.Presets[good.Id] = good;
+        await _clientA.SyncAsync();
+
+        var flaky = new FlakySerializer { PoisonMarker = "Poison" };
+        var logger = new RecordingLogger();
+        var clientB = new SyncService(_backend, _storeB, flaky, logger: logger);
+
+        await clientB.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_storeB.Presets.ContainsKey(good.Id), Is.True, "a healthy document must still sync");
+            Assert.That(_storeB.Presets.ContainsKey(poison.Id), Is.False, "an un-deserializable document is skipped, not fatal");
+            Assert.That(logger.Errors, Is.EqualTo(1), "the skipped document is logged via the injected logger");
+        });
+    }
+}
+
+internal sealed class RecordingLogger : IAppLogger
+{
+    public int Errors { get; private set; }
+    public void Verbose(string messageTemplate, params object?[] propertyValues) { }
+    public void Debug(string messageTemplate, params object?[] propertyValues) { }
+    public void Information(string messageTemplate, params object?[] propertyValues) { }
+    public void Warning(string messageTemplate, params object?[] propertyValues) { }
+    public void Error(Exception exception, string messageTemplate, params object?[] propertyValues) => Errors++;
+}
+
+internal sealed class FlakySerializer : ISyncSerializer
+{
+    private readonly SyncSerializer _inner = new();
+
+    public string PoisonMarker { get; set; } = "";
+
+    public string Serialize<T>(T value) => _inner.Serialize(value);
+
+    public T Deserialize<T>(string json) =>
+        PoisonMarker.Length > 0 && json.Contains(PoisonMarker)
+            ? throw new InvalidOperationException("corrupt document")
+            : _inner.Deserialize<T>(json);
 }
 
 internal sealed class TestSyncStatus : ISyncStatus
@@ -262,6 +327,7 @@ internal sealed class TestSyncStatus : ISyncStatus
     public bool IsConfigured => true;
     public int TombstoneRetentionDays { get; }
 }
+
 
 internal sealed class InMemorySyncStore : ISyncStore
 {

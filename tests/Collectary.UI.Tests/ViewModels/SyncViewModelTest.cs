@@ -60,6 +60,24 @@ public class SyncViewModelTest
     }
 
     [Test]
+    public async Task SyncNow_WithUnresolvedConflicts_DoesNotStampLastSynced()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
+        {
+            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
+        }));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.HasConflicts, Is.True);
+            Assert.That(vm.LastSyncedAt, Is.Null, "must not claim a successful sync while conflicts remain");
+        });
+    }
+
+    [Test]
     public async Task SyncNow_WhenSyncThrows_SetsError()
     {
         A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));

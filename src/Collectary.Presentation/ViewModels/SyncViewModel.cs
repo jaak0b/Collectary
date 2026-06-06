@@ -58,8 +58,8 @@ public partial class SyncViewModel : ViewModelBase
         try
         {
             var result = await _sync.SyncAsync();
-            LastSyncedAt = DateTime.UtcNow;
             RefreshConflicts(result.Conflicts);
+            if (result.Conflicts.Count == 0) LastSyncedAt = DateTime.UtcNow;
             Synced?.Invoke();
         }
         catch (Exception ex)

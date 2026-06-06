@@ -1,4 +1,5 @@
 using Collectary.Core.Domain;
+using Collectary.Core.Logging;
 using Collectary.Core.Ports;
 
 namespace Collectary.Core.UseCases;
@@ -15,14 +16,16 @@ public class SyncService : ISyncService
     private readonly ISyncSerializer _serializer;
     private readonly ISyncStatus? _syncStatus;
     private readonly IImageStore? _imageStore;
+    private readonly IAppLogger _logger;
 
-    public SyncService(ISyncBackend backend, ISyncStore store, ISyncSerializer serializer, ISyncStatus? syncStatus = null, IImageStore? imageStore = null)
+    public SyncService(ISyncBackend backend, ISyncStore store, ISyncSerializer serializer, ISyncStatus? syncStatus = null, IImageStore? imageStore = null, IAppLogger? logger = null)
     {
         _backend = backend;
         _store = store;
         _serializer = serializer;
         _syncStatus = syncStatus;
         _imageStore = imageStore;
+        _logger = logger ?? new NullAppLogger();
     }
 
     public async Task<SyncResult> SyncAsync()
@@ -126,11 +129,12 @@ public class SyncService : ISyncService
             }
 
             var localChanged = local is not null && local.IsDirty;
-            var remoteChanged = hasRemote && (local is null || remoteRevision != local.BaseRevision);
+            var remoteChanged = hasRemote && (local is null || remoteRevision > local.BaseRevision);
 
             if (localChanged && remoteChanged)
             {
-                var remote = _serializer.Deserialize<T>((await _backend.ReadAsync(kind, id))!);
+                var remote = await ReadRemoteAsync<T>(kind, id);
+                if (remote is null) continue;
                 conflicts.Add(new SyncConflict(entityKind, id, label(local!), label(remote), local!.Revision, remote.Revision));
             }
             else if (localChanged)
@@ -141,7 +145,8 @@ public class SyncService : ISyncService
             }
             else if (remoteChanged)
             {
-                var remote = _serializer.Deserialize<T>((await _backend.ReadAsync(kind, id))!);
+                var remote = await ReadRemoteAsync<T>(kind, id);
+                if (remote is null) continue;
                 remote.MarkPulled();
                 await applyLocal(remote);
                 pulled++;
@@ -149,6 +154,23 @@ public class SyncService : ISyncService
         }
 
         return (pushed, pulled);
+    }
+
+    private async Task<T?> ReadRemoteAsync<T>(string kind, Guid id) where T : class, ISyncable
+    {
+        var content = await _backend.ReadAsync(kind, id);
+        if (content is null) return null;
+        try
+        {
+            return _serializer.Deserialize<T>(content);
+        }
+        catch (Exception ex)
+        {
+            // A document this build can't deserialize (e.g. an unknown field type from a newer client)
+            // is skipped so a single bad document can't abort sync of every other entity.
+            _logger.Error(ex, "Skipping un-deserializable {Kind} document {Id} during sync", kind, id);
+            return null;
+        }
     }
 
     private async Task SyncImagesAsync()

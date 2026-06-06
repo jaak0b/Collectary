@@ -82,6 +82,31 @@ public class SyncSerializerTest
     }
 
     [Test]
+    public void Deserialize_PinsLegacyWireDiscriminators()
+    {
+        // A document previously written to a user's cloud. Renaming any FieldValue CLR type would change
+        // its $type and silently break deserialization of already-synced data — this guards the wire format.
+        var json = """
+        {
+          "DisplayName": "legacy",
+          "Values": [
+            { "$type": "TextFieldValue", "Value": "hi" },
+            { "$type": "IntegerFieldValue", "Value": 7 }
+          ]
+        }
+        """;
+
+        var item = _sut.Deserialize<Item>(json);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.Values[0], Is.TypeOf<TextFieldValue>());
+            Assert.That(((TextFieldValue)item.Values[0]).Value, Is.EqualTo("hi"));
+            Assert.That(item.Values[1], Is.TypeOf<IntegerFieldValue>());
+        });
+    }
+
+    [Test]
     public void Item_RoundTrips_TagsAndMultiChoiceCollections()
     {
         var tags = new TagsFieldValue();

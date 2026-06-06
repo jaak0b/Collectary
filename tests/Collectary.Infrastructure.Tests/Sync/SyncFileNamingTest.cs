@@ -92,4 +92,16 @@ public class SyncFileNamingTest
     [Test]
     public void SafeKey_KeyWithInvalidChar_Throws() =>
         Assert.That(() => _sut.SafeKey("bad\0name"), Throws.InstanceOf<ArgumentException>());
+
+    // These chars are illegal in a Windows file name but legal on Linux/Android; the key must be
+    // rejected the same way on every platform so a blob stored on one device resolves on another.
+    [TestCase("a:b.png")]
+    [TestCase("a*b.png")]
+    [TestCase("a?b.png")]
+    [TestCase("a<b.png")]
+    [TestCase("a>b.png")]
+    [TestCase("a|b.png")]
+    [TestCase("a\"b.png")]
+    public void SafeKey_WindowsReservedChar_ThrowsOnEveryPlatform(string key) =>
+        Assert.That(() => _sut.SafeKey(key), Throws.InstanceOf<ArgumentException>());
 }

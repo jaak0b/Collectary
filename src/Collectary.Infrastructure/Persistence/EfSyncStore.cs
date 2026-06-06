@@ -184,7 +184,8 @@ public class EfSyncStore : ISyncStore
     private IQueryable<Item> WithItemDetails(IQueryable<Item> query) =>
         query
             .Include(i => i.Values)
-            .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues);
+            .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues)
+            .AsSplitQuery();
 
     private IQueryable<SharedField> WithSharedFieldDetails(IQueryable<SharedField> query) =>
         query

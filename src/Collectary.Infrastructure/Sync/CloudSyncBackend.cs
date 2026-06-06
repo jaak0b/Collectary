@@ -35,12 +35,27 @@ public class CloudSyncBackend : ISyncBackend
     public async Task<string?> ReadAsync(string kind, Guid id)
     {
         var folder = await KindFolderAsync(kind);
-        var match = (await _store.ListFilesAsync(folder, CancellationToken.None))
-            .FirstOrDefault(f => _naming.BelongsTo(f.Name, id));
+        var match = HighestRevision(await _store.ListFilesAsync(folder, CancellationToken.None), id);
         if (match is null) return null;
 
         var bytes = await _store.DownloadAsync(folder, match.Name, CancellationToken.None);
         return bytes is null ? null : Encoding.UTF8.GetString(bytes);
+    }
+
+    // A partial write or a concurrent writer can leave more than one revision of the same id; always
+    // read the newest so a stale lower revision can never shadow it.
+    private CloudFile? HighestRevision(IReadOnlyList<CloudFile> files, Guid id)
+    {
+        CloudFile? best = null;
+        var bestRevision = -1L;
+        foreach (var file in files)
+            if (_naming.TryParseDocument(file.Name, out var fileId, out var revision)
+                && fileId == id && revision > bestRevision)
+            {
+                best = file;
+                bestRevision = revision;
+            }
+        return best;
     }
 
     public async Task WriteAsync(string kind, Guid id, string content, long revision)
@@ -49,10 +64,11 @@ public class CloudSyncBackend : ISyncBackend
         var target = _naming.DocumentName(id, revision);
         await _store.UploadAsync(folder, target, Encoding.UTF8.GetBytes(content), CancellationToken.None);
 
-        // Upload-then-delete: stale revisions of the same id are removed only after the new one lands.
+        // Upload-then-delete: only strictly-lower revisions are pruned, so a concurrently-written newer
+        // revision is never deleted by an in-flight older write.
         var stale = (await _store.ListFilesAsync(folder, CancellationToken.None))
-            .Where(f => _naming.BelongsTo(f.Name, id)
-                        && !string.Equals(f.Name, target, StringComparison.OrdinalIgnoreCase));
+            .Where(f => _naming.TryParseDocument(f.Name, out var fileId, out var fileRevision)
+                        && fileId == id && fileRevision < revision);
         foreach (var file in stale)
             await _store.DeleteAsync(folder, file.Name, CancellationToken.None);
     }

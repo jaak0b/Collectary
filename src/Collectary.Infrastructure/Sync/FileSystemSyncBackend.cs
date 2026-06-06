@@ -40,13 +40,13 @@ public class FileSystemSyncBackend : ISyncBackend
         Directory.CreateDirectory(dir);
         var target = Path.Combine(dir, _naming.DocumentName(id, revision));
 
-        foreach (var stale in Directory.EnumerateFiles(dir, $"{id:N}.*.json"))
-            if (!string.Equals(stale, target, StringComparison.OrdinalIgnoreCase))
-                File.Delete(stale);
-
         var temp = target + ".tmp";
         await File.WriteAllTextAsync(temp, content);
         File.Move(temp, target, overwrite: true);
+
+        foreach (var stale in Directory.EnumerateFiles(dir, $"{id:N}.*.json"))
+            if (!string.Equals(stale, target, StringComparison.OrdinalIgnoreCase))
+                File.Delete(stale);
     }
 
     public Task DeleteAsync(string kind, Guid id)
