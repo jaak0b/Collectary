@@ -76,6 +76,25 @@
                 <ResourceInclude Source="avares://Collectary.UI/Themes/Colors.Light.axaml"/>
                 <ResourceInclude Source="avares://Collectary.UI/Controls/FieldEditorScaffold.axaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="CalendarViewForeground" Color="{DynamicResource TextPrimaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewBackground" Color="{DynamicResource SurfaceColor}"/>
+            <SolidColorBrush x:Key="CalendarViewBorderBrush" Color="{DynamicResource BorderColor}"/>
+            <SolidColorBrush x:Key="CalendarViewCalendarItemForeground" Color="{DynamicResource TextPrimaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewCalendarItemRevealBackground" Color="Transparent"/>
+            <SolidColorBrush x:Key="CalendarViewCalendarItemRevealBorderBrush" Color="Transparent"/>
+            <SolidColorBrush x:Key="CalendarViewHoverBorderBrush" Color="{DynamicResource PrimaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewSelectedBorderBrush" Color="{DynamicResource PrimaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewTodayForeground" Color="{DynamicResource PrimaryForegroundColor}"/>
+            <SolidColorBrush x:Key="CalendarViewOutOfScopeForeground" Color="{DynamicResource TextSecondaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewOutOfScopeBackground" Color="Transparent"/>
+            <SolidColorBrush x:Key="CalendarViewBlackoutForeground" Color="{DynamicResource TextSecondaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewWeekDayForegroundDisabled" Color="{DynamicResource TextSecondaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewNavigationButtonBackground" Color="Transparent"/>
+            <SolidColorBrush x:Key="CalendarViewNavigationButtonBorderBrush" Color="Transparent"/>
+            <SolidColorBrush x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" Color="{DynamicResource BorderColor}"/>
+            <SolidColorBrush x:Key="CalendarViewNavigationButtonForegroundPointerOver" Color="{DynamicResource TextPrimaryColor}"/>
+            <SolidColorBrush x:Key="CalendarViewNavigationButtonForegroundPressed" Color="{DynamicResource TextSecondaryColor}"/>
         </ResourceDictionary>
     </Application.Resources>
 
@@ -88,6 +107,10 @@
         </Style>
         <Style Selector="Button.icon">
             <Setter Property="FontFamily" Value="avares://Collectary.UI/Assets/Fonts/CollectaryIcons.ttf#CollectaryIcons"/>
+        </Style>
+        <Style Selector="TextBox.fieldError">
+            <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </Application.Styles>
 </Application>

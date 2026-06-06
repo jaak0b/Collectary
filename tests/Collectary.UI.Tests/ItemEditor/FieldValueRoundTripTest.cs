@@ -101,26 +101,16 @@ public class FieldValueRoundTripTest : FlowTestBase
     public async Task TimeField_Value_RoundTrips()
     {
         var def = new TimeFieldDefinition { Label = "Time" };
-        var reloaded = await RoundTrip<TimeFieldEditorViewModel>(def, e =>
-        {
-            e.Hour = 14;
-            e.Minute = 30;
-        });
-        Assert.That(reloaded.Hour, Is.EqualTo(14));
-        Assert.That(reloaded.Minute, Is.EqualTo(30));
+        var reloaded = await RoundTrip<TimeFieldEditorViewModel>(def, e => e.Text = "14:30");
+        Assert.That(reloaded.Text, Is.EqualTo("14:30"));
     }
 
     [Test]
     public async Task DurationField_Value_RoundTrips()
     {
         var def = new DurationFieldDefinition { Label = "Duration" };
-        var reloaded = await RoundTrip<DurationFieldEditorViewModel>(def, e =>
-        {
-            e.Hours = 1;
-            e.Minutes = 30;
-        });
-        Assert.That(reloaded.Hours, Is.EqualTo(1));
-        Assert.That(reloaded.Minutes, Is.EqualTo(30));
+        var reloaded = await RoundTrip<DurationFieldEditorViewModel>(def, e => e.Text = "1h 30m");
+        Assert.That(reloaded.Text, Is.EqualTo("1h 30m"));
     }
 
     [Test]

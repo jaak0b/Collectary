@@ -2,30 +2,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
              x:Class="Collectary.UI.Views.TimeFieldEditorView"
              x:DataType="vm:TimeFieldEditorViewModel">
 
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Top">
-            <controls:SafeNumericUpDown Value="{Binding Hour}"
-                           Minimum="0"
-                           Maximum="23"
-                           FormatString="00"
-                           Increment="1"
-                           MinWidth="80"/>
-            <TextBlock Text=":"
-                       VerticalAlignment="Center"
-                       FontSize="16"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <controls:SafeNumericUpDown Value="{Binding Minute}"
-                           Minimum="0"
-                           Maximum="59"
-                           FormatString="00"
-                           Increment="1"
-                           MinWidth="80"/>
-        </StackPanel>
+        <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Classes.fieldError="{Binding HasError}"
+                 PlaceholderText="{Binding [Time_Watermark], Source={x:Static loc:LocalizationService.Instance}}"
+                 MinWidth="120"
+                 MaxWidth="160"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Top"/>
     </controls:FieldEditorScaffold>
 </UserControl>

@@ -2,31 +2,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
              x:Class="Collectary.UI.Views.DurationFieldEditorView"
              x:DataType="vm:DurationFieldEditorViewModel">
 
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
-            <controls:SafeNumericUpDown Value="{Binding Hours}"
-                           Minimum="0"
-                           Maximum="999"
-                           FormatString="0"
-                           Increment="1"
-                           MinWidth="80"/>
-            <TextBlock Text="h"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <controls:SafeNumericUpDown Value="{Binding Minutes}"
-                           Minimum="0"
-                           Maximum="59"
-                           FormatString="00"
-                           Increment="1"
-                           MinWidth="80"/>
-            <TextBlock Text="min"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-        </StackPanel>
+        <TextBox Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Classes.fieldError="{Binding HasError}"
+                 PlaceholderText="{Binding [Duration_Watermark], Source={x:Static loc:LocalizationService.Instance}}"
+                 MinWidth="120"
+                 MaxWidth="160"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Top"/>
     </controls:FieldEditorScaffold>
 </UserControl>

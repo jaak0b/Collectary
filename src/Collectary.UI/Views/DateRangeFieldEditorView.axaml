@@ -10,9 +10,9 @@
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
-            <CalendarDatePicker SelectedDate="{Binding From, Mode=TwoWay}" MinWidth="150"/>
+            <controls:DateBox SelectedDate="{Binding From, Mode=TwoWay}" MinWidth="160"/>
             <TextBlock Text="–" VerticalAlignment="Center"/>
-            <CalendarDatePicker SelectedDate="{Binding To, Mode=TwoWay}" MinWidth="150"/>
+            <controls:DateBox SelectedDate="{Binding To, Mode=TwoWay}" MinWidth="160"/>
         </StackPanel>
     </controls:FieldEditorScaffold>
 </UserControl>

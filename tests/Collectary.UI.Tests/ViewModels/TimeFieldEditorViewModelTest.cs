@@ -7,39 +7,41 @@ namespace Collectary.UI.Tests.ViewModels;
 public class TimeFieldEditorViewModelTest
 {
     [Test]
-    public void ParsesLoadedHhMm()
+    public void LoadsStoredValueIntoText()
     {
-        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue { Value = "09:05" });
-        Assert.That(sut.Hour, Is.EqualTo(9));
-        Assert.That(sut.Minute, Is.EqualTo(5));
+        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue { Value = "14:30" });
+        Assert.That(sut.Text, Is.EqualTo("14:30"));
+        Assert.That(sut.HasError, Is.False);
     }
 
     [Test]
-    public void IgnoresUnparseableValue()
-    {
-        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue { Value = "not-a-time" });
-        Assert.That(sut.Hour, Is.Null);
-        Assert.That(sut.Minute, Is.Null);
-    }
-
-    [Test]
-    public void PersistsZeroPaddedHhMm()
-    {
-        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue()) { Hour = 7, Minute = 3 };
-        Assert.That(((TimeFieldValue)sut.GetCurrentValue()).Value, Is.EqualTo("07:03"));
-    }
-
-    [Test]
-    public void PersistsNullWhenBothNull()
+    public void NullValueLoadsEmptyTextWithoutError()
     {
         var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue());
+        Assert.That(sut.Text, Is.Empty);
+        Assert.That(sut.HasError, Is.False);
+    }
+
+    [Test]
+    public void NormalizesAndPersistsTypedTime()
+    {
+        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue()) { Text = "9:05" };
+        Assert.That(sut.HasError, Is.False);
+        Assert.That(((TimeFieldValue)sut.GetCurrentValue()).Value, Is.EqualTo("09:05"));
+    }
+
+    [Test]
+    public void EmptyTextPersistsNull()
+    {
+        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue { Value = "08:00" }) { Text = "" };
         Assert.That(((TimeFieldValue)sut.GetCurrentValue()).Value, Is.Null);
     }
 
     [Test]
-    public void TreatsMissingComponentAsZero()
+    public void InvalidTextFlagsErrorAndPersistsNull()
     {
-        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue()) { Minute = 30 };
-        Assert.That(((TimeFieldValue)sut.GetCurrentValue()).Value, Is.EqualTo("00:30"));
+        var sut = new TimeFieldEditorViewModel(new TimeFieldDefinition(), new TimeFieldValue()) { Text = "25:61" };
+        Assert.That(sut.HasError, Is.True);
+        Assert.That(((TimeFieldValue)sut.GetCurrentValue()).Value, Is.Null);
     }
 }

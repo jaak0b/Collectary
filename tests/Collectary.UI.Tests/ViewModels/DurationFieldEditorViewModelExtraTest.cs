@@ -10,44 +10,32 @@ public class DurationFieldEditorViewModelExtraTest
         new(new DurationFieldDefinition(), new DurationFieldValue());
 
     [Test]
-    public void HasValue_TrueWhenOnlyHoursSet()
+    public void WhitespaceText_IsNotError()
     {
         var sut = Make();
-        sut.Hours = 2;
-        sut.Minutes = null;
+        sut.Text = "   ";
 
-        Assert.That(sut.HasValue, Is.True);
+        Assert.That(sut.HasError, Is.False);
     }
 
     [Test]
-    public void HasValue_TrueWhenOnlyMinutesSet()
+    public void GarbageText_IsError()
     {
         var sut = Make();
-        sut.Hours = null;
-        sut.Minutes = 30;
+        sut.Text = "later";
 
-        Assert.That(sut.HasValue, Is.True);
+        Assert.That(sut.HasError, Is.True);
     }
 
     [Test]
-    public void HasValue_FalseWhenBothNull()
-    {
-        var sut = Make();
-        sut.Hours = null;
-        sut.Minutes = null;
-
-        Assert.That(sut.HasValue, Is.False);
-    }
-
-    [Test]
-    public void HoursChange_RaisesHasValueNotification()
+    public void TextChange_RaisesHasErrorNotification()
     {
         var sut = Make();
         var raised = new List<string?>();
         sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
-        sut.Hours = 1;
+        sut.Text = "2h";
 
-        Assert.That(raised, Does.Contain(nameof(sut.HasValue)));
+        Assert.That(raised, Does.Contain(nameof(sut.HasError)));
     }
 }

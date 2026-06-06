@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
@@ -10,29 +11,34 @@ public partial class TimeFieldEditorViewModel : FieldEditorViewModelBase
     private readonly TimeFieldValue _value;
 
     [ObservableProperty]
-    public partial int? Hour { get; set; }
+    [NotifyPropertyChangedFor(nameof(HasError))]
+    public partial string Text { get; set; } = string.Empty;
 
-    [ObservableProperty]
-    public partial int? Minute { get; set; }
+    public bool HasError => !string.IsNullOrWhiteSpace(Text) && Parse(Text) is null;
 
     public TimeFieldEditorViewModel(TimeFieldDefinition definition, TimeFieldValue value)
     {
         _definition = definition;
         _value = value;
-        if (TimeSpan.TryParseExact(value.Value, @"hh\:mm", null, out var ts))
-        {
-            Hour = ts.Hours;
-            Minute = ts.Minutes;
-        }
+        Text = value.Value ?? string.Empty;
     }
 
     public override FieldDefinition Definition => _definition;
 
     public override FieldValue GetCurrentValue()
     {
-        _value.Value = (Hour is null && Minute is null)
-            ? null
-            : $"{Hour ?? 0:D2}:{Minute ?? 0:D2}";
+        var parsed = Parse(Text);
+        _value.Value = parsed is null ? null : $"{(int)parsed.Value.TotalHours:D2}:{parsed.Value.Minutes:D2}";
         return _value;
+    }
+
+    private TimeSpan? Parse(string text)
+    {
+        var trimmed = text.Trim();
+        if (trimmed.Length == 0) return null;
+        return TimeSpan.TryParseExact(trimmed, new[] { @"h\:mm", @"hh\:mm" }, CultureInfo.InvariantCulture, out var ts)
+               && ts < TimeSpan.FromDays(1)
+            ? ts
+            : null;
     }
 }
