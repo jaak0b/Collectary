@@ -306,6 +306,66 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
+    public void DrillBreadcrumbs_WhenAtRoot_IsEmpty()
+    {
+        var sut = CreateSut();
+
+        Assert.That(sut.DrillBreadcrumbs, Is.Empty);
+    }
+
+    [Test]
+    public void DrillBreadcrumbs_WhenDrilledIntoGroup_ContainsThatLevelOnly()
+    {
+        var sut = CreateSut();
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        group.Name = "Specs";
+
+        sut.DrillIntoCommand.Execute(group);
+
+        Assert.That(sut.DrillBreadcrumbs.Count, Is.EqualTo(1));
+        Assert.That(sut.DrillBreadcrumbs[0].Title, Is.EqualTo("Specs"));
+    }
+
+    [Test]
+    public void DrillBreadcrumbs_AfterNavigatingBackToRoot_IsEmpty()
+    {
+        var sut = CreateSut();
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        sut.DrillIntoCommand.Execute(group);
+
+        sut.NavigateToLevelCommand.Execute(sut.Levels[0]);
+
+        Assert.That(sut.DrillBreadcrumbs, Is.Empty);
+    }
+
+    [Test]
+    public void ResetToRoot_WhenNested_ReturnsToRootLevel()
+    {
+        var sut = CreateSut();
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        sut.DrillIntoCommand.Execute(group);
+
+        sut.ResetToRoot();
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
+        Assert.That(sut.Levels[0].IsCurrent, Is.True);
+        Assert.That(sut.DrillBreadcrumbs, Is.Empty);
+    }
+
+    [Test]
+    public void ResetToRoot_WhenAtRoot_LeavesSingleLevel()
+    {
+        var sut = CreateSut();
+
+        sut.ResetToRoot();
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
+    }
+
+    [Test]
     public void DrillIntoGroup_PushesBreadcrumbLevel()
     {
         var sut = CreateSut();

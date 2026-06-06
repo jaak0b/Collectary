@@ -81,7 +81,26 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
 
     public ObservableCollection<EditorLevel> Levels { get; } = new();
 
+    public ObservableCollection<EditorLevel> DrillBreadcrumbs { get; } = new();
+
     public bool IsNested => Levels.Count > 1;
+
+    protected FieldListEditorViewModel()
+    {
+        Levels.CollectionChanged += (_, _) => RebuildDrillBreadcrumbs();
+    }
+
+    private void RebuildDrillBreadcrumbs()
+    {
+        DrillBreadcrumbs.Clear();
+        for (var i = 1; i < Levels.Count; i++)
+            DrillBreadcrumbs.Add(Levels[i]);
+    }
+
+    public void ResetToRoot()
+    {
+        if (Levels.Count > 1) NavigateToLevel(Levels[0]);
+    }
 
     protected void InitRoot(
         string title,

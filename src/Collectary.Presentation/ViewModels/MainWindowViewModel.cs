@@ -30,7 +30,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public Visual? Host { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ActiveFieldEditor))]
     public partial ViewModelBase? ContentViewModel { get; set; }
+
+    public FieldListEditorViewModel? ActiveFieldEditor => ContentViewModel as FieldListEditorViewModel;
 
     [ObservableProperty]
     public partial bool IsAuthenticated { get; set; }
@@ -233,6 +236,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         while (Breadcrumbs.Count > index + 1)
             Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
         ContentViewModel = node.Content;
+        (node.Content as FieldListEditorViewModel)?.ResetToRoot();
     }
 
     public MainWindowViewModel(ILifetimeScope scope, IPresetUseCase presetUseCase, IItemUseCase itemUseCase, ISystemFieldUseCase systemFieldUseCase, IListCellBuilder listCellBuilder, IFieldEditorRegistry editorRegistry, IImageStore imageStore, IDialogService dialogService, ISyncScheduler syncScheduler)

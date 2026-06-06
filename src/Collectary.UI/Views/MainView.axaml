@@ -84,6 +84,41 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                    <ItemsControl ItemsSource="{Binding ActiveFieldEditor.DrillBreadcrumbs}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:EditorLevel">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="/"
+                                               Margin="2,0"
+                                               VerticalAlignment="Center"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <Button Content="{Binding Title}"
+                                            IsVisible="{Binding !IsCurrent}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="6,0"
+                                            FontSize="14"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ActiveFieldEditor.NavigateToLevelCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <TextBlock Text="{Binding Title}"
+                                               IsVisible="{Binding IsCurrent}"
+                                               FontWeight="Medium"
+                                               FontSize="14"
+                                               Padding="6,0"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
                 </StackPanel>
 
                 <!-- Sync indicator -->

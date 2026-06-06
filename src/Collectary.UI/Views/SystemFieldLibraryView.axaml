@@ -8,7 +8,7 @@
              x:Class="Collectary.UI.Views.SystemFields.SystemFieldLibraryView"
              x:DataType="sf:SystemFieldLibraryViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16">
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,8">
@@ -23,11 +23,8 @@
                        TextWrapping="Wrap"/>
         </StackPanel>
 
-        <!-- Level breadcrumb -->
-        <controls:EditorBreadcrumb Grid.Row="1" Margin="-16,8,-16,0"/>
-
         <!-- Master / detail split -->
-        <Grid x:Name="SplitGrid" Grid.Row="2" RowDefinitions="*" ColumnDefinitions="240,Auto,*" Margin="0,8,0,0">
+        <Grid x:Name="SplitGrid" Grid.Row="1" RowDefinitions="*" ColumnDefinitions="240,Auto,*" Margin="0,8,0,0">
 
             <!-- Master: field list -->
             <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto"

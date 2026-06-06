@@ -9,7 +9,7 @@
              x:Class="Collectary.UI.Views.PresetEditorView"
              x:DataType="vm:PresetEditorViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16">
 
         <!-- Header form — hidden when drilled into a sub-list or when narrow with a field selected -->
         <Grid Grid.Row="0" x:Name="CollectionSettingsHeader" ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,8"
@@ -44,11 +44,8 @@
                       MinWidth="140"/>
         </Grid>
 
-        <!-- Level breadcrumb -->
-        <controls:EditorBreadcrumb Grid.Row="1" Margin="-16,8,-16,0"/>
-
         <!-- Master / detail split -->
-        <Grid x:Name="SplitGrid" Grid.Row="2" RowDefinitions="*" ColumnDefinitions="2*,Auto,3*" Margin="0,8,0,0">
+        <Grid x:Name="SplitGrid" Grid.Row="1" RowDefinitions="*" ColumnDefinitions="2*,Auto,3*" Margin="0,8,0,0">
 
             <!-- Master: field list + add -->
             <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto"

@@ -42,6 +42,12 @@ One field is marked as the **display name** — that's the value used to label e
 Fields can be organised into named **groups** within a collection (e.g. "Identification",
 "Condition", "Purchase"). Groups keep large item editors tidy.
 
+When you drill into a group — or into a List field to edit its sub-fields — the path you've taken
+shows up in the **breadcrumb at the very top of the window**, right after the collection's name
+(for example, *My Collections / Collection Settings / Identification*). There's just the one trail:
+click any earlier step to jump straight back out, and click the collection's own step to return to
+the top level of the editor.
+
 ### Layout: columns and label position
 
 The collection editor also controls how the item editor is laid out:

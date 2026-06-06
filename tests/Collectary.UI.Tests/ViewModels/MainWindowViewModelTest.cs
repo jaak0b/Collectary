@@ -319,6 +319,64 @@ public class MainWindowViewModelTest
         });
     }
 
+    private PresetEditorViewModel CreateEditor() => new(
+        _presetUseCase,
+        _systemFieldUseCase,
+        _dialogService,
+        new TestFieldEditorMapper().Create(),
+        onSaved: () => { },
+        onCancelled: () => { });
+
+    [Test]
+    public void ActiveFieldEditor_WhenContentIsFieldEditor_ReturnsIt()
+    {
+        var sut = CreateSut();
+        var editor = CreateEditor();
+
+        sut.ContentViewModel = editor;
+
+        Assert.That(sut.ActiveFieldEditor, Is.SameAs(editor));
+    }
+
+    [Test]
+    public void ActiveFieldEditor_WhenContentIsNotFieldEditor_ReturnsNull()
+    {
+        var sut = CreateSut();
+
+        sut.ContentViewModel = new WelcomeViewModel();
+
+        Assert.That(sut.ActiveFieldEditor, Is.Null);
+    }
+
+    [Test]
+    public void ActiveFieldEditor_RaisesPropertyChanged_WhenContentChanges()
+    {
+        var sut = CreateSut();
+        var raised = new List<string>();
+        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        sut.ContentViewModel = CreateEditor();
+
+        Assert.That(raised, Does.Contain(nameof(MainWindowViewModel.ActiveFieldEditor)));
+    }
+
+    [Test]
+    public void NavigateToBreadcrumb_WhenContentIsDrilledEditor_ResetsEditorToRoot()
+    {
+        var sut = CreateSut();
+        var editor = CreateEditor();
+        editor.AddGroupCommand.Execute(null);
+        var group = editor.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        editor.DrillIntoCommand.Execute(group);
+        var node = new BreadcrumbNode("Collection Settings", editor);
+        sut.Breadcrumbs.Add(node);
+
+        sut.NavigateToBreadcrumbCommand.Execute(node);
+
+        Assert.That(editor.Levels.Count, Is.EqualTo(1));
+        Assert.That(editor.DrillBreadcrumbs, Is.Empty);
+    }
+
     [Test]
     public async Task Logout_ClearsSessionAndReturnsToLogin()
     {
