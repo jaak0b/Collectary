@@ -62,6 +62,8 @@ public class GoogleAuthClient : ICloudAuthClient
         _account = await _emailReader.ReadEmailAsync(_credential.Token.IdToken, ct) ?? DefaultAccountLabel;
     }
 
+    public async Task TryRestoreSessionAsync(CancellationToken ct) => await GetAccessTokenAsync(ct);
+
     public async Task SignOutAsync()
     {
         await _dataStore.ClearAsync();

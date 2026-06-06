@@ -76,6 +76,20 @@ public class OneDriveCloudFileStoreTest
     }
 
     [Test]
+    public async Task ListFilesAsync_FollowsODataNextLink()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "page2marker", """{"value":[{"id":"f2","name":"b.json","size":1}]}""")
+             .OnJson(HttpMethod.Get, "/children",
+                 """{"value":[{"id":"f1","name":"a.json","size":1}],"@odata.nextLink":"https://graph.microsoft.com/v1.0/page2marker"}""");
+
+        var files = await Build().ListFilesAsync("root", CancellationToken.None);
+
+        Assert.That(files.Select(f => f.Name), Is.EquivalentTo(new[] { "a.json", "b.json" }),
+            "every page of children must be returned, not just the first");
+    }
+
+    [Test]
     public async Task ListFoldersAsync_ReturnsFoldersNotFiles()
     {
         _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)

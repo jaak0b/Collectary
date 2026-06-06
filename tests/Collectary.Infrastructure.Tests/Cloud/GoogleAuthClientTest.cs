@@ -135,6 +135,28 @@ public class GoogleAuthClientTest
     }
 
     [Test]
+    public async Task TryRestoreSessionAsync_WithStoredToken_SignsIn()
+    {
+        await StoreToken(FreshToken());
+        var sut = Build();
+        Assume.That(sut.IsSignedIn, Is.False, "precondition: a fresh client is signed out until restore");
+
+        await sut.TryRestoreSessionAsync(CancellationToken.None);
+
+        Assert.That(sut.IsSignedIn, Is.True, "a returning user with a cached token must be signed in without a browser");
+    }
+
+    [Test]
+    public async Task TryRestoreSessionAsync_WithNoStoredToken_StaysSignedOut()
+    {
+        var sut = Build();
+
+        await sut.TryRestoreSessionAsync(CancellationToken.None);
+
+        Assert.That(sut.IsSignedIn, Is.False);
+    }
+
+    [Test]
     public async Task SignOutAsync_ClearsStoreCredentialAndAccount()
     {
         await StoreToken(FreshToken());

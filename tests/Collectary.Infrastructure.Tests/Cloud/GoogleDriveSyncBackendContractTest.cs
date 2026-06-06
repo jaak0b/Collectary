@@ -38,14 +38,16 @@ public class GoogleDriveSyncBackendContractTest
     [Test]
     public async Task WriteAsync_CreatesKindFolderAndUploadsDocument()
     {
+        // The upload-session rule must precede the folder-create rule: the resumable upload URL
+        // ("upload/drive/v3/files") also contains "drive/v3/files", and the stub matches first-rule-wins.
         _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""")
-             .OnJson(HttpMethod.Post, "drive/v3/files", """{"id":"items-folder"}""")
              .On(HttpMethod.Post, "upload/drive/v3/files", () =>
              {
                  var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
                  response.Headers.Location = new Uri("https://upload.test/session");
                  return response;
              })
+             .OnJson(HttpMethod.Post, "drive/v3/files", """{"id":"items-folder"}""")
              .OnJson(HttpMethod.Put, "upload.test", """{"id":"doc","name":"doc.json"}""");
 
         await Build().WriteAsync("items", Guid.NewGuid(), "{\"x\":1}", 1);

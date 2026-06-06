@@ -256,6 +256,47 @@ public class GoogleDriveCloudFileStoreTest
     }
 
     [Test]
+    public async Task ListFilesAsync_FollowsNextPageToken()
+    {
+        _stub.OnJson(HttpMethod.Get, "pageToken=tok2",
+                 """{"files":[{"id":"f2","name":"b.json","mimeType":"application/octet-stream","size":1}]}""")
+             .OnJson(HttpMethod.Get, "drive/v3/files",
+                 """{"files":[{"id":"f1","name":"a.json","mimeType":"application/octet-stream","size":1}],"nextPageToken":"tok2"}""");
+
+        var files = await Build().ListFilesAsync("root", CancellationToken.None);
+
+        Assert.That(files.Select(f => f.Name), Is.EquivalentTo(new[] { "a.json", "b.json" }),
+            "every page of children must be returned, not just the first");
+    }
+
+    [Test]
+    public void DownloadAsync_WhenContentRequestFails_Throws()
+    {
+        _stub.OnStatus(HttpMethod.Get, "alt=media", HttpStatusCode.BadRequest)
+             .OnJson(HttpMethod.Get, "drive/v3/files",
+                 """{"files":[{"id":"f1","name":"a.json","mimeType":"application/octet-stream"}]}""");
+
+        Assert.That(async () => await Build().DownloadAsync("root", "a.json", CancellationToken.None),
+            Throws.Exception, "a failed download must not be reported as success");
+    }
+
+    [Test]
+    public void UploadAsync_WhenUploadFails_Throws()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""")
+             .On(HttpMethod.Post, "upload/drive/v3/files", () =>
+             {
+                 var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                 response.Headers.Location = new Uri("https://upload.test/session");
+                 return response;
+             })
+             .OnStatus(HttpMethod.Put, "upload.test", HttpStatusCode.BadRequest);
+
+        Assert.That(async () => await Build().UploadAsync("root", "a.json", Encoding.UTF8.GetBytes("hi"), CancellationToken.None),
+            Throws.Exception, "a failed upload must not be reported as success");
+    }
+
+    [Test]
     public async Task UploadAsync_ExistingFile_UpdatesInPlace()
     {
         // A file already named "a.json" must be updated (by id), not created a second time.

@@ -125,8 +125,17 @@ public class OneDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
     private async Task<IReadOnlyList<DriveItem>> ChildrenAsync(string folderId, CancellationToken ct)
     {
         var driveId = await DriveIdAsync(ct);
-        var response = await _graph.Drives[driveId].Items[folderId].Children.GetAsync(cancellationToken: ct);
-        return response?.Value ?? new List<DriveItem>();
+        var children = _graph.Drives[driveId].Items[folderId].Children;
+
+        var items = new List<DriveItem>();
+        var response = await children.GetAsync(cancellationToken: ct);
+        while (response?.Value is not null)
+        {
+            items.AddRange(response.Value);
+            if (string.IsNullOrEmpty(response.OdataNextLink)) break;
+            response = await children.WithUrl(response.OdataNextLink).GetAsync(cancellationToken: ct);
+        }
+        return items;
     }
 
     private async Task<string> DriveIdAsync(CancellationToken ct)

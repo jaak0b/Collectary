@@ -48,6 +48,8 @@ public class MsalAuthClient : ICloudAuthClient
         _account = result.Account;
     }
 
+    public async Task TryRestoreSessionAsync(CancellationToken ct) => await GetAccessTokenAsync(ct);
+
     public async Task SignOutAsync()
     {
         foreach (var account in await _app.GetAccountsAsync())
@@ -57,7 +59,10 @@ public class MsalAuthClient : ICloudAuthClient
 
     public async Task<string?> GetAccessTokenAsync(CancellationToken ct)
     {
-        var account = _account ?? (await _app.GetAccountsAsync()).FirstOrDefault();
+        // Only auto-select a cached account when it is unambiguous: a single account is the returning
+        // user; with several cached accounts, never guess which is theirs — require interactive sign-in.
+        var cached = (await _app.GetAccountsAsync()).ToList();
+        var account = _account ?? (cached.Count == 1 ? cached[0] : null);
         if (account is null) return null;
 
         try

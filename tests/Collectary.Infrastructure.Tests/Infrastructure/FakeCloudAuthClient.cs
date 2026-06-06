@@ -26,6 +26,14 @@ public class FakeCloudAuthClient : ICloudAuthClient
         return Task.CompletedTask;
     }
 
+    public bool RestoreSucceeds { get; set; }
+
+    public Task TryRestoreSessionAsync(CancellationToken ct)
+    {
+        if (RestoreSucceeds) IsSignedIn = true;
+        return Task.CompletedTask;
+    }
+
     public Task SignOutAsync()
     {
         IsSignedIn = false;

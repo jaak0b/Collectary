@@ -69,7 +69,9 @@ public class GoogleDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
         if (child is null) return null;
 
         using var buffer = new MemoryStream();
-        await _drive.Files.Get(child.Id).DownloadAsync(buffer, ct);
+        var progress = await _drive.Files.Get(child.Id).DownloadAsync(buffer, ct);
+        if (progress.Status == Google.Apis.Download.DownloadStatus.Failed)
+            throw progress.Exception ?? new IOException($"Download of '{name}' failed.");
         return buffer.ToArray();
     }
 
@@ -85,13 +87,19 @@ public class GoogleDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
                 stream,
                 "application/octet-stream");
             create.Fields = "id";
-            await create.UploadAsync(ct);
+            ThrowIfFailed(await create.UploadAsync(ct), name);
         }
         else
         {
             var update = _drive.Files.Update(new DriveData.File(), existing.Id, stream, "application/octet-stream");
-            await update.UploadAsync(ct);
+            ThrowIfFailed(await update.UploadAsync(ct), name);
         }
+    }
+
+    private void ThrowIfFailed(Google.Apis.Upload.IUploadProgress progress, string name)
+    {
+        if (progress.Status == Google.Apis.Upload.UploadStatus.Failed)
+            throw progress.Exception ?? new IOException($"Upload of '{name}' failed.");
     }
 
     public async Task DeleteAsync(string folderId, string name, CancellationToken ct)
@@ -103,12 +111,21 @@ public class GoogleDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
 
     private async Task<IReadOnlyList<DriveData.File>> ChildrenAsync(string folderId, CancellationToken ct)
     {
-        var request = _drive.Files.List();
-        request.Q = $"'{ValidId(folderId)}' in parents and trashed = false";
-        request.Fields = "files(id,name,mimeType,size)";
-        request.PageSize = 1000;
-        var response = await request.ExecuteAsync(ct);
-        return (IReadOnlyList<DriveData.File>?)response.Files ?? Array.Empty<DriveData.File>();
+        var all = new List<DriveData.File>();
+        string? pageToken = null;
+        do
+        {
+            var request = _drive.Files.List();
+            request.Q = $"'{ValidId(folderId)}' in parents and trashed = false";
+            request.Fields = "nextPageToken,files(id,name,mimeType,size)";
+            request.PageSize = 1000;
+            request.PageToken = pageToken;
+            var response = await request.ExecuteAsync(ct);
+            if (response.Files is not null) all.AddRange(response.Files);
+            pageToken = response.NextPageToken;
+        }
+        while (!string.IsNullOrEmpty(pageToken));
+        return all;
     }
 
     // Drive file ids (and the "root" alias) are limited to letters, digits, '-' and '_'. Rejecting

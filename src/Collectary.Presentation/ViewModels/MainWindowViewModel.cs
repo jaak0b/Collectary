@@ -383,7 +383,30 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private void StartSync(AppPreferencesData prefs)
     {
         ConfigureAutoSyncTimer(prefs);
-        if (Sync.IsConfigured) _ = SyncThenReloadAsync();
+        if (Sync.IsConfigured) _ = RestoreThenSyncAsync();
+    }
+
+    private async Task RestoreThenSyncAsync()
+    {
+        await RestoreCloudSessionsAsync();
+        await SyncThenReloadAsync();
+    }
+
+    private async Task RestoreCloudSessionsAsync()
+    {
+        foreach (var provider in new[] { CloudProvider.OneDrive, CloudProvider.GoogleDrive })
+        {
+            var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+            if (auth is null) continue;
+            try
+            {
+                await auth.TryRestoreSessionAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Log.Error(ex, "Cloud session restore failed for {Provider}", provider);
+            }
+        }
     }
 
     private void ConfigureAutoSyncTimer(AppPreferencesData prefs)

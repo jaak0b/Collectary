@@ -20,6 +20,12 @@ public interface ICloudAuthClient
     /// <summary>Runs the interactive sign-in flow (opens the system browser).</summary>
     Task SignInInteractiveAsync(CancellationToken ct);
 
+    /// <summary>
+    /// Rehydrates the session from the persisted token cache (no UI), so a returning user is signed in
+    /// again after an app restart instead of appearing signed-out. Safe to call when nothing is cached.
+    /// </summary>
+    Task TryRestoreSessionAsync(CancellationToken ct);
+
     /// <summary>Clears the cached account and tokens.</summary>
     Task SignOutAsync();
 
