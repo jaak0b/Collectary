@@ -524,9 +524,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#option-a-install-straight-to-a-plugged-in-phone" class="md-nav__link">
+  <a href="#option-a-install-to-a-plugged-in-phone" class="md-nav__link">
     <span class="md-ellipsis">
-      Option A — install straight to a plugged-in phone
+      Option A — install to a plugged-in phone
     </span>
   </a>
   
@@ -542,9 +542,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#first-launch-on-the-phone" class="md-nav__link">
+  <a href="#first-launch" class="md-nav__link">
     <span class="md-ellipsis">
-      First launch on the phone
+      First launch
     </span>
   </a>
   
@@ -1012,9 +1012,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#option-a-install-straight-to-a-plugged-in-phone" class="md-nav__link">
+  <a href="#option-a-install-to-a-plugged-in-phone" class="md-nav__link">
     <span class="md-ellipsis">
-      Option A — install straight to a plugged-in phone
+      Option A — install to a plugged-in phone
     </span>
   </a>
   
@@ -1030,9 +1030,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#first-launch-on-the-phone" class="md-nav__link">
+  <a href="#first-launch" class="md-nav__link">
     <span class="md-ellipsis">
-      First launch on the phone
+      First launch
     </span>
   </a>
   
@@ -1066,69 +1066,55 @@
 
 
 <h1 id="installing-on-android">Installing on Android<a class="headerlink" href="#installing-on-android" title="Permanent link">&para;</a></h1>
-<p>Collectary isn't only a desktop app — the same UI compiles to a native Android package, so you
-can carry your collections around on your phone or tablet. This page walks you through getting it
-onto an Android device.</p>
-<p>There's no Play Store listing yet, so for now you build the app yourself (or grab an APK someone
-built for you) and install it directly. It's less scary than it sounds — two commands and you're
-done.</p>
+<p>The same UI compiles to a native Android package. There's no Play Store listing yet, so you build
+the app yourself (or install an APK someone built for you).</p>
 <h2 id="what-youll-need">What you'll need<a class="headerlink" href="#what-youll-need" title="Permanent link">&para;</a></h2>
 <ul>
-<li>An Android device running <strong>Android 6.0 (Marshmallow) or newer</strong>. Collectary's minimum
-  supported version is API level 23.</li>
-<li>A PC with the <strong>.NET SDK 10</strong> installed. The Android head targets <code>net10.0-android</code>, which is a
-  little newer than the desktop head's net8.0, so don't be surprised that the same SDK builds both.</li>
-<li>The <strong>.NET Android workload</strong> plus an Android SDK and a JDK. The fastest way to get all three at
-  once is to install <a href="https://developer.android.com/studio">Android Studio</a> — it bundles the SDK
-  and JDK — and then add the .NET workload:</li>
+<li>An Android device on <strong>Android 6.0 (API 23) or newer</strong>.</li>
+<li>A PC with the <strong>.NET SDK 10</strong>. The Android head targets <code>net10.0-android</code>.</li>
+<li>The <strong>.NET Android workload</strong> plus an Android SDK and a JDK. Installing
+  <a href="https://developer.android.com/studio">Android Studio</a> gets you the SDK and JDK; then add the
+  workload:</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">workload</span> <span class="n">install</span> <span class="n">android</span>
 </code></pre></div>
-<p>If <code>dotnet build</code> later complains it can't find the Android SDK, point it at your install with an
-  <code>AndroidSdkDirectory</code> property or the <code>ANDROID_HOME</code> environment variable.</p>
-<h2 id="option-a-install-straight-to-a-plugged-in-phone">Option A — install straight to a plugged-in phone<a class="headerlink" href="#option-a-install-straight-to-a-plugged-in-phone" title="Permanent link">&para;</a></h2>
-<p>This is the smoothest route: build and deploy in a single step over USB.</p>
+<p>If a build can't find the Android SDK, set <code>AndroidSdkDirectory</code> or the <code>ANDROID_HOME</code> environment
+  variable.</p>
+<h2 id="option-a-install-to-a-plugged-in-phone">Option A — install to a plugged-in phone<a class="headerlink" href="#option-a-install-to-a-plugged-in-phone" title="Permanent link">&para;</a></h2>
 <ol>
-<li>On the phone, unlock <strong>Developer options</strong>: open <strong>Settings → About phone</strong> and tap <strong>Build
-   number</strong> seven times. You'll see a "You are now a developer" message.</li>
-<li>Back in <strong>Settings → System → Developer options</strong>, switch on <strong>USB debugging</strong>.</li>
-<li>Connect the phone to your PC with a USB cable and accept the <strong>Allow USB debugging?</strong> prompt on
-   the phone.</li>
-<li>From the repository root, run:</li>
+<li>Unlock <strong>Developer options</strong>: <strong>Settings → About phone</strong>, tap <strong>Build number</strong> seven times.</li>
+<li>In <strong>Settings → System → Developer options</strong>, turn on <strong>USB debugging</strong>.</li>
+<li>Connect the phone over USB and accept the <strong>Allow USB debugging?</strong> prompt.</li>
+<li>From the repository root:</li>
 </ol>
 <div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">build</span> <span class="n">src</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">UI</span><span class="p">.</span><span class="n">Android</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">UI</span><span class="p">.</span><span class="n">Android</span><span class="p">.</span><span class="n">csproj</span> <span class="n">-t</span><span class="p">:</span><span class="n">Install</span> <span class="o">-f</span> <span class="n">net10</span><span class="p">.</span><span class="n">0-android</span>
 </code></pre></div>
-<p>That builds the app and pushes it onto the connected device. When it finishes, Collectary appears
-in your app drawer — tap it to launch.</p>
+<p>Collectary then appears in your app drawer.</p>
 <h2 id="option-b-build-an-apk-and-sideload-it">Option B — build an APK and sideload it<a class="headerlink" href="#option-b-build-an-apk-and-sideload-it" title="Permanent link">&para;</a></h2>
-<p>If the phone isn't plugged in, or you want a file you can pass to someone else, build an APK and
-copy it over.</p>
 <ol>
 <li>Publish a release build:</li>
 </ol>
 <div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">publish</span> <span class="n">src</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">UI</span><span class="p">.</span><span class="n">Android</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">UI</span><span class="p">.</span><span class="n">Android</span><span class="p">.</span><span class="n">csproj</span> <span class="n">-c</span> <span class="n">Release</span> <span class="o">-f</span> <span class="n">net10</span><span class="p">.</span><span class="n">0-android</span>
 </code></pre></div>
 <ol>
-<li>The signed APK lands here:</li>
+<li>The signed APK is at:</li>
 </ol>
 <div class="highlight"><pre><span></span><code>src\Collectary.UI.Android\bin\Release\net10.0-android\publish\com.collectary.app-Signed.apk
 </code></pre></div>
 <ol>
-<li>Get that file onto the phone — USB transfer, Google Drive, email to yourself, whatever's
-   easiest.</li>
-<li>On the phone, tap the APK. Android will ask permission to <strong>install from unknown sources</strong> the
-   first time; allow it for your file manager or browser, then confirm the install.</li>
+<li>Get the file onto the phone (USB, Drive, email).</li>
+<li>Tap the APK. Android asks permission to <strong>install from unknown sources</strong> the first time; allow it,
+   then confirm.</li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">It's signed with a debug key</p>
-<p>The publish APK is signed with a development key. That's perfectly fine for installing on your
-own devices, but it isn't a store-ready, production-signed build — don't distribute it widely.</p>
+<p>The publish APK is signed with a development key — fine for your own devices, but not a
+store-ready production build, so don't distribute it widely.</p>
 </div>
-<h2 id="first-launch-on-the-phone">First launch on the phone<a class="headerlink" href="#first-launch-on-the-phone" title="Permanent link">&para;</a></h2>
-<p>Collectary behaves the same as on the desktop: on first run it creates its local database, runs
-migrations, and asks you to create a user account. Everything is stored locally on the device. If
-you want the same collections on your phone and your computer, set up <a href="../sync/">Sync</a> so they stay
-in step through a shared folder.</p>
+<h2 id="first-launch">First launch<a class="headerlink" href="#first-launch" title="Permanent link">&para;</a></h2>
+<p>On first run Collectary creates its local database, runs migrations, and asks you to create an
+account. Everything is stored on the device. For the same collections on phone and computer, set up
+<a href="../sync/">Sync</a> through a shared folder.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1140,19 +1126,19 @@ in step through a shared folder.</p>
 <tbody>
 <tr>
 <td><code>error XA5300</code>: Android SDK not found</td>
-<td>Install Android Studio, or set <code>ANDROID_HOME</code> to your SDK path.</td>
+<td>Install Android Studio, or set <code>ANDROID_HOME</code>.</td>
 </tr>
 <tr>
 <td>Build can't find a JDK</td>
-<td>Install the JDK bundled with Android Studio, or set <code>JAVA_HOME</code>.</td>
+<td>Install the JDK from Android Studio, or set <code>JAVA_HOME</code>.</td>
 </tr>
 <tr>
 <td>Device not detected over USB</td>
-<td>Re-accept the USB debugging prompt; try a different cable/port; run <code>adb devices</code> to confirm it's listed.</td>
+<td>Re-accept the USB debugging prompt; try another cable/port; run <code>adb devices</code>.</td>
 </tr>
 <tr>
 <td>"App not installed" when sideloading</td>
-<td>A debug-signed build is already installed — uninstall the old copy first, then install the new APK.</td>
+<td>Uninstall the old debug-signed copy first, then install the new APK.</td>
 </tr>
 </tbody>
 </table>

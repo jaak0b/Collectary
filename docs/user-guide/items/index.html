@@ -1048,34 +1048,26 @@
 
 
 <h1 id="items">Items<a class="headerlink" href="#items" title="Permanent link">&para;</a></h1>
-<p>An <strong>item</strong> is a single entry in a collection — one book, one coin, one board game. Every item has
-a value for (some of) the fields defined by its collection.</p>
+<p>An <strong>item</strong> is a single entry in a collection — one book, one coin, one board game. Each item holds
+values for the fields its collection defines.</p>
 <h2 id="adding-an-item">Adding an item<a class="headerlink" href="#adding-an-item" title="Permanent link">&para;</a></h2>
-<p>From a collection's view, choose to add an item. The <strong>item editor</strong> shows one input per field,
-using the editor appropriate to each <a href="../field-types/">field type</a>:</p>
-<ul>
-<li>a text box for text fields,</li>
-<li>a number box for integers/decimals,</li>
-<li>a date picker for dates,</li>
-<li>a colour picker for colour fields,</li>
-<li>a star control for ratings,</li>
-<li>an image picker for image fields,</li>
-<li>and so on.</li>
-</ul>
-<p>Fields are grouped according to the collection's <a href="../collections/#field-groups">field groups</a>.</p>
+<p>From a collection's view, choose to add an item. The item editor shows one input per field, using
+the editor for each <a href="../field-types/">field type</a> — a text box for text, a date picker for dates, a
+star control for ratings, an image picker for images, and so on. Fields are arranged by the
+collection's <a href="../collections/#field-groups">field groups</a>.</p>
 <h2 id="editing-and-deleting">Editing and deleting<a class="headerlink" href="#editing-and-deleting" title="Permanent link">&para;</a></h2>
-<p>Open an existing item to edit any of its values, or delete it from the collection. Edits are saved
-to the database immediately and are attributed to the current user.</p>
+<p>Open an item to edit its values or delete it. Edits save immediately and are attributed to the
+current profile.</p>
 <h2 id="how-items-appear-in-lists">How items appear in lists<a class="headerlink" href="#how-items-appear-in-lists" title="Permanent link">&para;</a></h2>
-<p>In a collection's list view, each item is labelled by its <strong>display name</strong> field, and other fields
-are rendered in a compact, type-aware way (currency shows its symbol, percentages show <code>%</code>, tags
-show as chips, colours show a swatch, and so on).</p>
+<p>In the list view, each item is labelled by its <strong>display name</strong> field. Other fields render in a
+compact, type-aware way: currency shows its symbol, percentages show <code>%</code>, tags show as chips,
+colours show a swatch.</p>
 <h2 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The set of fields you can fill in is controlled by the <strong>collection</strong>, not the item — to add a
-  new property to every item, add a field in the <a href="../collections/#defining-fields">collection editor</a>.</li>
-<li>Use the <a href="../field-types/">List field type</a> when a single item needs a repeating sub-list (e.g.
-  the tracks on an album, with their own sub-fields).</li>
+<li>The fields you can fill in are set by the <strong>collection</strong>, not the item. To add a property to every
+  item, add a field in the <a href="../collections/#defining-fields">collection editor</a>.</li>
+<li>Use the <a href="../field-types/">List field type</a> when one item needs a repeating sub-list — the tracks on
+  an album, each with its own sub-fields.</li>
 </ul>
 
 

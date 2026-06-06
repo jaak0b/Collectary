@@ -693,9 +693,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#color-theme-and-style" class="md-nav__link">
+  <a href="#theme-and-style" class="md-nav__link">
     <span class="md-ellipsis">
-      Color theme and style
+      Theme and style
     </span>
   </a>
   
@@ -752,9 +752,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-few-things-it-just-remembers" class="md-nav__link">
+  <a href="#remembered-automatically" class="md-nav__link">
     <span class="md-ellipsis">
-      A few things it just remembers
+      Remembered automatically
     </span>
   </a>
   
@@ -1046,9 +1046,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#color-theme-and-style" class="md-nav__link">
+  <a href="#theme-and-style" class="md-nav__link">
     <span class="md-ellipsis">
-      Color theme and style
+      Theme and style
     </span>
   </a>
   
@@ -1105,9 +1105,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-few-things-it-just-remembers" class="md-nav__link">
+  <a href="#remembered-automatically" class="md-nav__link">
     <span class="md-ellipsis">
-      A few things it just remembers
+      Remembered automatically
     </span>
   </a>
   
@@ -1132,52 +1132,38 @@
 
 
 <h1 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h1>
-<p>The <strong>Settings</strong> screen is where you tune how Collectary looks and behaves. Whatever you change
-here is saved to <code>%APPDATA%\Collectary\preferences.json</code> and waiting for you next time you open the
-app, so you only have to set things up once.</p>
+<p>The Settings screen controls how Collectary looks and behaves. Changes are saved to
+<code>%APPDATA%\Collectary\preferences.json</code> and restored next time you open the app.</p>
 <h2 id="appearance">Appearance<a class="headerlink" href="#appearance" title="Permanent link">&para;</a></h2>
-<p>The <strong>Appearance</strong> section is where you make Collectary look the way <em>you</em> want. Everything here
-updates live across the whole app — there's never a need to restart.</p>
-<h3 id="color-theme-and-style">Color theme and style<a class="headerlink" href="#color-theme-and-style" title="Permanent link">&para;</a></h3>
-<p>Start by picking a <strong>color theme</strong>. Alongside the classic <strong>Light</strong> and <strong>Dark</strong> there's a whole
-shelf of favourites to choose from — Nord, Dracula, Solarized (light and dark), Catppuccin, Gruvbox,
-One Dark, and a High Contrast option for when you want everything to really stand out. The <strong>style</strong>
-dropdown then sets the overall shape of things — Windows 11, Flat, or Classic — controlling corners
-and control sizes.</p>
+<p>Everything here updates live — no restart.</p>
+<h3 id="theme-and-style">Theme and style<a class="headerlink" href="#theme-and-style" title="Permanent link">&para;</a></h3>
+<p>Pick a <strong>color theme</strong>: Light, Dark, Nord, Dracula, Solarized (light and dark), Catppuccin, Gruvbox,
+One Dark, or High Contrast. The <strong>style</strong> dropdown sets the overall shape — Windows 11, Flat, or
+Classic — which controls corners and control sizes.</p>
 <h3 id="customize-colors">Customize colors<a class="headerlink" href="#customize-colors" title="Permanent link">&para;</a></h3>
-<p>Want to go further? Open <strong>Customize colors</strong> and make the palette your own. Your tweaks layer on
-top of whichever color theme you picked, so it's a great starting point rather than a blank canvas.</p>
-<p>There are two ways to work:</p>
+<p><strong>Customize colors</strong> layers your own palette on top of the chosen theme. Two modes:</p>
 <ul>
-<li><strong>Easy</strong> keeps it simple with the five colors that make the biggest difference: the accent, the
-  window background, surfaces and cards, the main text, and the sidebar. Change the accent and
-  Collectary works out matching hover and pressed shades for buttons automatically.</li>
-<li><strong>Expert</strong> opens up the full set — every background, text, border, sidebar, and danger color the
-  app uses — for complete, fine-grained control.</li>
+<li><strong>Easy</strong> — the five colours that matter most: accent, window background, surfaces/cards, main
+  text, and sidebar. Changing the accent derives matching hover and pressed shades automatically.</li>
+<li><strong>Expert</strong> — every background, text, border, sidebar, and danger colour the app uses.</li>
 </ul>
-<p>Changed your mind? <strong>Reset colors</strong> puts everything back to the color theme you started from, so you
-can experiment freely without worrying about making a mess.</p>
+<p><strong>Reset colors</strong> returns everything to the chosen theme.</p>
 <h3 id="field-label-position">Field label position<a class="headerlink" href="#field-label-position" title="Permanent link">&para;</a></h3>
-<p>This sets the app-wide default for where field labels sit in the item editor — <strong>beside</strong> the input,
-<strong>above</strong> it, or <strong>adaptive</strong> (beside for single-column collections, above once a collection uses more
-than one column). Any individual collection can override this from its editor; collections left on
-<em>Inherit</em> follow whatever you pick here.</p>
+<p>The app-wide default for where field labels sit in the item editor: <strong>beside</strong>, <strong>above</strong>, or
+<strong>adaptive</strong> (beside for single-column collections, above once a collection uses more). Any
+collection can override this; collections left on <em>Inherit</em> follow this setting.</p>
 <h2 id="language">Language<a class="headerlink" href="#language" title="Permanent link">&para;</a></h2>
-<p>Collectary speaks both <strong>English</strong> and <strong>German</strong>. Pick your language and every label, button, and
-message updates on the spot — again, no restart required, so feel free to flip back and forth.</p>
+<p>Collectary is available in English and German. Pick a language and the UI updates immediately — no
+restart.</p>
 <h2 id="sync">Sync<a class="headerlink" href="#sync" title="Permanent link">&para;</a></h2>
-<p>This is also where you set up syncing across your devices: the shared folder to use, whether
-Collectary should sync on its own on a timer, how often that timer fires, and how long deletions
-are remembered. There's quite a bit to it, so it has its own page — see <a href="../sync/">Sync</a> for the
-full story.</p>
+<p>Settings is also where you configure syncing: the shared folder, auto-sync and its interval, and how
+long deletions are remembered. See <a href="../sync/">Sync</a>.</p>
 <h2 id="account">Account<a class="headerlink" href="#account" title="Permanent link">&para;</a></h2>
-<p>Settings has a <strong>Switch profile</strong> button that returns you to the profile screen without closing the
-app — handy for jumping to a different profile. It does the same thing as the <strong>Switch profile</strong>
-button in the top-right of the main window. See <a href="../accounts/">Profiles</a> for the full story.</p>
-<h2 id="a-few-things-it-just-remembers">A few things it just remembers<a class="headerlink" href="#a-few-things-it-just-remembers" title="Permanent link">&para;</a></h2>
-<p>Beyond the settings you deliberately choose, Collectary quietly keeps track of smaller things too —
-whether the sidebar was expanded, how you'd sized the panes — so when you come back the app looks
-the way you left it.</p>
+<p>A <strong>Switch profile</strong> button returns you to the profile screen without closing the app — the same as
+the button in the top-right of the main window. See <a href="../accounts/">Profiles</a>.</p>
+<h2 id="remembered-automatically">Remembered automatically<a class="headerlink" href="#remembered-automatically" title="Permanent link">&para;</a></h2>
+<p>Collectary also remembers smaller things — whether the sidebar was expanded, how you sized the
+panes — so the app looks the way you left it.</p>
 
 
 

@@ -1078,26 +1078,21 @@
 
 
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
-<p>This page covers installing and launching the <strong>desktop</strong> version of Collectary. If you just want
-to try the app without installing anything, use the <a href="../../demo/">Live Demo</a> instead. On a phone or
-tablet? See <a href="../android/">Installing on Android</a>.</p>
+<p>This page covers installing and running the <strong>desktop</strong> version. To try the app without installing,
+use the <a href="../../demo/">Live Demo</a>. On a phone or tablet, see <a href="../android/">Installing on Android</a>.</p>
 <h2 id="install-run">Install &amp; run<a class="headerlink" href="#install-run" title="Permanent link">&para;</a></h2>
-<p>Collectary is a .NET 8 / Avalonia desktop application. To build and run it from source:</p>
-<div class="highlight"><pre><span></span><code><span class="c"># Build the desktop head</span>
-<span class="n">dotnet</span> <span class="n">build</span> <span class="s2">&quot;src\Collectary.UI.Desktop\Collectary.UI.Desktop.csproj&quot;</span>
-
-<span class="c"># Launch it</span>
+<p>Collectary is a .NET 8 / Avalonia desktop app. To build and run from source:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">build</span> <span class="s2">&quot;src\Collectary.UI.Desktop\Collectary.UI.Desktop.csproj&quot;</span>
 <span class="p">.\</span><span class="n">src</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">UI</span><span class="p">.</span><span class="n">Desktop</span><span class="p">\</span><span class="n">bin</span><span class="p">\</span><span class="n">Debug</span><span class="p">\</span><span class="n">net8</span><span class="p">.</span><span class="n">0</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">UI</span><span class="p">.</span><span class="n">Desktop</span><span class="p">.</span><span class="n">exe</span>
 </code></pre></div>
-<p>Building from source requires the <strong>.NET SDK 10</strong> (the desktop head targets net8.0, but the
-solution as a whole — including the browser head — uses SDK 10). See the developer
-<a href="../../dev-guide/building/">Building</a> guide for the full prerequisites.</p>
+<p>Building requires the <strong>.NET SDK 10</strong> (the desktop head targets net8.0, but the full solution builds
+with SDK 10). See <a href="../../dev-guide/building/">Building</a> for the full prerequisites.</p>
 <h2 id="first-launch">First launch<a class="headerlink" href="#first-launch" title="Permanent link">&para;</a></h2>
 <p>On first launch Collectary:</p>
 <ol>
-<li>Creates its data folder and an empty SQLite database, then runs migrations automatically.</li>
-<li>Prompts you to create the first user account (see <a href="../accounts/">Accounts</a>).</li>
-<li>Opens the <strong>Home</strong> screen, where your collections live.</li>
+<li>Creates its data folder and an empty SQLite database, then runs migrations.</li>
+<li>Prompts you to create the first account (see <a href="../accounts/">Profiles</a>).</li>
+<li>Opens the <strong>Home</strong> screen.</li>
 </ol>
 <h3 id="where-your-data-lives">Where your data lives<a class="headerlink" href="#where-your-data-lives" title="Permanent link">&para;</a></h3>
 <table>
@@ -1122,27 +1117,27 @@ solution as a whole — including the browser head — uses SDK 10). See the dev
 </tr>
 </tbody>
 </table>
-<p>Images you attach to items are stored alongside the database in the app's data folder.</p>
+<p>Images you attach to items are stored alongside the database.</p>
 <h2 id="the-main-screens">The main screens<a class="headerlink" href="#the-main-screens" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Screen</th>
-<th>What it's for</th>
+<th>For</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Home</strong></td>
-<td>Browse, create, reorder, and open your collections.</td>
+<td>Browse, create, reorder, and open collections.</td>
 </tr>
 <tr>
 <td><strong>Collection</strong></td>
-<td>View the items inside one collection.</td>
+<td>View the items in one collection.</td>
 </tr>
 <tr>
 <td><strong>Collection editor</strong></td>
-<td>Define a collection's fields and field groups.</td>
+<td>Define a collection's fields and groups.</td>
 </tr>
 <tr>
 <td><strong>Item editor</strong></td>
@@ -1150,11 +1145,11 @@ solution as a whole — including the browser head — uses SDK 10). See the dev
 </tr>
 <tr>
 <td><strong>Settings</strong></td>
-<td>Theme, language, and sync configuration.</td>
+<td>Theme, language, and sync.</td>
 </tr>
 <tr>
 <td><strong>Shared Field Library</strong></td>
-<td>Reusable field definitions shared across collections.</td>
+<td>Field definitions reused across collections.</td>
 </tr>
 </tbody>
 </table>

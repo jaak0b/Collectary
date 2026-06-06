@@ -1030,50 +1030,39 @@
 
 
 <h1 id="backup-restore">Backup &amp; restore<a class="headerlink" href="#backup-restore" title="Permanent link">&para;</a></h1>
-<p>Sometimes you don't want an ongoing <a href="../sync/">sync</a> — you just want a single file you can tuck away
-on a USB stick, drop into cloud storage, or hand to another device. That's what <strong>backup &amp; restore</strong>
-is for: it packs your <em>entire</em> collection into one portable file and reads it back later.</p>
+<p>When you don't want ongoing <a href="../sync/">sync</a>, backup &amp; restore packs your whole collection into one
+portable file you can keep on a USB stick, in cloud storage, or hand to another device.</p>
 <h2 id="whats-in-a-backup">What's in a backup<a class="headerlink" href="#whats-in-a-backup" title="Permanent link">&para;</a></h2>
-<p>A backup is a single <code>.collectary</code> file (a zip archive under the hood) that bundles <strong>everything</strong>:</p>
-<ul>
-<li>every collection, item and shared field, and</li>
-<li>every attached <strong>image</strong> <em>and</em> <strong>document</strong> — gallery photos, manuals, certificates, audio notes,
-  the lot.</li>
-</ul>
-<p>Because it's all in one file, there are no loose folders of pictures to keep together. Move the one
-file and you've moved the whole collection.</p>
+<p>A backup is a single <code>.collectary</code> file (a zip archive) that bundles everything: every collection,
+item, and shared field, plus every attached image and document — gallery photos, manuals,
+certificates, audio notes. It's all in one file, so there are no loose folders to keep together.</p>
 <h2 id="making-a-backup">Making a backup<a class="headerlink" href="#making-a-backup" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Open <a href="../settings/">Settings</a> and find <strong>Backup &amp; restore</strong>.</li>
 <li>Click <strong>Export to file…</strong>.</li>
-<li>Pick where to save it. Collectary suggests <code>collection-backup.collectary</code>, but you can name it
-   anything.</li>
+<li>Pick where to save it. Collectary suggests <code>collection-backup.collectary</code>; rename it if you like.</li>
 </ol>
-<p>That's it — the file now holds a complete snapshot.</p>
 <h2 id="restoring-a-backup">Restoring a backup<a class="headerlink" href="#restoring-a-backup" title="Permanent link">&para;</a></h2>
 <ol>
 <li>In <strong>Settings → Backup &amp; restore</strong>, click <strong>Import from file…</strong>.</li>
 <li>Choose a <code>.collectary</code> file.</li>
 </ol>
-<p>Importing <strong>merges</strong> the backup into what you already have, comparing each entry by its revision:</p>
+<p>Importing <strong>merges</strong> the backup into what you have, comparing each entry by its revision:</p>
 <ul>
-<li>Anything new (or newer) in the backup is brought in.</li>
-<li>Anything you've changed locally since is left alone — your local edits are never silently
-  overwritten, and nothing you have that the backup <em>doesn't</em> is ever deleted.</li>
-<li>If the same entry was changed on both sides, it's flagged as a <strong>conflict</strong> and your local version
-  is kept. Collectary tells you which entries clashed so you can review them.</li>
+<li>Anything new or newer in the backup is brought in.</li>
+<li>Local edits made since are left alone, and nothing you have that the backup lacks is deleted.</li>
+<li>If the same entry changed on both sides, it's flagged as a <strong>conflict</strong> and your local version is
+  kept.</li>
 </ul>
-<p>After an import you'll see a short summary — how many entries were brought in, and any conflicts that
-kept your local copy.</p>
+<p>After an import you'll see a summary of how many entries were brought in and any conflicts.</p>
 <div class="admonition tip">
 <p class="admonition-title">Backup vs. sync</p>
-<p><a href="../sync/">Sync</a> is for keeping devices continuously in step through a shared location. A backup
-is a one-shot, self-contained file — perfect for archiving, moving to a new machine, or keeping a
-safety copy. They're independent: using one doesn't affect the other.</p>
+<p><a href="../sync/">Sync</a> keeps devices continuously in step through a shared location. A backup is a
+one-shot file for archiving, moving to a new machine, or a safety copy. The two are independent.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Desktop feature</p>
-<p>Export and import use your system file picker, so they run in the desktop app. The in-browser
+<p>Export and import use the system file picker, so they run in the desktop app. The in-browser
 <a href="../../demo/">demo</a> has no persistent filesystem.</p>
 </div>
 

@@ -1066,10 +1066,9 @@
 
 
 <h1 id="adding-a-field-type">Adding a Field Type<a class="headerlink" href="#adding-a-field-type" title="Permanent link">&para;</a></h1>
-<p>The field system is the most extensible part of Collectary. Adding a new <code>FieldDefinition</code> subtype
-is deliberately a <strong>localized</strong> change: a new field type requires <strong>zero changes outside its own
-files</strong> — dispatch is virtual and registration is by type name, so there are no type-switches to
-update anywhere in the codebase.</p>
+<p>Adding a new <code>FieldDefinition</code> subtype is a <strong>localized</strong> change: it requires <strong>zero changes outside
+its own files</strong>. Dispatch is virtual and registration is by type name, so there are no type-switches
+to update anywhere.</p>
 <h2 id="the-pattern">The pattern<a class="headerlink" href="#the-pattern" title="Permanent link">&para;</a></h2>
 <p>To add a new field type (say <code>RatingFieldDefinition</code>):</p>
 <ol>
@@ -1103,9 +1102,9 @@ A guard test (<code>FieldCatalogAttributeTest</code>) fails the build if a new a
 toggle — comes from a single embedded icon font, <code>CollectaryIcons.ttf</code>
 (<code>src/Collectary.UI/Assets/Fonts/</code>). It's a slimmed-down, renamed subset of Microsoft's MIT-licensed
 <a href="https://github.com/microsoft/fluentui-system-icons">FluentUI System Icons</a>, carrying only the glyphs
-we actually use. We moved away from emoji because the browser (WASM) build has no system fonts to fall
-back on, so emoji rendered as empty boxes there; vector glyphs from an embedded font look identical on
-every platform and recolour with the theme.</p>
+we actually use. Emoji are avoided because the browser (WASM) build has no system fonts to fall back
+on, so emoji render as empty boxes there; embedded vector glyphs look identical on every platform and
+recolour with the theme.</p>
 <p>Each glyph has a friendly name in <code>IconGlyphs</code> (<code>src/Collectary.Core/Domain/Fields/IconGlyphs.cs</code>),
 e.g. <code>IconGlyphs.Star</code>. In C# you reference the constant (<code>[FieldIcon(IconGlyphs.Star)]</code>); in XAML you
 bind it and tag the <code>TextBlock</code> with <code>Classes="icon"</code> so it picks up the icon font:</p>
@@ -1114,7 +1113,7 @@ bind it and tag the <code>TextBlock</code> with <code>Classes="icon"</code> so i
 <p><strong>To add a new icon:</strong> pick one from the Fluent set, find its <code>_20_regular</code> codepoint in the font's
 metadata, add it to the subset list and re-run the subsetting step, then add a named constant to
 <code>IconGlyphs</code>. The <code>IconFontTest</code> guard fails if any <code>IconGlyphs</code> constant has no matching glyph in the
-embedded font, so a typo or a missing-from-subset codepoint can't slip through.</p>
+embedded font, so a typo or a missing codepoint can't slip through.</p>
 <h2 id="required-tests">Required tests<a class="headerlink" href="#required-tests" title="Permanent link">&para;</a></h2>
 <p>Per the project's testing rules, a new field type needs at minimum:</p>
 <ul>
