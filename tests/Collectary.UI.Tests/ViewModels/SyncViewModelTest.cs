@@ -22,6 +22,18 @@ public class SyncViewModelTest
     private SyncViewModel Make() => new(_sync, _status);
 
     [Test]
+    public void Close_RaisesCloseRequested()
+    {
+        var vm = Make();
+        var raised = false;
+        vm.CloseRequested = () => raised = true;
+
+        vm.CloseCommand.Execute(null);
+
+        Assert.That(raised, Is.True);
+    }
+
+    [Test]
     public async Task SyncNow_WhenConfigured_SyncsAndSetsLastSynced()
     {
         var vm = Make();

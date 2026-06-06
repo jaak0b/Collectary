@@ -85,7 +85,7 @@ public partial class ListFieldEditorViewModel : FieldEditorViewModelBase
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Failed to save item");
-            await DialogService.Instance.ShowMessageAsync(LocalizationService.Instance["CouldNotSave"], LocalizationService.Instance["CouldNotSave"]);
+            await _context.Dialogs.ShowMessageAsync(LocalizationService.Instance["CouldNotSave"], LocalizationService.Instance["CouldNotSave"]);
         }
     }
 
@@ -96,7 +96,7 @@ public partial class ListFieldEditorViewModel : FieldEditorViewModelBase
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Failed to save item");
-            await DialogService.Instance.ShowMessageAsync(LocalizationService.Instance["CouldNotSave"], LocalizationService.Instance["CouldNotSave"]);
+            await _context.Dialogs.ShowMessageAsync(LocalizationService.Instance["CouldNotSave"], LocalizationService.Instance["CouldNotSave"]);
             return;
         }
         _context.GoBack();

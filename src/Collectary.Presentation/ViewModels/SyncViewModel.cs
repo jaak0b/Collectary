@@ -25,6 +25,8 @@ public partial class SyncViewModel : ViewModelBase
 
     public event Action? Synced;
 
+    public Action? CloseRequested { get; set; }
+
     public bool IsConfigured => _status.IsConfigured;
 
     public bool HasConflicts => Conflicts.Count > 0;
@@ -47,6 +49,9 @@ public partial class SyncViewModel : ViewModelBase
     partial void OnErrorMessageChanged(string? value) => OnPropertyChanged(nameof(HasError));
 
     public void Refresh() => OnPropertyChanged(nameof(IsConfigured));
+
+    [RelayCommand]
+    private void Close() => CloseRequested?.Invoke();
 
     [RelayCommand]
     public async Task SyncNow()
