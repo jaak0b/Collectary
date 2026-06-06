@@ -110,6 +110,41 @@ public class MainWindowViewModelTest
     }
 
     [Test]
+    public void BecomingNarrow_WhileSidebarOpen_AutoCollapsesSidebar()
+    {
+        var sut = CreateSut();
+        sut.IsSidebarOpen = true;
+
+        sut.IsNarrow = true;
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public void BecomingNarrow_DoesNotOverwriteSavedSidebarPreference()
+    {
+        AppPreferences.Update(p => p with { SidebarOpen = true });
+        var sut = CreateSut();
+        sut.IsSidebarOpen = true;
+
+        sut.IsNarrow = true;
+
+        Assert.That(AppPreferences.Load().SidebarOpen, Is.True);
+    }
+
+    [Test]
+    public void ReturningToWide_RestoresSidebarFromPreference()
+    {
+        AppPreferences.Update(p => p with { SidebarOpen = true });
+        var sut = CreateSut();
+        sut.IsNarrow = true;
+
+        sut.IsNarrow = false;
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
+    }
+
+    [Test]
     public void IsMobileSidebarVisible_WhenNarrowAndClosed_ReturnsFalse()
     {
         var sut = CreateSut();
