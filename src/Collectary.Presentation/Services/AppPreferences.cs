@@ -10,7 +10,7 @@ public record AppPreferencesData(
     double FieldPaneRatio = 0.4,
     bool SidebarOpen = true,
     double SidebarWidth = 260,
-    bool RequireLogin = true,
+    Guid? LastProfileId = null,
     string? SyncLocation = null,
     bool AutoSyncEnabled = false,
     int AutoSyncIntervalMinutes = 5,
@@ -27,8 +27,7 @@ public record AppPreferencesData(
     string? AccentColor = null,
     Dictionary<string, string>? CustomColors = null,
     bool ExpertColorMode = false,
-    FieldLabelLayout FieldLabelLayout = FieldLabelLayout.Adaptive,
-    bool? RequireLoginOnWeb = null)
+    FieldLabelLayout FieldLabelLayout = FieldLabelLayout.Adaptive)
 {
     public string EffectiveColorTheme() =>
         ColorTheme == "Light" && Theme == AppTheme.Dark ? "Dark" : ColorTheme;

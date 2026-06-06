@@ -227,20 +227,13 @@
   <data name="Done" xml:space="preserve"><value>Done</value></data>
   <data name="ToggleSidebar" xml:space="preserve"><value>Toggle sidebar</value></data>
   <data name="SelectCollectionPrompt" xml:space="preserve"><value>Select a collection to get started</value></data>
-  <data name="Login_Title" xml:space="preserve"><value>Sign in</value></data>
-  <data name="Login_RegisterTitle" xml:space="preserve"><value>Create account</value></data>
-  <data name="Login_Username" xml:space="preserve"><value>Username</value></data>
-  <data name="Login_Password" xml:space="preserve"><value>Password</value></data>
-  <data name="Login_DisplayName" xml:space="preserve"><value>Display name</value></data>
-  <data name="Login_Email" xml:space="preserve"><value>Email (optional)</value></data>
-  <data name="Login_SignInButton" xml:space="preserve"><value>Sign in</value></data>
-  <data name="Login_RegisterButton" xml:space="preserve"><value>Create account</value></data>
-  <data name="Login_SwitchToRegister" xml:space="preserve"><value>Need an account? Register</value></data>
-  <data name="Login_SwitchToLogin" xml:space="preserve"><value>Have an account? Sign in</value></data>
-  <data name="Login_Failed" xml:space="preserve"><value>Incorrect username or password.</value></data>
-  <data name="Login_UsernameTaken" xml:space="preserve"><value>That username is already taken.</value></data>
-  <data name="Login_FieldsRequired" xml:space="preserve"><value>Username and password are required.</value></data>
-  <data name="Login_InvalidEmail" xml:space="preserve"><value>Please enter a valid email address.</value></data>
+  <data name="Profile_PickTitle" xml:space="preserve"><value>Who's collecting?</value></data>
+  <data name="Profile_Add" xml:space="preserve"><value>Add profile</value></data>
+  <data name="Profile_NameWatermark" xml:space="preserve"><value>Profile name</value></data>
+  <data name="Profile_Create" xml:space="preserve"><value>Create</value></data>
+  <data name="Profile_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Profile_Switch" xml:space="preserve"><value>Switch profile</value></data>
+  <data name="Profile_NameRequired" xml:space="preserve"><value>Please enter a profile name.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Share collection</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Share with a user</value></data>
   <data name="Share_Username" xml:space="preserve"><value>Username</value></data>
@@ -290,8 +283,6 @@
   <data name="Backup_ImportedWithConflicts" xml:space="preserve"><value>Imported {0} entries. These kept your local version: {1}</value></data>
   <data name="Backup_Error" xml:space="preserve"><value>Backup failed. Please try again.</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>Account</value></data>
-  <data name="Settings_Logout" xml:space="preserve"><value>Log out</value></data>
-  <data name="Settings_RequireLoginOnWeb" xml:space="preserve"><value>Require login on the web</value></data>
   <data name="Settings_SyncProvider" xml:space="preserve"><value>Storage provider</value></data>
   <data name="Settings_Provider_Folder" xml:space="preserve"><value>Local / mounted folder</value></data>
   <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>

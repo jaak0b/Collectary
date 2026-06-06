@@ -14,10 +14,6 @@ public class UserTest
         Assert.That(new User().DisplayName, Is.EqualTo(string.Empty));
 
     [Test]
-    public void Email_DefaultsToNull() =>
-        Assert.That(new User().Email, Is.Null);
-
-    [Test]
     public void Id_DefaultsToNonEmptyGuid() =>
         Assert.That(new User().Id, Is.Not.EqualTo(Guid.Empty));
 }

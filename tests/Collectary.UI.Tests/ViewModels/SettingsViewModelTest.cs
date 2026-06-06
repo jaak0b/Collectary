@@ -253,60 +253,13 @@ public class SettingsViewModelTest
     }
 
     [Test]
-    public void RequireLoginOnWeb_WhenToggledOff_PersistsFalse()
-    {
-        var sut = new SettingsViewModel(() => { });
-
-        sut.RequireLoginOnWeb = false;
-
-        Assert.That(AppPreferences.Load().RequireLoginOnWeb, Is.False);
-    }
-
-    [Test]
-    public void RequireLoginOnWeb_WhenToggledOn_PersistsTrue()
-    {
-        AppPreferences.Save(new AppPreferencesData(RequireLoginOnWeb: false));
-        var sut = new SettingsViewModel(() => { });
-
-        sut.RequireLoginOnWeb = true;
-
-        Assert.That(AppPreferences.Load().RequireLoginOnWeb, Is.True);
-    }
-
-    [Test]
-    public void Constructor_SeedsRequireLoginOnWebFromPrefs()
-    {
-        AppPreferences.Save(new AppPreferencesData(RequireLoginOnWeb: false));
-
-        var sut = new SettingsViewModel(() => { });
-
-        Assert.That(sut.RequireLoginOnWeb, Is.False);
-    }
-
-    [Test]
-    public void Constructor_DoesNotPersistRequireLoginOnWeb()
-    {
-        _ = new SettingsViewModel(() => { });
-
-        Assert.That(AppPreferences.Load().RequireLoginOnWeb, Is.Null);
-    }
-
-    [Test]
-    public void Logout_InvokesInjectedCallback()
+    public void SwitchProfile_InvokesInjectedCallback()
     {
         var called = false;
-        var sut = new SettingsViewModel(() => { }, logout: () => called = true);
+        var sut = new SettingsViewModel(() => { }, switchProfile: () => called = true);
 
-        sut.LogoutCommand.Execute(null);
+        sut.SwitchProfileCommand.Execute(null);
 
         Assert.That(called, Is.True);
-    }
-
-    [Test]
-    public void CanLogout_ReflectsInjectedFlag()
-    {
-        var sut = new SettingsViewModel(() => { }, canLogout: true);
-
-        Assert.That(sut.CanLogout, Is.True);
     }
 }

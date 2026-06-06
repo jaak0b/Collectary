@@ -41,10 +41,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public partial bool IsAuthenticated { get; set; }
 
     [ObservableProperty]
-    public partial bool CanLogout { get; set; }
+    public partial string? CurrentProfileName { get; set; }
 
     [ObservableProperty]
-    public partial LoginViewModel? Login { get; set; }
+    public partial ProfilePickerViewModel? ProfilePicker { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsMobileSidebarVisible))]
@@ -92,8 +92,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect(),
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync,
-            logout: () => LogoutCommand.Execute(null),
-            canLogout: CanLogout);
+            switchProfile: () => SwitchProfileCommand.Execute(null));
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
         CloseSidebarIfNarrow();
     }
@@ -295,50 +294,60 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         return folders.FirstOrDefault()?.TryGetLocalPath();
     }
 
-    public async Task StartAsync(bool requireLogin)
+    public async Task StartAsync()
     {
-        if (requireLogin)
+        var profiles = await _scope.Resolve<IProfileService>().GetProfilesAsync();
+        var rememberedId = AppPreferences.Load().LastProfileId;
+        var remembered = rememberedId is { } id ? profiles.FirstOrDefault(p => p.Id == id) : null;
+
+        if (remembered is not null)
         {
-            CanLogout = true;
-            ShowLogin();
+            await EnterProfileAsync(remembered);
             return;
         }
 
+        await ShowProfilePickerAsync();
+    }
+
+    private async Task ShowProfilePickerAsync()
+    {
+        var picker = new ProfilePickerViewModel(_scope.Resolve<IProfileService>(), OnProfileSelectedAsync);
+        await picker.LoadAsync();
+        ProfilePicker = picker;
+        IsAuthenticated = false;
+    }
+
+    private async Task OnProfileSelectedAsync(User profile)
+    {
+        try
+        {
+            await EnterProfileAsync(profile);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Initialization after profile selection failed");
+            await _dialogService.ShowMessageAsync(ex.Message, LocalizationService.Instance["Profile_PickTitle"]);
+        }
+    }
+
+    private async Task EnterProfileAsync(User profile)
+    {
+        _scope.Resolve<IProfileService>().SelectProfile(profile);
+        await _scope.Resolve<IAccountBootstrapper>().BackfillOwnerlessAsync(profile.Id);
+        AppPreferences.Update(p => p with { LastProfileId = profile.Id });
+        CurrentProfileName = profile.DisplayName;
+        ProfilePicker = null;
         IsAuthenticated = true;
         await InitializeAsync();
     }
 
-    private void ShowLogin()
-    {
-        Login = new LoginViewModel(
-            _scope.Resolve<IAuthService>(),
-            _scope.Resolve<IAccountBootstrapper>(),
-            onAuthenticated: OnAuthenticated);
-        IsAuthenticated = false;
-    }
-
-    private async void OnAuthenticated()
-    {
-        try
-        {
-            Login = null;
-            IsAuthenticated = true;
-            await InitializeAsync();
-        }
-        catch (Exception ex)
-        {
-            AppLogger.Log.Error(ex, "Initialization after login failed");
-            await _dialogService.ShowMessageAsync(ex.Message, LocalizationService.Instance["Login_Title"]);
-        }
-    }
-
     [RelayCommand]
-    private void Logout()
+    private async Task SwitchProfile()
     {
-        _scope.Resolve<IAuthService>().Logout();
+        _scope.Resolve<IProfileService>().SignOut();
         Breadcrumbs.Clear();
         ContentViewModel = null;
-        ShowLogin();
+        await ShowProfilePickerAsync();
     }
 
     public async Task InitializeAsync()

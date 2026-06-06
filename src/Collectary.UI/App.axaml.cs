@@ -68,22 +68,6 @@ public partial class App : Application
 
             AppLogger.Log.Information("Application started");
 
-            var prefs = AppPreferences.Load();
-
-            bool webLoginDefault =
-#if WIKI_DEMO
-                false;
-#else
-                true;
-#endif
-
-            var requireLogin =
-                OperatingSystem.IsBrowser() ? prefs.RequireLoginOnWeb ?? webLoginDefault
-              : OperatingSystem.IsAndroid() ? true
-              : prefs.RequireLogin;
-
-            if (!requireLogin) EnsureDefaultUser();
-
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var vm = _container.Resolve<MainWindowViewModel>();
@@ -91,7 +75,7 @@ public partial class App : Application
                 window.DataContext = vm;
                 vm.Host = window;
                 desktop.MainWindow = window;
-                _ = vm.StartAsync(requireLogin);
+                _ = vm.StartAsync();
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleView)
             {
@@ -99,7 +83,7 @@ public partial class App : Application
                 var view = new MainView { DataContext = vm };
                 vm.Host = view;
                 singleView.MainView = view;
-                _ = vm.StartAsync(requireLogin);
+                _ = vm.StartAsync();
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -194,13 +178,6 @@ public partial class App : Application
         {
             connection.Close();
         }
-    }
-
-    private void EnsureDefaultUser()
-    {
-        var bootstrapper = _container!.Resolve<IAccountBootstrapper>();
-        var user = bootstrapper.EnsureDefaultUserAsync().GetAwaiter().GetResult();
-        bootstrapper.BackfillOwnerlessAsync(user.Id).GetAwaiter().GetResult();
     }
 
     private IContainer BuildContainer()

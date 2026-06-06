@@ -22,9 +22,11 @@ public class MainWindowViewModelTest
     private IImageStore _imageStore = null!;
     private IDialogService _dialogService = null!;
     private ISyncScheduler _syncScheduler = null!;
-    private IAuthService _authService = null!;
+    private IProfileService _profileService = null!;
     private IAccountBootstrapper _accountBootstrapper = null!;
     private IShareUseCase _shareUseCase = null!;
+    private string _prefsDir = null!;
+    private string _originalPrefs = null!;
 
     [SetUp]
     public void SetUp()
@@ -37,20 +39,26 @@ public class MainWindowViewModelTest
         _imageStore = A.Fake<IImageStore>();
         _dialogService = A.Fake<IDialogService>();
         _syncScheduler = A.Fake<ISyncScheduler>();
-        _authService = A.Fake<IAuthService>();
+        _profileService = A.Fake<IProfileService>();
         _accountBootstrapper = A.Fake<IAccountBootstrapper>();
         _shareUseCase = A.Fake<IShareUseCase>();
+
+        _prefsDir = Path.Combine(Path.GetTempPath(), $"collectary-prefs-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_prefsDir);
+        _originalPrefs = AppPreferences.FilePath;
+        AppPreferences.FilePath = Path.Combine(_prefsDir, "preferences.json");
 
         A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>());
         A.CallTo(() => _sharedFieldUseCase.GetAllAsync()).Returns((IReadOnlyList<SharedField>)new List<SharedField>());
         A.CallTo(() => _shareUseCase.ListSharesAsync(A<Guid>._)).Returns(new List<ShareInfo>());
+        A.CallTo(() => _profileService.GetProfilesAsync()).Returns(new List<User>());
 
         var builder = new ContainerBuilder();
         builder.RegisterInstance(A.Fake<ISyncService>()).As<ISyncService>();
         builder.RegisterInstance(A.Fake<ISyncStatus>()).As<ISyncStatus>();
         builder.RegisterInstance(_presetUseCase).As<IPresetUseCase>();
         builder.RegisterInstance(_sharedFieldUseCase).As<ISharedFieldUseCase>();
-        builder.RegisterInstance(_authService).As<IAuthService>();
+        builder.RegisterInstance(_profileService).As<IProfileService>();
         builder.RegisterInstance(_accountBootstrapper).As<IAccountBootstrapper>();
         builder.RegisterInstance(_shareUseCase).As<IShareUseCase>();
         builder.RegisterInstance(new TestFieldEditorMapper().Create()).As<IFieldEditorMapper>();
@@ -66,6 +74,8 @@ public class MainWindowViewModelTest
         _syncScheduler.Dispose();
         _scope.Dispose();
         _container.Dispose();
+        AppPreferences.FilePath = _originalPrefs;
+        if (Directory.Exists(_prefsDir)) Directory.Delete(_prefsDir, recursive: true);
     }
 
     private MainWindowViewModel CreateSut() => new(
@@ -367,54 +377,72 @@ public class MainWindowViewModelTest
     }
 
     [Test]
-    public async Task StartAsync_WhenRequireLogin_ShowsLoginAndIsNotAuthenticated()
+    public async Task StartAsync_WithNoProfiles_ShowsPickerAndIsNotAuthenticated()
     {
         var sut = CreateSut();
 
-        await sut.StartAsync(requireLogin: true);
+        await sut.StartAsync();
 
         Assert.Multiple(() =>
         {
-            Assert.That(sut.Login, Is.Not.Null);
+            Assert.That(sut.ProfilePicker, Is.Not.Null);
             Assert.That(sut.IsAuthenticated, Is.False);
-            Assert.That(sut.CanLogout, Is.True);
             Assert.That(sut.SidebarViewModel, Is.Null);
         });
     }
 
     [Test]
-    public async Task StartAsync_WhenNoLogin_InitializesAndIsAuthenticated()
+    public async Task StartAsync_WithRememberedProfile_EntersApp()
     {
+        var profile = new User { Username = "alice", DisplayName = "Alice" };
+        A.CallTo(() => _profileService.GetProfilesAsync()).Returns(new List<User> { profile });
+        AppPreferences.Update(p => p with { LastProfileId = profile.Id });
         var sut = CreateSut();
 
-        await sut.StartAsync(requireLogin: false);
+        await sut.StartAsync();
 
         Assert.Multiple(() =>
         {
             Assert.That(sut.IsAuthenticated, Is.True);
-            Assert.That(sut.CanLogout, Is.False);
-            Assert.That(sut.Login, Is.Null);
+            Assert.That(sut.ProfilePicker, Is.Null);
+            Assert.That(sut.CurrentProfileName, Is.EqualTo("Alice"));
             Assert.That(sut.SidebarViewModel, Is.Not.Null);
         });
+        A.CallTo(() => _profileService.SelectProfile(profile)).MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public async Task OnAuthenticated_AfterLoginSucceeds_SetsAuthenticatedAndInitializes()
+    public async Task StartAsync_WhenRememberedProfileMissing_ShowsPicker()
     {
-        A.CallTo(() => _authService.LoginAsync("alice", "pw")).Returns(new User { Username = "alice" });
+        A.CallTo(() => _profileService.GetProfilesAsync()).Returns(new List<User>());
+        AppPreferences.Update(p => p with { LastProfileId = Guid.NewGuid() });
         var sut = CreateSut();
-        await sut.StartAsync(requireLogin: true);
-        sut.Login!.Username = "alice";
-        sut.Login!.Password = "pw";
 
-        await sut.Login!.SubmitCommand.ExecuteAsync(null);
+        await sut.StartAsync();
+
+        Assert.That(sut.ProfilePicker, Is.Not.Null);
+        Assert.That(sut.IsAuthenticated, Is.False);
+    }
+
+    [Test]
+    public async Task OnProfileSelected_FromPicker_PersistsAndInitializes()
+    {
+        var profile = new User { Username = "alice", DisplayName = "Alice" };
+        A.CallTo(() => _profileService.GetProfilesAsync()).Returns(new List<User> { profile });
+        var sut = CreateSut();
+        await sut.StartAsync();
+        var tile = sut.ProfilePicker!.Profiles.Single();
+
+        await sut.ProfilePicker!.SelectProfileCommand.ExecuteAsync(tile);
 
         Assert.Multiple(() =>
         {
             Assert.That(sut.IsAuthenticated, Is.True);
-            Assert.That(sut.Login, Is.Null);
+            Assert.That(sut.ProfilePicker, Is.Null);
             Assert.That(sut.SidebarViewModel, Is.Not.Null);
+            Assert.That(AppPreferences.Load().LastProfileId, Is.EqualTo(profile.Id));
         });
+        A.CallTo(() => _accountBootstrapper.BackfillOwnerlessAsync(profile.Id)).MustHaveHappenedOnceExactly();
     }
 
     private PresetEditorViewModel CreateEditor() => new(
@@ -476,24 +504,23 @@ public class MainWindowViewModelTest
     }
 
     [Test]
-    public async Task Logout_ClearsSessionAndReturnsToLogin()
+    public async Task SwitchProfile_SignsOutAndShowsPicker()
     {
-        A.CallTo(() => _authService.LoginAsync("alice", "pw")).Returns(new User { Username = "alice" });
+        var profile = new User { Username = "alice", DisplayName = "Alice" };
+        A.CallTo(() => _profileService.GetProfilesAsync()).Returns(new List<User> { profile });
+        AppPreferences.Update(p => p with { LastProfileId = profile.Id });
         var sut = CreateSut();
-        await sut.StartAsync(requireLogin: true);
-        sut.Login!.Username = "alice";
-        sut.Login!.Password = "pw";
-        await sut.Login!.SubmitCommand.ExecuteAsync(null);
+        await sut.StartAsync();
 
-        sut.LogoutCommand.Execute(null);
+        await sut.SwitchProfileCommand.ExecuteAsync(null);
 
         Assert.Multiple(() =>
         {
             Assert.That(sut.IsAuthenticated, Is.False);
-            Assert.That(sut.Login, Is.Not.Null);
+            Assert.That(sut.ProfilePicker, Is.Not.Null);
             Assert.That(sut.Breadcrumbs, Is.Empty);
         });
-        A.CallTo(() => _authService.Logout()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _profileService.SignOut()).MustHaveHappenedOnceExactly();
     }
 
     [Test]

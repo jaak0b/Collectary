@@ -54,12 +54,9 @@ full story.
 
 ## Account
 
-When you're signed in, Settings has a **Log out** button that returns you to the sign-in screen
-without closing the app — handy for switching users.
-
-On the **web version** you'll also find a **Require login on the web** switch. Leave it on to keep
-the sign-in screen, or turn it off to jump straight into the app. (On desktop and mobile the login
-behaviour is fixed — see [Accounts & Users](accounts.md).)
+Settings has a **Switch profile** button that returns you to the profile screen without closing the
+app — handy for jumping to a different profile. It does the same thing as the **Switch profile**
+button in the top-right of the main window. See [Profiles](accounts.md) for the full story.
 
 ## A few things it just remembers
 

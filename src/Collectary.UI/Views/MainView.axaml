@@ -206,12 +206,29 @@
 
                 </StackPanel>
 
-                <!-- Sync indicator -->
                 <StackPanel Grid.Column="3"
                             Orientation="Horizontal"
+                            Spacing="4"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0">
+
+                <Button Command="{Binding SwitchProfileCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="8,2"
+                        ToolTip.Tip="{Binding [Profile_Switch], Source={x:Static loc:LocalizationService.Instance}}">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding CurrentProfileName}"
+                                   VerticalAlignment="Center"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{x:Static icons:IconGlyphs.ArrowSync}" Classes="icon" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Orientation="Horizontal"
                             Spacing="6"
                             VerticalAlignment="Center"
-                            Margin="0,0,8,0"
                             IsVisible="{Binding Sync.IsConfigured}">
                     <Button Command="{Binding ResolveConflictsCommand}"
                             IsVisible="{Binding Sync.HasConflicts}"
@@ -231,6 +248,8 @@
                             ToolTip.Tip="{Binding [Sync_Now], Source={x:Static loc:LocalizationService.Instance}}">
                         <TextBlock Text="{x:Static icons:IconGlyphs.ArrowSync}" Classes="icon" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
                     </Button>
+                </StackPanel>
+
                 </StackPanel>
 
             </Grid>
@@ -301,7 +320,7 @@
 
     </Grid>
 
-    <ContentControl Content="{Binding Login}"
+    <ContentControl Content="{Binding ProfilePicker}"
                     IsVisible="{Binding !IsAuthenticated}"/>
 
     </Panel>

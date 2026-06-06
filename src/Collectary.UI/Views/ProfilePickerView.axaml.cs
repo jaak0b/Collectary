@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Collectary.UI.Views;
 
-public partial class LoginView : UserControl
+public partial class ProfilePickerView : UserControl
 {
-    public LoginView()
+    public ProfilePickerView()
     {
         InitializeComponent();
     }

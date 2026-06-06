@@ -41,7 +41,6 @@ public class InfrastructureModule : Module
         builder.RegisterType<ItemRepository>().As<IItemRepository>().SingleInstance();
         builder.RegisterType<SharedFieldRepository>().As<ISharedFieldRepository>().SingleInstance();
         builder.RegisterType<UserRepository>().As<IUserRepository>().SingleInstance();
-        builder.RegisterType<CredentialStore>().As<ICredentialStore>().SingleInstance();
         builder.RegisterType<ShareRepository>().As<IShareRepository>().SingleInstance();
 
         builder.Register(_ => new FileSystemImageStore(_imageStorePath))

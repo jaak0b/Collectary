@@ -15,7 +15,6 @@ public class InventoryDbContext : DbContext
     public DbSet<SharedField> SharedFields => Set<SharedField>();
     public DbSet<FieldGroup> FieldGroups => Set<FieldGroup>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<UserCredentialRecord> UserCredentials => Set<UserCredentialRecord>();
     public DbSet<CollectionShare> CollectionShares => Set<CollectionShare>();
 
     public InventoryDbContext(DbContextOptions<InventoryDbContext> options) : base(options) { }
@@ -40,12 +39,6 @@ public class InventoryDbContext : DbContext
             e.ToTable("Users");
             e.HasKey(u => u.Id);
             e.HasIndex(u => u.Username).IsUnique();
-        });
-
-        modelBuilder.Entity<UserCredentialRecord>(e =>
-        {
-            e.ToTable("UserCredentials");
-            e.HasKey(c => c.UserId);
         });
 
         modelBuilder.Entity<CollectionShare>(e =>

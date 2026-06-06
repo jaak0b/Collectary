@@ -227,20 +227,13 @@
   <data name="Done" xml:space="preserve"><value>Fertig</value></data>
   <data name="ToggleSidebar" xml:space="preserve"><value>Seitenleiste umschalten</value></data>
   <data name="SelectCollectionPrompt" xml:space="preserve"><value>Sammlung auswählen zum Starten</value></data>
-  <data name="Login_Title" xml:space="preserve"><value>Anmelden</value></data>
-  <data name="Login_RegisterTitle" xml:space="preserve"><value>Konto erstellen</value></data>
-  <data name="Login_Username" xml:space="preserve"><value>Benutzername</value></data>
-  <data name="Login_Password" xml:space="preserve"><value>Passwort</value></data>
-  <data name="Login_DisplayName" xml:space="preserve"><value>Anzeigename</value></data>
-  <data name="Login_Email" xml:space="preserve"><value>E-Mail (optional)</value></data>
-  <data name="Login_SignInButton" xml:space="preserve"><value>Anmelden</value></data>
-  <data name="Login_RegisterButton" xml:space="preserve"><value>Konto erstellen</value></data>
-  <data name="Login_SwitchToRegister" xml:space="preserve"><value>Kein Konto? Registrieren</value></data>
-  <data name="Login_SwitchToLogin" xml:space="preserve"><value>Konto vorhanden? Anmelden</value></data>
-  <data name="Login_Failed" xml:space="preserve"><value>Benutzername oder Passwort ist falsch.</value></data>
-  <data name="Login_UsernameTaken" xml:space="preserve"><value>Dieser Benutzername ist bereits vergeben.</value></data>
-  <data name="Login_FieldsRequired" xml:space="preserve"><value>Benutzername und Passwort sind erforderlich.</value></data>
-  <data name="Login_InvalidEmail" xml:space="preserve"><value>Bitte geben Sie eine gültige E-Mail-Adresse ein.</value></data>
+  <data name="Profile_PickTitle" xml:space="preserve"><value>Wer sammelt?</value></data>
+  <data name="Profile_Add" xml:space="preserve"><value>Profil hinzufügen</value></data>
+  <data name="Profile_NameWatermark" xml:space="preserve"><value>Profilname</value></data>
+  <data name="Profile_Create" xml:space="preserve"><value>Erstellen</value></data>
+  <data name="Profile_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="Profile_Switch" xml:space="preserve"><value>Profil wechseln</value></data>
+  <data name="Profile_NameRequired" xml:space="preserve"><value>Bitte geben Sie einen Profilnamen ein.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Sammlung teilen</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Mit einem Benutzer teilen</value></data>
   <data name="Share_Username" xml:space="preserve"><value>Benutzername</value></data>
@@ -290,8 +283,6 @@
   <data name="Backup_ImportedWithConflicts" xml:space="preserve"><value>{0} Einträge importiert. Diese behielten deine lokale Version: {1}</value></data>
   <data name="Backup_Error" xml:space="preserve"><value>Sicherung fehlgeschlagen. Bitte erneut versuchen.</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>Konto</value></data>
-  <data name="Settings_Logout" xml:space="preserve"><value>Abmelden</value></data>
-  <data name="Settings_RequireLoginOnWeb" xml:space="preserve"><value>Anmeldung im Web verlangen</value></data>
   <data name="Settings_SyncProvider" xml:space="preserve"><value>Speicheranbieter</value></data>
   <data name="Settings_Provider_Folder" xml:space="preserve"><value>Lokaler / eingebundener Ordner</value></data>
   <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>

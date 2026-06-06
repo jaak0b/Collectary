@@ -280,30 +280,18 @@
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
             </StackPanel>
 
-            <Separator IsVisible="{Binding CanLogout}"/>
+            <Separator/>
 
-            <StackPanel Spacing="14"
-                        IsVisible="{Binding CanLogout}">
+            <StackPanel Spacing="14">
                 <TextBlock Text="{Binding [Settings_Account], Source={x:Static loc:LocalizationService.Instance}}"
                            FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            LetterSpacing="1"/>
 
-                <Button Content="{Binding [Settings_Logout], Source={x:Static loc:LocalizationService.Instance}}"
-                        Command="{Binding LogoutCommand}"
+                <Button Content="{Binding [Profile_Switch], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding SwitchProfileCommand}"
                         Padding="12,6"/>
-            </StackPanel>
-
-            <Separator IsVisible="{Binding IsWeb}"/>
-
-            <StackPanel Orientation="Horizontal"
-                        Spacing="12"
-                        IsVisible="{Binding IsWeb}">
-                <TextBlock Text="{Binding [Settings_RequireLoginOnWeb], Source={x:Static loc:LocalizationService.Instance}}"
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                <ToggleSwitch IsChecked="{Binding RequireLoginOnWeb}"/>
             </StackPanel>
 
         </StackPanel>

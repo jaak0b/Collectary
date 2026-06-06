@@ -15,9 +15,9 @@ it on the [Live Demo](demo.md) page without installing anything.
   Sneakers, Wine, Video Games, …) or build your own from scratch.
 - **22 field types.** Text, rich text, numbers, currency, dates, durations, ratings, colours,
   images, tags, single/multi choice, and more — see the [Field Types reference](user-guide/field-types.md).
-- **Multiple users.** Each person has their own account; passwords are hashed, never stored in
-  the clear. See [Accounts](user-guide/accounts.md).
-- **Sharing.** Grant other users read or write access to a collection. See [Sharing](user-guide/sharing.md).
+- **Profiles.** Pick a profile from a row of tiles — no passwords, just a name. Each profile has
+  its own collections. See [Profiles](user-guide/accounts.md).
+- **Sharing.** Grant other profiles read or write access to a collection. See [Sharing](user-guide/sharing.md).
 - **Sync.** Keep collections in step across devices through a shared folder, with conflict
   resolution. See [Sync](user-guide/sync.md).
 - **Themes & languages.** Light/dark themes and English/German UI. See [Settings](user-guide/settings.md).
