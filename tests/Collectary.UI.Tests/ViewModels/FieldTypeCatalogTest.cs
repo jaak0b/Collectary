@@ -66,6 +66,15 @@ public class FieldTypeCatalogTest
     }
 
     [Test]
+    public void Entries_DoNotIncludeRemovedTypes()
+    {
+        var typeNames = new FieldTypeCatalog().Entries.Select(e => e.Type.Name).ToList();
+
+        Assert.That(typeNames, Has.None.EqualTo("ProgressFieldDefinition"));
+        Assert.That(typeNames, Has.None.EqualTo("SliderFieldDefinition"));
+    }
+
+    [Test]
     public void Entries_PlaceImageGalleryImmediatelyAfterImage()
     {
         var types = new FieldTypeCatalog().Entries.Select(e => e.Type).ToList();

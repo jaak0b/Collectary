@@ -67,8 +67,6 @@
   <data name="FieldType_Country" xml:space="preserve"><value>Country</value></data>
   <data name="FieldType_Measurement" xml:space="preserve"><value>Measurement</value></data>
   <data name="FieldType_Weight" xml:space="preserve"><value>Weight</value></data>
-  <data name="FieldType_Slider" xml:space="preserve"><value>Slider</value></data>
-  <data name="FieldType_Progress" xml:space="preserve"><value>Progress</value></data>
   <data name="FieldType_DateRange" xml:space="preserve"><value>Date Range</value></data>
   <data name="FieldType_LinkedItem" xml:space="preserve"><value>Linked Item</value></data>
   <data name="FieldType_Audio" xml:space="preserve"><value>Audio Note</value></data>

@@ -217,8 +217,6 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<CountryFieldDefinition>().ToTable("CountryFieldDefinitions");
         modelBuilder.Entity<MeasurementFieldDefinition>().ToTable("MeasurementFieldDefinitions");
         modelBuilder.Entity<WeightFieldDefinition>().ToTable("WeightFieldDefinitions");
-        modelBuilder.Entity<SliderFieldDefinition>().ToTable("SliderFieldDefinitions");
-        modelBuilder.Entity<ProgressFieldDefinition>().ToTable("ProgressFieldDefinitions");
         modelBuilder.Entity<DateRangeFieldDefinition>().ToTable("DateRangeFieldDefinitions");
         modelBuilder.Entity<LinkedItemFieldDefinition>().ToTable("LinkedItemFieldDefinitions");
         modelBuilder.Entity<AudioFieldDefinition>().ToTable("AudioFieldDefinitions");
@@ -392,16 +390,6 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<WeightFieldValue>(e =>
         {
             e.ToTable("WeightFieldValues");
-            e.Ignore(v => v.Definition);
-        });
-        modelBuilder.Entity<SliderFieldValue>(e =>
-        {
-            e.ToTable("SliderFieldValues");
-            e.Ignore(v => v.Definition);
-        });
-        modelBuilder.Entity<ProgressFieldValue>(e =>
-        {
-            e.ToTable("ProgressFieldValues");
             e.Ignore(v => v.Definition);
         });
         modelBuilder.Entity<DateRangeFieldValue>(e =>

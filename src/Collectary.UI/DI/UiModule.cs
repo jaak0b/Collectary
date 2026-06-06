@@ -83,8 +83,6 @@ public class UiModule : Module
         builder.RegisterType<CountryFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(CountryFieldDefinition));
         builder.RegisterType<MeasurementFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(MeasurementFieldDefinition));
         builder.RegisterType<WeightFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(WeightFieldDefinition));
-        builder.RegisterType<SliderFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(SliderFieldDefinition));
-        builder.RegisterType<ProgressFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(ProgressFieldDefinition));
         builder.RegisterType<DateRangeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(DateRangeFieldDefinition));
         builder.RegisterType<LinkedItemFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(LinkedItemFieldDefinition));
         builder.RegisterType<AudioFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(AudioFieldDefinition));
@@ -123,8 +121,6 @@ public class UiModule : Module
         TextCell(nameof(CountryFieldDefinition));
         TextCell(nameof(MeasurementFieldDefinition));
         TextCell(nameof(WeightFieldDefinition));
-        TextCell(nameof(SliderFieldDefinition));
-        TextCell(nameof(ProgressFieldDefinition));
         TextCell(nameof(DateRangeFieldDefinition));
         TextCell(nameof(LinkedItemFieldDefinition));
 

@@ -67,10 +67,6 @@ public class TestFieldEditorRegistry : IFieldEditorRegistry
                 new MeasurementFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             WeightFieldDefinition d =>
                 new WeightFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
-            SliderFieldDefinition d =>
-                new SliderFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
-            ProgressFieldDefinition d =>
-                new ProgressFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             DateRangeFieldDefinition d =>
                 new DateRangeFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             LinkedItemFieldDefinition d =>

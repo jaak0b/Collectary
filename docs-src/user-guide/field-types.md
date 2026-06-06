@@ -17,8 +17,6 @@ kind of information you're storing.
 - **Percentage** — 0–100, shown with a `%`.
 - **Currency** — an amount plus a currency symbol.
 - **Rating** — a row of stars.
-- **Slider** — a 0–100 track you drag, with the value shown beside it.
-- **Progress** — "owned X of Y", with a bar. Keeps both numbers, unlike a plain percentage.
 
 ## Sizes and weights
 

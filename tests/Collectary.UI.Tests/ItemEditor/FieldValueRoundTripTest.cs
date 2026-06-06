@@ -248,27 +248,6 @@ public class FieldValueRoundTripTest : FlowTestBase
     }
 
     [Test]
-    public async Task SliderField_Value_RoundTrips()
-    {
-        var def = new SliderFieldDefinition { Label = "Condition" };
-        var reloaded = await RoundTrip<SliderFieldEditorViewModel>(def, e => e.Number = 80);
-        Assert.That(reloaded.Number, Is.EqualTo(80));
-    }
-
-    [Test]
-    public async Task ProgressField_Value_RoundTrips()
-    {
-        var def = new ProgressFieldDefinition { Label = "Collected" };
-        var reloaded = await RoundTrip<ProgressFieldEditorViewModel>(def, e =>
-        {
-            e.Have = 42;
-            e.Total = 151;
-        });
-        Assert.That(reloaded.Have, Is.EqualTo(42));
-        Assert.That(reloaded.Total, Is.EqualTo(151));
-    }
-
-    [Test]
     public async Task DateRangeField_Value_RoundTrips()
     {
         var from = new DateTime(2018, 5, 1);
