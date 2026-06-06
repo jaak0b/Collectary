@@ -14,6 +14,8 @@ public partial class ItemEditingContext : ObservableObject
 
     public ISampleData SampleData { get; set; } = new BogusSampleData();
 
+    public IDialogService Dialogs { get; set; } = new NoopDialogService();
+
     [ObservableProperty]
     public partial bool IsNarrow { get; set; }
 

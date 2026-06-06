@@ -167,5 +167,12 @@
     <ContentControl Content="{Binding ProfilePicker}"
                     IsVisible="{Binding !IsAuthenticated}"/>
 
+    <Border x:Name="DialogOverlay"
+            ZIndex="100"
+            Background="#80000000"
+            IsVisible="{Binding DialogHost.HasActiveDialog, FallbackValue=False}">
+        <ContentControl Content="{Binding DialogHost.ActiveDialog}"/>
+    </Border>
+
     </Panel>
 </UserControl>

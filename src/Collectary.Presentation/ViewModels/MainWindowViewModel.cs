@@ -66,6 +66,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public SyncViewModel Sync { get; }
 
+    public IDialogHost? DialogHost { get; }
+
     [RelayCommand]
     private async Task ResolveConflicts() => await _dialogService.ShowSyncConflictsAsync(Sync);
 
@@ -336,6 +338,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _imageStore = imageStore;
         _dialogService = dialogService;
         _syncScheduler = syncScheduler;
+        DialogHost = dialogService as IDialogHost;
         Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>());
         Sync.Synced += OnSynced;
         Breadcrumbs.CollectionChanged += (_, _) =>
@@ -630,6 +633,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                 return new Bitmap(stream);
             },
             deleteImageAsync: key => _imageStore.DeleteAsync(key));
+
+        context.Dialogs = _dialogService;
 
         var barcodeDecoder = _scope.Resolve<IBarcodeImageDecoder>();
         context.ScanBarcodeAsync = async () =>

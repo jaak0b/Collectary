@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:ports="using:Collectary.Core.Ports"
+             x:Class="Collectary.UI.Views.CloudFolderPickerView"
+             x:DataType="vm:CloudFolderPickerViewModel">
+
+    <Border Background="{DynamicResource SurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="18"
+            Margin="20"
+            Width="420"
+            Height="460"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+            <TextBlock Grid.Row="0"
+                       Text="{Binding [Cloud_FolderPicker_Title], Source={x:Static loc:LocalizationService.Instance}}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,12"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+                <Button Content="{x:Static icons:IconGlyphs.ArrowUp}" Classes="icon"
+                        Command="{Binding GoUpCommand}"
+                        IsEnabled="{Binding CanGoUp}"
+                        Padding="10,4"/>
+                <TextBlock Text="{Binding CurrentFolder.Name}"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+            </StackPanel>
+
+            <Border Grid.Row="2"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <ListBox ItemsSource="{Binding Subfolders}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="ports:CloudFolder">
+                            <Button Background="Transparent"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Padding="6,4"
+                                    Command="{Binding $parent[ListBox].((vm:CloudFolderPickerViewModel)DataContext).OpenFolderCommand}"
+                                    CommandParameter="{Binding}">
+                                <TextBlock Text="{Binding Name}"/>
+                            </Button>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" Margin="0,10,0,10">
+                <TextBox Width="240"
+                         Text="{Binding NewFolderName}"
+                         Watermark="{Binding [Cloud_NewFolderName], Source={x:Static loc:LocalizationService.Instance}}"/>
+                <Button Content="{Binding [Cloud_CreateFolder], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding CreateFolderCommand}"
+                        Padding="12,6"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding CancelCommand}"
+                        Padding="16,6"/>
+                <Button Content="{Binding [Cloud_UseThisFolder], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding SelectCommand}"
+                        Padding="16,6"/>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</UserControl>

@@ -48,7 +48,10 @@ public class UiModule : Module
     {
         builder.RegisterInstance(LocalizationService.Instance).SingleInstance();
         builder.RegisterInstance(ThemeService.Instance).SingleInstance();
-        builder.RegisterInstance(AvaloniaDialogService.Instance).As<IDialogService>().SingleInstance();
+        builder.RegisterType<OverlayDialogService>()
+            .As<IDialogService>()
+            .As<IDialogHost>()
+            .SingleInstance();
         builder.RegisterType<ListCellBuilder>().As<IListCellBuilder>().AsSelf().SingleInstance();
         builder.RegisterType<Collectary.Presentation.Services.CountryCatalog>()
             .As<Collectary.Presentation.Services.ICountryCatalog>().SingleInstance();
