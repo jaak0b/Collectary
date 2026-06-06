@@ -44,6 +44,8 @@ public class MainWindowViewModelTest
         builder.RegisterInstance(_presetUseCase).As<IPresetUseCase>();
         builder.RegisterInstance(_systemFieldUseCase).As<ISystemFieldUseCase>();
         builder.RegisterInstance(new TestFieldEditorMapper().Create()).As<IFieldEditorMapper>();
+        builder.RegisterInstance(A.Fake<Collectary.Presentation.Templates.IPresetTemplateLibrary>())
+            .As<Collectary.Presentation.Templates.IPresetTemplateLibrary>();
         _container = builder.Build();
         _scope = _container.BeginLifetimeScope();
     }
@@ -174,6 +176,84 @@ public class MainWindowViewModelTest
         sut.IsSidebarOpen = true;
 
         sut.SidebarViewModel!.OnCreatePreset?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
+    }
+
+    [Test]
+    public async Task NavigateToTemplatePicker_WhenNarrow_ClosesSidebar()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = true;
+        sut.IsSidebarOpen = true;
+
+        sut.SidebarViewModel!.OnCreateFromTemplate?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public async Task NavigateToTemplatePicker_WhenWide_LeavesSidebarOpen()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = false;
+        sut.IsSidebarOpen = true;
+
+        sut.SidebarViewModel!.OnCreateFromTemplate?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
+    }
+
+    [Test]
+    public async Task NavigateToSystemFieldLibrary_WhenNarrow_ClosesSidebar()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = true;
+        sut.IsSidebarOpen = true;
+
+        sut.SidebarViewModel!.OnNavigateToSystemFields?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public async Task NavigateToSystemFieldLibrary_WhenWide_LeavesSidebarOpen()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = false;
+        sut.IsSidebarOpen = true;
+
+        sut.SidebarViewModel!.OnNavigateToSystemFields?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
+    }
+
+    [Test]
+    public async Task NavigateToSettings_WhenNarrow_ClosesSidebar()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = true;
+        sut.IsSidebarOpen = true;
+
+        sut.NavigateToSettingsCommand.Execute(null);
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public async Task NavigateToSettings_WhenWide_LeavesSidebarOpen()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = false;
+        sut.IsSidebarOpen = true;
+
+        sut.NavigateToSettingsCommand.Execute(null);
 
         Assert.That(sut.IsSidebarOpen, Is.True);
     }

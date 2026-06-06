@@ -79,6 +79,14 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync);
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
+        CloseSidebarIfNarrow();
+    }
+
+    private void CloseSidebarIfNarrow()
+    {
+        if (!IsNarrow) return;
+        IsSidebarOpen = false;
+        AppPreferences.Update(p => p with { SidebarOpen = false });
     }
 
     private async Task<bool> ExportBackupAsync()
@@ -357,11 +365,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ResetBreadcrumb(preset.Name, vm);
         _ = vm.LoadAsync();
 
-        if (IsNarrow)
-        {
-            IsSidebarOpen = false;
-            AppPreferences.Update(p => p with { SidebarOpen = false });
-        }
+        CloseSidebarIfNarrow();
     }
 
     private void NavigateToPresetEditor(Preset? existing, Preset? seed = null)
@@ -385,11 +389,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ResetBreadcrumb(LocalizationService.Instance["CollectionSettings"], vm);
         _ = vm.LoadAsync();
 
-        if (IsNarrow)
-        {
-            IsSidebarOpen = false;
-            AppPreferences.Update(p => p with { SidebarOpen = false });
-        }
+        CloseSidebarIfNarrow();
     }
 
     private void NavigateToTemplatePicker()
@@ -401,6 +401,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             onTemplateChosen: seed => NavigateToPresetEditor(existing: null, seed: seed),
             onCancel: () => { _ = NavigateToHomeAsync(); });
         ResetBreadcrumb(LocalizationService.Instance["TemplatePickerTitle"], vm);
+        CloseSidebarIfNarrow();
     }
 
     [RelayCommand]
@@ -415,6 +416,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             onDone: () => { _ = NavigateToHomeAsync(); });
         ResetBreadcrumb(LocalizationService.Instance["SystemFields"], vm);
         _ = vm.LoadAsync();
+        CloseSidebarIfNarrow();
     }
 
     private void NavigateToItemEditor(Preset preset, EffectiveFields effectiveFields, Item? existing)
