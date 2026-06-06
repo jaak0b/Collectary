@@ -1,9 +1,7 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.Core.Ports;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 
@@ -15,11 +13,6 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
     private readonly AudioFieldValue _value;
     private readonly ItemEditingContext _context;
 
-    public ObservableCollection<AudioInputDevice> Microphones { get; } = new();
-
-    [ObservableProperty]
-    public partial AudioInputDevice? SelectedMicrophone { get; set; }
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAudio))]
     public partial string? AudioKey { get; set; }
@@ -29,14 +22,17 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RecordButtonLabel))]
+    [NotifyPropertyChangedFor(nameof(RecordButtonIcon))]
     public partial bool IsRecording { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PlayButtonLabel))]
+    [NotifyPropertyChangedFor(nameof(PlayButtonIcon))]
     public partial bool IsPlaying { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PlayButtonLabel))]
+    [NotifyPropertyChangedFor(nameof(PlayButtonIcon))]
     public partial bool IsPaused { get; set; }
 
     [ObservableProperty]
@@ -51,6 +47,12 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
     public string PlayButtonLabel =>
         LocalizationService.Instance[IsPlaying && !IsPaused ? "Audio_Pause" : "Audio_Play"];
 
+    public string RecordButtonIcon => IsRecording ? IconGlyphs.Stop : IconGlyphs.Microphone;
+
+    public string PlayButtonIcon => IsPlaying && !IsPaused ? IconGlyphs.Pause : IconGlyphs.Play;
+
+    public string RecordTooltip => LocalizationService.Instance["Audio_RecordTooltip"];
+
     public AudioFieldEditorViewModel(
         AudioFieldDefinition definition,
         AudioFieldValue value,
@@ -61,13 +63,6 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
         _context = context;
         AudioKey = value.AudioKey;
         DurationSeconds = value.DurationSeconds;
-
-        if (_context.AudioRecorder is { } recorder)
-        {
-            foreach (var device in recorder.GetInputDevices())
-                Microphones.Add(device);
-            SelectedMicrophone = Microphones.FirstOrDefault();
-        }
     }
 
     public override FieldDefinition Definition => _definition;
@@ -81,7 +76,7 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
             ErrorMessage = null;
             if (!IsRecording)
             {
-                recorder.Start(SelectedMicrophone?.Id);
+                recorder.Start(_context.ResolveAudioInputDeviceId());
                 IsRecording = true;
                 return;
             }
@@ -127,7 +122,7 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
         {
             ErrorMessage = null;
             IsPlaying = true;
-            await player.PlayAsync(stream);
+            await player.PlayAsync(stream, _context.ResolveAudioOutputDeviceId());
         }
         catch (Exception ex)
         {
@@ -140,6 +135,13 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
             IsPaused = false;
             await stream.DisposeAsync();
         }
+    }
+
+    [RelayCommand]
+    private async Task OpenSettingsAsync()
+    {
+        await _context.SaveAsync();
+        _context.OpenSettings();
     }
 
     public override FieldValue GetCurrentValue()

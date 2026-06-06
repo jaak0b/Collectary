@@ -3,6 +3,7 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.ViewModels;
+using Glyphs = Collectary.Core.Domain.Fields.IconGlyphs;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -13,7 +14,9 @@ public class AudioFieldEditorViewModelTest
         IAudioRecorder? recorder = null,
         IAudioPlayer? player = null,
         Func<Stream, Task<string>>? store = null,
-        Func<string, Stream?>? open = null)
+        Func<string, Stream?>? open = null,
+        string? inputDeviceId = null,
+        string? outputDeviceId = null)
     {
         var ctx = new ItemEditingContext(
             editorRegistry: A.Fake<IFieldEditorRegistry>(),
@@ -26,6 +29,8 @@ public class AudioFieldEditorViewModelTest
         {
             AudioRecorder = recorder,
             AudioPlayer = player,
+            ResolveAudioInputDeviceId = () => inputDeviceId,
+            ResolveAudioOutputDeviceId = () => outputDeviceId,
         };
         if (store is not null) ctx.StoreAudioAsync = store;
         if (open is not null) ctx.OpenAudioStream = open;
@@ -43,18 +48,11 @@ public class AudioFieldEditorViewModelTest
         new(new AudioFieldDefinition(), value ?? new AudioFieldValue(), ctx);
 
     [Test]
-    public void Ctor_PopulatesMicrophonesAndSelectsFirst()
+    public void Ctor_Recorder_AudioAvailable()
     {
-        var mic1 = new AudioInputDevice("1", "Built-in");
-        var mic2 = new AudioInputDevice("2", "USB");
-        var vm = Make(MakeContext(RecorderWith(mic1, mic2)));
+        var vm = Make(MakeContext(RecorderWith()));
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.Microphones, Is.EqualTo(new[] { mic1, mic2 }));
-            Assert.That(vm.SelectedMicrophone, Is.EqualTo(mic1));
-            Assert.That(vm.AudioAvailable, Is.True);
-        });
+        Assert.That(vm.AudioAvailable, Is.True);
     }
 
     [Test]
@@ -62,18 +60,37 @@ public class AudioFieldEditorViewModelTest
     {
         var vm = Make(MakeContext());
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.AudioAvailable, Is.False);
-            Assert.That(vm.Microphones, Is.Empty);
-        });
+        Assert.That(vm.AudioAvailable, Is.False);
     }
 
     [Test]
-    public async Task ToggleRecord_FirstPress_StartsWithSelectedMic()
+    public void RecordTooltip_TellsUserWhereToChangeTheDevice()
     {
-        var recorder = RecorderWith(new AudioInputDevice("mic-7", "USB"));
-        var vm = Make(MakeContext(recorder));
+        var vm = Make(MakeContext(RecorderWith()));
+
+        Assert.That(vm.RecordTooltip, Is.Not.Null.And.Not.Empty);
+    }
+
+    [Test]
+    public async Task OpenSettings_PersistsTheItemBeforeNavigating()
+    {
+        var order = new List<string>();
+        var ctx = MakeContext(RecorderWith());
+        ctx.SaveAsync = () => { order.Add("save"); return Task.CompletedTask; };
+        ctx.OpenSettings = () => order.Add("open");
+        var vm = Make(ctx);
+
+        await vm.OpenSettingsCommand.ExecuteAsync(null);
+
+        Assert.That(order, Is.EqualTo(new[] { "save", "open" }),
+            "the editor must persist pending edits before navigating away to Settings");
+    }
+
+    [Test]
+    public async Task ToggleRecord_FirstPress_StartsWithConfiguredInputDevice()
+    {
+        var recorder = RecorderWith();
+        var vm = Make(MakeContext(recorder, inputDeviceId: "mic-7"));
 
         await vm.ToggleRecordCommand.ExecuteAsync(null);
 
@@ -82,9 +99,20 @@ public class AudioFieldEditorViewModelTest
     }
 
     [Test]
+    public async Task ToggleRecord_FirstPress_NoConfiguredDevice_StartsWithSystemDefault()
+    {
+        var recorder = RecorderWith();
+        var vm = Make(MakeContext(recorder));
+
+        await vm.ToggleRecordCommand.ExecuteAsync(null);
+
+        A.CallTo(() => recorder.Start(null)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public async Task ToggleRecord_SecondPress_StoresKeyAndDuration()
     {
-        var recorder = RecorderWith(new AudioInputDevice("mic-1", "Built-in"));
+        var recorder = RecorderWith();
         A.CallTo(() => recorder.StopAsync())
             .Returns(new RecordedAudio(new MemoryStream(new byte[] { 1, 2, 3 }), 12));
         var vm = Make(MakeContext(recorder, store: _ => Task.FromResult("audio-99")));
@@ -107,7 +135,7 @@ public class AudioFieldEditorViewModelTest
     [Test]
     public async Task ToggleRecord_StopWithNoCapture_LeavesEmpty()
     {
-        var recorder = RecorderWith(new AudioInputDevice("mic-1", "Built-in"));
+        var recorder = RecorderWith();
         A.CallTo(() => recorder.StopAsync()).Returns(Task.FromResult<RecordedAudio?>(null));
         var vm = Make(MakeContext(recorder));
 
@@ -124,7 +152,7 @@ public class AudioFieldEditorViewModelTest
     [Test]
     public async Task ToggleRecord_RecorderThrows_SetsErrorMessageAndStops()
     {
-        var recorder = RecorderWith(new AudioInputDevice("mic-1", "Built-in"));
+        var recorder = RecorderWith();
         A.CallTo(() => recorder.Start(A<string?>._)).Throws(new InvalidOperationException("boom"));
         var vm = Make(MakeContext(recorder));
 
@@ -138,18 +166,32 @@ public class AudioFieldEditorViewModelTest
     }
 
     [Test]
-    public async Task TogglePlayback_FromIdle_PlaysBlobAndResetsOnCompletion()
+    public async Task TogglePlayback_FromIdle_PlaysBlobOnConfiguredOutputDevice()
     {
         var player = A.Fake<IAudioPlayer>();
-        A.CallTo(() => player.PlayAsync(A<Stream>._)).Returns(Task.CompletedTask);
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Returns(Task.CompletedTask);
+        var opened = new MemoryStream(new byte[] { 9 });
+        var vm = Make(MakeContext(player: player, open: _ => opened, outputDeviceId: "out-3"),
+            new AudioFieldValue { AudioKey = "k" });
+
+        await vm.TogglePlaybackCommand.ExecuteAsync(null);
+
+        A.CallTo(() => player.PlayAsync(opened, "out-3")).MustHaveHappenedOnceExactly();
+        Assert.That(vm.IsPlaying, Is.False);
+    }
+
+    [Test]
+    public async Task TogglePlayback_NoConfiguredDevice_PlaysOnSystemDefault()
+    {
+        var player = A.Fake<IAudioPlayer>();
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Returns(Task.CompletedTask);
         var opened = new MemoryStream(new byte[] { 9 });
         var vm = Make(MakeContext(player: player, open: _ => opened),
             new AudioFieldValue { AudioKey = "k" });
 
         await vm.TogglePlaybackCommand.ExecuteAsync(null);
 
-        A.CallTo(() => player.PlayAsync(opened)).MustHaveHappenedOnceExactly();
-        Assert.That(vm.IsPlaying, Is.False);
+        A.CallTo(() => player.PlayAsync(opened, null)).MustHaveHappenedOnceExactly();
     }
 
     [Test]
@@ -157,7 +199,7 @@ public class AudioFieldEditorViewModelTest
     {
         var tcs = new TaskCompletionSource();
         var player = A.Fake<IAudioPlayer>();
-        A.CallTo(() => player.PlayAsync(A<Stream>._)).Returns(tcs.Task);
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Returns(tcs.Task);
         var vm = Make(MakeContext(player: player, open: _ => new MemoryStream(new byte[] { 1 })),
             new AudioFieldValue { AudioKey = "k" });
 
@@ -193,6 +235,32 @@ public class AudioFieldEditorViewModelTest
     }
 
     [Test]
+    public void RecordButtonIcon_IsMicrophoneIdle_StopWhileRecording()
+    {
+        var vm = Make(MakeContext(RecorderWith()));
+
+        Assert.That(vm.RecordButtonIcon, Is.EqualTo(Glyphs.Microphone));
+
+        vm.IsRecording = true;
+
+        Assert.That(vm.RecordButtonIcon, Is.EqualTo(Glyphs.Stop));
+    }
+
+    [Test]
+    public void PlayButtonIcon_IsPlayIdle_PauseWhilePlaying_PlayWhenPaused()
+    {
+        var vm = Make(MakeContext(RecorderWith()));
+
+        Assert.That(vm.PlayButtonIcon, Is.EqualTo(Glyphs.Play));
+
+        vm.IsPlaying = true;
+        Assert.That(vm.PlayButtonIcon, Is.EqualTo(Glyphs.Pause), "while playing the button offers to pause");
+
+        vm.IsPaused = true;
+        Assert.That(vm.PlayButtonIcon, Is.EqualTo(Glyphs.Play), "while paused the button offers to resume");
+    }
+
+    [Test]
     public void PlayButtonLabel_ReflectsPlayingAndPausedState()
     {
         var vm = Make(MakeContext(RecorderWith()));
@@ -213,7 +281,7 @@ public class AudioFieldEditorViewModelTest
     public async Task TogglePlayback_DisposesOpenedStreamAfterPlayback()
     {
         var player = A.Fake<IAudioPlayer>();
-        A.CallTo(() => player.PlayAsync(A<Stream>._)).Returns(Task.CompletedTask);
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Returns(Task.CompletedTask);
         var opened = new DisposeTrackingStream(new byte[] { 9 });
         var vm = Make(MakeContext(player: player, open: _ => opened),
             new AudioFieldValue { AudioKey = "k" });
@@ -227,7 +295,7 @@ public class AudioFieldEditorViewModelTest
     public async Task TogglePlayback_PlayerThrows_DisposesOpenedStream()
     {
         var player = A.Fake<IAudioPlayer>();
-        A.CallTo(() => player.PlayAsync(A<Stream>._)).Throws(new InvalidOperationException("boom"));
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Throws(new InvalidOperationException("boom"));
         var opened = new DisposeTrackingStream(new byte[] { 9 });
         var vm = Make(MakeContext(player: player, open: _ => opened),
             new AudioFieldValue { AudioKey = "k" });
@@ -252,7 +320,7 @@ public class AudioFieldEditorViewModelTest
     public async Task TogglePlayback_PlayerThrows_SetsErrorMessage()
     {
         var player = A.Fake<IAudioPlayer>();
-        A.CallTo(() => player.PlayAsync(A<Stream>._)).Throws(new InvalidOperationException("boom"));
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Throws(new InvalidOperationException("boom"));
         var vm = Make(MakeContext(player: player, open: _ => new MemoryStream(new byte[] { 1 })),
             new AudioFieldValue { AudioKey = "k" });
 

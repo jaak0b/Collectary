@@ -95,7 +95,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect(),
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync,
-            switchProfile: () => SwitchProfileCommand.Execute(null));
+            switchProfile: () => SwitchProfileCommand.Execute(null),
+            audioRecorder: _scope.ResolveOptional<IAudioRecorder>(),
+            audioPlayer: _scope.ResolveOptional<IAudioPlayer>());
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
         CloseSidebarIfNarrow();
     }
@@ -779,6 +781,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
         context.AudioRecorder = _scope.ResolveOptional<IAudioRecorder>();
         context.AudioPlayer = _scope.ResolveOptional<IAudioPlayer>();
+        context.ResolveAudioInputDeviceId = () => AppPreferences.Load().AudioInputDeviceId;
+        context.ResolveAudioOutputDeviceId = () => AppPreferences.Load().AudioOutputDeviceId;
+        context.OpenSettings = NavigateToSettings;
         context.StoreAudioAsync = stream => _imageStore.SaveAsync(stream, $"audio-{Guid.NewGuid():N}.wav");
         context.OpenAudioStream = key => _imageStore.Exists(key) ? _imageStore.Open(key) : null;
 

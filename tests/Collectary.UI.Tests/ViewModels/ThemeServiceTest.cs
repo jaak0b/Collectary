@@ -119,6 +119,43 @@ public class ThemeServiceTest
     }
 
     [Test]
+    public void ApplyColorTheme_RetintsSystemAccentRampToThemePrimary()
+    {
+        ThemeService.Instance.ApplyColorTheme("Graphite");
+        var primary = Resource<Color>("PrimaryColor");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Resource<Color>("SystemAccentColor"), Is.EqualTo(primary),
+                "stock accent controls (checkbox, slider) must follow the theme accent, not the OS accent");
+            Assert.That(Resource<Color>("SystemAccentColorLight1"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorLight2"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorLight3"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorDark1"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorDark2"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorDark3"), Is.EqualTo(primary));
+        });
+    }
+
+    [Test]
+    public void ApplyAccent_RetintsSystemAccentRamp()
+    {
+        ThemeService.Instance.ApplyColorTheme("Light");
+        ThemeService.Instance.ApplyAccent(Colors.Red);
+
+        Assert.That(Resource<Color>("SystemAccentColor"), Is.EqualTo(Colors.Red));
+    }
+
+    [Test]
+    public void ApplyCustomColors_PrimaryOverride_RetintsSystemAccentRamp()
+    {
+        ThemeService.Instance.ApplyColorTheme("Light");
+        ThemeService.Instance.ApplyCustomColors(new Dictionary<string, Color> { ["Primary"] = Colors.Green });
+
+        Assert.That(Resource<Color>("SystemAccentColor"), Is.EqualTo(Colors.Green));
+    }
+
+    [Test]
     public void ApplyAccent_OverridesPrimaryWithContrastForeground()
     {
         ThemeService.Instance.ApplyColorTheme("Light");

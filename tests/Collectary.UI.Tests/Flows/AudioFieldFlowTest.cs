@@ -90,7 +90,7 @@ public class AudioFieldFlowTest
         A.CallTo(() => recorder.StopAsync()).Returns(new RecordedAudio(new MemoryStream(clip), 2));
         byte[]? played = null;
         var player = A.Fake<IAudioPlayer>();
-        A.CallTo(() => player.PlayAsync(A<Stream>._)).Invokes((Stream s) =>
+        A.CallTo(() => player.PlayAsync(A<Stream>._, A<string?>._)).Invokes((Stream s, string? _) =>
         {
             using var buffer = new MemoryStream();
             s.CopyTo(buffer);

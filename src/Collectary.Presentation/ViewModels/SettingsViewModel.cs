@@ -11,6 +11,8 @@ namespace Collectary.Presentation.ViewModels;
 
 public record LanguageOption(string Code, string DisplayName);
 
+public record AudioDeviceOption(string? Id, string Name);
+
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly Action _navigateToSharedFields;
@@ -25,8 +27,43 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Action? _switchProfile;
     private bool _loadingSync;
     private bool _loadingAppearance;
+    private bool _loadingAudio;
 
     public bool IsWeb => OperatingSystem.IsBrowser();
+
+    public bool ShowAudioSettings { get; }
+
+    public IReadOnlyList<AudioDeviceOption> InputDevices { get; }
+
+    public IReadOnlyList<AudioDeviceOption> OutputDevices { get; }
+
+    [ObservableProperty]
+    public partial AudioDeviceOption? SelectedInputDevice { get; set; }
+
+    [ObservableProperty]
+    public partial AudioDeviceOption? SelectedOutputDevice { get; set; }
+
+    partial void OnSelectedInputDeviceChanged(AudioDeviceOption? value)
+    {
+        if (_loadingAudio || value is null) return;
+        AppPreferences.Update(p => p with { AudioInputDeviceId = value.Id });
+    }
+
+    partial void OnSelectedOutputDeviceChanged(AudioDeviceOption? value)
+    {
+        if (_loadingAudio || value is null) return;
+        AppPreferences.Update(p => p with { AudioOutputDeviceId = value.Id });
+    }
+
+    private IReadOnlyList<AudioDeviceOption> DeviceOptions(IEnumerable<AudioDeviceOption>? devices)
+    {
+        var options = new List<AudioDeviceOption>
+        {
+            new(null, LocalizationService.Instance["Audio_SystemDefault"]),
+        };
+        if (devices is not null) options.AddRange(devices);
+        return options;
+    }
 
     [RelayCommand]
     private void SwitchProfile() => _switchProfile?.Invoke();
@@ -436,7 +473,9 @@ public partial class SettingsViewModel : ViewModelBase
         Func<string?>? detectInstalledCloudFolder = null,
         Func<Task<bool>>? exportBackup = null,
         Func<Task<BackupImportResult?>>? importBackup = null,
-        Action? switchProfile = null)
+        Action? switchProfile = null,
+        IAudioRecorder? audioRecorder = null,
+        IAudioPlayer? audioPlayer = null)
     {
         _navigateToSharedFields = navigateToSharedFields;
         _pickFolder = pickFolder;
@@ -453,7 +492,15 @@ public partial class SettingsViewModel : ViewModelBase
 
         _loadingSync = true;
         _loadingAppearance = true;
+        _loadingAudio = true;
         var prefs = AppPreferences.Load();
+
+        ShowAudioSettings = audioRecorder is not null || audioPlayer is not null;
+        InputDevices = DeviceOptions(audioRecorder?.GetInputDevices().Select(d => new AudioDeviceOption(d.Id, d.Name)));
+        OutputDevices = DeviceOptions(audioPlayer?.GetOutputDevices().Select(d => new AudioDeviceOption(d.Id, d.Name)));
+        SelectedInputDevice = InputDevices.FirstOrDefault(o => o.Id == prefs.AudioInputDeviceId) ?? InputDevices[0];
+        SelectedOutputDevice = OutputDevices.FirstOrDefault(o => o.Id == prefs.AudioOutputDeviceId) ?? OutputDevices[0];
+
         SyncProvider = prefs.SyncProvider;
         SyncLocation = prefs.SyncLocation;
         AutoSyncEnabled = prefs.AutoSyncEnabled;
@@ -473,6 +520,7 @@ public partial class SettingsViewModel : ViewModelBase
         UpdateSlotVisibility();
         _loadingSync = false;
         _loadingAppearance = false;
+        _loadingAudio = false;
     }
 
     private static Color CurrentThemePrimary()

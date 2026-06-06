@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
-             xmlns:ports="using:Collectary.Core.Ports"
              xmlns:loc="using:Collectary.Presentation.Localization"
              x:Class="Collectary.UI.Views.AudioFieldEditorView"
              x:DataType="vm:AudioFieldEditorViewModel">
@@ -13,25 +12,41 @@
         <StackPanel Spacing="6" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" Spacing="6"
                         IsVisible="{Binding AudioAvailable}">
-                <ComboBox ItemsSource="{Binding Microphones}"
-                          SelectedItem="{Binding SelectedMicrophone}"
-                          MinWidth="180"
-                          IsEnabled="{Binding !IsRecording}"
-                          VerticalAlignment="Center">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="ports:AudioInputDevice">
-                            <TextBlock Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
                 <Button Command="{Binding ToggleRecordCommand}"
-                        Content="{Binding RecordButtonLabel}"/>
+                        ToolTip.Tip="{Binding RecordTooltip}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding RecordButtonIcon}"
+                                   Classes="icon"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding RecordButtonLabel}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <Button Command="{Binding TogglePlaybackCommand}"
-                        Content="{Binding PlayButtonLabel}"
-                        IsEnabled="{Binding HasAudio}"/>
+                        IsEnabled="{Binding HasAudio}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding PlayButtonIcon}"
+                                   Classes="icon"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding PlayButtonLabel}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <TextBlock Text="{Binding DurationSeconds, StringFormat={}{0}s}"
                            VerticalAlignment="Center"
                            IsVisible="{Binding HasAudio, FallbackValue=False}"/>
+                <Button Command="{Binding OpenSettingsCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="6,2"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="{Binding [Settings], Source={x:Static loc:LocalizationService.Instance}}">
+                    <Path Data="{StaticResource SettingsGlyphGeometry}"
+                          Fill="{DynamicResource TextSecondaryBrush}"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                </Button>
             </StackPanel>
             <TextBlock Text="{Binding [Audio_Unavailable], Source={x:Static loc:LocalizationService.Instance}}"
                        TextWrapping="Wrap"

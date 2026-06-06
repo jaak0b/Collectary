@@ -27,7 +27,7 @@ public sealed class NAudioRecorder : IAudioRecorder
 
         _waveIn = new WaveInEvent
         {
-            DeviceNumber = int.TryParse(deviceId, out var index) ? index : 0,
+            DeviceNumber = int.TryParse(deviceId, out var index) ? index : -1,
             WaveFormat = _format,
         };
         _waveIn.DataAvailable += OnDataAvailable;
