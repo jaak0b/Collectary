@@ -10,20 +10,20 @@ public partial class DateFieldEditorViewModel : FieldEditorViewModelBase
     private readonly DateFieldValue _fieldValue;
 
     [ObservableProperty]
-    public partial DateTimeOffset? Date { get; set; }
+    public partial DateTime? Date { get; set; }
 
     public DateFieldEditorViewModel(DateFieldDefinition definition, DateFieldValue value)
     {
         _definition = definition;
         _fieldValue = value;
-        Date = value.Value.HasValue ? new DateTimeOffset(value.Value.Value, TimeSpan.Zero) : null;
+        Date = value.Value;
     }
 
     public override FieldDefinition Definition => _definition;
 
     public override FieldValue GetCurrentValue()
     {
-        _fieldValue.Value = Date?.UtcDateTime;
+        _fieldValue.Value = Date.HasValue ? DateTime.SpecifyKind(Date.Value, DateTimeKind.Utc) : null;
         return _fieldValue;
     }
 }

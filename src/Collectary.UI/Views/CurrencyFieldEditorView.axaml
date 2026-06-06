@@ -18,6 +18,7 @@
                            Maximum="999999999"
                            FormatString="0.00"
                            Increment="0.01"
+                           ShowButtonSpinner="False"
                            MinWidth="140"
                            HorizontalAlignment="Left"/>
         </StackPanel>

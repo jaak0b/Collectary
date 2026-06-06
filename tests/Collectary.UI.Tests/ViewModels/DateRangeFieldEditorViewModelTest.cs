@@ -7,12 +7,12 @@ namespace Collectary.UI.Tests.ViewModels;
 public class DateRangeFieldEditorViewModelTest
 {
     [Test]
-    public void LoadsBothEndsAsOffsets()
+    public void LoadsBothEnds()
     {
         var sut = new DateRangeFieldEditorViewModel(new DateRangeFieldDefinition(),
             new DateRangeFieldValue { From = new DateTime(2019, 1, 1), To = new DateTime(2019, 12, 31) });
-        Assert.That(sut.From!.Value.UtcDateTime, Is.EqualTo(new DateTime(2019, 1, 1)));
-        Assert.That(sut.To!.Value.UtcDateTime, Is.EqualTo(new DateTime(2019, 12, 31)));
+        Assert.That(sut.From, Is.EqualTo(new DateTime(2019, 1, 1)));
+        Assert.That(sut.To, Is.EqualTo(new DateTime(2019, 12, 31)));
     }
 
     [Test]
@@ -28,12 +28,14 @@ public class DateRangeFieldEditorViewModelTest
     {
         var sut = new DateRangeFieldEditorViewModel(new DateRangeFieldDefinition(), new DateRangeFieldValue())
         {
-            From = new DateTimeOffset(2018, 5, 1, 0, 0, 0, TimeSpan.Zero),
-            To = new DateTimeOffset(2020, 6, 30, 0, 0, 0, TimeSpan.Zero)
+            From = new DateTime(2018, 5, 1),
+            To = new DateTime(2020, 6, 30)
         };
 
         var v = (DateRangeFieldValue)sut.GetCurrentValue();
         Assert.That(v.From, Is.EqualTo(new DateTime(2018, 5, 1)));
+        Assert.That(v.From!.Value.Kind, Is.EqualTo(DateTimeKind.Utc));
         Assert.That(v.To, Is.EqualTo(new DateTime(2020, 6, 30)));
+        Assert.That(v.To!.Value.Kind, Is.EqualTo(DateTimeKind.Utc));
     }
 }

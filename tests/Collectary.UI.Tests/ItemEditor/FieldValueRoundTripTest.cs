@@ -91,7 +91,7 @@ public class FieldValueRoundTripTest : FlowTestBase
     [Test]
     public async Task DateField_Value_RoundTrips()
     {
-        var expected = new DateTimeOffset(2024, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var expected = new DateTime(2024, 6, 1);
         var def = new DateFieldDefinition { Label = "Published" };
         var reloaded = await RoundTrip<DateFieldEditorViewModel>(def, e => e.Date = expected);
         Assert.That(reloaded.Date, Is.EqualTo(expected));
@@ -271,8 +271,8 @@ public class FieldValueRoundTripTest : FlowTestBase
     [Test]
     public async Task DateRangeField_Value_RoundTrips()
     {
-        var from = new DateTimeOffset(2018, 5, 1, 0, 0, 0, TimeSpan.Zero);
-        var to = new DateTimeOffset(2020, 6, 30, 0, 0, 0, TimeSpan.Zero);
+        var from = new DateTime(2018, 5, 1);
+        var to = new DateTime(2020, 6, 30);
         var def = new DateRangeFieldDefinition { Label = "Period" };
         var reloaded = await RoundTrip<DateRangeFieldEditorViewModel>(def, e =>
         {

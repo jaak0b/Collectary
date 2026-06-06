@@ -10,28 +10,28 @@ public partial class DateRangeFieldEditorViewModel : FieldEditorViewModelBase
     private readonly DateRangeFieldValue _value;
 
     [ObservableProperty]
-    public partial DateTimeOffset? From { get; set; }
+    public partial DateTime? From { get; set; }
 
     [ObservableProperty]
-    public partial DateTimeOffset? To { get; set; }
+    public partial DateTime? To { get; set; }
 
     public DateRangeFieldEditorViewModel(DateRangeFieldDefinition definition, DateRangeFieldValue value)
     {
         _definition = definition;
         _value = value;
-        From = ToOffset(value.From);
-        To = ToOffset(value.To);
+        From = value.From;
+        To = value.To;
     }
-
-    private static DateTimeOffset? ToOffset(DateTime? d) =>
-        d.HasValue ? new DateTimeOffset(d.Value, TimeSpan.Zero) : null;
 
     public override FieldDefinition Definition => _definition;
 
     public override FieldValue GetCurrentValue()
     {
-        _value.From = From?.UtcDateTime;
-        _value.To = To?.UtcDateTime;
+        _value.From = AsUtc(From);
+        _value.To = AsUtc(To);
         return _value;
     }
+
+    private DateTime? AsUtc(DateTime? d) =>
+        d.HasValue ? DateTime.SpecifyKind(d.Value, DateTimeKind.Utc) : null;
 }

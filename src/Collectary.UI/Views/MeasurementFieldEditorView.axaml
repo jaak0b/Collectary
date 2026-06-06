@@ -13,6 +13,7 @@
                                         Minimum="0"
                                         Maximum="9999999"
                                         Increment="0.1"
+                                        ShowButtonSpinner="False"
                                         MinWidth="120"/>
             <ComboBox ItemsSource="{Binding Units}"
                       SelectedItem="{Binding SelectedUnit}"

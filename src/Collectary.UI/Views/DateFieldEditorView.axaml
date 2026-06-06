@@ -8,8 +8,9 @@
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <DatePicker SelectedDate="{Binding Date}"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"/>
+        <CalendarDatePicker SelectedDate="{Binding Date, Mode=TwoWay}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            MinWidth="160"/>
     </controls:FieldEditorScaffold>
 </UserControl>
