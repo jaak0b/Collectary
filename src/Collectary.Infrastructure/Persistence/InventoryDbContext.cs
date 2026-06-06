@@ -12,7 +12,7 @@ public class InventoryDbContext : DbContext
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
     public DbSet<FieldValue> FieldValues => Set<FieldValue>();
     public DbSet<ListEntry> ListEntries => Set<ListEntry>();
-    public DbSet<SystemField> SystemFields => Set<SystemField>();
+    public DbSet<SharedField> SharedFields => Set<SharedField>();
     public DbSet<FieldGroup> FieldGroups => Set<FieldGroup>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserCredentialRecord> UserCredentials => Set<UserCredentialRecord>();
@@ -22,7 +22,7 @@ public class InventoryDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        ConfigureSystemFields(modelBuilder);
+        ConfigureSharedFields(modelBuilder);
         ConfigurePresets(modelBuilder);
         ConfigureItems(modelBuilder);
         ConfigureListEntries(modelBuilder);
@@ -80,37 +80,37 @@ public class InventoryDbContext : DbContext
         }
     }
 
-    private static void ConfigureSystemFields(ModelBuilder modelBuilder)
+    private static void ConfigureSharedFields(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SystemField>(e =>
+        modelBuilder.Entity<SharedField>(e =>
         {
-            e.ToTable("SystemFields");
+            e.ToTable("SharedFields");
             e.HasKey(sf => sf.Id);
             e.HasQueryFilter(sf => !sf.IsDeleted);
             e.HasOne(sf => sf.Definition)
              .WithOne()
-             .HasForeignKey<FieldDefinition>(f => f.SystemFieldId)
+             .HasForeignKey<FieldDefinition>(f => f.SharedFieldId)
              .OnDelete(DeleteBehavior.Cascade)
              .IsRequired(false);
         });
 
-        modelBuilder.Entity<PresetSystemField>(e =>
+        modelBuilder.Entity<PresetSharedField>(e =>
         {
-            e.ToTable("PresetSystemFields");
-            e.HasKey(r => new { r.PresetId, r.SystemFieldId });
-            e.HasOne(r => r.SystemField)
+            e.ToTable("PresetSharedFields");
+            e.HasKey(r => new { r.PresetId, r.SharedFieldId });
+            e.HasOne(r => r.SharedField)
              .WithMany()
-             .HasForeignKey(r => r.SystemFieldId)
+             .HasForeignKey(r => r.SharedFieldId)
              .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ListSystemField>(e =>
+        modelBuilder.Entity<ListSharedField>(e =>
         {
-            e.ToTable("ListSystemFields");
-            e.HasKey(r => new { r.ListFieldDefinitionId, r.SystemFieldId });
-            e.HasOne(r => r.SystemField)
+            e.ToTable("ListSharedFields");
+            e.HasKey(r => new { r.ListFieldDefinitionId, r.SharedFieldId });
+            e.HasOne(r => r.SharedField)
              .WithMany()
-             .HasForeignKey(r => r.SystemFieldId)
+             .HasForeignKey(r => r.SharedFieldId)
              .OnDelete(DeleteBehavior.Cascade);
         });
     }
@@ -127,7 +127,7 @@ public class InventoryDbContext : DbContext
              .HasForeignKey(f => f.PresetId)
              .OnDelete(DeleteBehavior.Cascade)
              .IsRequired(false);
-            e.HasMany(p => p.SystemFieldRefs)
+            e.HasMany(p => p.SharedFieldRefs)
              .WithOne()
              .HasForeignKey(r => r.PresetId)
              .OnDelete(DeleteBehavior.Cascade);
@@ -190,7 +190,7 @@ public class InventoryDbContext : DbContext
              .HasForeignKey(f => f.ParentListFieldDefinitionId)
              .OnDelete(DeleteBehavior.Cascade)
              .IsRequired(false);
-            e.HasMany(d => d.SystemFieldRefs)
+            e.HasMany(d => d.SharedFieldRefs)
              .WithOne()
              .HasForeignKey(r => r.ListFieldDefinitionId)
              .OnDelete(DeleteBehavior.Cascade);

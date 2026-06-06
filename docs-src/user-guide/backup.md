@@ -8,7 +8,7 @@ is for: it packs your *entire* collection into one portable file and reads it ba
 
 A backup is a single `.collectary` file (a zip archive under the hood) that bundles **everything**:
 
-- every collection, item and system field, and
+- every collection, item and shared field, and
 - every attached **image** *and* **document** — gallery photos, manuals, certificates, audio notes,
   the lot.
 

@@ -19,7 +19,7 @@ public partial class HomeViewModel : ViewModelBase
     public Action<Core.Domain.Preset>? OnEditPreset { get; set; }
     public Func<Core.Domain.Preset, Task>? OnDeletePreset { get; set; }
     public Action<Core.Domain.Preset>? OnSharePreset { get; set; }
-    public Action? OnNavigateToSystemFields { get; set; }
+    public Action? OnNavigateToSharedFields { get; set; }
 
     public ObservableCollection<PresetRowViewModel> Rows { get; } = new();
 
@@ -90,5 +90,5 @@ public partial class HomeViewModel : ViewModelBase
     private void CreateFromTemplate() => OnCreateFromTemplate?.Invoke();
 
     [RelayCommand]
-    private void NavigateToSystemFields() => OnNavigateToSystemFields?.Invoke();
+    private void NavigateToSharedFields() => OnNavigateToSharedFields?.Invoke();
 }

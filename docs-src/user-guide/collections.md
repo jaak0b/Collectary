@@ -68,10 +68,10 @@ The collection editor also controls how the item editor is laid out:
 
 ### Reusing fields across collections
 
-The **System Field Library** holds field definitions you want to reuse across multiple
+The **Shared Field Library** holds field definitions you want to reuse across multiple
 collections, so you define a field once and drop it into any collection. Its **Add field** menu
 offers exactly the same full range of field types as a collection's own field editor — anything you
-can add to a collection, you can also define as a reusable system field.
+can add to a collection, you can also define as a reusable shared field.
 
 ## Managing collections
 

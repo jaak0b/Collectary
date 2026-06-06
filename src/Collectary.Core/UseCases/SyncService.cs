@@ -7,7 +7,7 @@ public class SyncService : ISyncService
 {
     public const string PresetKind = "presets";
     public const string ItemKind = "items";
-    public const string SystemFieldKind = "systemfields";
+    public const string SharedFieldKind = "sharedfields";
     public const string ImageKind = "images";
 
     private readonly ISyncBackend _backend;
@@ -32,11 +32,11 @@ public class SyncService : ISyncService
 
         var conflicts = new List<SyncConflict>();
 
-        var systemFields = await ReconcileAsync(
-            SystemFieldKind, SyncEntityKind.SystemField,
-            await _store.GetAllSystemFieldsAsync(),
+        var sharedFields = await ReconcileAsync(
+            SharedFieldKind, SyncEntityKind.SharedField,
+            await _store.GetAllSharedFieldsAsync(),
             sf => sf.Name,
-            sf => _store.ApplySystemFieldAsync(sf),
+            sf => _store.ApplySharedFieldAsync(sf),
             conflicts);
 
         var presets = await ReconcileAsync(
@@ -64,8 +64,8 @@ public class SyncService : ISyncService
         }
 
         return new SyncResult(
-            systemFields.pushed + presets.pushed + items.pushed,
-            systemFields.pulled + presets.pulled + items.pulled,
+            sharedFields.pushed + presets.pushed + items.pushed,
+            sharedFields.pulled + presets.pulled + items.pulled,
             conflicts);
     }
 
@@ -90,7 +90,7 @@ public class SyncService : ISyncService
                 await _store.ApplyItemAsync(Pull<Item>(content));
                 break;
             default:
-                await _store.ApplySystemFieldAsync(Pull<SystemField>(content));
+                await _store.ApplySharedFieldAsync(Pull<SharedField>(content));
                 break;
         }
     }
@@ -187,7 +187,7 @@ public class SyncService : ISyncService
     {
         SyncEntityKind.Preset => PresetKind,
         SyncEntityKind.Item => ItemKind,
-        SyncEntityKind.SystemField => SystemFieldKind,
+        SyncEntityKind.SharedField => SharedFieldKind,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind"),
     };
 

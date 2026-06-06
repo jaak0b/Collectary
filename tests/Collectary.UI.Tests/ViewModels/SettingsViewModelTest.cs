@@ -234,12 +234,12 @@ public class SettingsViewModelTest
     }
 
     [Test]
-    public void NavigateToSystemFields_InvokesCallback()
+    public void NavigateToSharedFields_InvokesCallback()
     {
         var called = false;
         var sut = new SettingsViewModel(() => called = true);
 
-        sut.NavigateToSystemFieldsCommand.Execute(null);
+        sut.NavigateToSharedFieldsCommand.Execute(null);
 
         Assert.That(called, Is.True);
     }

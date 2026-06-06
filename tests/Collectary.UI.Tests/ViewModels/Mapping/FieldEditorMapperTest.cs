@@ -111,10 +111,10 @@ public class FieldEditorMapperTest
     }
 
     [Test]
-    public void ToDefinition_SystemField_ReturnsDefinitionUnchanged()
+    public void ToDefinition_SharedField_ReturnsDefinitionUnchanged()
     {
         var def = new TextFieldDefinition { Label = "System" };
-        var row = new FieldDefinitionRowViewModel(def, isSystemField: true) { Label = "changed" };
+        var row = new FieldDefinitionRowViewModel(def, isSharedField: true) { Label = "changed" };
 
         var result = _mapper.ToDefinition(row);
 

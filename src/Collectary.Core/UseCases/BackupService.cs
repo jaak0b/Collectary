@@ -13,7 +13,7 @@ public class BackupService : IBackupService
     private const string ManifestContent = "{\"formatVersion\":1}";
     private const string PresetDir = "presets/";
     private const string ItemDir = "items/";
-    private const string SystemFieldDir = "systemfields/";
+    private const string SharedFieldDir = "sharedfields/";
     private const string BlobDir = "blobs/";
 
     private readonly ISyncStore _store;
@@ -33,8 +33,8 @@ public class BackupService : IBackupService
 
         await WriteEntryAsync(archive, ManifestEntry, ManifestContent);
 
-        foreach (var field in await _store.GetAllSystemFieldsAsync())
-            await WriteEntryAsync(archive, SystemFieldDir + EntryName(field.Id), _serializer.Serialize(field));
+        foreach (var field in await _store.GetAllSharedFieldsAsync())
+            await WriteEntryAsync(archive, SharedFieldDir + EntryName(field.Id), _serializer.Serialize(field));
         foreach (var preset in await _store.GetAllPresetsAsync())
             await WriteEntryAsync(archive, PresetDir + EntryName(preset.Id), _serializer.Serialize(preset));
         foreach (var item in await _store.GetAllItemsAsync())
@@ -52,8 +52,8 @@ public class BackupService : IBackupService
         var conflicts = new List<SyncConflict>();
 
         var applied = await MergeAsync(
-            archive, SystemFieldDir, SyncEntityKind.SystemField, await _store.GetAllSystemFieldsAsync(),
-            s => s.Name, s => _store.ApplySystemFieldAsync(s), conflicts);
+            archive, SharedFieldDir, SyncEntityKind.SharedField, await _store.GetAllSharedFieldsAsync(),
+            s => s.Name, s => _store.ApplySharedFieldAsync(s), conflicts);
         applied += await MergeAsync(
             archive, PresetDir, SyncEntityKind.Preset, await _store.GetAllPresetsAsync(),
             p => p.Name, p => _store.ApplyPresetAsync(p), conflicts);

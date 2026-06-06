@@ -118,7 +118,7 @@ public class PresetUseCaseTest
         {
             Name = "Test",
             Fields = [fieldA, fieldB, displayName],
-            SystemFieldRefs = []
+            SharedFieldRefs = []
         };
         A.CallTo(() => _presets.GetByIdAsync(presetId)).Returns(preset);
 
@@ -152,14 +152,14 @@ public class PresetUseCaseTest
         {
             Name = "Parent",
             Fields = [parentDisplayName, parentField],
-            SystemFieldRefs = []
+            SharedFieldRefs = []
         };
         var childPreset = new Preset
         {
             Name = "Child",
             ParentPresetId = parentId,
             Fields = [childField],
-            SystemFieldRefs = []
+            SharedFieldRefs = []
         };
 
         A.CallTo(() => _presets.GetByIdAsync(childId)).Returns(childPreset);
@@ -199,17 +199,17 @@ public class PresetUseCaseTest
     }
 
     [Test]
-    public async Task GetEffectiveFieldsAsync_MapsSystemFieldGroupIdFromReference()
+    public async Task GetEffectiveFieldsAsync_MapsSharedFieldGroupIdFromReference()
     {
         var presetId = Guid.NewGuid();
         var group = new FieldGroup { Name = "G", DisplayOrder = 0 };
         var def = new TextFieldDefinition { Label = "Sys" };
-        var systemField = new SystemField { Name = "Sys", Definition = def };
+        var sharedField = new SharedField { Name = "Sys", Definition = def };
         var preset = new Preset
         {
             Name = "P",
             Groups = [group],
-            SystemFieldRefs = [new PresetSystemField { SystemFieldId = systemField.Id, GroupId = group.Id, SystemField = systemField }]
+            SharedFieldRefs = [new PresetSharedField { SharedFieldId = sharedField.Id, GroupId = group.Id, SharedField = sharedField }]
         };
         A.CallTo(() => _presets.GetByIdAsync(presetId)).Returns(preset);
 

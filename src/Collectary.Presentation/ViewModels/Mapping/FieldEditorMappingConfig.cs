@@ -9,7 +9,7 @@ public class FieldEditorMappingConfig
     {
         var orchestrationManaged = new HashSet<string>
         {
-            "PresetId", "ParentListFieldDefinitionId", "SystemFieldId", "GroupId",
+            "PresetId", "ParentListFieldDefinitionId", "SharedFieldId", "GroupId",
             "MaxLength", "Min", "Max", "DecimalPlaces"
         };
 

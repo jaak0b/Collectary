@@ -4,7 +4,7 @@ public enum SyncEntityKind
 {
     Preset,
     Item,
-    SystemField,
+    SharedField,
 }
 
 public record SyncConflict(

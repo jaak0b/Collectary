@@ -7,25 +7,25 @@ using Collectary.Core.UseCases;
 namespace Collectary.Core.Tests.UseCases;
 
 [TestFixture]
-public class SystemFieldUseCaseTest
+public class SharedFieldUseCaseTest
 {
-    private ISystemFieldRepository _repo = null!;
-    private SystemFieldUseCase _sut = null!;
+    private ISharedFieldRepository _repo = null!;
+    private SharedFieldUseCase _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _repo = A.Fake<ISystemFieldRepository>();
-        _sut = new SystemFieldUseCase(_repo);
+        _repo = A.Fake<ISharedFieldRepository>();
+        _sut = new SharedFieldUseCase(_repo);
     }
 
-    private static SystemField MakeField() =>
+    private static SharedField MakeField() =>
         new() { Definition = new TextFieldDefinition { Label = "Test" } };
 
     [Test]
     public async Task GetAllAsync_ReturnsRepositoryResult()
     {
-        var fields = new List<SystemField> { MakeField(), MakeField() };
+        var fields = new List<SharedField> { MakeField(), MakeField() };
         A.CallTo(() => _repo.GetAllAsync()).Returns(fields);
 
         var result = await _sut.GetAllAsync();

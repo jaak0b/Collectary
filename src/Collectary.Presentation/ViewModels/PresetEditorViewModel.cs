@@ -6,14 +6,14 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.Presentation.ViewModels;
 
 public partial class PresetEditorViewModel : FieldListEditorViewModel
 {
     private readonly IPresetUseCase _presetUseCase;
-    private readonly ISystemFieldUseCase _systemFieldUseCase;
+    private readonly ISharedFieldUseCase _sharedFieldUseCase;
     private readonly IDialogService _dialogService;
     private readonly Mapping.IFieldEditorMapper _mapper;
     private readonly Preset? _existing;
@@ -58,7 +58,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
     private readonly ObservableCollection<IEditorNode> _rootRows = new();
 
-    public ObservableCollection<SystemFieldRowViewModel> AvailableSystemFields { get; } = new();
+    public ObservableCollection<SharedFieldRowViewModel> AvailableSharedFields { get; } = new();
 
     protected override int GetRootColumnCount() => ColumnCount;
 
@@ -70,7 +70,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
     public PresetEditorViewModel(
         IPresetUseCase presetUseCase,
-        ISystemFieldUseCase systemFieldUseCase,
+        ISharedFieldUseCase sharedFieldUseCase,
         IDialogService dialogService,
         Mapping.IFieldEditorMapper mapper,
         Action onSaved,
@@ -79,7 +79,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
         Preset? seed = null)
     {
         _presetUseCase = presetUseCase;
-        _systemFieldUseCase = systemFieldUseCase;
+        _sharedFieldUseCase = sharedFieldUseCase;
         _dialogService = dialogService;
         _mapper = mapper;
         _existing = existing;
@@ -99,9 +99,9 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
             foreach (var f in source.Fields.Where(f => f.ParentListFieldDefinitionId == null))
                 fieldRows.Add(new FieldDefinitionRowViewModel(f));
-            foreach (var r in source.SystemFieldRefs)
+            foreach (var r in source.SharedFieldRefs)
             {
-                var row = new FieldDefinitionRowViewModel(r.SystemField.Definition, isSystemField: true)
+                var row = new FieldDefinitionRowViewModel(r.SharedField.Definition, isSharedField: true)
                 {
                     AssignedGroupId = r.GroupId,
                     DisplayOrder = r.DisplayOrder
@@ -151,11 +151,11 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
         try
         {
-            var systemFields = await _systemFieldUseCase.GetAllAsync();
-            AvailableSystemFields.Clear();
-            foreach (var sf in systemFields)
-                AvailableSystemFields.Add(
-                    new SystemFieldRowViewModel(sf) { AddToCollectionCommand = AddSystemFieldCommand });
+            var sharedFields = await _sharedFieldUseCase.GetAllAsync();
+            AvailableSharedFields.Clear();
+            foreach (var sf in sharedFields)
+                AvailableSharedFields.Add(
+                    new SharedFieldRowViewModel(sf) { AddToCollectionCommand = AddSharedFieldCommand });
         }
         catch (Exception ex)
         {
@@ -165,12 +165,12 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     }
 
     [RelayCommand]
-    private void AddSystemField(SystemFieldRowViewModel sfRow)
+    private void AddSharedField(SharedFieldRowViewModel sfRow)
     {
         if (CurrentRows.OfType<FieldDefinitionRowViewModel>()
-            .Any(r => r.IsSystemField && r.SystemFieldOwnerId == sfRow.SystemField.Id))
+            .Any(r => r.IsSharedField && r.SharedFieldOwnerId == sfRow.SharedField.Id))
             return;
-        var row = new FieldDefinitionRowViewModel(sfRow.SystemField.Definition, isSystemField: true)
+        var row = new FieldDefinitionRowViewModel(sfRow.SharedField.Definition, isSharedField: true)
         {
             DisplayOrder = CurrentRows.Count
         };
@@ -194,7 +194,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
             .ToList();
 
         preset.Fields = flat.Fields
-            .Where(row => !row.IsSystemField)
+            .Where(row => !row.IsSharedField)
             .Select(row =>
             {
                 var def = _mapper.ToDefinition(row);
@@ -204,19 +204,19 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
             })
             .ToList();
 
-        preset.SystemFieldRefs = flat.Fields
-            .Where(row => row.IsSystemField && row.SystemFieldOwnerId.HasValue)
-            .Select(row => new PresetSystemField
+        preset.SharedFieldRefs = flat.Fields
+            .Where(row => row.IsSharedField && row.SharedFieldOwnerId.HasValue)
+            .Select(row => new PresetSharedField
             {
                 PresetId = preset.Id,
-                SystemFieldId = row.SystemFieldOwnerId!.Value,
+                SharedFieldId = row.SharedFieldOwnerId!.Value,
                 GroupId = row.AssignedGroupId,
                 DisplayOrder = row.DisplayOrder
             })
             .ToList();
 
         AppLogger.Log.Debug("Persisting preset {Name}: groups={Groups} fields={Fields} systemRefs={Refs}",
-            preset.Name, preset.Groups.Count, preset.Fields.Count, preset.SystemFieldRefs.Count);
+            preset.Name, preset.Groups.Count, preset.Fields.Count, preset.SharedFieldRefs.Count);
         foreach (var g in preset.Groups)
             AppLogger.Log.Debug("  group id={Id} name={Name} parent={Parent} mode={Mode}",
                 g.Id, g.Name, g.ParentGroupId, g.DisplayMode);

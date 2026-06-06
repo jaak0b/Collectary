@@ -15,7 +15,7 @@ in terms of Core **ports**, with concrete adapters in Infrastructure.
 
 ## What syncs
 
-Presets (collections), items, and system fields, plus the image **blobs** they reference.
+Presets (collections), items, and shared fields, plus the image **blobs** they reference.
 
 ## A sync run
 
@@ -30,7 +30,7 @@ Presets (collections), items, and system fields, plus the image **blobs** they r
 ## The file-system backend
 
 `FileSystemSyncBackend` stores each entity as a per-revision JSON file (e.g.
-`{id}.{revision}.json`) in kind-specific subdirectories (`presets/`, `items/`, `systemfields/`),
+`{id}.{revision}.json`) in kind-specific subdirectories (`presets/`, `items/`, `sharedfields/`),
 and images under an `images/` directory. The root directory is configurable via app preferences —
 point multiple devices at the same shared folder (a cloud-drive folder, network share, etc.).
 

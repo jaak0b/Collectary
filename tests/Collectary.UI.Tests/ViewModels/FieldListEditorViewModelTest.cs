@@ -4,23 +4,23 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.UI.Tests.ViewModels;
 
 [TestFixture]
 public class FieldListEditorViewModelTest
 {
-    private ISystemFieldUseCase _useCase = null!;
+    private ISharedFieldUseCase _useCase = null!;
     private IDialogService _dialogService = null!;
-    private SystemFieldLibraryViewModel _sut = null!;
+    private SharedFieldLibraryViewModel _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _useCase = A.Fake<ISystemFieldUseCase>();
+        _useCase = A.Fake<ISharedFieldUseCase>();
         _dialogService = A.Fake<IDialogService>();
-        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
+        _sut = new SharedFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
     }
 
     [Test]
@@ -33,7 +33,7 @@ public class FieldListEditorViewModelTest
     }
 
     [Test]
-    public void AddableFieldTypes_AreIdentical_AcrossPresetEditorAndSystemFieldLibrary()
+    public void AddableFieldTypes_AreIdentical_AcrossPresetEditorAndSharedFieldLibrary()
     {
         var presetEditor = new PresetEditorViewModel(
             A.Fake<IPresetUseCase>(), _useCase, _dialogService, new TestFieldEditorMapper().Create(),
@@ -444,7 +444,7 @@ public class FieldListEditorViewModelTest
 
         _sut.IsNarrow = true;
 
-        Assert.That(raised, Does.Contain(nameof(SystemFieldLibraryViewModel.IsMasterPanelVisible)));
+        Assert.That(raised, Does.Contain(nameof(SharedFieldLibraryViewModel.IsMasterPanelVisible)));
     }
 
     [Test]
@@ -458,6 +458,6 @@ public class FieldListEditorViewModelTest
 
         _sut.SelectedNode = _sut.CurrentRows[0];
 
-        Assert.That(raised, Does.Contain(nameof(SystemFieldLibraryViewModel.IsMasterPanelVisible)));
+        Assert.That(raised, Does.Contain(nameof(SharedFieldLibraryViewModel.IsMasterPanelVisible)));
     }
 }

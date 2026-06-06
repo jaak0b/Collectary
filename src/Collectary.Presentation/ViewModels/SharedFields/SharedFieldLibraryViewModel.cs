@@ -7,25 +7,25 @@ using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
 
-namespace Collectary.Presentation.ViewModels.SystemFields;
+namespace Collectary.Presentation.ViewModels.SharedFields;
 
-public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
+public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel
 {
-    private readonly ISystemFieldUseCase _useCase;
+    private readonly ISharedFieldUseCase _useCase;
     private readonly IDialogService _dialogService;
     private readonly Mapping.IFieldEditorMapper _mapper;
     private readonly Action _onDone;
 
     private readonly ObservableCollection<IEditorNode> _rootRows = new();
-    private readonly Dictionary<Guid, SystemField> _systemFieldsById = new();
+    private readonly Dictionary<Guid, SharedField> _sharedFieldsById = new();
 
-    public SystemFieldLibraryViewModel(ISystemFieldUseCase useCase, IDialogService dialogService, Mapping.IFieldEditorMapper mapper, Action onDone)
+    public SharedFieldLibraryViewModel(ISharedFieldUseCase useCase, IDialogService dialogService, Mapping.IFieldEditorMapper mapper, Action onDone)
     {
         _useCase = useCase;
         _dialogService = dialogService;
         _mapper = mapper;
         _onDone = onDone;
-        InitRoot(LocalizationService.Instance["SystemFields"], _rootRows, supportsGroups: false);
+        InitRoot(LocalizationService.Instance["SharedFields"], _rootRows, supportsGroups: false);
     }
 
     public async Task LoadAsync()
@@ -34,10 +34,10 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
         {
             var all = await _useCase.GetAllAsync();
             _rootRows.Clear();
-            _systemFieldsById.Clear();
+            _sharedFieldsById.Clear();
             foreach (var sf in all)
             {
-                _systemFieldsById[sf.Id] = sf;
+                _sharedFieldsById[sf.Id] = sf;
                 _rootRows.Add(new FieldDefinitionRowViewModel(sf.Definition));
             }
             RefreshCurrentLevel();
@@ -57,13 +57,13 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
             return;
         }
 
-        var systemField = new SystemField { Name = definition.Label, Definition = definition };
-        systemField.Definition.SystemFieldId = systemField.Id;
+        var sharedField = new SharedField { Name = definition.Label, Definition = definition };
+        sharedField.Definition.SharedFieldId = sharedField.Id;
         try
         {
-            await _useCase.CreateAsync(systemField);
-            _systemFieldsById[systemField.Id] = systemField;
-            var row = new FieldDefinitionRowViewModel(systemField.Definition) { DisplayOrder = CurrentRows.Count };
+            await _useCase.CreateAsync(sharedField);
+            _sharedFieldsById[sharedField.Id] = sharedField;
+            var row = new FieldDefinitionRowViewModel(sharedField.Definition) { DisplayOrder = CurrentRows.Count };
             CurrentRows.Add(row);
             SelectedNode = row;
         }
@@ -80,12 +80,12 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
         {
             foreach (var rootRow in _rootRows.OfType<FieldDefinitionRowViewModel>())
             {
-                if (rootRow.SystemFieldOwnerId is not { } sfId) continue;
-                if (!_systemFieldsById.TryGetValue(sfId, out var systemField)) continue;
+                if (rootRow.SharedFieldOwnerId is not { } sfId) continue;
+                if (!_sharedFieldsById.TryGetValue(sfId, out var sharedField)) continue;
                 var def = _mapper.ToDefinition(rootRow);
-                systemField.Name = def.Label;
-                systemField.Definition = def;
-                await _useCase.UpdateAsync(systemField);
+                sharedField.Name = def.Label;
+                sharedField.Definition = def;
+                await _useCase.UpdateAsync(sharedField);
             }
         }
         catch (Exception ex)
@@ -103,11 +103,11 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
             return;
         }
 
-        if (node is not FieldDefinitionRowViewModel row || row.SystemFieldOwnerId is not { } sfId) return;
+        if (node is not FieldDefinitionRowViewModel row || row.SharedFieldOwnerId is not { } sfId) return;
         try
         {
             await _useCase.DeleteAsync(sfId);
-            _systemFieldsById.Remove(sfId);
+            _sharedFieldsById.Remove(sfId);
             if (ReferenceEquals(SelectedNode, row)) SelectedNode = null;
             CurrentRows.Remove(row);
         }
@@ -127,7 +127,7 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
         {
             var orderedIds = CurrentRows
                 .OfType<FieldDefinitionRowViewModel>()
-                .Select(r => r.SystemFieldOwnerId)
+                .Select(r => r.SharedFieldOwnerId)
                 .Where(id => id.HasValue)
                 .Select(id => id!.Value)
                 .ToList();

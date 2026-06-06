@@ -6,7 +6,7 @@ using Collectary.Infrastructure.Persistence;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.ViewModels;
 using Collectary.Presentation.ViewModels.Mapping;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 using Microsoft.EntityFrameworkCore;
 
 namespace Collectary.UI.Tests.Infrastructure;
@@ -19,10 +19,10 @@ public abstract class FlowTestBase
 
     protected IPresetRepository PresetRepo { get; private set; } = null!;
     protected IItemRepository ItemRepo { get; private set; } = null!;
-    protected ISystemFieldRepository SystemFieldRepo { get; private set; } = null!;
+    protected ISharedFieldRepository SharedFieldRepo { get; private set; } = null!;
     protected IPresetUseCase PresetUseCase { get; private set; } = null!;
     protected IItemUseCase ItemUseCase { get; private set; } = null!;
-    protected ISystemFieldUseCase SystemFieldUseCase { get; private set; } = null!;
+    protected ISharedFieldUseCase SharedFieldUseCase { get; private set; } = null!;
     protected IFieldEditorMapper Mapper { get; private set; } = null!;
     protected TestFieldEditorRegistry EditorRegistry { get; private set; } = null!;
     protected IListCellBuilder CellBuilder { get; private set; } = null!;
@@ -41,7 +41,7 @@ public abstract class FlowTestBase
         var merger = new FieldDefinitionMerger();
         PresetRepo = new PresetRepository(CreateDb, merger);
         ItemRepo = new ItemRepository(CreateDb);
-        SystemFieldRepo = new SystemFieldRepository(CreateDb, merger);
+        SharedFieldRepo = new SharedFieldRepository(CreateDb, merger);
 
         var auth = A.Fake<ICollectionAuthorization>();
         A.CallTo(() => auth.CanWriteAsync(A<Guid>._)).Returns(true);
@@ -49,7 +49,7 @@ public abstract class FlowTestBase
         A.CallTo(() => auth.IsOwnerAsync(A<Guid>._)).Returns(true);
         PresetUseCase = new PresetUseCase(PresetRepo, ItemRepo, auth);
         ItemUseCase = new ItemUseCase(ItemRepo, PresetUseCase, auth);
-        SystemFieldUseCase = new SystemFieldUseCase(SystemFieldRepo);
+        SharedFieldUseCase = new SharedFieldUseCase(SharedFieldRepo);
 
         Mapper = new TestFieldEditorMapper().Create();
         EditorRegistry = new TestFieldEditorRegistry();
@@ -71,7 +71,7 @@ public abstract class FlowTestBase
         A.CallTo(() => CellBuilder.HasListCellViewModel(A<Type>._)).Returns(true);
         return new PresetEditorViewModel(
             PresetUseCase,
-            SystemFieldUseCase,
+            SharedFieldUseCase,
             A.Fake<Collectary.Presentation.Services.IDialogService>(),
             Mapper,
             onSaved: onSaved ?? (() => { }),
@@ -124,11 +124,11 @@ public abstract class FlowTestBase
             vm.DisplayName = name;
     }
 
-    protected static SystemFieldRowViewModel MakeSystemFieldRow(string label)
+    protected static SharedFieldRowViewModel MakeSharedFieldRow(string label)
     {
         var def = new Collectary.Core.Domain.Fields.TextFieldDefinition { Label = label };
-        var sf = new SystemField { Name = label, Definition = def };
-        def.SystemFieldId = sf.Id;
-        return new SystemFieldRowViewModel(sf);
+        var sf = new SharedField { Name = label, Definition = def };
+        def.SharedFieldId = sf.Id;
+        return new SharedFieldRowViewModel(sf);
     }
 }

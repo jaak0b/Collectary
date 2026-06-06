@@ -1,5 +1,5 @@
 using Collectary.Presentation.ViewModels;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.UI.Tests;
 
@@ -46,9 +46,9 @@ public class ViewLocatorTest
     [Test]
     public void SubNamespacedViewModel_MapsToViewInMatchingSubNamespace()
     {
-        var name = MapToViewTypeName(typeof(SystemFieldLibraryViewModel));
+        var name = MapToViewTypeName(typeof(SharedFieldLibraryViewModel));
 
-        Assert.That(name, Is.EqualTo("Collectary.UI.Views.SystemFields.SystemFieldLibraryView"));
+        Assert.That(name, Is.EqualTo("Collectary.UI.Views.SharedFields.SharedFieldLibraryView"));
         Assert.That(_uiAssembly.GetType(name), Is.Not.Null,
             "A ViewModel in a sub-namespace must map to its View in the matching UI sub-namespace");
     }

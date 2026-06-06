@@ -13,7 +13,7 @@ using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.Presentation.ViewModels;
 
@@ -22,7 +22,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly ILifetimeScope _scope;
     private readonly IPresetUseCase _presetUseCase;
     private readonly IItemUseCase _itemUseCase;
-    private readonly ISystemFieldUseCase _systemFieldUseCase;
+    private readonly ISharedFieldUseCase _sharedFieldUseCase;
     private readonly IListCellBuilder _listCellBuilder;
     private readonly IFieldEditorRegistry _editorRegistry;
     private readonly IImageStore _imageStore;
@@ -83,7 +83,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private void NavigateToSettings()
     {
         var vm = new SettingsViewModel(
-            navigateToSystemFields: NavigateToSystemFieldLibrary,
+            navigateToSharedFields: NavigateToSharedFieldLibrary,
             pickFolder: PickSyncFolderAsync,
             onSyncChanged: OnSyncSettingsChanged,
             connectCloud: ConnectCloudAsync,
@@ -267,12 +267,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         (node.Content as FieldListEditorViewModel)?.ResetToRoot();
     }
 
-    public MainWindowViewModel(ILifetimeScope scope, IPresetUseCase presetUseCase, IItemUseCase itemUseCase, ISystemFieldUseCase systemFieldUseCase, IListCellBuilder listCellBuilder, IFieldEditorRegistry editorRegistry, IImageStore imageStore, IDialogService dialogService, ISyncScheduler syncScheduler)
+    public MainWindowViewModel(ILifetimeScope scope, IPresetUseCase presetUseCase, IItemUseCase itemUseCase, ISharedFieldUseCase sharedFieldUseCase, IListCellBuilder listCellBuilder, IFieldEditorRegistry editorRegistry, IImageStore imageStore, IDialogService dialogService, ISyncScheduler syncScheduler)
     {
         _scope = scope;
         _presetUseCase = presetUseCase;
         _itemUseCase = itemUseCase;
-        _systemFieldUseCase = systemFieldUseCase;
+        _sharedFieldUseCase = sharedFieldUseCase;
         _listCellBuilder = listCellBuilder;
         _editorRegistry = editorRegistry;
         _imageStore = imageStore;
@@ -352,7 +352,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         home.OnCreatePreset = () => NavigateToPresetEditor(null);
         home.OnCreateFromTemplate = NavigateToTemplatePicker;
         home.OnEditPreset = preset => NavigateToPresetEditor(preset);
-        home.OnNavigateToSystemFields = NavigateToSystemFieldLibrary;
+        home.OnNavigateToSharedFields = NavigateToSharedFieldLibrary;
         home.OnSharePreset = SharePreset;
         home.OnDeletePreset = async (preset) =>
         {
@@ -464,12 +464,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         AppLogger.Log.Debug("Navigate: PresetEditor existing={Id} seed={Seed}", existing?.Id, seed?.Name);
         var presetUseCase = _scope.Resolve<IPresetUseCase>();
-        var systemFieldUseCase = _scope.Resolve<ISystemFieldUseCase>();
+        var sharedFieldUseCase = _scope.Resolve<ISharedFieldUseCase>();
         var fieldEditorMapper = _scope.Resolve<Mapping.IFieldEditorMapper>();
 
         var vm = new PresetEditorViewModel(
             presetUseCase,
-            systemFieldUseCase,
+            sharedFieldUseCase,
             _dialogService,
             fieldEditorMapper,
             onSaved: () => { _ = NavigateToHomeAsync(); },
@@ -497,16 +497,16 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     }
 
     [RelayCommand]
-    private void NavigateToSystemFieldLibrary()
+    private void NavigateToSharedFieldLibrary()
     {
-        AppLogger.Log.Debug("Navigate: SystemFieldLibrary");
-        var systemFieldUseCase = _scope.Resolve<ISystemFieldUseCase>();
-        var vm = new SystemFieldLibraryViewModel(
-            systemFieldUseCase,
+        AppLogger.Log.Debug("Navigate: SharedFieldLibrary");
+        var sharedFieldUseCase = _scope.Resolve<ISharedFieldUseCase>();
+        var vm = new SharedFieldLibraryViewModel(
+            sharedFieldUseCase,
             _dialogService,
             _scope.Resolve<Mapping.IFieldEditorMapper>(),
             onDone: () => { _ = NavigateToHomeAsync(); });
-        ResetBreadcrumb(LocalizationService.Instance["SystemFields"], vm);
+        ResetBreadcrumb(LocalizationService.Instance["SharedFields"], vm);
         _ = vm.LoadAsync();
         CloseSidebarIfNarrow();
     }

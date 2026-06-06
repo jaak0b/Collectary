@@ -53,7 +53,7 @@ public class FieldTypeCatalogTest
     }
 
     [Test]
-    public void Entries_IncludePreviouslyMissingSystemFieldTypes()
+    public void Entries_IncludePreviouslyMissingSharedFieldTypes()
     {
         var catalog = new FieldTypeCatalog();
         var types = catalog.Entries.Select(e => e.Type).ToList();

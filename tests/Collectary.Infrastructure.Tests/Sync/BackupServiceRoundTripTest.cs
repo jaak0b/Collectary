@@ -143,28 +143,28 @@ public class BackupServiceRoundTripTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task ExportThenImport_RestoresPresetAndItemThatReferenceASystemField()
+    public async Task ExportThenImport_RestoresPresetAndItemThatReferenceASharedField()
     {
         var source = NewStore(out _);
         var sourceImages = NewImageStore();
         var serializer = new SyncSerializer();
 
         var sysId = Guid.NewGuid();
-        var systemField = new SystemField
+        var sharedField = new SharedField
         {
             Id = sysId, Name = "Rarity", Revision = 1,
-            Definition = new TextFieldDefinition { SystemFieldId = sysId },
+            Definition = new TextFieldDefinition { SharedFieldId = sysId },
         };
-        await source.ApplySystemFieldAsync(systemField);
+        await source.ApplySharedFieldAsync(sharedField);
 
         var presetId = Guid.NewGuid();
         var preset = new Preset { Id = presetId, Name = "Cards", Revision = 1 };
-        preset.SystemFieldRefs.Add(new PresetSystemField { PresetId = presetId, SystemFieldId = sysId, DisplayOrder = 0 });
+        preset.SharedFieldRefs.Add(new PresetSharedField { PresetId = presetId, SharedFieldId = sysId, DisplayOrder = 0 });
         await source.ApplyPresetAsync(preset);
 
         var itemId = Guid.NewGuid();
         var item = new Item { Id = itemId, DisplayName = "Charizard", PresetId = presetId, Revision = 1 };
-        item.Values.Add(new TextFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = systemField.Definition.Id, ItemId = itemId, Value = "Holo" });
+        item.Values.Add(new TextFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = sharedField.Definition.Id, ItemId = itemId, Value = "Holo" });
         await source.ApplyItemAsync(item);
 
         using var ms = new MemoryStream();
@@ -175,15 +175,15 @@ public class BackupServiceRoundTripTest : DbIntegrationTestBase
         var targetImages = NewImageStore();
         var result = await new BackupService(target, serializer, targetImages).ImportAsync(ms);
 
-        var systemFieldRestored = (await target.GetAllSystemFieldsAsync()).Any(s => s.Id == sysId);
+        var sharedFieldRestored = (await target.GetAllSharedFieldsAsync()).Any(s => s.Id == sysId);
         var restoredPreset = (await target.GetAllPresetsAsync()).Single(p => p.Id == presetId);
         var restoredItem = (await target.GetAllItemsAsync()).Single(i => i.Id == itemId);
 
         Assert.Multiple(() =>
         {
             Assert.That(result.HasConflicts, Is.False);
-            Assert.That(systemFieldRestored, Is.True);
-            Assert.That(restoredPreset.SystemFieldRefs.Single().SystemFieldId, Is.EqualTo(sysId));
+            Assert.That(sharedFieldRestored, Is.True);
+            Assert.That(restoredPreset.SharedFieldRefs.Single().SharedFieldId, Is.EqualTo(sysId));
             Assert.That(((TextFieldValue)restoredItem.Values.Single()).Value, Is.EqualTo("Holo"));
         });
     }

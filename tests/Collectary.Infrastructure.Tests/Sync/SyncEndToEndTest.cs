@@ -44,7 +44,7 @@ public class SyncEndToEndTest
     {
         public required PresetRepository Presets { get; init; }
         public required ItemRepository Items { get; init; }
-        public required SystemFieldRepository SystemFields { get; init; }
+        public required SharedFieldRepository SharedFields { get; init; }
         public required IPresetUseCase PresetUseCase { get; init; }
         public required EfSyncStore Store { get; init; }
         public required FileSystemImageStore Images { get; init; }
@@ -64,7 +64,7 @@ public class SyncEndToEndTest
         var status = new AlwaysConfiguredSyncStatus();
         var presets = new PresetRepository(factory, merger, null, null, status);
         var items = new ItemRepository(factory, null, null, status);
-        var systemFields = new SystemFieldRepository(factory, merger, null, status);
+        var sharedFields = new SharedFieldRepository(factory, merger, null, status);
         var store = new EfSyncStore(factory, merger);
 
         var imageDir = Path.Combine(Path.GetTempPath(), $"collectary-img-{Guid.NewGuid():N}");
@@ -75,7 +75,7 @@ public class SyncEndToEndTest
         {
             Presets = presets,
             Items = items,
-            SystemFields = systemFields,
+            SharedFields = sharedFields,
             PresetUseCase = new PresetUseCase(presets, items, new AllowAllAuthorization()),
             Store = store,
             Images = images,
@@ -98,23 +98,23 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task Create_PropagatesSystemFieldPresetAndItem()
+    public async Task Create_PropagatesSharedFieldPresetAndItem()
     {
-        var sf = new SystemField { Name = "Year", Definition = new IntegerFieldDefinition { Label = "Year" } };
-        sf.Definition.SystemFieldId = sf.Id;
-        await _a.SystemFields.AddAsync(sf);
+        var sf = new SharedField { Name = "Year", Definition = new IntegerFieldDefinition { Label = "Year" } };
+        sf.Definition.SharedFieldId = sf.Id;
+        await _a.SharedFields.AddAsync(sf);
         var preset = MakePreset("Model trains");
         await _a.Presets.AddAsync(preset);
         await _a.Items.AddAsync(new Item { PresetId = preset.Id, DisplayName = "Loco 42" });
 
         await SyncBothAsync();
 
-        var systemFields = (await _b.Store.GetAllSystemFieldsAsync()).Select(x => x.Name).ToList();
+        var sharedFields = (await _b.Store.GetAllSharedFieldsAsync()).Select(x => x.Name).ToList();
         var presets = (await _b.Store.GetAllPresetsAsync()).Select(x => x.Name).ToList();
         var items = (await _b.Store.GetAllItemsAsync()).Select(x => x.DisplayName).ToList();
         Assert.Multiple(() =>
         {
-            Assert.That(systemFields, Does.Contain("Year"));
+            Assert.That(sharedFields, Does.Contain("Year"));
             Assert.That(presets, Does.Contain("Model trains"));
             Assert.That(items, Does.Contain("Loco 42"));
         });
@@ -153,19 +153,19 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task SystemFieldEdit_PropagatesInPlace()
+    public async Task SharedFieldEdit_PropagatesInPlace()
     {
-        var sf = new SystemField { Name = "Year", Definition = new IntegerFieldDefinition { Label = "Year" } };
-        sf.Definition.SystemFieldId = sf.Id;
-        await _a.SystemFields.AddAsync(sf);
+        var sf = new SharedField { Name = "Year", Definition = new IntegerFieldDefinition { Label = "Year" } };
+        sf.Definition.SharedFieldId = sf.Id;
+        await _a.SharedFields.AddAsync(sf);
         await SyncBothAsync();
 
-        var local = await _a.SystemFields.GetByIdAsync(sf.Id);
+        var local = await _a.SharedFields.GetByIdAsync(sf.Id);
         local!.Name = "Release year";
-        await _a.SystemFields.UpdateAsync(local);
+        await _a.SharedFields.UpdateAsync(local);
         await SyncBothAsync();
 
-        var onB = (await _b.Store.GetAllSystemFieldsAsync()).Where(x => x.Id == sf.Id).ToList();
+        var onB = (await _b.Store.GetAllSharedFieldsAsync()).Where(x => x.Id == sf.Id).ToList();
         Assert.Multiple(() =>
         {
             Assert.That(onB, Has.Count.EqualTo(1));
@@ -208,19 +208,19 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task SystemFieldDelete_PropagatesAsTombstone()
+    public async Task SharedFieldDelete_PropagatesAsTombstone()
     {
-        var sf = new SystemField { Name = "Doomed", Definition = new IntegerFieldDefinition { Label = "Doomed" } };
-        sf.Definition.SystemFieldId = sf.Id;
-        await _a.SystemFields.AddAsync(sf);
+        var sf = new SharedField { Name = "Doomed", Definition = new IntegerFieldDefinition { Label = "Doomed" } };
+        sf.Definition.SharedFieldId = sf.Id;
+        await _a.SharedFields.AddAsync(sf);
         await SyncBothAsync();
-        Assume.That((await _b.SystemFields.GetAllAsync()).Any(x => x.Id == sf.Id), Is.True, "precondition: field synced to B");
+        Assume.That((await _b.SharedFields.GetAllAsync()).Any(x => x.Id == sf.Id), Is.True, "precondition: field synced to B");
 
-        await _a.SystemFields.DeleteAsync(sf.Id);
+        await _a.SharedFields.DeleteAsync(sf.Id);
         await SyncBothAsync();
 
-        var visible = (await _b.SystemFields.GetAllAsync()).Any(x => x.Id == sf.Id);
-        var tombstone = (await _b.Store.GetAllSystemFieldsAsync()).Single(x => x.Id == sf.Id);
+        var visible = (await _b.SharedFields.GetAllAsync()).Any(x => x.Id == sf.Id);
+        var tombstone = (await _b.Store.GetAllSharedFieldsAsync()).Single(x => x.Id == sf.Id);
         Assert.Multiple(() =>
         {
             Assert.That(visible, Is.False, "deleted system field must disappear on the peer");
@@ -316,14 +316,14 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task PresetReferencingSystemField_RoundTripsAndResolvesEffectiveFields()
+    public async Task PresetReferencingSharedField_RoundTripsAndResolvesEffectiveFields()
     {
-        var sf = new SystemField { Name = "Rarity", Definition = new TextFieldDefinition { Label = "Rarity" } };
-        sf.Definition.SystemFieldId = sf.Id;
-        await _a.SystemFields.AddAsync(sf);
+        var sf = new SharedField { Name = "Rarity", Definition = new TextFieldDefinition { Label = "Rarity" } };
+        sf.Definition.SharedFieldId = sf.Id;
+        await _a.SharedFields.AddAsync(sf);
 
         var preset = MakePreset("Cards");
-        preset.SystemFieldRefs.Add(new PresetSystemField { PresetId = preset.Id, SystemFieldId = sf.Id, DisplayOrder = 1 });
+        preset.SharedFieldRefs.Add(new PresetSharedField { PresetId = preset.Id, SharedFieldId = sf.Id, DisplayOrder = 1 });
         await _a.Presets.AddAsync(preset);
 
         await SyncBothAsync();

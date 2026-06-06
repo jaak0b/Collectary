@@ -175,19 +175,19 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task ApplySystemFieldAsync_InsertsThenUpdatesInPlace()
+    public async Task ApplySharedFieldAsync_InsertsThenUpdatesInPlace()
     {
         var id = Guid.NewGuid();
-        await _sut.ApplySystemFieldAsync(new SystemField
+        await _sut.ApplySharedFieldAsync(new SharedField
         {
-            Id = id, Name = "A", Revision = 1, Definition = new TextFieldDefinition { SystemFieldId = id },
+            Id = id, Name = "A", Revision = 1, Definition = new TextFieldDefinition { SharedFieldId = id },
         });
-        await _sut.ApplySystemFieldAsync(new SystemField
+        await _sut.ApplySharedFieldAsync(new SharedField
         {
-            Id = id, Name = "B", Revision = 2, Definition = new TextFieldDefinition { SystemFieldId = id },
+            Id = id, Name = "B", Revision = 2, Definition = new TextFieldDefinition { SharedFieldId = id },
         });
 
-        var all = await _sut.GetAllSystemFieldsAsync();
+        var all = await _sut.GetAllSharedFieldsAsync();
         var field = all.Single(sf => sf.Id == id);
         Assert.Multiple(() =>
         {

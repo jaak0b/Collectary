@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Collectary.UI.Controls;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.UI.Views;
 
@@ -15,7 +15,7 @@ public partial class PresetEditorView : UserControl
     private readonly ListReorderBehavior _reorder;
     private readonly AddFieldMenuBuilder _menuBuilder = new();
 
-    private ObservableCollection<SystemFieldRowViewModel>? _systemFields;
+    private ObservableCollection<SharedFieldRowViewModel>? _sharedFields;
 
     public PresetEditorView()
     {
@@ -29,18 +29,18 @@ public partial class PresetEditorView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (_systemFields is not null)
-            _systemFields.CollectionChanged -= OnSystemFieldsChanged;
+        if (_sharedFields is not null)
+            _sharedFields.CollectionChanged -= OnSharedFieldsChanged;
 
-        _systemFields = (DataContext as PresetEditorViewModel)?.AvailableSystemFields;
+        _sharedFields = (DataContext as PresetEditorViewModel)?.AvailableSharedFields;
 
-        if (_systemFields is not null)
-            _systemFields.CollectionChanged += OnSystemFieldsChanged;
+        if (_sharedFields is not null)
+            _sharedFields.CollectionChanged += OnSharedFieldsChanged;
 
         BuildAddFieldMenu();
     }
 
-    private void OnSystemFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+    private void OnSharedFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         BuildAddFieldMenu();
 
     private void OnLanguageChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
@@ -61,18 +61,18 @@ public partial class PresetEditorView : UserControl
         items.Add(new Separator());
         items.Add(new MenuItem
         {
-            Header = LocalizationService.Instance["SystemFields"],
-            ItemsSource = BuildSystemFieldItems(),
+            Header = LocalizationService.Instance["SharedFields"],
+            ItemsSource = BuildSharedFieldItems(),
         });
 
         ((MenuFlyout)AddFieldButton.Flyout!).ItemsSource = items;
     }
 
-    private List<MenuItem> BuildSystemFieldItems()
+    private List<MenuItem> BuildSharedFieldItems()
     {
         var items = new List<MenuItem>();
-        if (_systemFields is not null)
-            foreach (var row in _systemFields)
+        if (_sharedFields is not null)
+            foreach (var row in _sharedFields)
                 items.Add(new MenuItem
                 {
                     Header = row.Name,

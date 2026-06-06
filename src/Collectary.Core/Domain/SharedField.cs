@@ -1,6 +1,6 @@
 namespace Collectary.Core.Domain;
 
-public class SystemField : DomainObject, ISyncable
+public class SharedField : DomainObject, ISyncable
 {
     public string Name { get; set; } = string.Empty;
     public int SortOrder { get; set; }

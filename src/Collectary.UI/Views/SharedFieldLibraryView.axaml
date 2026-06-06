@@ -2,21 +2,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
-             xmlns:sf="using:Collectary.Presentation.ViewModels.SystemFields"
+             xmlns:sf="using:Collectary.Presentation.ViewModels.SharedFields"
              xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:controls="using:Collectary.UI.Controls"
-             x:Class="Collectary.UI.Views.SystemFields.SystemFieldLibraryView"
-             x:DataType="sf:SystemFieldLibraryViewModel">
+             x:Class="Collectary.UI.Views.SharedFields.SharedFieldLibraryView"
+             x:DataType="sf:SharedFieldLibraryViewModel">
 
     <Grid RowDefinitions="Auto,*,Auto" Margin="16">
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="{Binding [SystemFields], Source={x:Static loc:LocalizationService.Instance}}"
+            <TextBlock Text="{Binding [SharedFields], Source={x:Static loc:LocalizationService.Instance}}"
                        FontSize="20"
                        FontWeight="Bold"
                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <TextBlock Text="{Binding [SystemFieldsHint], Source={x:Static loc:LocalizationService.Instance}}"
+            <TextBlock Text="{Binding [SharedFieldsHint], Source={x:Static loc:LocalizationService.Instance}}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="0,4,0,0"
                        FontSize="13"
@@ -86,7 +86,7 @@
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,2"
-                                            Command="{Binding $parent[ListBox].((sf:SystemFieldLibraryViewModel)DataContext).RemoveFieldCommand}"
+                                            Command="{Binding $parent[ListBox].((sf:SharedFieldLibraryViewModel)DataContext).RemoveFieldCommand}"
                                             CommandParameter="{Binding}"/>
                                 </Grid>
                             </DataTemplate>
@@ -124,7 +124,7 @@
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,2"
-                                            Command="{Binding $parent[ListBox].((sf:SystemFieldLibraryViewModel)DataContext).RemoveFieldCommand}"
+                                            Command="{Binding $parent[ListBox].((sf:SharedFieldLibraryViewModel)DataContext).RemoveFieldCommand}"
                                             CommandParameter="{Binding}"/>
                                 </Grid>
                             </DataTemplate>
@@ -196,13 +196,13 @@
 
                     <!-- Field config -->
                     <controls:FieldDetailEditor DataContext="{Binding SelectedFieldRow}"
-                                                IsVisible="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).SelectedFieldRow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                DrillCommand="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).DrillIntoCommand}"/>
+                                                IsVisible="{Binding $parent[UserControl].((sf:SharedFieldLibraryViewModel)DataContext).SelectedFieldRow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                DrillCommand="{Binding $parent[UserControl].((sf:SharedFieldLibraryViewModel)DataContext).DrillIntoCommand}"/>
 
                     <!-- Group config -->
                     <controls:GroupDetailEditor DataContext="{Binding SelectedGroupRow}"
-                                                IsVisible="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).SelectedGroupRow, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                DrillCommand="{Binding $parent[UserControl].((sf:SystemFieldLibraryViewModel)DataContext).DrillIntoCommand}"/>
+                                                IsVisible="{Binding $parent[UserControl].((sf:SharedFieldLibraryViewModel)DataContext).SelectedGroupRow, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                DrillCommand="{Binding $parent[UserControl].((sf:SharedFieldLibraryViewModel)DataContext).DrillIntoCommand}"/>
 
                     </Panel>
                 </Grid>

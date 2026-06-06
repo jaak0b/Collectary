@@ -29,9 +29,9 @@ public class PresetRepository : IPresetRepository
             .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).SubFields)
             .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).Groups)
             .Include(p => p.Groups)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => sf.Definition)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).SubFields)
-            .Include(p => p.SystemFieldRefs).ThenInclude(r => r.SystemField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).Groups)
+            .Include(p => p.SharedFieldRefs).ThenInclude(r => r.SharedField).ThenInclude(sf => sf.Definition)
+            .Include(p => p.SharedFieldRefs).ThenInclude(r => r.SharedField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).SubFields)
+            .Include(p => p.SharedFieldRefs).ThenInclude(r => r.SharedField).ThenInclude(sf => ((ListFieldDefinition)sf.Definition).Groups)
             .AsSplitQuery();
 
     public async Task<IReadOnlyList<Preset>> GetAllAsync()
@@ -80,7 +80,7 @@ public class PresetRepository : IPresetRepository
         db.Presets.Add(preset);
         await db.SaveChangesAsync();
         _logger.Debug("Added preset id={Id} name={Name} fields={Fields} groups={Groups} systemRefs={Refs}",
-            preset.Id, preset.Name, preset.Fields.Count, preset.Groups.Count, preset.SystemFieldRefs.Count);
+            preset.Id, preset.Name, preset.Fields.Count, preset.Groups.Count, preset.SharedFieldRefs.Count);
     }
 
     public async Task UpdateAsync(Preset preset)
@@ -96,28 +96,28 @@ public class PresetRepository : IPresetRepository
         tracked.ParentPresetId = preset.ParentPresetId;
 
         _logger.Debug("Updating preset id={Id} name={Name} fields={Fields} groups={Groups} systemRefs={Refs}",
-            preset.Id, preset.Name, preset.Fields.Count, preset.Groups.Count, preset.SystemFieldRefs.Count);
+            preset.Id, preset.Name, preset.Fields.Count, preset.Groups.Count, preset.SharedFieldRefs.Count);
 
         var removedGroupIds = _merger.SyncGroups(
             db, tracked.Groups, preset.Groups, g => g.PresetId = tracked.Id);
         foreach (var f in preset.Fields)
             if (f.GroupId is Guid fid && removedGroupIds.Contains(fid)) f.GroupId = null;
-        foreach (var r in preset.SystemFieldRefs)
+        foreach (var r in preset.SharedFieldRefs)
             if (r.GroupId is Guid rid && removedGroupIds.Contains(rid)) r.GroupId = null;
 
-        var refsToRemove = tracked.SystemFieldRefs
-            .Where(e => preset.SystemFieldRefs.All(u => u.SystemFieldId != e.SystemFieldId))
+        var refsToRemove = tracked.SharedFieldRefs
+            .Where(e => preset.SharedFieldRefs.All(u => u.SharedFieldId != e.SharedFieldId))
             .ToList();
-        foreach (var r in refsToRemove) tracked.SystemFieldRefs.Remove(r);
+        foreach (var r in refsToRemove) tracked.SharedFieldRefs.Remove(r);
 
-        foreach (var updatedRef in preset.SystemFieldRefs)
+        foreach (var updatedRef in preset.SharedFieldRefs)
         {
-            var existingRef = tracked.SystemFieldRefs.FirstOrDefault(r => r.SystemFieldId == updatedRef.SystemFieldId);
+            var existingRef = tracked.SharedFieldRefs.FirstOrDefault(r => r.SharedFieldId == updatedRef.SharedFieldId);
             if (existingRef is null)
-                tracked.SystemFieldRefs.Add(new PresetSystemField
+                tracked.SharedFieldRefs.Add(new PresetSharedField
                 {
                     PresetId = tracked.Id,
-                    SystemFieldId = updatedRef.SystemFieldId,
+                    SharedFieldId = updatedRef.SharedFieldId,
                     GroupId = updatedRef.GroupId,
                     DisplayOrder = updatedRef.DisplayOrder
                 });

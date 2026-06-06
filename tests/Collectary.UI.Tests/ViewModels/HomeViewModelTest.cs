@@ -189,12 +189,12 @@ public class HomeViewModelTest
     }
 
     [Test]
-    public void NavigateToSystemFieldsCommand_InvokesCallback()
+    public void NavigateToSharedFieldsCommand_InvokesCallback()
     {
         var called = false;
-        _sut.OnNavigateToSystemFields = () => called = true;
+        _sut.OnNavigateToSharedFields = () => called = true;
 
-        _sut.NavigateToSystemFieldsCommand.Execute(null);
+        _sut.NavigateToSharedFieldsCommand.Execute(null);
 
         Assert.That(called, Is.True);
     }

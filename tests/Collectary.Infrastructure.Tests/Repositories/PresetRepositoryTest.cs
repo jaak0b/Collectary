@@ -63,20 +63,20 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task GetByIdAsync_IncludesSystemFieldRefs()
+    public async Task GetByIdAsync_IncludesSharedFieldRefs()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Rating", Definition = new RatingFieldDefinition { Label = "Rating" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Rating", Definition = new RatingFieldDefinition { Label = "Rating" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
-        preset.SystemFieldRefs.Add(new PresetSystemField { PresetId = preset.Id, SystemFieldId = sysField.Id, DisplayOrder = 0 });
+        preset.SharedFieldRefs.Add(new PresetSharedField { PresetId = preset.Id, SharedFieldId = sysField.Id, DisplayOrder = 0 });
         await _sut.AddAsync(preset);
 
         var loaded = await _sut.GetByIdAsync(preset.Id);
 
-        Assert.That(loaded!.SystemFieldRefs, Has.Count.EqualTo(1));
-        Assert.That(loaded.SystemFieldRefs[0].SystemField.Name, Is.EqualTo("Rating"));
+        Assert.That(loaded!.SharedFieldRefs, Has.Count.EqualTo(1));
+        Assert.That(loaded.SharedFieldRefs[0].SharedField.Name, Is.EqualTo("Rating"));
     }
 
     [Test]
@@ -153,40 +153,40 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task UpdateAsync_AddsSystemFieldRef()
+    public async Task UpdateAsync_AddsSharedFieldRef()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
         await _sut.AddAsync(preset);
 
         var loaded = await _sut.GetByIdAsync(preset.Id);
-        loaded!.SystemFieldRefs.Add(new PresetSystemField { PresetId = preset.Id, SystemFieldId = sysField.Id, DisplayOrder = 0 });
+        loaded!.SharedFieldRefs.Add(new PresetSharedField { PresetId = preset.Id, SharedFieldId = sysField.Id, DisplayOrder = 0 });
         await _sut.UpdateAsync(loaded);
 
         var reloaded = await _sut.GetByIdAsync(preset.Id);
-        Assert.That(reloaded!.SystemFieldRefs, Has.Count.EqualTo(1));
+        Assert.That(reloaded!.SharedFieldRefs, Has.Count.EqualTo(1));
     }
 
     [Test]
-    public async Task UpdateAsync_RemovesDroppedSystemFieldRef()
+    public async Task UpdateAsync_RemovesDroppedSharedFieldRef()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
-        preset.SystemFieldRefs.Add(new PresetSystemField { PresetId = preset.Id, SystemFieldId = sysField.Id, DisplayOrder = 0 });
+        preset.SharedFieldRefs.Add(new PresetSharedField { PresetId = preset.Id, SharedFieldId = sysField.Id, DisplayOrder = 0 });
         await _sut.AddAsync(preset);
 
         var loaded = await _sut.GetByIdAsync(preset.Id);
-        loaded!.SystemFieldRefs.Clear();
+        loaded!.SharedFieldRefs.Clear();
         await _sut.UpdateAsync(loaded);
 
         var reloaded = await _sut.GetByIdAsync(preset.Id);
-        Assert.That(reloaded!.SystemFieldRefs, Is.Empty);
+        Assert.That(reloaded!.SharedFieldRefs, Is.Empty);
     }
 
     [Test]
@@ -429,22 +429,22 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task GetByIdAsync_EagerLoadsSystemFieldRefDefinition()
+    public async Task GetByIdAsync_EagerLoadsSharedFieldRefDefinition()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
-        preset.SystemFieldRefs.Add(new PresetSystemField { PresetId = preset.Id, SystemFieldId = sysField.Id, DisplayOrder = 0 });
+        preset.SharedFieldRefs.Add(new PresetSharedField { PresetId = preset.Id, SharedFieldId = sysField.Id, DisplayOrder = 0 });
         await _sut.AddAsync(preset);
 
         var loaded = await _sut.GetByIdAsync(preset.Id);
 
-        Assert.That(loaded!.SystemFieldRefs, Is.Not.Empty);
-        Assert.That(loaded.SystemFieldRefs[0].SystemField, Is.Not.Null, "SystemField must be eager-loaded");
-        Assert.That(loaded.SystemFieldRefs[0].SystemField.Definition, Is.Not.Null, "SystemField definition must be eager-loaded");
-        Assert.That(loaded.SystemFieldRefs[0].SystemField.Definition.Label, Is.EqualTo("Tag"));
+        Assert.That(loaded!.SharedFieldRefs, Is.Not.Empty);
+        Assert.That(loaded.SharedFieldRefs[0].SharedField, Is.Not.Null, "SharedField must be eager-loaded");
+        Assert.That(loaded.SharedFieldRefs[0].SharedField.Definition, Is.Not.Null, "SharedField definition must be eager-loaded");
+        Assert.That(loaded.SharedFieldRefs[0].SharedField.Definition.Label, Is.EqualTo("Tag"));
     }
 
     [Test]
@@ -462,21 +462,21 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task DeleteAsync_CascadesSystemFieldRefsButKeepsSystemField()
+    public async Task DeleteAsync_CascadesSharedFieldRefsButKeepsSharedField()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
-        preset.SystemFieldRefs.Add(new PresetSystemField { PresetId = preset.Id, SystemFieldId = sysField.Id, DisplayOrder = 0 });
+        preset.SharedFieldRefs.Add(new PresetSharedField { PresetId = preset.Id, SharedFieldId = sysField.Id, DisplayOrder = 0 });
         await _sut.AddAsync(preset);
 
         await _sut.DeleteAsync(preset.Id);
 
         using var db = DbFactory();
-        Assert.That(db.Set<PresetSystemField>().Count(), Is.EqualTo(0), "Preset's system-field refs must cascade-delete");
-        Assert.That(db.SystemFields.Count(), Is.EqualTo(1), "The shared system field itself must survive");
+        Assert.That(db.Set<PresetSharedField>().Count(), Is.EqualTo(0), "Preset's system-field refs must cascade-delete");
+        Assert.That(db.SharedFields.Count(), Is.EqualTo(1), "The shared system field itself must survive");
     }
 
     [Test]
@@ -522,18 +522,18 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task UpdateAsync_RemovingGroupNullsSystemFieldRefGroupId()
+    public async Task UpdateAsync_RemovingGroupNullsSharedFieldRefGroupId()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
         var group = new FieldGroup { Name = "G", PresetId = preset.Id, DisplayOrder = 0 };
         preset.Groups.Add(group);
-        preset.SystemFieldRefs.Add(new PresetSystemField
+        preset.SharedFieldRefs.Add(new PresetSharedField
         {
-            PresetId = preset.Id, SystemFieldId = sysField.Id, GroupId = group.Id, DisplayOrder = 0
+            PresetId = preset.Id, SharedFieldId = sysField.Id, GroupId = group.Id, DisplayOrder = 0
         });
         await _sut.AddAsync(preset);
 
@@ -542,23 +542,23 @@ public class PresetRepositoryTest : DbIntegrationTestBase
         await _sut.UpdateAsync(loaded);
 
         var reloaded = await _sut.GetByIdAsync(preset.Id);
-        Assert.That(reloaded!.SystemFieldRefs[0].GroupId, Is.Null,
+        Assert.That(reloaded!.SharedFieldRefs[0].GroupId, Is.Null,
             "A system-field ref assigned to a removed group must be ungrouped");
     }
 
     [Test]
-    public async Task UpdateAsync_KeepingGroupPreservesSystemFieldRefGroupId()
+    public async Task UpdateAsync_KeepingGroupPreservesSharedFieldRefGroupId()
     {
-        var sysFieldRepo = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
-        var sysField = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
+        var sysField = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await sysFieldRepo.AddAsync(sysField);
 
         var preset = MakePreset();
         var group = new FieldGroup { Name = "G", PresetId = preset.Id, DisplayOrder = 0 };
         preset.Groups.Add(group);
-        preset.SystemFieldRefs.Add(new PresetSystemField
+        preset.SharedFieldRefs.Add(new PresetSharedField
         {
-            PresetId = preset.Id, SystemFieldId = sysField.Id, GroupId = group.Id, DisplayOrder = 0
+            PresetId = preset.Id, SharedFieldId = sysField.Id, GroupId = group.Id, DisplayOrder = 0
         });
         await _sut.AddAsync(preset);
 
@@ -567,7 +567,7 @@ public class PresetRepositoryTest : DbIntegrationTestBase
         await _sut.UpdateAsync(loaded);
 
         var reloaded = await _sut.GetByIdAsync(preset.Id);
-        Assert.That(reloaded!.SystemFieldRefs[0].GroupId, Is.EqualTo(group.Id),
+        Assert.That(reloaded!.SharedFieldRefs[0].GroupId, Is.EqualTo(group.Id),
             "A system-field ref whose group survives must keep its assignment");
     }
 

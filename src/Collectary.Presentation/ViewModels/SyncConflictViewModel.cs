@@ -19,7 +19,7 @@ public partial class SyncConflictViewModel : ViewModelBase
     {
         SyncEntityKind.Preset => "Sync_KindCollection",
         SyncEntityKind.Item => "Sync_KindItem",
-        _ => "Sync_KindSystemField",
+        _ => "Sync_KindSharedField",
     }];
 
     public string LocalLabel => _conflict.LocalLabel;

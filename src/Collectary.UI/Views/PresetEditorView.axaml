@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
-             xmlns:sf="using:Collectary.Presentation.ViewModels.SystemFields"
+             xmlns:sf="using:Collectary.Presentation.ViewModels.SharedFields"
              xmlns:loc="using:Collectary.Presentation.Localization"
              xmlns:converters="using:Collectary.Presentation.Converters"
              xmlns:controls="using:Collectary.UI.Controls"
@@ -217,7 +217,7 @@
                            IsVisible="{Binding SelectedNode, Converter={x:Static ObjectConverters.IsNull}}"/>
 
                 <!-- System field read-only notice -->
-                <StackPanel IsVisible="{Binding SelectedFieldRow.IsSystemField, FallbackValue=False}"
+                <StackPanel IsVisible="{Binding SelectedFieldRow.IsSharedField, FallbackValue=False}"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
                             Spacing="8"
@@ -226,7 +226,7 @@
                                Classes="icon"
                                FontSize="32"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="{Binding [EditInSystemFields], Source={x:Static loc:LocalizationService.Instance}}"
+                    <TextBlock Text="{Binding [EditInSharedFields], Source={x:Static loc:LocalizationService.Instance}}"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                TextWrapping="Wrap"
                                TextAlignment="Center"/>

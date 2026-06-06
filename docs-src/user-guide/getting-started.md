@@ -47,7 +47,7 @@ Images you attach to items are stored alongside the database in the app's data f
 | **Collection editor** | Define a collection's fields and field groups. |
 | **Item editor** | Add or edit a single item. |
 | **Settings** | Theme, language, and sync configuration. |
-| **System Field Library** | Reusable field definitions shared across collections. |
+| **Shared Field Library** | Reusable field definitions shared across collections. |
 
 ## Next steps
 

@@ -5,7 +5,7 @@ using Collectary.Core.Ports;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
 using Collectary.Presentation.ViewModels.Mapping;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -13,24 +13,24 @@ namespace Collectary.UI.Tests.ViewModels;
 public class PresetEditorViewModelTest
 {
     private IPresetUseCase _presetUseCase = null!;
-    private ISystemFieldUseCase _systemFieldUseCase = null!;
+    private ISharedFieldUseCase _sharedFieldUseCase = null!;
     private IDialogService _dialogService = null!;
 
     [SetUp]
     public void SetUp()
     {
         _presetUseCase = A.Fake<IPresetUseCase>();
-        _systemFieldUseCase = A.Fake<ISystemFieldUseCase>();
+        _sharedFieldUseCase = A.Fake<ISharedFieldUseCase>();
         _dialogService = A.Fake<IDialogService>();
 
         A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>());
-        A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Returns(new List<SystemField>());
+        A.CallTo(() => _sharedFieldUseCase.GetAllAsync()).Returns(new List<SharedField>());
     }
 
     private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
 
     private PresetEditorViewModel CreateSut(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null, Preset? seed = null) =>
-        new(_presetUseCase, _systemFieldUseCase, _dialogService, _mapper,
+        new(_presetUseCase, _sharedFieldUseCase, _dialogService, _mapper,
             onSaved: onSaved ?? (() => { }),
             onCancelled: onCancelled ?? (() => { }),
             existing: existing,
@@ -212,34 +212,34 @@ public class PresetEditorViewModelTest
             .MustHaveHappened();
     }
 
-    private static (SystemField sf, SystemFieldRowViewModel row) MakeSystemFieldRow(string label)
+    private static (SharedField sf, SharedFieldRowViewModel row) MakeSharedFieldRow(string label)
     {
-        var sf = new SystemField { Name = label, Definition = new TextFieldDefinition { Label = label } };
-        sf.Definition.SystemFieldId = sf.Id;
-        return (sf, new SystemFieldRowViewModel(sf));
+        var sf = new SharedField { Name = label, Definition = new TextFieldDefinition { Label = label } };
+        sf.Definition.SharedFieldId = sf.Id;
+        return (sf, new SharedFieldRowViewModel(sf));
     }
 
     [Test]
-    public void AddSystemFieldCommand_AddsRowToCurrentRows()
+    public void AddSharedFieldCommand_AddsRowToCurrentRows()
     {
-        var (_, sfRow) = MakeSystemFieldRow("Tag");
+        var (_, sfRow) = MakeSharedFieldRow("Tag");
         var sut = CreateSut();
         var before = sut.CurrentRows.Count;
 
-        sut.AddSystemFieldCommand.Execute(sfRow);
+        sut.AddSharedFieldCommand.Execute(sfRow);
 
         Assert.That(sut.CurrentRows.Count, Is.EqualTo(before + 1));
     }
 
     [Test]
-    public void AddSystemFieldCommand_WhenAlreadyPresent_DoesNotAddDuplicate()
+    public void AddSharedFieldCommand_WhenAlreadyPresent_DoesNotAddDuplicate()
     {
-        var (_, sfRow) = MakeSystemFieldRow("Tag");
+        var (_, sfRow) = MakeSharedFieldRow("Tag");
         var sut = CreateSut();
-        sut.AddSystemFieldCommand.Execute(sfRow);
+        sut.AddSharedFieldCommand.Execute(sfRow);
         var countAfterFirst = sut.CurrentRows.Count;
 
-        sut.AddSystemFieldCommand.Execute(sfRow);
+        sut.AddSharedFieldCommand.Execute(sfRow);
 
         Assert.That(sut.CurrentRows.Count, Is.EqualTo(countAfterFirst));
     }
@@ -557,26 +557,26 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
-    public void Constructor_WithExistingPresetHavingSystemFieldRefs_LoadsSystemRows()
+    public void Constructor_WithExistingPresetHavingSharedFieldRefs_LoadsSystemRows()
     {
         var def = new TextFieldDefinition { Label = "Tag" };
-        var sf = new SystemField { Name = "Tag", Definition = def };
-        def.SystemFieldId = sf.Id;
-        var sfRef = new PresetSystemField { SystemFieldId = sf.Id, SystemField = sf, DisplayOrder = 1 };
-        var existing = new Preset { Name = "P", SystemFieldRefs = [sfRef] };
+        var sf = new SharedField { Name = "Tag", Definition = def };
+        def.SharedFieldId = sf.Id;
+        var sfRef = new PresetSharedField { SharedFieldId = sf.Id, SharedField = sf, DisplayOrder = 1 };
+        var existing = new Preset { Name = "P", SharedFieldRefs = [sfRef] };
 
         var sut = CreateSut(existing: existing);
 
         var sysRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>()
-            .FirstOrDefault(r => r.IsSystemField);
+            .FirstOrDefault(r => r.IsSharedField);
         Assert.That(sysRow, Is.Not.Null);
         Assert.That(sysRow!.DisplayOrder, Is.EqualTo(1));
     }
 
     [Test]
-    public async Task LoadAsync_WhenSystemFieldsThrows_ShowsDialog()
+    public async Task LoadAsync_WhenSharedFieldsThrows_ShowsDialog()
     {
-        A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Throws<InvalidOperationException>();
+        A.CallTo(() => _sharedFieldUseCase.GetAllAsync()).Throws<InvalidOperationException>();
 
         var sut = CreateSut();
         await sut.LoadAsync();
@@ -599,12 +599,12 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
-    public async Task PersistAsync_SeparatesOwnFieldsFromSystemFieldRefs()
+    public async Task PersistAsync_SeparatesOwnFieldsFromSharedFieldRefs()
     {
-        var (sf, sfRow) = MakeSystemFieldRow("Tag");
+        var (sf, sfRow) = MakeSharedFieldRow("Tag");
         var sut = CreateSut();
         sut.Name = "Test";
-        sut.AddSystemFieldCommand.Execute(sfRow);
+        sut.AddSharedFieldCommand.Execute(sfRow);
 
         Preset? captured = null;
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
@@ -613,8 +613,8 @@ public class PresetEditorViewModelTest
         await sut.SaveAndGoBackCommand.ExecuteAsync(null);
 
         Assert.That(captured, Is.Not.Null);
-        Assert.That(captured!.SystemFieldRefs, Has.Count.EqualTo(1));
-        Assert.That(captured.SystemFieldRefs[0].SystemFieldId, Is.EqualTo(sf.Id));
+        Assert.That(captured!.SharedFieldRefs, Has.Count.EqualTo(1));
+        Assert.That(captured.SharedFieldRefs[0].SharedFieldId, Is.EqualTo(sf.Id));
     }
 
     [Test]

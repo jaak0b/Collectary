@@ -9,7 +9,7 @@ public class ListFieldDefinition : FieldDefinition<ListFieldValue>
     public int ColumnCount { get; set; } = 1;
     public List<FieldDefinition> SubFields { get; set; } = new();
     public List<FieldGroup> Groups { get; set; } = new();
-    public List<ListSystemField> SystemFieldRefs { get; set; } = new();
+    public List<ListSharedField> SharedFieldRefs { get; set; } = new();
     public ListInlineStyle InlineStyle { get; set; } = ListInlineStyle.Card;
 
     public override void ApplyTypeSpecificProperties(FieldDefinition source)

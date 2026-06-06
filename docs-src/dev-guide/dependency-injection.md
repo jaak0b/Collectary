@@ -7,7 +7,7 @@ registered at startup:
 
 | Module | Registers |
 |---|---|
-| `CoreModule` | Use cases and domain services — e.g. `IPresetUseCase`, `IItemUseCase`, `ISystemFieldUseCase`, `IShareUseCase`, collection authorization, account bootstrap. |
+| `CoreModule` | Use cases and domain services — e.g. `IPresetUseCase`, `IItemUseCase`, `ISharedFieldUseCase`, `IShareUseCase`, collection authorization, account bootstrap. |
 | `InfrastructureModule` | Adapters — repositories (`IPresetRepository`, `IItemRepository`, `IUserRepository`, …), `IImageStore`, the sync stack (`ISyncService`, `ISyncBackend`, `ISyncStore`, `ISyncSerializer`), credential store/hasher, logger. |
 | `UiModule` | Localization, theming, dialogs, the field-editor and list-cell registries (one keyed registration per field type), discovered preset templates, `MainWindowViewModel`, and the sync scheduler. |
 

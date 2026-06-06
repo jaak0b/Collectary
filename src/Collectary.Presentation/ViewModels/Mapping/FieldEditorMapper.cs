@@ -13,7 +13,7 @@ public class FieldEditorMapper : IFieldEditorMapper
     public FieldDefinition ToDefinition(FieldDefinitionRowViewModel row)
     {
         var definition = row.Definition;
-        if (row.IsSystemField) return definition;
+        if (row.IsSharedField) return definition;
 
         var preservedLabel = definition.Label;
         _mapper.Map(row, definition, typeof(FieldDefinitionRowViewModel), definition.GetType());

@@ -4,7 +4,7 @@ public abstract class FieldDefinition : DomainObject
 {
     public Guid? PresetId { get; set; }
     public Guid? ParentListFieldDefinitionId { get; set; }
-    public Guid? SystemFieldId { get; set; }
+    public Guid? SharedFieldId { get; set; }
     public Guid? GroupId { get; set; }
     public string Label { get; set; } = string.Empty;
     public bool IsRequired { get; set; }

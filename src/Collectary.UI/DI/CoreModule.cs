@@ -10,7 +10,7 @@ public class CoreModule : Module
     {
         builder.RegisterType<PresetUseCase>().As<IPresetUseCase>().SingleInstance();
         builder.RegisterType<ItemUseCase>().As<IItemUseCase>().SingleInstance();
-        builder.RegisterType<SystemFieldUseCase>().As<ISystemFieldUseCase>().SingleInstance();
+        builder.RegisterType<SharedFieldUseCase>().As<ISharedFieldUseCase>().SingleInstance();
         builder.RegisterType<CollectionAuthorizationService>().As<ICollectionAuthorization>().SingleInstance();
         builder.RegisterType<ShareUseCase>().As<IShareUseCase>().SingleInstance();
         builder.RegisterType<AccountBootstrapper>().As<IAccountBootstrapper>().SingleInstance();

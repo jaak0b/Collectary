@@ -31,6 +31,12 @@ public class SyncServiceTest : FileSystemTestBase
         new() { Name = name, Revision = 1, BaseRevision = 0, IsDirty = true };
 
     [Test]
+    public void SharedFieldKind_UsesSharedFieldsWireString()
+    {
+        Assert.That(SyncService.SharedFieldKind, Is.EqualTo("sharedfields"));
+    }
+
+    [Test]
     public async Task SyncAsync_PushesDirtyLocalToBackend()
     {
         var preset = DirtyPreset("Trains");
@@ -261,7 +267,7 @@ internal sealed class InMemorySyncStore : ISyncStore
 {
     public Dictionary<Guid, Preset> Presets { get; } = new();
     public Dictionary<Guid, Item> Items { get; } = new();
-    public Dictionary<Guid, SystemField> SystemFields { get; } = new();
+    public Dictionary<Guid, SharedField> SharedFields { get; } = new();
 
     public Task<IReadOnlyList<Preset>> GetAllPresetsAsync() =>
         Task.FromResult<IReadOnlyList<Preset>>(Presets.Values.ToList());
@@ -269,8 +275,8 @@ internal sealed class InMemorySyncStore : ISyncStore
     public Task<IReadOnlyList<Item>> GetAllItemsAsync() =>
         Task.FromResult<IReadOnlyList<Item>>(Items.Values.ToList());
 
-    public Task<IReadOnlyList<SystemField>> GetAllSystemFieldsAsync() =>
-        Task.FromResult<IReadOnlyList<SystemField>>(SystemFields.Values.ToList());
+    public Task<IReadOnlyList<SharedField>> GetAllSharedFieldsAsync() =>
+        Task.FromResult<IReadOnlyList<SharedField>>(SharedFields.Values.ToList());
 
     public Task ApplyPresetAsync(Preset preset)
     {
@@ -284,9 +290,9 @@ internal sealed class InMemorySyncStore : ISyncStore
         return Task.CompletedTask;
     }
 
-    public Task ApplySystemFieldAsync(SystemField systemField)
+    public Task ApplySharedFieldAsync(SharedField sharedField)
     {
-        SystemFields[systemField.Id] = systemField;
+        SharedFields[sharedField.Id] = sharedField;
         return Task.CompletedTask;
     }
 
@@ -296,7 +302,7 @@ internal sealed class InMemorySyncStore : ISyncStore
         {
             SyncEntityKind.Preset => Presets.GetValueOrDefault(id),
             SyncEntityKind.Item => Items.GetValueOrDefault(id),
-            _ => SystemFields.GetValueOrDefault(id),
+            _ => SharedFields.GetValueOrDefault(id),
         };
         if (target is null) return Task.CompletedTask;
 
@@ -314,7 +320,7 @@ internal sealed class InMemorySyncStore : ISyncStore
         var purged = new List<PurgedTombstone>();
         PurgeKind(Presets, SyncEntityKind.Preset, cutoff, purged);
         PurgeKind(Items, SyncEntityKind.Item, cutoff, purged);
-        PurgeKind(SystemFields, SyncEntityKind.SystemField, cutoff, purged);
+        PurgeKind(SharedFields, SyncEntityKind.SharedField, cutoff, purged);
         return Task.FromResult<IReadOnlyList<PurgedTombstone>>(purged);
     }
 
@@ -343,7 +349,7 @@ internal sealed class InMemorySyncStore : ISyncStore
         {
             case SyncEntityKind.Preset: Presets.Remove(id); break;
             case SyncEntityKind.Item: Items.Remove(id); break;
-            case SyncEntityKind.SystemField: SystemFields.Remove(id); break;
+            case SyncEntityKind.SharedField: SharedFields.Remove(id); break;
             default: throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind");
         }
         return Task.CompletedTask;

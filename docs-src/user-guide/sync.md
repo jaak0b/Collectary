@@ -1,6 +1,6 @@
 # Sync
 
-Sync keeps your collections, items, system fields, and attached images in step across devices by
+Sync keeps your collections, items, shared fields, and attached images in step across devices by
 reconciling them through a **shared folder** — for example a folder kept in a cloud-drive (Dropbox,
 OneDrive, a network share, …).
 
@@ -21,7 +21,7 @@ You can also trigger a sync manually at any time.
 
 Each sync **pushes** your local changes to the shared folder and **pulls** changes made elsewhere,
 reconciling the two using revision numbers and timestamps. Entities are stored in the shared folder
-as per-revision JSON files (presets, items, system fields) plus image blobs.
+as per-revision JSON files (presets, items, shared fields) plus image blobs.
 
 After a sync you'll see how many records were pushed and pulled, and whether any conflicts need
 your attention.

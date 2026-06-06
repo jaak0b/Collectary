@@ -4,23 +4,23 @@ using Avalonia.Threading;
 using Collectary.Core.Ports;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
-using Collectary.Presentation.ViewModels.SystemFields;
-using Collectary.UI.Views.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
+using Collectary.UI.Views.SharedFields;
 using FakeItEasy;
 
 namespace Collectary.UI.Tests.Views;
 
 [TestFixture]
-public class SystemFieldLibraryViewTest
+public class SharedFieldLibraryViewTest
 {
     [TearDown]
     public void TearDown() => LocalizationService.Instance.Apply("en");
 
-    private static SystemFieldLibraryViewModel CreateViewModel() =>
-        new(A.Fake<ISystemFieldUseCase>(), A.Fake<IDialogService>(),
+    private static SharedFieldLibraryViewModel CreateViewModel() =>
+        new(A.Fake<ISharedFieldUseCase>(), A.Fake<IDialogService>(),
             new TestFieldEditorMapper().Create(), onDone: () => { });
 
-    private static IReadOnlyList<MenuItem> AddFieldMenuItems(SystemFieldLibraryView view)
+    private static IReadOnlyList<MenuItem> AddFieldMenuItems(SharedFieldLibraryView view)
     {
         var button = view.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "AddFieldButton");
         var flyout = (MenuFlyout)button.Flyout!;
@@ -31,7 +31,7 @@ public class SystemFieldLibraryViewTest
     public void AddFieldMenu_ListsEveryCatalogType()
     {
         var vm = CreateViewModel();
-        var view = new SystemFieldLibraryView { DataContext = vm };
+        var view = new SharedFieldLibraryView { DataContext = vm };
         Dispatcher.UIThread.RunJobs();
 
         var headers = AddFieldMenuItems(view).Select(m => m.Header?.ToString() ?? "").ToList();
@@ -47,7 +47,7 @@ public class SystemFieldLibraryViewTest
     public void AddFieldMenu_IncludesPreviouslyMissingTypes()
     {
         var vm = CreateViewModel();
-        var view = new SystemFieldLibraryView { DataContext = vm };
+        var view = new SharedFieldLibraryView { DataContext = vm };
         Dispatcher.UIThread.RunJobs();
 
         var headers = AddFieldMenuItems(view).Select(m => m.Header?.ToString() ?? "").ToList();

@@ -16,7 +16,7 @@ public class MainWindowViewModelTest
     private ILifetimeScope _scope = null!;
     private IPresetUseCase _presetUseCase = null!;
     private IItemUseCase _itemUseCase = null!;
-    private ISystemFieldUseCase _systemFieldUseCase = null!;
+    private ISharedFieldUseCase _sharedFieldUseCase = null!;
     private IListCellBuilder _listCellBuilder = null!;
     private IFieldEditorRegistry _editorRegistry = null!;
     private IImageStore _imageStore = null!;
@@ -31,7 +31,7 @@ public class MainWindowViewModelTest
     {
         _presetUseCase = A.Fake<IPresetUseCase>();
         _itemUseCase = A.Fake<IItemUseCase>();
-        _systemFieldUseCase = A.Fake<ISystemFieldUseCase>();
+        _sharedFieldUseCase = A.Fake<ISharedFieldUseCase>();
         _listCellBuilder = A.Fake<IListCellBuilder>();
         _editorRegistry = A.Fake<IFieldEditorRegistry>();
         _imageStore = A.Fake<IImageStore>();
@@ -42,14 +42,14 @@ public class MainWindowViewModelTest
         _shareUseCase = A.Fake<IShareUseCase>();
 
         A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>());
-        A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Returns((IReadOnlyList<SystemField>)new List<SystemField>());
+        A.CallTo(() => _sharedFieldUseCase.GetAllAsync()).Returns((IReadOnlyList<SharedField>)new List<SharedField>());
         A.CallTo(() => _shareUseCase.ListSharesAsync(A<Guid>._)).Returns(new List<ShareInfo>());
 
         var builder = new ContainerBuilder();
         builder.RegisterInstance(A.Fake<ISyncService>()).As<ISyncService>();
         builder.RegisterInstance(A.Fake<ISyncStatus>()).As<ISyncStatus>();
         builder.RegisterInstance(_presetUseCase).As<IPresetUseCase>();
-        builder.RegisterInstance(_systemFieldUseCase).As<ISystemFieldUseCase>();
+        builder.RegisterInstance(_sharedFieldUseCase).As<ISharedFieldUseCase>();
         builder.RegisterInstance(_authService).As<IAuthService>();
         builder.RegisterInstance(_accountBootstrapper).As<IAccountBootstrapper>();
         builder.RegisterInstance(_shareUseCase).As<IShareUseCase>();
@@ -72,7 +72,7 @@ public class MainWindowViewModelTest
         _scope,
         _presetUseCase,
         _itemUseCase,
-        _systemFieldUseCase,
+        _sharedFieldUseCase,
         _listCellBuilder,
         _editorRegistry,
         _imageStore,
@@ -315,27 +315,27 @@ public class MainWindowViewModelTest
     }
 
     [Test]
-    public async Task NavigateToSystemFieldLibrary_WhenNarrow_ClosesSidebar()
+    public async Task NavigateToSharedFieldLibrary_WhenNarrow_ClosesSidebar()
     {
         var sut = CreateSut();
         await sut.InitializeAsync();
         sut.IsNarrow = true;
         sut.IsSidebarOpen = true;
 
-        sut.SidebarViewModel!.OnNavigateToSystemFields?.Invoke();
+        sut.SidebarViewModel!.OnNavigateToSharedFields?.Invoke();
 
         Assert.That(sut.IsSidebarOpen, Is.False);
     }
 
     [Test]
-    public async Task NavigateToSystemFieldLibrary_WhenWide_LeavesSidebarOpen()
+    public async Task NavigateToSharedFieldLibrary_WhenWide_LeavesSidebarOpen()
     {
         var sut = CreateSut();
         await sut.InitializeAsync();
         sut.IsNarrow = false;
         sut.IsSidebarOpen = true;
 
-        sut.SidebarViewModel!.OnNavigateToSystemFields?.Invoke();
+        sut.SidebarViewModel!.OnNavigateToSharedFields?.Invoke();
 
         Assert.That(sut.IsSidebarOpen, Is.True);
     }
@@ -419,7 +419,7 @@ public class MainWindowViewModelTest
 
     private PresetEditorViewModel CreateEditor() => new(
         _presetUseCase,
-        _systemFieldUseCase,
+        _sharedFieldUseCase,
         _dialogService,
         new TestFieldEditorMapper().Create(),
         onSaved: () => { },

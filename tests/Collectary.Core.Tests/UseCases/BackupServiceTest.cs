@@ -23,7 +23,7 @@ public class BackupServiceTest
         _imageStore = A.Fake<IImageStore>();
         A.CallTo(() => _store.GetAllPresetsAsync()).Returns(Array.Empty<Preset>());
         A.CallTo(() => _store.GetAllItemsAsync()).Returns(Array.Empty<Item>());
-        A.CallTo(() => _store.GetAllSystemFieldsAsync()).Returns(Array.Empty<SystemField>());
+        A.CallTo(() => _store.GetAllSharedFieldsAsync()).Returns(Array.Empty<SharedField>());
         A.CallTo(() => _store.GetReferencedImageKeysAsync()).Returns(Array.Empty<string>());
         _sut = new BackupService(_store, _serializer, _imageStore);
     }
@@ -45,10 +45,10 @@ public class BackupServiceTest
     {
         var preset = new Preset { Id = Guid.NewGuid(), Name = "P", Revision = 1 };
         var item = new Item { Id = Guid.NewGuid(), DisplayName = "I", Revision = 1 };
-        var field = new SystemField { Id = Guid.NewGuid(), Name = "F", Revision = 1, Definition = new Collectary.Core.Domain.Fields.TextFieldDefinition() };
+        var field = new SharedField { Id = Guid.NewGuid(), Name = "F", Revision = 1, Definition = new Collectary.Core.Domain.Fields.TextFieldDefinition() };
         A.CallTo(() => _store.GetAllPresetsAsync()).Returns(new[] { preset });
         A.CallTo(() => _store.GetAllItemsAsync()).Returns(new[] { item });
-        A.CallTo(() => _store.GetAllSystemFieldsAsync()).Returns(new[] { field });
+        A.CallTo(() => _store.GetAllSharedFieldsAsync()).Returns(new[] { field });
         A.CallTo(() => _store.GetReferencedImageKeysAsync()).Returns(new[] { "blob-key" });
         A.CallTo(() => _imageStore.Exists("blob-key")).Returns(true);
         A.CallTo(() => _serializer.Serialize(preset)).Returns("PRESET");
@@ -65,7 +65,7 @@ public class BackupServiceTest
             Assert.That(archive.GetEntry("manifest.json"), Is.Not.Null);
             Assert.That(ReadEntry(archive, $"presets/{preset.Id:N}.json"), Is.EqualTo("PRESET"));
             Assert.That(ReadEntry(archive, $"items/{item.Id:N}.json"), Is.EqualTo("ITEM"));
-            Assert.That(ReadEntry(archive, $"systemfields/{field.Id:N}.json"), Is.EqualTo("FIELD"));
+            Assert.That(ReadEntry(archive, $"sharedfields/{field.Id:N}.json"), Is.EqualTo("FIELD"));
             Assert.That(archive.Entries.Count(e => e.FullName.StartsWith("blobs/")), Is.EqualTo(1));
         });
 
@@ -175,23 +175,23 @@ public class BackupServiceTest
     }
 
     [Test]
-    public async Task ImportAsync_AppliesSystemFieldsBeforePresets()
+    public async Task ImportAsync_AppliesSharedFieldsBeforePresets()
     {
         var sysId = Guid.NewGuid();
         var presetId = Guid.NewGuid();
-        var sf = new SystemField { Id = sysId, Name = "S", Revision = 1, Definition = new Collectary.Core.Domain.Fields.TextFieldDefinition() };
+        var sf = new SharedField { Id = sysId, Name = "S", Revision = 1, Definition = new Collectary.Core.Domain.Fields.TextFieldDefinition() };
         var preset = new Preset { Id = presetId, Name = "P", Revision = 1 };
-        A.CallTo(() => _serializer.Deserialize<SystemField>("S")).Returns(sf);
+        A.CallTo(() => _serializer.Deserialize<SharedField>("S")).Returns(sf);
         A.CallTo(() => _serializer.Deserialize<Preset>("P")).Returns(preset);
         using var zip = BuildZip(a =>
         {
             AddText(a, $"presets/{presetId:N}.json", "P");
-            AddText(a, $"systemfields/{sysId:N}.json", "S");
+            AddText(a, $"sharedfields/{sysId:N}.json", "S");
         });
 
         await _sut.ImportAsync(zip);
 
-        A.CallTo(() => _store.ApplySystemFieldAsync(A<SystemField>._)).MustHaveHappened()
+        A.CallTo(() => _store.ApplySharedFieldAsync(A<SharedField>._)).MustHaveHappened()
             .Then(A.CallTo(() => _store.ApplyPresetAsync(A<Preset>._)).MustHaveHappened());
     }
 

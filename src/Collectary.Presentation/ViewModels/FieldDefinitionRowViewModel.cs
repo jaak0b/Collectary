@@ -13,9 +13,9 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     private readonly FieldDefinition _definition;
     internal FieldDefinition Definition => _definition;
     public Guid Id => _definition.Id;
-    public bool IsSystemField { get; }
-    public bool IsEditable => !IsSystemField;
-    public Guid? SystemFieldOwnerId => _definition.SystemFieldId;
+    public bool IsSharedField { get; }
+    public bool IsEditable => !IsSharedField;
+    public Guid? SharedFieldOwnerId => _definition.SharedFieldId;
 
     public bool IsGroupNode => false;
     public bool IsDrillable => IsList;
@@ -84,7 +84,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public string DisplayLabel => IsDisplayName
         ? _definition.GetType().ToLocalizedString()
         : Label;
-    public string LockGlyph => IsSystemField && !IsDisplayName ? IconGlyphs.LockClosed : string.Empty;
+    public string LockGlyph => IsSharedField && !IsDisplayName ? IconGlyphs.LockClosed : string.Empty;
     public bool IsColor => _definition is ColorFieldDefinition;
     public bool IsPicture => _definition is ImageFieldDefinition;
     public bool IsList => _definition is ListFieldDefinition;
@@ -149,10 +149,10 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
 
     public FieldDefinitionRowViewModel(
         FieldDefinition definition,
-        bool isSystemField = false)
+        bool isSharedField = false)
     {
         _definition = definition;
-        IsSystemField = isSystemField;
+        IsSharedField = isSharedField;
         AssignedGroupId = definition.GroupId;
         Label = definition.Label;
         IsRequired = definition.IsRequired;

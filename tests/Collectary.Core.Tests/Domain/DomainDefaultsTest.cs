@@ -15,8 +15,8 @@ public class DomainDefaultsTest
         Assert.That(new Preset().Name, Is.EqualTo(string.Empty));
 
     [Test]
-    public void SystemField_Name_DefaultsToEmptyString() =>
-        Assert.That(new SystemField { Definition = new TextFieldDefinition() }.Name, Is.EqualTo(string.Empty));
+    public void SharedField_Name_DefaultsToEmptyString() =>
+        Assert.That(new SharedField { Definition = new TextFieldDefinition() }.Name, Is.EqualTo(string.Empty));
 
     [Test]
     public void FieldGroup_Name_DefaultsToEmptyString() =>

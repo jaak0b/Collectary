@@ -4,22 +4,22 @@ using Avalonia.Data;
 using Collectary.UI.Controls;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
-namespace Collectary.UI.Views.SystemFields;
+namespace Collectary.UI.Views.SharedFields;
 
-public partial class SystemFieldLibraryView : UserControl
+public partial class SharedFieldLibraryView : UserControl
 {
     private readonly ResponsiveSplitLayout _layout;
     private readonly ListReorderBehavior _reorder;
     private readonly AddFieldMenuBuilder _menuBuilder = new();
 
-    public SystemFieldLibraryView()
+    public SharedFieldLibraryView()
     {
         InitializeComponent();
         _layout = new ResponsiveSplitLayout(SplitGrid, MasterPane, PaneSplitter, DetailPane);
         _reorder = new ListReorderBehavior(FieldListBox,
-            (from, to) => _ = (DataContext as SystemFieldLibraryViewModel)?.ReorderAsync(from, to));
+            (from, to) => _ = (DataContext as SharedFieldLibraryViewModel)?.ReorderAsync(from, to));
         DataContextChanged += OnDataContextChanged;
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
     }
@@ -30,7 +30,7 @@ public partial class SystemFieldLibraryView : UserControl
 
     private void BuildAddFieldMenu()
     {
-        if (DataContext is not SystemFieldLibraryViewModel vm) return;
+        if (DataContext is not SharedFieldLibraryViewModel vm) return;
 
         var items = _menuBuilder.BuildCatalogItems(vm.AddableFieldTypes, vm.AddFieldOfTypeCommand);
 
@@ -43,7 +43,7 @@ public partial class SystemFieldLibraryView : UserControl
         addGroup.Bind(MenuItem.IsEnabledProperty, new Binding
         {
             Source = vm,
-            Path = nameof(SystemFieldLibraryViewModel.CurrentLevelSupportsGroups),
+            Path = nameof(SharedFieldLibraryViewModel.CurrentLevelSupportsGroups),
         });
         items.Add(addGroup);
 

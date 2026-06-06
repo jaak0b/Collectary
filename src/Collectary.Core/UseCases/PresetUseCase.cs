@@ -57,8 +57,8 @@ public class PresetUseCase : IPresetUseCase
 
         var ownEntries = preset.Fields
             .Select(f => (Def: f, Order: f.DisplayOrder, GroupId: f.GroupId));
-        var systemEntries = preset.SystemFieldRefs
-            .Select(r => (Def: r.SystemField.Definition, Order: r.DisplayOrder, GroupId: r.GroupId));
+        var systemEntries = preset.SharedFieldRefs
+            .Select(r => (Def: r.SharedField.Definition, Order: r.DisplayOrder, GroupId: r.GroupId));
         foreach (var entry in ownEntries.Concat(systemEntries).OrderBy(e => e.Order))
         {
             fields.Add(entry.Def);

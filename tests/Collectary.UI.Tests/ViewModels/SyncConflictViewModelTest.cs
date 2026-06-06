@@ -24,7 +24,7 @@ public class SyncConflictViewModelTest
 
     [TestCase(SyncEntityKind.Preset, "Sync_KindCollection")]
     [TestCase(SyncEntityKind.Item, "Sync_KindItem")]
-    [TestCase(SyncEntityKind.SystemField, "Sync_KindSystemField")]
+    [TestCase(SyncEntityKind.SharedField, "Sync_KindSharedField")]
     public void KindText_IsLocalizedPerKind(SyncEntityKind kind, string key)
     {
         var vm = new SyncConflictViewModel(Conflict(kind), (_, _) => Task.CompletedTask);

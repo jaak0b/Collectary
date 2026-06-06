@@ -33,7 +33,7 @@ That's it — no edits to existing field types, registries, menus, or any centra
 You never touch a menu when adding a type. `FieldTypeCatalog`
 (`src/Collectary.Presentation/ViewModels/FieldTypeCatalog.cs`) discovers every `FieldDefinition`
 carrying a `[FieldCatalog]` attribute by reflection and orders them by `(category, order)`. Both the
-**preset editor** (Collection Settings) and the **System Fields library** render this one catalog, so
+**preset editor** (Collection Settings) and the **Shared Fields library** render this one catalog, so
 their menus are always identical — a type added with `[FieldCatalog]` appears in both automatically.
 A guard test (`FieldCatalogAttributeTest`) fails the build if a new addable type forgets the attribute.
 

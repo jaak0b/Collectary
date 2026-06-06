@@ -13,7 +13,7 @@ public record LanguageOption(string Code, string DisplayName);
 
 public partial class SettingsViewModel : ViewModelBase
 {
-    private readonly Action _navigateToSystemFields;
+    private readonly Action _navigateToSharedFields;
     private readonly Func<Task<string?>>? _pickFolder;
     private readonly Action? _onSyncChanged;
     private readonly Func<CloudProvider, Task<string?>>? _connectCloud;
@@ -216,7 +216,7 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void NavigateToSystemFields() => _navigateToSystemFields();
+    private void NavigateToSharedFields() => _navigateToSharedFields();
 
     [ObservableProperty]
     public partial string? SyncLocation { get; set; }
@@ -418,7 +418,7 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     public SettingsViewModel(
-        Action navigateToSystemFields,
+        Action navigateToSharedFields,
         Func<Task<string?>>? pickFolder = null,
         Action? onSyncChanged = null,
         Func<CloudProvider, Task<string?>>? connectCloud = null,
@@ -430,7 +430,7 @@ public partial class SettingsViewModel : ViewModelBase
         Action? logout = null,
         bool canLogout = false)
     {
-        _navigateToSystemFields = navigateToSystemFields;
+        _navigateToSharedFields = navigateToSharedFields;
         _pickFolder = pickFolder;
         _onSyncChanged = onSyncChanged;
         _connectCloud = connectCloud;

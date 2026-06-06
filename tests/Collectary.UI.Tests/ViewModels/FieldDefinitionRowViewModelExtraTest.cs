@@ -18,9 +18,9 @@ public class FieldDefinitionRowViewModelExtraTest
     }
 
     [Test]
-    public void SystemField_ExposesLockGlyph_AndPlainDisplayLabel()
+    public void SharedField_ExposesLockGlyph_AndPlainDisplayLabel()
     {
-        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "Tag" }, isSystemField: true);
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "Tag" }, isSharedField: true);
         Assert.Multiple(() =>
         {
             Assert.That(sut.DisplayLabel, Is.EqualTo("Tag"));

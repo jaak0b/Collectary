@@ -1,10 +1,10 @@
 namespace Collectary.Core.Domain;
 
-public class ListSystemField
+public class ListSharedField
 {
     public Guid ListFieldDefinitionId { get; set; }
-    public Guid SystemFieldId { get; set; }
+    public Guid SharedFieldId { get; set; }
     public Guid? GroupId { get; set; }
     public int DisplayOrder { get; set; }
-    public SystemField SystemField { get; set; } = null!;
+    public SharedField SharedField { get; set; } = null!;
 }

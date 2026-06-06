@@ -79,19 +79,19 @@ public class FieldDefinitionRowViewModelTest
     }
 
     [Test]
-    public void IsSystemField_FalseByDefault()
+    public void IsSharedField_FalseByDefault()
     {
         var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
 
-        Assert.That(sut.IsSystemField, Is.False);
+        Assert.That(sut.IsSharedField, Is.False);
     }
 
     [Test]
-    public void IsSystemField_TrueWhenPassedTrue()
+    public void IsSharedField_TrueWhenPassedTrue()
     {
-        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition(), isSystemField: true);
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition(), isSharedField: true);
 
-        Assert.That(sut.IsSystemField, Is.True);
+        Assert.That(sut.IsSharedField, Is.True);
     }
 
     [Test]
@@ -235,10 +235,10 @@ public class FieldDefinitionRowViewModelTest
     }
 
     [Test]
-    public void BuildDefinition_WhenSystemField_ReturnsOriginalDefinitionUnchanged()
+    public void BuildDefinition_WhenSharedField_ReturnsOriginalDefinitionUnchanged()
     {
         var def = new TextFieldDefinition { Label = "System" };
-        var sut = new FieldDefinitionRowViewModel(def, isSystemField: true);
+        var sut = new FieldDefinitionRowViewModel(def, isSharedField: true);
         sut.Label = "Changed";
 
         var result = _mapper.ToDefinition(sut);
@@ -291,16 +291,16 @@ public class FieldDefinitionRowViewModelTest
     }
 
     [Test]
-    public void IsEditable_TrueWhenNotSystemField()
+    public void IsEditable_TrueWhenNotSharedField()
     {
-        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition(), isSystemField: false);
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition(), isSharedField: false);
         Assert.That(sut.IsEditable, Is.True);
     }
 
     [Test]
-    public void IsEditable_FalseWhenSystemField()
+    public void IsEditable_FalseWhenSharedField()
     {
-        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition(), isSystemField: true);
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition(), isSharedField: true);
         Assert.That(sut.IsEditable, Is.False);
     }
 

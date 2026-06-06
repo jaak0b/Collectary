@@ -3,44 +3,44 @@ using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.Services;
-using Collectary.Presentation.ViewModels.SystemFields;
+using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.UI.Tests.ViewModels;
 
 [TestFixture]
-public class SystemFieldLibraryViewModelTest
+public class SharedFieldLibraryViewModelTest
 {
-    private ISystemFieldUseCase _useCase = null!;
+    private ISharedFieldUseCase _useCase = null!;
     private IDialogService _dialogService = null!;
-    private SystemFieldLibraryViewModel _sut = null!;
+    private SharedFieldLibraryViewModel _sut = null!;
 
-    private static SystemField MakeField(string label) => new()
+    private static SharedField MakeField(string label) => new()
     {
         Definition = new TextFieldDefinition { Label = label }
     };
 
-    private static SystemField MakeTrackedField(string label)
+    private static SharedField MakeTrackedField(string label)
     {
-        var sf = new SystemField { Name = label, Definition = new TextFieldDefinition { Label = label } };
-        sf.Definition.SystemFieldId = sf.Id;
+        var sf = new SharedField { Name = label, Definition = new TextFieldDefinition { Label = label } };
+        sf.Definition.SharedFieldId = sf.Id;
         return sf;
     }
 
     [SetUp]
     public void SetUp()
     {
-        _useCase = A.Fake<ISystemFieldUseCase>();
+        _useCase = A.Fake<ISharedFieldUseCase>();
         _dialogService = A.Fake<IDialogService>();
-        _sut = new SystemFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
+        _sut = new SharedFieldLibraryViewModel(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: () => { });
     }
 
-    private SystemFieldLibraryViewModel CreateSut(Action? onDone = null) =>
+    private SharedFieldLibraryViewModel CreateSut(Action? onDone = null) =>
         new(_useCase, _dialogService, new TestFieldEditorMapper().Create(), onDone: onDone ?? (() => { }));
 
     [Test]
     public async Task LoadAsync_PopulatesRowsFromUseCase()
     {
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { MakeField("Color"), MakeField("Size") });
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { MakeField("Color"), MakeField("Size") });
 
         await _sut.LoadAsync();
 
@@ -51,8 +51,8 @@ public class SystemFieldLibraryViewModelTest
     public async Task LoadAsync_ClearsExistingRowsBeforeRepopulating()
     {
         A.CallTo(() => _useCase.GetAllAsync())
-            .Returns(new List<SystemField> { MakeField("A") }).Once()
-            .Then.Returns(new List<SystemField> { MakeField("B"), MakeField("C") });
+            .Returns(new List<SharedField> { MakeField("A") }).Once()
+            .Then.Returns(new List<SharedField> { MakeField("B"), MakeField("C") });
 
         await _sut.LoadAsync();
         await _sut.LoadAsync();
@@ -85,7 +85,7 @@ public class SystemFieldLibraryViewModelTest
     [Test]
     public async Task SaveAndGoBackAsync_InvokesOnDoneAfterSave()
     {
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField>());
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField>());
         var invoked = false;
         var sut = CreateSut(onDone: () => { invoked = true; });
         await sut.LoadAsync();
@@ -98,13 +98,13 @@ public class SystemFieldLibraryViewModelTest
     [Test]
     public async Task SaveAndGoBackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
     {
-        var listSf = new SystemField
+        var listSf = new SharedField
         {
             Name = "L",
             Definition = new ListFieldDefinition { Label = "L" }
         };
-        listSf.Definition.SystemFieldId = listSf.Id;
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { listSf });
+        listSf.Definition.SharedFieldId = listSf.Id;
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { listSf });
         var exited = false;
         var sut = CreateSut(onDone: () => exited = true);
         await sut.LoadAsync();
@@ -117,11 +117,11 @@ public class SystemFieldLibraryViewModelTest
     }
 
     [Test]
-    public async Task AddTextField_AtRoot_CreatesSystemFieldViaUseCase()
+    public async Task AddTextField_AtRoot_CreatesSharedFieldViaUseCase()
     {
         await _sut.AddFieldAsync<TextFieldDefinition>();
 
-        A.CallTo(() => _useCase.CreateAsync(A<SystemField>._))
+        A.CallTo(() => _useCase.CreateAsync(A<SharedField>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -136,27 +136,27 @@ public class SystemFieldLibraryViewModelTest
     [Test]
     public async Task AddTextField_WhenNested_DoesNotCallUseCaseCreate()
     {
-        var listField = new SystemField
+        var listField = new SharedField
         {
             Name = "ListSF",
             Definition = new ListFieldDefinition { Label = "MyList" }
         };
-        listField.Definition.SystemFieldId = listField.Id;
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { listField });
+        listField.Definition.SharedFieldId = listField.Id;
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { listField });
         await _sut.LoadAsync();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
         Fake.ClearRecordedCalls(_useCase);
 
         await _sut.AddFieldAsync<TextFieldDefinition>();
 
-        A.CallTo(() => _useCase.CreateAsync(A<SystemField>._)).MustNotHaveHappened();
+        A.CallTo(() => _useCase.CreateAsync(A<SharedField>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task RemoveField_AtRoot_DeletesViaUseCase()
     {
         var sf = MakeTrackedField("Tag");
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { sf });
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { sf });
         await _sut.LoadAsync();
         var row = _sut.CurrentRows[0];
 
@@ -169,7 +169,7 @@ public class SystemFieldLibraryViewModelTest
     public async Task RemoveField_AtRoot_RemovesRowFromCurrentRows()
     {
         var sf = MakeTrackedField("Tag");
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { sf });
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { sf });
         await _sut.LoadAsync();
         var row = _sut.CurrentRows[0];
 
@@ -182,7 +182,7 @@ public class SystemFieldLibraryViewModelTest
     public async Task RemoveField_ClearsSelectedField_WhenRemovingSelected()
     {
         var sf = MakeTrackedField("Tag");
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { sf });
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { sf });
         await _sut.LoadAsync();
         var row = _sut.CurrentRows[0];
         _sut.SelectedNode = row;
@@ -193,24 +193,24 @@ public class SystemFieldLibraryViewModelTest
     }
 
     [Test]
-    public async Task SaveAsync_UpdatesEachSystemFieldViaUseCase()
+    public async Task SaveAsync_UpdatesEachSharedFieldViaUseCase()
     {
         var sf1 = MakeTrackedField("Alpha");
         var sf2 = MakeTrackedField("Beta");
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { sf1, sf2 });
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { sf1, sf2 });
         await _sut.LoadAsync();
 
         await _sut.SaveAndGoBackCommand.ExecuteAsync(null);
 
-        A.CallTo(() => _useCase.UpdateAsync(A<SystemField>._)).MustHaveHappened(2, Times.Exactly);
+        A.CallTo(() => _useCase.UpdateAsync(A<SharedField>._)).MustHaveHappened(2, Times.Exactly);
     }
 
     [Test]
     public async Task SaveCommand_WhenThrows_ShowsDialog()
     {
         var sf = MakeTrackedField("X");
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { sf });
-        A.CallTo(() => _useCase.UpdateAsync(A<SystemField>._)).Throws<InvalidOperationException>();
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { sf });
+        A.CallTo(() => _useCase.UpdateAsync(A<SharedField>._)).Throws<InvalidOperationException>();
         await _sut.LoadAsync();
 
         await _sut.SaveCommand.ExecuteAsync(null);
@@ -225,7 +225,7 @@ public class SystemFieldLibraryViewModelTest
         var fieldA = MakeTrackedField("A");
         var fieldB = MakeTrackedField("B");
         var fieldC = MakeTrackedField("C");
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { fieldA, fieldB, fieldC });
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { fieldA, fieldB, fieldC });
         await _sut.LoadAsync();
 
         await _sut.ReorderAsync(0, 2);
@@ -239,13 +239,13 @@ public class SystemFieldLibraryViewModelTest
     [Test]
     public async Task ReorderAsync_WhenNested_DoesNotCallUseCase()
     {
-        var listSf = new SystemField
+        var listSf = new SharedField
         {
             Name = "L",
             Definition = new ListFieldDefinition { Label = "L" }
         };
-        listSf.Definition.SystemFieldId = listSf.Id;
-        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { listSf });
+        listSf.Definition.SharedFieldId = listSf.Id;
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { listSf });
         await _sut.LoadAsync();
         _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
         Fake.ClearRecordedCalls(_useCase);

@@ -25,7 +25,7 @@ public class PolymorphicFieldResolver : DefaultJsonTypeInfoResolver
             var property = info.Properties[i];
             var drop = property.PropertyType == typeof(Type)
                 || (typeof(FieldValue).IsAssignableFrom(type) && property.Name == "Definition")
-                || ((type == typeof(PresetSystemField) || type == typeof(ListSystemField)) && property.Name == "SystemField");
+                || ((type == typeof(PresetSharedField) || type == typeof(ListSharedField)) && property.Name == "SharedField");
             if (drop) info.Properties.RemoveAt(i);
         }
 

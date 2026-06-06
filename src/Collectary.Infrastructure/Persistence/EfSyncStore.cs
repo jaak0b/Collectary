@@ -28,10 +28,10 @@ public class EfSyncStore : ISyncStore
         return await WithItemDetails(db.Items.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
     }
 
-    public async Task<IReadOnlyList<SystemField>> GetAllSystemFieldsAsync()
+    public async Task<IReadOnlyList<SharedField>> GetAllSharedFieldsAsync()
     {
         using var db = _dbFactory();
-        return await WithSystemFieldDetails(db.SystemFields.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
+        return await WithSharedFieldDetails(db.SharedFields.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
     }
 
     public Task ApplyPresetAsync(Preset preset) =>
@@ -61,22 +61,22 @@ public class EfSyncStore : ISyncStore
         await tx.CommitAsync();
     }
 
-    public async Task ApplySystemFieldAsync(SystemField systemField)
+    public async Task ApplySharedFieldAsync(SharedField sharedField)
     {
         using var db = _dbFactory();
-        var tracked = await WithSystemFieldDetails(db.SystemFields.IgnoreQueryFilters())
-            .FirstOrDefaultAsync(sf => sf.Id == systemField.Id);
+        var tracked = await WithSharedFieldDetails(db.SharedFields.IgnoreQueryFilters())
+            .FirstOrDefaultAsync(sf => sf.Id == sharedField.Id);
 
         if (tracked is null)
         {
-            db.SystemFields.Add(systemField);
+            db.SharedFields.Add(sharedField);
         }
         else
         {
-            tracked.Name = systemField.Name;
-            tracked.SortOrder = systemField.SortOrder;
-            CopySyncMetadata(systemField, tracked);
-            _merger.Apply(db, tracked.Definition, systemField.Definition);
+            tracked.Name = sharedField.Name;
+            tracked.SortOrder = sharedField.SortOrder;
+            CopySyncMetadata(sharedField, tracked);
+            _merger.Apply(db, tracked.Definition, sharedField.Definition);
         }
 
         await db.SaveChangesAsync();
@@ -89,7 +89,7 @@ public class EfSyncStore : ISyncStore
         {
             SyncEntityKind.Preset => await db.Presets.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id),
             SyncEntityKind.Item => await db.Items.IgnoreQueryFilters().FirstOrDefaultAsync(i => i.Id == id),
-            SyncEntityKind.SystemField => await db.SystemFields.IgnoreQueryFilters().FirstOrDefaultAsync(sf => sf.Id == id),
+            SyncEntityKind.SharedField => await db.SharedFields.IgnoreQueryFilters().FirstOrDefaultAsync(sf => sf.Id == id),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind"),
         };
         if (tracked is null) return;
@@ -107,18 +107,18 @@ public class EfSyncStore : ISyncStore
             .Where(p => p.IsDeleted && !p.IsDirty && p.DeletedAt != null && p.DeletedAt < cutoff).ToListAsync();
         var items = await db.Items.IgnoreQueryFilters()
             .Where(i => i.IsDeleted && !i.IsDirty && i.DeletedAt != null && i.DeletedAt < cutoff).ToListAsync();
-        var systemFields = await db.SystemFields.IgnoreQueryFilters()
+        var sharedFields = await db.SharedFields.IgnoreQueryFilters()
             .Where(s => s.IsDeleted && !s.IsDirty && s.DeletedAt != null && s.DeletedAt < cutoff).ToListAsync();
 
         db.Presets.RemoveRange(presets);
         db.Items.RemoveRange(items);
-        db.SystemFields.RemoveRange(systemFields);
+        db.SharedFields.RemoveRange(sharedFields);
         await db.SaveChangesAsync();
 
         var purged = new List<PurgedTombstone>();
         purged.AddRange(presets.Select(p => new PurgedTombstone(SyncEntityKind.Preset, p.Id)));
         purged.AddRange(items.Select(i => new PurgedTombstone(SyncEntityKind.Item, i.Id)));
-        purged.AddRange(systemFields.Select(s => new PurgedTombstone(SyncEntityKind.SystemField, s.Id)));
+        purged.AddRange(sharedFields.Select(s => new PurgedTombstone(SyncEntityKind.SharedField, s.Id)));
         return purged;
     }
 
@@ -133,8 +133,8 @@ public class EfSyncStore : ISyncStore
             case SyncEntityKind.Item:
                 db.Items.RemoveRange(await db.Items.IgnoreQueryFilters().Where(i => i.Id == id).ToListAsync());
                 break;
-            case SyncEntityKind.SystemField:
-                db.SystemFields.RemoveRange(await db.SystemFields.IgnoreQueryFilters().Where(s => s.Id == id).ToListAsync());
+            case SyncEntityKind.SharedField:
+                db.SharedFields.RemoveRange(await db.SharedFields.IgnoreQueryFilters().Where(s => s.Id == id).ToListAsync());
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind");
@@ -178,7 +178,7 @@ public class EfSyncStore : ISyncStore
             .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).SubFields)
             .Include(p => p.Fields).ThenInclude(f => ((ListFieldDefinition)f).Groups)
             .Include(p => p.Groups)
-            .Include(p => p.SystemFieldRefs)
+            .Include(p => p.SharedFieldRefs)
             .AsSplitQuery();
 
     private IQueryable<Item> WithItemDetails(IQueryable<Item> query) =>
@@ -186,7 +186,7 @@ public class EfSyncStore : ISyncStore
             .Include(i => i.Values)
             .Include(i => i.Values).ThenInclude(v => ((ListFieldValue)v).Entries).ThenInclude(e => e.SubValues);
 
-    private IQueryable<SystemField> WithSystemFieldDetails(IQueryable<SystemField> query) =>
+    private IQueryable<SharedField> WithSharedFieldDetails(IQueryable<SharedField> query) =>
         query
             .Include(sf => sf.Definition).ThenInclude(d => ((ListFieldDefinition)d).SubFields)
             .Include(sf => sf.Definition).ThenInclude(d => ((ListFieldDefinition)d).Groups);

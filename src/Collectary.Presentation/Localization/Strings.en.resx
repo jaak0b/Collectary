@@ -220,10 +220,10 @@
   <data name="FieldSettings" xml:space="preserve"><value>Field settings</value></data>
   <data name="SelectFieldHint" xml:space="preserve"><value>Select a field on the left to edit its settings, or add a new one.</value></data>
   <data name="ConfigureSubFields" xml:space="preserve"><value>Configure sub-fields →</value></data>
-  <data name="SystemFields" xml:space="preserve"><value>System Fields</value></data>
-  <data name="SystemFieldsHint" xml:space="preserve"><value>System fields are reusable field definitions that can be added to any collection. Editing a system field updates it everywhere.</value></data>
-  <data name="AddSystemField" xml:space="preserve"><value>＋ Add System Field</value></data>
-  <data name="EditInSystemFields" xml:space="preserve"><value>This is a System Field. To edit its configuration, go to System Fields from the home screen.</value></data>
+  <data name="SharedFields" xml:space="preserve"><value>Shared Fields</value></data>
+  <data name="SharedFieldsHint" xml:space="preserve"><value>Shared fields are reusable field definitions that can be added to any collection. Editing a shared field updates it everywhere.</value></data>
+  <data name="AddSharedField" xml:space="preserve"><value>＋ Add Shared Field</value></data>
+  <data name="EditInSharedFields" xml:space="preserve"><value>This is a Shared Field. To edit its configuration, go to Shared Fields from the home screen.</value></data>
   <data name="Done" xml:space="preserve"><value>Done</value></data>
   <data name="ToggleSidebar" xml:space="preserve"><value>Toggle sidebar</value></data>
   <data name="SelectCollectionPrompt" xml:space="preserve"><value>Select a collection to get started</value></data>
@@ -270,7 +270,7 @@
   <data name="Sync_KeepTheirs" xml:space="preserve"><value>Keep theirs</value></data>
   <data name="Sync_KindCollection" xml:space="preserve"><value>Collection</value></data>
   <data name="Sync_KindItem" xml:space="preserve"><value>Item</value></data>
-  <data name="Sync_KindSystemField" xml:space="preserve"><value>System field</value></data>
+  <data name="Sync_KindSharedField" xml:space="preserve"><value>Shared field</value></data>
   <data name="Sync_Mine" xml:space="preserve"><value>Mine</value></data>
   <data name="Sync_Theirs" xml:space="preserve"><value>Theirs</value></data>
   <data name="Sync_ResolveConflicts" xml:space="preserve"><value>Resolve conflicts</value></data>

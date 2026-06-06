@@ -220,10 +220,10 @@
   <data name="FieldSettings" xml:space="preserve"><value>Feldeinstellungen</value></data>
   <data name="SelectFieldHint" xml:space="preserve"><value>Wähle links ein Feld aus, um es zu bearbeiten, oder füge ein neues hinzu.</value></data>
   <data name="ConfigureSubFields" xml:space="preserve"><value>Unterfelder konfigurieren →</value></data>
-  <data name="SystemFields" xml:space="preserve"><value>Systemfelder</value></data>
-  <data name="SystemFieldsHint" xml:space="preserve"><value>Systemfelder sind wiederverwendbare Felddefinitionen, die in jede Sammlung eingefügt werden können. Eine Änderung wirkt sich überall aus.</value></data>
-  <data name="AddSystemField" xml:space="preserve"><value>＋ Systemfeld hinzufügen</value></data>
-  <data name="EditInSystemFields" xml:space="preserve"><value>Dies ist ein Systemfeld. Um es zu bearbeiten, öffne Systemfelder auf dem Startbildschirm.</value></data>
+  <data name="SharedFields" xml:space="preserve"><value>Geteilte Felder</value></data>
+  <data name="SharedFieldsHint" xml:space="preserve"><value>Geteilte Felder sind wiederverwendbare Felddefinitionen, die in jede Sammlung eingefügt werden können. Eine Änderung wirkt sich überall aus.</value></data>
+  <data name="AddSharedField" xml:space="preserve"><value>＋ Geteiltes Feld hinzufügen</value></data>
+  <data name="EditInSharedFields" xml:space="preserve"><value>Dies ist ein geteiltes Feld. Um es zu bearbeiten, öffne Geteilte Felder auf dem Startbildschirm.</value></data>
   <data name="Done" xml:space="preserve"><value>Fertig</value></data>
   <data name="ToggleSidebar" xml:space="preserve"><value>Seitenleiste umschalten</value></data>
   <data name="SelectCollectionPrompt" xml:space="preserve"><value>Sammlung auswählen zum Starten</value></data>
@@ -270,7 +270,7 @@
   <data name="Sync_KeepTheirs" xml:space="preserve"><value>Andere behalten</value></data>
   <data name="Sync_KindCollection" xml:space="preserve"><value>Sammlung</value></data>
   <data name="Sync_KindItem" xml:space="preserve"><value>Eintrag</value></data>
-  <data name="Sync_KindSystemField" xml:space="preserve"><value>Systemfeld</value></data>
+  <data name="Sync_KindSharedField" xml:space="preserve"><value>Geteiltes Feld</value></data>
   <data name="Sync_Mine" xml:space="preserve"><value>Meine</value></data>
   <data name="Sync_Theirs" xml:space="preserve"><value>Andere</value></data>
   <data name="Sync_ResolveConflicts" xml:space="preserve"><value>Konflikte lösen</value></data>

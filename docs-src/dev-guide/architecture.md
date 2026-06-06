@@ -64,7 +64,7 @@ The breakpoint is **720 px**, handled by the `ResponsiveSplitLayout` helper
 The two modes are driven by `MainWindowViewModel.IsDesktopSidebarVisible` (wide only) and
 `IsMobileSidebarVisible` (narrow only). Both are derived from `IsNarrow` and `IsSidebarOpen`.
 
-### Field editor (Collection Settings / System Fields)
+### Field editor (Collection Settings / Shared Fields)
 
 `FieldListEditorViewModel` exposes `IsMasterPanelVisible` and `IsDetailPanelVisible`, computed
 from `IsNarrow` and `SelectedNode`:

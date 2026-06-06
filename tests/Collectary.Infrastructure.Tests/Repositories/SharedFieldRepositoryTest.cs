@@ -17,18 +17,18 @@ file sealed class RecordingLogger : IAppLogger
 }
 
 [TestFixture]
-public class SystemFieldRepositoryTest : DbIntegrationTestBase
+public class SharedFieldRepositoryTest : DbIntegrationTestBase
 {
-    private SystemFieldRepository _sut = null!;
+    private SharedFieldRepository _sut = null!;
 
     [SetUp]
     public new void BaseSetUp()
     {
         base.BaseSetUp();
-        _sut = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger());
+        _sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
     }
 
-    private static SystemField MakeField(string name = "Test") => new()
+    private static SharedField MakeField(string name = "Test") => new()
     {
         Name = name,
         Definition = new TextFieldDefinition { Label = name }
@@ -159,7 +159,7 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
     [Test]
     public async Task DeleteAsync_WhenSyncConfigured_SoftDeletesAsTombstone()
     {
-        var sut = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger(), null, new ConfiguredSyncStatus());
+        var sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger(), null, new ConfiguredSyncStatus());
         var field = MakeField("Rating");
         await sut.AddAsync(field);
 
@@ -167,7 +167,7 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
 
         Assert.That(await sut.GetByIdAsync(field.Id), Is.Null, "Tombstoned field must be hidden from normal reads");
         using var db = DbFactory();
-        var tombstone = db.SystemFields.IgnoreQueryFilters().Single(sf => sf.Id == field.Id);
+        var tombstone = db.SharedFields.IgnoreQueryFilters().Single(sf => sf.Id == field.Id);
         Assert.Multiple(() =>
         {
             Assert.That(tombstone.IsDeleted, Is.True);
@@ -186,7 +186,7 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
         await _sut.DeleteAsync(field.Id);
 
         using var db = DbFactory();
-        Assert.That(db.SystemFields.IgnoreQueryFilters().Any(sf => sf.Id == field.Id), Is.False);
+        Assert.That(db.SharedFields.IgnoreQueryFilters().Any(sf => sf.Id == field.Id), Is.False);
     }
 
     [Test]
@@ -220,7 +220,7 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
     public async Task UpdateAsync_CallsLoggerDebug()
     {
         var logger = new RecordingLogger();
-        var sut = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger(), logger);
+        var sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger(), logger);
         var field = MakeField();
         await sut.AddAsync(field);
 
@@ -233,14 +233,14 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
     [Test]
     public void Constructor_WhenLoggerIsNull_UsesNullAppLogger()
     {
-        var sut = new SystemFieldRepository(DbFactory, new FieldDefinitionMerger(), null);
+        var sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger(), null);
         Assert.DoesNotThrow(() => { });
     }
 
     [Test]
     public async Task GetByIdAsync_EagerLoadsDefinition()
     {
-        var field = new SystemField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
+        var field = new SharedField { Name = "Tag", Definition = new TextFieldDefinition { Label = "Tag" } };
         await _sut.AddAsync(field);
 
         var loaded = await _sut.GetByIdAsync(field.Id);
@@ -254,7 +254,7 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
     {
         var listDef = new ListFieldDefinition { Label = "Chapters" };
         listDef.SubFields.Add(new TextFieldDefinition { Label = "Name", ParentListFieldDefinitionId = listDef.Id });
-        var field = new SystemField { Name = "Chapters", Definition = listDef };
+        var field = new SharedField { Name = "Chapters", Definition = listDef };
         await _sut.AddAsync(field);
 
         var loaded = await _sut.GetByIdAsync(field.Id);
@@ -272,7 +272,7 @@ public class SystemFieldRepositoryTest : DbIntegrationTestBase
         await _sut.DeleteAsync(field.Id);
 
         using var db = DbFactory();
-        Assert.That(db.SystemFields.Count(), Is.EqualTo(0), "System field removed");
+        Assert.That(db.SharedFields.Count(), Is.EqualTo(0), "System field removed");
         Assert.That(db.FieldDefinitions.Count(), Is.EqualTo(0), "Its definition must cascade-delete");
     }
 }

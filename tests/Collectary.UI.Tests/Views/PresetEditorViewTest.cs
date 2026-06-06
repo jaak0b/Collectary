@@ -16,10 +16,10 @@ public class PresetEditorViewTest
     private static PresetEditorViewModel CreateViewModel()
     {
         var presetUseCase = A.Fake<IPresetUseCase>();
-        var systemFieldUseCase = A.Fake<ISystemFieldUseCase>();
+        var sharedFieldUseCase = A.Fake<ISharedFieldUseCase>();
         var dialogService = A.Fake<IDialogService>();
         var mapper = new TestFieldEditorMapper().Create();
-        return new PresetEditorViewModel(presetUseCase, systemFieldUseCase, dialogService, mapper,
+        return new PresetEditorViewModel(presetUseCase, sharedFieldUseCase, dialogService, mapper,
             onSaved: () => { }, onCancelled: () => { });
     }
 
