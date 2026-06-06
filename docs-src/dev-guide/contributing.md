@@ -1,8 +1,7 @@
 # Contributing
 
-Thanks for your interest in improving Collectary! This page covers the conventions every change is
-expected to follow. They exist to keep the codebase consistent, well-tested, and portable across the
-desktop, browser, and mobile heads.
+The conventions every change follows, to keep the codebase consistent, tested, and portable across
+the desktop, browser, and mobile heads.
 
 ## Coding conventions
 

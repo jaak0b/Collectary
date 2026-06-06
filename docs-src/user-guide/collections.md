@@ -1,82 +1,58 @@
 # Collections
 
-A **collection** is one catalogue of similar things — your books, your coins, your board games.
-Each collection defines its own set of **fields** (the columns/properties every item has) and
-holds a list of **items**.
+A collection is one catalogue of similar things — your books, your coins, your board games. Each
+collection has its own set of fields (the properties every item shares) and a list of items.
 
 ## Creating a collection
 
-You can create a collection two ways:
+Two ways to start:
 
-### From a template
+- **From a template.** Collectary ships with 20+ templates so you don't start blank — Books comes
+  with Title, Author, ISBN, and so on. Pick one and edit the fields to taste.
+- **From scratch.** An empty collection where you define every field yourself.
 
-Collectary ships with 20+ ready-made templates so you don't start from a blank page:
-
-> Action Figures · Board Games · Books · Building Brick Sets · Camera Gear · Coins · Comics ·
-> Home Inventory · Houseplants · Makeup · Model Trains · Movies · Music · Recipes · Sneakers ·
-> Stamps · Tools · Trading Cards · Video Games · Watches · Whisky · Wine
-
-Pick one from the template picker and Collectary creates a collection pre-populated with sensible
-fields (e.g. *Books* comes with Title, Author, ISBN, and so on). You can then add, remove, or
-rename fields to taste.
-
-### From scratch
-
-Create an empty collection and define every field yourself. Good when your collection doesn't
-resemble any of the templates.
+Templates: Action Figures, Board Games, Books, Building Brick Sets, Camera Gear, Coins, Comics,
+Home Inventory, Houseplants, Makeup, Model Trains, Movies, Music, Recipes, Sneakers, Stamps, Tools,
+Trading Cards, Video Games, Watches, Whisky, Wine.
 
 ## Defining fields
 
-Open the **collection editor** to manage a collection's fields. For each field you choose:
-
-- A **name** (e.g. "Author").
-- A **type** — one of the [22 field types](field-types.md), which controls how the value is
-  entered and displayed.
-- Type-specific options (e.g. the choices for a single-choice field, the symbol for a currency
-  field).
-
-One field is marked as the **display name** — that's the value used to label each item in lists.
+Open the collection editor to manage fields. Each field has a name, a [type](field-types.md) that
+controls how its value is entered and shown, and any type-specific options (the choices for a
+single-choice field, the symbol for a currency field). One field is the display name — the value
+used to label each item in lists.
 
 ### Field groups
 
-Fields can be organised into named **groups** within a collection (e.g. "Identification",
-"Condition", "Purchase"). Groups keep large item editors tidy.
+Group fields under names like "Identification" or "Condition" to keep large editors tidy.
 
-When you drill into a group — or into a List field to edit its sub-fields — the path you've taken
-shows up in the **breadcrumb at the very top of the window**, right after the collection's name
-(for example, *My Collections / Collection Settings / Identification*). There's just the one trail:
-click any earlier step to jump straight back out, and click the collection's own step to return to
-the top level of the editor.
+When you drill into a group, or into a List field to edit its sub-fields, the path shows up in the
+breadcrumb at the top of the window — for example *My Collections / Collection Settings /
+Identification*. Click any earlier step to jump back; click the collection's own step to return to
+the top.
 
-While you're drilled in, **Save and go back** saves your work and steps up just one level — back to
-the parent group or list — rather than leaving the editor entirely. Keep clicking it to walk back out
-one step at a time; from the top level it saves and returns you to your collections.
+**Save and go back** saves and steps up one level, back to the parent group or list. From the top
+level it saves and returns you to your collections.
 
-### Layout: columns and label position
+### Layout
 
-The collection editor also controls how the item editor is laid out:
+The editor also controls the item editor's layout:
 
-- **Columns** — spread fields across up to several columns so a long form fits on one screen
-  instead of scrolling forever.
-- **Label position** — choose where each field's label sits relative to its input:
-    - **Beside input** — label on the left, compact. Great for single-column forms.
-    - **Above input** — label stacked on top. This keeps columns clean and readable when you use
-      more than one column, since labels never crowd the neighbouring column.
-    - **Adaptive** — the easy choice: beside when there's one column, above as soon as you add more.
-    - **Inherit (default)** — just follow the app-wide default you set in
-      [Settings](settings.md#appearance).
+- **Columns** — spread fields across several columns so a long form fits without scrolling.
+- **Label position** — where each field's label sits: *Beside* (left of the input, compact),
+  *Above* (stacked, cleaner with multiple columns), *Adaptive* (beside for one column, above for
+  more), or *Inherit* to follow the app-wide default in [Settings](settings.md#appearance).
 
 ### Reusing fields across collections
 
-The **Shared Field Library** holds field definitions you want to reuse across multiple
-collections, so you define a field once and drop it into any collection. Its **Add field** menu
-offers exactly the same full range of field types as a collection's own field editor — anything you
-can add to a collection, you can also define as a reusable shared field.
+The Shared Field Library holds field definitions you want in more than one collection: define a
+field once and drop it into any collection. It supports the same field types as a collection's own
+editor.
 
 ## Managing collections
 
-From the **Home** screen you can create, open, reorder, and delete collections. Deleting a
-collection removes its items too, so take care.
+From the Home screen you can create, open, reorder, and delete collections. Deleting a collection
+removes its items too.
 
 ## Next steps
 

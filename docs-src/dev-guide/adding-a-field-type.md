@@ -1,9 +1,8 @@
 # Adding a Field Type
 
-The field system is the most extensible part of Collectary. Adding a new `FieldDefinition` subtype
-is deliberately a **localized** change: a new field type requires **zero changes outside its own
-files** — dispatch is virtual and registration is by type name, so there are no type-switches to
-update anywhere in the codebase.
+Adding a new `FieldDefinition` subtype is a **localized** change: it requires **zero changes outside
+its own files**. Dispatch is virtual and registration is by type name, so there are no type-switches
+to update anywhere.
 
 ## The pattern
 
@@ -43,9 +42,9 @@ Every icon in the app — field types, collection templates, and bits of chrome 
 toggle — comes from a single embedded icon font, `CollectaryIcons.ttf`
 (`src/Collectary.UI/Assets/Fonts/`). It's a slimmed-down, renamed subset of Microsoft's MIT-licensed
 [FluentUI System Icons](https://github.com/microsoft/fluentui-system-icons), carrying only the glyphs
-we actually use. We moved away from emoji because the browser (WASM) build has no system fonts to fall
-back on, so emoji rendered as empty boxes there; vector glyphs from an embedded font look identical on
-every platform and recolour with the theme.
+we actually use. Emoji are avoided because the browser (WASM) build has no system fonts to fall back
+on, so emoji render as empty boxes there; embedded vector glyphs look identical on every platform and
+recolour with the theme.
 
 Each glyph has a friendly name in `IconGlyphs` (`src/Collectary.Core/Domain/Fields/IconGlyphs.cs`),
 e.g. `IconGlyphs.Star`. In C# you reference the constant (`[FieldIcon(IconGlyphs.Star)]`); in XAML you
@@ -58,7 +57,7 @@ bind it and tag the `TextBlock` with `Classes="icon"` so it picks up the icon fo
 **To add a new icon:** pick one from the Fluent set, find its `_20_regular` codepoint in the font's
 metadata, add it to the subset list and re-run the subsetting step, then add a named constant to
 `IconGlyphs`. The `IconFontTest` guard fails if any `IconGlyphs` constant has no matching glyph in the
-embedded font, so a typo or a missing-from-subset codepoint can't slip through.
+embedded font, so a typo or a missing codepoint can't slip through.
 
 ## Required tests
 

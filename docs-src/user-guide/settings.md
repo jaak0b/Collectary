@@ -1,65 +1,50 @@
 # Settings
 
-The **Settings** screen is where you tune how Collectary looks and behaves. Whatever you change
-here is saved to `%APPDATA%\Collectary\preferences.json` and waiting for you next time you open the
-app, so you only have to set things up once.
+The Settings screen controls how Collectary looks and behaves. Changes are saved to
+`%APPDATA%\Collectary\preferences.json` and restored next time you open the app.
 
 ## Appearance
 
-The **Appearance** section is where you make Collectary look the way *you* want. Everything here
-updates live across the whole app — there's never a need to restart.
+Everything here updates live — no restart.
 
-### Color theme and style
+### Theme and style
 
-Start by picking a **color theme**. Alongside the classic **Light** and **Dark** there's a whole
-shelf of favourites to choose from — Nord, Dracula, Solarized (light and dark), Catppuccin, Gruvbox,
-One Dark, and a High Contrast option for when you want everything to really stand out. The **style**
-dropdown then sets the overall shape of things — Windows 11, Flat, or Classic — controlling corners
-and control sizes.
+Pick a **color theme**: Light, Dark, Nord, Dracula, Solarized (light and dark), Catppuccin, Gruvbox,
+One Dark, or High Contrast. The **style** dropdown sets the overall shape — Windows 11, Flat, or
+Classic — which controls corners and control sizes.
 
 ### Customize colors
 
-Want to go further? Open **Customize colors** and make the palette your own. Your tweaks layer on
-top of whichever color theme you picked, so it's a great starting point rather than a blank canvas.
+**Customize colors** layers your own palette on top of the chosen theme. Two modes:
 
-There are two ways to work:
+- **Easy** — the five colours that matter most: accent, window background, surfaces/cards, main
+  text, and sidebar. Changing the accent derives matching hover and pressed shades automatically.
+- **Expert** — every background, text, border, sidebar, and danger colour the app uses.
 
-- **Easy** keeps it simple with the five colors that make the biggest difference: the accent, the
-  window background, surfaces and cards, the main text, and the sidebar. Change the accent and
-  Collectary works out matching hover and pressed shades for buttons automatically.
-- **Expert** opens up the full set — every background, text, border, sidebar, and danger color the
-  app uses — for complete, fine-grained control.
-
-Changed your mind? **Reset colors** puts everything back to the color theme you started from, so you
-can experiment freely without worrying about making a mess.
+**Reset colors** returns everything to the chosen theme.
 
 ### Field label position
 
-This sets the app-wide default for where field labels sit in the item editor — **beside** the input,
-**above** it, or **adaptive** (beside for single-column collections, above once a collection uses more
-than one column). Any individual collection can override this from its editor; collections left on
-*Inherit* follow whatever you pick here.
+The app-wide default for where field labels sit in the item editor: **beside**, **above**, or
+**adaptive** (beside for single-column collections, above once a collection uses more). Any
+collection can override this; collections left on *Inherit* follow this setting.
 
 ## Language
 
-Collectary speaks both **English** and **German**. Pick your language and every label, button, and
-message updates on the spot — again, no restart required, so feel free to flip back and forth.
+Collectary is available in English and German. Pick a language and the UI updates immediately — no
+restart.
 
 ## Sync
 
-This is also where you set up syncing across your devices: the shared folder to use, whether
-Collectary should sync on its own on a timer, how often that timer fires, and how long deletions
-are remembered. There's quite a bit to it, so it has its own page — see [Sync](sync.md) for the
-full story.
+Settings is also where you configure syncing: the shared folder, auto-sync and its interval, and how
+long deletions are remembered. See [Sync](sync.md).
 
 ## Account
 
-Settings has a **Switch profile** button that returns you to the profile screen without closing the
-app — handy for jumping to a different profile. It does the same thing as the **Switch profile**
-button in the top-right of the main window. See [Profiles](accounts.md) for the full story.
+A **Switch profile** button returns you to the profile screen without closing the app — the same as
+the button in the top-right of the main window. See [Profiles](accounts.md).
 
-## A few things it just remembers
+## Remembered automatically
 
-Beyond the settings you deliberately choose, Collectary quietly keeps track of smaller things too —
-whether the sidebar was expanded, how you'd sized the panes — so when you come back the app looks
-the way you left it.
+Collectary also remembers smaller things — whether the sidebar was expanded, how you sized the
+panes — so the app looks the way you left it.

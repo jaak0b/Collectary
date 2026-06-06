@@ -1,37 +1,29 @@
 # Items
 
-An **item** is a single entry in a collection — one book, one coin, one board game. Every item has
-a value for (some of) the fields defined by its collection.
+An **item** is a single entry in a collection — one book, one coin, one board game. Each item holds
+values for the fields its collection defines.
 
 ## Adding an item
 
-From a collection's view, choose to add an item. The **item editor** shows one input per field,
-using the editor appropriate to each [field type](field-types.md):
-
-- a text box for text fields,
-- a number box for integers/decimals,
-- a date picker for dates,
-- a colour picker for colour fields,
-- a star control for ratings,
-- an image picker for image fields,
-- and so on.
-
-Fields are grouped according to the collection's [field groups](collections.md#field-groups).
+From a collection's view, choose to add an item. The item editor shows one input per field, using
+the editor for each [field type](field-types.md) — a text box for text, a date picker for dates, a
+star control for ratings, an image picker for images, and so on. Fields are arranged by the
+collection's [field groups](collections.md#field-groups).
 
 ## Editing and deleting
 
-Open an existing item to edit any of its values, or delete it from the collection. Edits are saved
-to the database immediately and are attributed to the current user.
+Open an item to edit its values or delete it. Edits save immediately and are attributed to the
+current profile.
 
 ## How items appear in lists
 
-In a collection's list view, each item is labelled by its **display name** field, and other fields
-are rendered in a compact, type-aware way (currency shows its symbol, percentages show `%`, tags
-show as chips, colours show a swatch, and so on).
+In the list view, each item is labelled by its **display name** field. Other fields render in a
+compact, type-aware way: currency shows its symbol, percentages show `%`, tags show as chips,
+colours show a swatch.
 
 ## Tips
 
-- The set of fields you can fill in is controlled by the **collection**, not the item — to add a
-  new property to every item, add a field in the [collection editor](collections.md#defining-fields).
-- Use the [List field type](field-types.md) when a single item needs a repeating sub-list (e.g.
-  the tracks on an album, with their own sub-fields).
+- The fields you can fill in are set by the **collection**, not the item. To add a property to every
+  item, add a field in the [collection editor](collections.md#defining-fields).
+- Use the [List field type](field-types.md) when one item needs a repeating sub-list — the tracks on
+  an album, each with its own sub-fields.
