@@ -1,0 +1,129 @@
+using System.Globalization;
+using Collectary.Core.Domain;
+using Collectary.Core.Domain.Fields;
+using Collectary.Core.Domain.Import;
+using Collectary.Core.Ports;
+
+namespace Collectary.Core.UseCases.Import;
+
+public sealed class SpreadsheetImportService : ISpreadsheetImportService
+{
+    private readonly IItemUseCase _items;
+    private readonly IPresetUseCase _presets;
+
+    public SpreadsheetImportService(IItemUseCase items, IPresetUseCase presets)
+    {
+        _items = items;
+        _presets = presets;
+    }
+
+    public async Task<ImportSummary> ImportExistingAsync(Guid presetId, ShapedGrid grid, IReadOnlyList<ColumnMapping> mappings, CultureInfo culture)
+    {
+        var effective = await _presets.GetEffectiveFieldsAsync(presetId);
+        return await ImportRowsAsync(presetId, effective.Fields, grid, mappings, culture);
+    }
+
+    public async Task<(Preset Preset, ImportSummary Summary)> ImportNewAsync(string presetName, ShapedGrid grid, IReadOnlyList<NewFieldColumn> columns, CultureInfo culture)
+    {
+        var preset = new Preset { Name = presetName };
+        var title = new DisplayNameFieldDefinition { PresetId = preset.Id, DisplayOrder = 0 };
+        preset.Fields.Add(title);
+
+        var mappings = new List<ColumnMapping>();
+        var order = 1;
+        foreach (var column in columns)
+        {
+            if (column.IsTitle)
+            {
+                mappings.Add(new ColumnMapping(column.ColumnIndex, Guid.Empty, true));
+                continue;
+            }
+            column.Definition.PresetId = preset.Id;
+            column.Definition.DisplayOrder = order++;
+            preset.Fields.Add(column.Definition);
+            mappings.Add(new ColumnMapping(column.ColumnIndex, column.Definition.Id, false));
+        }
+
+        await _presets.CreatePresetAsync(preset);
+        var summary = await ImportRowsAsync(preset.Id, preset.Fields, grid, mappings, culture);
+        return (preset, summary);
+    }
+
+    private async Task<ImportSummary> ImportRowsAsync(
+        Guid presetId,
+        IReadOnlyList<FieldDefinition> fields,
+        ShapedGrid grid,
+        IReadOnlyList<ColumnMapping> mappings,
+        CultureInfo culture)
+    {
+        var fieldsById = fields.ToDictionary(f => f.Id);
+        var imported = 0;
+        var skipped = new List<ImportIssue>();
+        var warnings = new List<ImportIssue>();
+
+        for (var rowIndex = 0; rowIndex < grid.Rows.Count; rowIndex++)
+        {
+            var row = grid.Rows[rowIndex];
+            var rowNumber = rowIndex + 1;
+            var item = new Item { PresetId = presetId };
+            var unparsed = new List<string>();
+
+            foreach (var mapping in mappings)
+            {
+                if (mapping.ColumnIndex >= row.Count) continue;
+                var cell = row[mapping.ColumnIndex];
+                if (cell.Kind == WorkbookCellKind.Blank || string.IsNullOrWhiteSpace(cell.Text)) continue;
+
+                if (mapping.IsTitle)
+                {
+                    item.DisplayName = cell.Text!.Trim();
+                    continue;
+                }
+
+                if (!fieldsById.TryGetValue(mapping.FieldDefinitionId, out var definition)) continue;
+                if (definition is not ITextImportable importable)
+                {
+                    unparsed.Add(definition.Label);
+                    continue;
+                }
+
+                var cellCulture = EffectiveCulture(cell, culture);
+                if (importable.TryImportFromText(cell.Text!, cellCulture, out var value))
+                {
+                    value.FieldDefinitionId = definition.Id;
+                    item.Values.Add(value);
+                }
+                else
+                {
+                    unparsed.Add($"{definition.Label}: '{cell.Text}'");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(item.DisplayName) && item.Values.Count == 0)
+            {
+                if (unparsed.Count > 0)
+                    skipped.Add(new ImportIssue(rowNumber, $"No values could be imported ({string.Join("; ", unparsed)})"));
+                continue;
+            }
+
+            try
+            {
+                await _items.CreateItemAsync(item);
+                imported++;
+                if (unparsed.Count > 0)
+                    warnings.Add(new ImportIssue(rowNumber, $"Unparsed cells: {string.Join("; ", unparsed)}"));
+            }
+            catch (Exception ex)
+            {
+                skipped.Add(new ImportIssue(rowNumber, ex.Message));
+            }
+        }
+
+        return new ImportSummary(imported, skipped, warnings);
+    }
+
+    private IFormatProvider EffectiveCulture(WorkbookCell cell, CultureInfo culture) =>
+        cell.Kind is WorkbookCellKind.Number or WorkbookCellKind.DateTime or WorkbookCellKind.Boolean
+            ? CultureInfo.InvariantCulture
+            : culture;
+}

@@ -26,9 +26,37 @@ public class ThemeServiceTest
         {
             "Light", "Dark", "Nord", "Dracula", "SolarizedLight", "SolarizedDark",
             "CatppuccinLatte", "CatppuccinMocha", "GruvboxLight", "GruvboxDark",
-            "HighContrast", "OneDark"
+            "HighContrast", "OneDark", "Graphite"
         }));
         Assert.That(ids, Has.Count.GreaterThanOrEqualTo(8));
+    }
+
+    [Test]
+    public void Themes_IncludeGraphiteGreyDarkTheme()
+    {
+        var graphite = ThemeService.Instance.Themes.FirstOrDefault(t => t.Id == "Graphite");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(graphite, Is.Not.Null);
+            Assert.That(graphite!.IsDark, Is.True);
+        });
+    }
+
+    [Test]
+    public void ApplyColorTheme_Graphite_LoadsGreyPaletteWithGreySelection()
+    {
+        ThemeService.Instance.ApplyColorTheme("Graphite");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ThemeService.Instance.CurrentColorThemeId, Is.EqualTo("Graphite"));
+            Assert.That(Resource<Color>("BackgroundColor"), Is.EqualTo(Color.Parse("#313338")));
+            Assert.That(Resource<Color>("SurfaceColor"), Is.EqualTo(Color.Parse("#2B2D31")));
+            Assert.That(Resource<Color>("SidebarSelectedColor"), Is.EqualTo(Color.Parse("#404249")),
+                "Graphite highlights the selected item with a grey, not a coloured fill");
+            Assert.That(Application.Current!.RequestedThemeVariant, Is.EqualTo(Avalonia.Styling.ThemeVariant.Dark));
+        });
     }
 
     [Test]
@@ -88,6 +116,43 @@ public class ThemeServiceTest
             Assert.That(dark, Is.Not.EqualTo(light));
             Assert.That(darkVariant, Is.EqualTo(Avalonia.Styling.ThemeVariant.Dark));
         });
+    }
+
+    [Test]
+    public void ApplyColorTheme_RetintsSystemAccentRampToThemePrimary()
+    {
+        ThemeService.Instance.ApplyColorTheme("Graphite");
+        var primary = Resource<Color>("PrimaryColor");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Resource<Color>("SystemAccentColor"), Is.EqualTo(primary),
+                "stock accent controls (checkbox, slider) must follow the theme accent, not the OS accent");
+            Assert.That(Resource<Color>("SystemAccentColorLight1"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorLight2"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorLight3"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorDark1"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorDark2"), Is.EqualTo(primary));
+            Assert.That(Resource<Color>("SystemAccentColorDark3"), Is.EqualTo(primary));
+        });
+    }
+
+    [Test]
+    public void ApplyAccent_RetintsSystemAccentRamp()
+    {
+        ThemeService.Instance.ApplyColorTheme("Light");
+        ThemeService.Instance.ApplyAccent(Colors.Red);
+
+        Assert.That(Resource<Color>("SystemAccentColor"), Is.EqualTo(Colors.Red));
+    }
+
+    [Test]
+    public void ApplyCustomColors_PrimaryOverride_RetintsSystemAccentRamp()
+    {
+        ThemeService.Instance.ApplyColorTheme("Light");
+        ThemeService.Instance.ApplyCustomColors(new Dictionary<string, Color> { ["Primary"] = Colors.Green });
+
+        Assert.That(Resource<Color>("SystemAccentColor"), Is.EqualTo(Colors.Green));
     }
 
     [Test]

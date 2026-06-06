@@ -6,6 +6,10 @@ namespace Collectary.Core.Tests.Domain.Fields;
 public class AudioFieldDefinitionTest
 {
     [Test]
+    public void IsNotTextImportable() =>
+        Assert.That(new AudioFieldDefinition() is ITextImportable, Is.False);
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new AudioFieldDefinition();

@@ -75,11 +75,15 @@
   <data name="FieldType_Audio" xml:space="preserve"><value>Audionotiz</value></data>
   <data name="Audio_Microphone" xml:space="preserve"><value>Mikrofon</value></data>
   <data name="Audio_StartRecording" xml:space="preserve"><value>Aufnehmen</value></data>
-  <data name="Audio_StopRecording" xml:space="preserve"><value>Stopp</value></data>
+  <data name="Audio_StopRecording" xml:space="preserve"><value>Aufnahme stoppen</value></data>
   <data name="Audio_Play" xml:space="preserve"><value>Abspielen</value></data>
   <data name="Audio_Pause" xml:space="preserve"><value>Pause</value></data>
   <data name="Audio_Unavailable" xml:space="preserve"><value>Aufnahme ist auf diesem Gerät nicht verfügbar</value></data>
   <data name="Audio_RecordFailed" xml:space="preserve"><value>Audio konnte nicht aufgenommen werden</value></data>
+  <data name="Audio_RecordTooltip" xml:space="preserve"><value>Audionotiz aufnehmen. Mikrofon und Wiedergabegerät unter Einstellungen → Audio wählen.</value></data>
+  <data name="Audio_PlaybackDevice" xml:space="preserve"><value>Wiedergabegerät</value></data>
+  <data name="Audio_SystemDefault" xml:space="preserve"><value>Systemstandard</value></data>
+  <data name="Settings_Audio" xml:space="preserve"><value>Audio</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Erscheinungsbild</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Hell</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dunkel</value></data>
@@ -127,6 +131,46 @@
   <data name="NewFromTemplate" xml:space="preserve"><value>＋ Aus Vorlage</value></data>
   <data name="BlankCollection" xml:space="preserve"><value>Leere Sammlung</value></data>
   <data name="FromTemplate" xml:space="preserve"><value>Aus Vorlage</value></data>
+  <data name="Import_Menu" xml:space="preserve"><value>＋ Aus Excel importieren</value></data>
+  <data name="Import_Csv_Menu" xml:space="preserve"><value>＋ Aus CSV importieren</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Importieren</value></data>
+  <data name="Import_Excel_Title" xml:space="preserve"><value>Aus Excel importieren</value></data>
+  <data name="Import_Csv_Title" xml:space="preserve"><value>Aus CSV importieren</value></data>
+  <data name="Import_NoSheets" xml:space="preserve"><value>Diese Arbeitsmappe enthält keine importierbaren Tabellen.</value></data>
+  <data name="Import_ReadFailed" xml:space="preserve"><value>Die Datei konnte nicht geöffnet werden. Möglicherweise ist sie in einem anderen Programm (z. B. Excel) geöffnet – bitte schließen und erneut versuchen. Falls es weiterhin fehlschlägt, ist die Datei eventuell beschädigt oder hat ein unerwartetes Format.</value></data>
+  <data name="Import_Sheet" xml:space="preserve"><value>Tabelle</value></data>
+  <data name="Import_Step_Sheet" xml:space="preserve"><value>Tabelle auswählen</value></data>
+  <data name="Import_Step_Preview" xml:space="preserve"><value>Daten prüfen</value></data>
+  <data name="Import_Step_Target" xml:space="preserve"><value>Importziel wählen</value></data>
+  <data name="Import_Step_Map" xml:space="preserve"><value>Spalten zuordnen</value></data>
+  <data name="Import_Step_Result" xml:space="preserve"><value>Fertig</value></data>
+  <data name="Import_FirstRowHeader" xml:space="preserve"><value>Erste Zeile ist eine Überschrift</value></data>
+  <data name="Import_Rotate" xml:space="preserve"><value>Um 90° drehen (Felder verlaufen nach unten)</value></data>
+  <data name="Import_SourceCulture" xml:space="preserve"><value>Zahlen- &amp; Datumsformat der Quelle</value></data>
+  <data name="Import_TargetExisting" xml:space="preserve"><value>Zu vorhandener Sammlung hinzufügen</value></data>
+  <data name="Import_TargetNew" xml:space="preserve"><value>Neue Sammlung erstellen</value></data>
+  <data name="Import_CollectionName" xml:space="preserve"><value>Name der neuen Sammlung</value></data>
+  <data name="Import_ColumnFallback" xml:space="preserve"><value>Spalte {0}</value></data>
+  <data name="Import_Skip" xml:space="preserve"><value>(nicht importieren)</value></data>
+  <data name="Import_TitleColumn" xml:space="preserve"><value>Eintragsname (Titel)</value></data>
+  <data name="Import_Include" xml:space="preserve"><value>Einbeziehen</value></data>
+  <data name="Import_MapTo" xml:space="preserve"><value>Feld zuordnen</value></data>
+  <data name="Import_FieldType" xml:space="preserve"><value>Feldtyp</value></data>
+  <data name="Import_FieldLabel" xml:space="preserve"><value>Feldname</value></data>
+  <data name="Import_UseAsName" xml:space="preserve"><value>Als Eintragsname verwenden</value></data>
+  <data name="Import_Unmappable_Note" xml:space="preserve"><value>Feldtypen wie Bilder, Dateien und Verknüpfungen lassen sich nicht aus einer Tabelle füllen und sind daher ausgegraut.</value></data>
+  <data name="Import_Next" xml:space="preserve"><value>Weiter</value></data>
+  <data name="Import_Back" xml:space="preserve"><value>Zurück</value></data>
+  <data name="Import_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="Import_Run" xml:space="preserve"><value>Importieren</value></data>
+  <data name="Import_Done" xml:space="preserve"><value>Fertig</value></data>
+  <data name="Import_NoSheet" xml:space="preserve"><value>Bitte zuerst eine Tabelle auswählen.</value></data>
+  <data name="Import_NameRequired" xml:space="preserve"><value>Bitte einen Namen für die neue Sammlung eingeben.</value></data>
+  <data name="Import_NoCollectionSelected" xml:space="preserve"><value>Bitte eine Sammlung zum Importieren auswählen.</value></data>
+  <data name="Import_NoColumnsMapped" xml:space="preserve"><value>Bitte vor dem Import mindestens eine Spalte zuordnen.</value></data>
+  <data name="Import_Summary_Imported" xml:space="preserve"><value>{0} Eintrag/Einträge importiert.</value></data>
+  <data name="Import_Summary_Skipped" xml:space="preserve"><value>{0} Zeile(n) übersprungen.</value></data>
+  <data name="Import_Summary_Warnings" xml:space="preserve"><value>{0} Zelle(n) konnten nicht gelesen werden und blieben leer.</value></data>
   <data name="TemplatePickerTitle" xml:space="preserve"><value>Vorlage wählen</value></data>
   <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Starte mit einer vorkonfigurierten Sammlung und passe sie an deine Bedürfnisse an.</value></data>
   <data name="Collection" xml:space="preserve"><value>Sammlung</value></data>

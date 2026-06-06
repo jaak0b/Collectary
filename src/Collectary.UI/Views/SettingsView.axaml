@@ -98,6 +98,31 @@
                 </Expander>
             </StackPanel>
 
+            <Separator IsVisible="{Binding ShowAudioSettings}"/>
+
+            <!-- Audio -->
+            <StackPanel Spacing="14" IsVisible="{Binding ShowAudioSettings}">
+                <TextBlock Text="{Binding [Settings_Audio], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           LetterSpacing="1"/>
+
+                <controls:SettingsRow Label="{Binding [Audio_Microphone], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding InputDevices}"
+                              SelectedItem="{Binding SelectedInputDevice}"
+                              DisplayMemberBinding="{Binding Name}"
+                              HorizontalAlignment="Stretch"/>
+                </controls:SettingsRow>
+
+                <controls:SettingsRow Label="{Binding [Audio_PlaybackDevice], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding OutputDevices}"
+                              SelectedItem="{Binding SelectedOutputDevice}"
+                              DisplayMemberBinding="{Binding Name}"
+                              HorizontalAlignment="Stretch"/>
+                </controls:SettingsRow>
+            </StackPanel>
+
             <Separator/>
 
             <!-- Language -->

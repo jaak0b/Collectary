@@ -3,11 +3,21 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_SingleChoice")]
 [FieldIcon(IconGlyphs.RadioButton)]
 [FieldCatalog(1, FieldCategory.Choice)]
-public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValue>, IListDisplayable
+public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValue>, IListDisplayable, ITextImportable
 {
     public override int DefaultColumnSpan => 2;
     public List<ChoiceOption> Choices { get; set; } = new();
     public bool ShowInList { get; set; }
+
+    public int ImportInferenceOrder => int.MaxValue;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        if (string.IsNullOrWhiteSpace(raw)) return false;
+        value = new SingleChoiceFieldValue { FieldDefinitionId = Id, Selected = raw.Trim() };
+        return true;
+    }
 
     public override void ApplyTypeSpecificProperties(FieldDefinition source)
     {

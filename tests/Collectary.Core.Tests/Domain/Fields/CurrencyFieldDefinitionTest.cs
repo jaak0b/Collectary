@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain.Fields;
 
 namespace Collectary.Core.Tests.Domain.Fields;
@@ -17,4 +18,31 @@ public class CurrencyFieldDefinitionTest
     [Test]
     public void DefaultsToEuroSymbol() =>
         Assert.That(new CurrencyFieldDefinition().CurrencySymbol, Is.EqualTo("€"));
+
+    [Test]
+    public void TryImportFromText_ParsesPlainNumber()
+    {
+        var ok = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("5.50", CultureInfo.InvariantCulture, out var v);
+        Assert.That(ok, Is.True);
+        Assert.That(((CurrencyFieldValue)v).Value, Is.EqualTo(5.50m));
+    }
+
+    [Test]
+    public void TryImportFromText_StripsCurrencySymbolPerCulture()
+    {
+        var de = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("5,50 €", new CultureInfo("de-DE"), out var v);
+        Assert.That(de, Is.True);
+        Assert.That(((CurrencyFieldValue)v).Value, Is.EqualTo(5.50m));
+
+        var en = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("$5.50", new CultureInfo("en-US"), out var v2);
+        Assert.That(en, Is.True);
+        Assert.That(((CurrencyFieldValue)v2).Value, Is.EqualTo(5.50m));
+    }
+
+    [Test]
+    public void TryImportFromText_RejectsNonNumber()
+    {
+        var ok = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("free", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
 }

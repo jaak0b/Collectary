@@ -4,9 +4,20 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_Country")]
 [FieldIcon(IconGlyphs.Globe)]
 [FieldCatalog(2, FieldCategory.Choice)]
-public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListDisplayable
+public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListDisplayable, ITextImportable
 {
     public bool ShowInList { get; set; }
+
+    public int ImportInferenceOrder => int.MaxValue;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        var text = raw.Trim();
+        if (text.Length != 2 || !text.All(char.IsLetter)) return false;
+        value = new CountryFieldValue { FieldDefinitionId = Id, Code = text.ToUpperInvariant() };
+        return true;
+    }
 }
 
 public class CountryFieldValue : FieldValue<CountryFieldDefinition>

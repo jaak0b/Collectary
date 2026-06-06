@@ -6,6 +6,10 @@ namespace Collectary.Core.Tests.Domain.Fields;
 public class DisplayNameFieldDefinitionTest
 {
     [Test]
+    public void IsNotTextImportable() =>
+        Assert.That(new DisplayNameFieldDefinition() is ITextImportable, Is.False);
+
+    [Test]
     public void ValueType_IsTextFieldValue() =>
         Assert.That(new DisplayNameFieldDefinition().ValueType, Is.EqualTo(typeof(TextFieldValue)));
 

@@ -22,10 +22,20 @@ public enum BarcodeSymbology
 [LocalizedName("FieldType_Barcode")]
 [FieldIcon(IconGlyphs.Barcode)]
 [FieldCatalog(13, FieldCategory.TextAndNumbers)]
-public class BarcodeFieldDefinition : FieldDefinition<BarcodeFieldValue>, IListDisplayable
+public class BarcodeFieldDefinition : FieldDefinition<BarcodeFieldValue>, IListDisplayable, ITextImportable
 {
     public override int DefaultColumnSpan => 2;
     public bool ShowInList { get; set; }
+
+    public int ImportInferenceOrder => int.MaxValue;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        if (string.IsNullOrWhiteSpace(raw)) return false;
+        value = new BarcodeFieldValue { FieldDefinitionId = Id, Code = raw.Trim() };
+        return true;
+    }
 }
 
 public class BarcodeFieldValue : FieldValue<BarcodeFieldDefinition>

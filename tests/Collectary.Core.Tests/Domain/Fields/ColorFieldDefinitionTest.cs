@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain.Fields;
 
 namespace Collectary.Core.Tests.Domain.Fields;
@@ -5,6 +6,21 @@ namespace Collectary.Core.Tests.Domain.Fields;
 [TestFixture]
 public class ColorFieldDefinitionTest
 {
+    [Test]
+    public void TryImportFromText_AcceptsHexColor()
+    {
+        var ok = ((ITextImportable)new ColorFieldDefinition()).TryImportFromText("#1a2b3c", CultureInfo.InvariantCulture, out var v);
+        Assert.That(ok, Is.True);
+        Assert.That(((ColorFieldValue)v).Value, Is.EqualTo("#1a2b3c"));
+    }
+
+    [Test]
+    public void TryImportFromText_RejectsNonColor()
+    {
+        var ok = ((ITextImportable)new ColorFieldDefinition()).TryImportFromText("reddish", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
     [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {

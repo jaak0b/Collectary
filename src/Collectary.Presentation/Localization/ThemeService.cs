@@ -21,6 +21,7 @@ public class ThemeService
     private ResourceInclude? _palette;
     private ResourceDictionary? _accentOverride;
     private ResourceDictionary? _customOverride;
+    private ResourceDictionary? _systemAccentOverride;
     private IStyle? _skin;
 
     private ThemeService() { }
@@ -39,6 +40,7 @@ public class ThemeService
         new("GruvboxDark", "Gruvbox Dark", true),
         new("HighContrast", "High Contrast", true),
         new("OneDark", "One Dark", true),
+        new("Graphite", "Graphite", true),
     ];
 
     public IReadOnlyList<SkinInfo> Skins { get; } =
@@ -46,6 +48,13 @@ public class ThemeService
         new("Windows11", "Windows 11"),
         new("Flat", "Flat"),
         new("Classic", "Classic"),
+    ];
+
+    private IReadOnlyList<string> SystemAccentKeys { get; } =
+    [
+        "SystemAccentColor",
+        "SystemAccentColorLight1", "SystemAccentColorLight2", "SystemAccentColorLight3",
+        "SystemAccentColorDark1", "SystemAccentColorDark2", "SystemAccentColorDark3",
     ];
 
     public string CurrentColorThemeId { get; private set; } = "Light";
@@ -141,8 +150,11 @@ public class ThemeService
             merged.Remove(_accentOverride);
         if (_customOverride is not null && merged.Contains(_customOverride))
             merged.Remove(_customOverride);
+        if (_systemAccentOverride is not null && merged.Contains(_systemAccentOverride))
+            merged.Remove(_systemAccentOverride);
         _accentOverride = null;
         _customOverride = null;
+        _systemAccentOverride = null;
 
         if (CurrentAccent is { } accent)
         {
@@ -155,6 +167,25 @@ public class ThemeService
             _customOverride = BuildCustomDictionary(CurrentCustomColors);
             merged.Add(_customOverride);
         }
+
+        if (ResolveEffectivePrimary(app) is { } primary)
+        {
+            _systemAccentOverride = BuildSystemAccentDictionary(primary);
+            merged.Add(_systemAccentOverride);
+        }
+    }
+
+    private Color? ResolveEffectivePrimary(Application app) =>
+        app.TryGetResource("PrimaryColor", app.ActualThemeVariant, out var value) && value is Color primary
+            ? primary
+            : null;
+
+    private ResourceDictionary BuildSystemAccentDictionary(Color primary)
+    {
+        var dict = new ResourceDictionary();
+        foreach (var key in SystemAccentKeys)
+            dict[key] = primary;
+        return dict;
     }
 
     private ResourceDictionary BuildCustomDictionary(IReadOnlyDictionary<string, Color> overrides)

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain.Fields;
 
 namespace Collectary.Core.Tests.Domain.Fields;
@@ -32,5 +33,24 @@ public class DecimalFieldDefinitionTest
         var target = new DecimalFieldDefinition { DecimalPlaces = 3 };
         target.ApplyTypeSpecificProperties(new TextFieldDefinition());
         Assert.That(target.DecimalPlaces, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void TryImportFromText_HonoursDecimalSeparatorPerCulture()
+    {
+        var de = ((ITextImportable)new DecimalFieldDefinition()).TryImportFromText("1.234,56", new CultureInfo("de-DE"), out var v);
+        Assert.That(de, Is.True);
+        Assert.That(((DecimalFieldValue)v).Value, Is.EqualTo(1234.56m));
+
+        var en = ((ITextImportable)new DecimalFieldDefinition()).TryImportFromText("1,234.56", new CultureInfo("en-US"), out var v2);
+        Assert.That(en, Is.True);
+        Assert.That(((DecimalFieldValue)v2).Value, Is.EqualTo(1234.56m));
+    }
+
+    [Test]
+    public void TryImportFromText_RejectsNonNumber()
+    {
+        var ok = ((ITextImportable)new DecimalFieldDefinition()).TryImportFromText("abc", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
     }
 }

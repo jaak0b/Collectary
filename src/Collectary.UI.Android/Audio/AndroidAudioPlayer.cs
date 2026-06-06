@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Media;
 using Collectary.Core.Ports;
 using Application = Android.App.Application;
@@ -13,7 +15,20 @@ public sealed class AndroidAudioPlayer : IAudioPlayer
     private MediaPlayer? _player;
     private string? _tempPath;
 
-    public async Task PlayAsync(Stream audio)
+    private AudioManager? GetManager() =>
+        Application.Context.GetSystemService(Context.AudioService) as AudioManager;
+
+    public IReadOnlyList<AudioOutputDevice> GetOutputDevices()
+    {
+        var devices = new List<AudioOutputDevice>();
+        var outputs = GetManager()?.GetDevices(GetDevicesTargets.Outputs);
+        if (outputs is null) return devices;
+        foreach (var device in outputs)
+            devices.Add(new AudioOutputDevice(device.Id.ToString(), device.ProductName?.ToString() ?? "Speaker"));
+        return devices;
+    }
+
+    public async Task PlayAsync(Stream audio, string? deviceId)
     {
         Cleanup();
 
@@ -30,8 +45,22 @@ public sealed class AndroidAudioPlayer : IAudioPlayer
         };
         _player.SetDataSource(_tempPath);
         _player.Prepare();
+        TrySelectDevice(deviceId);
         _player.Start();
         await finished.Task;
+    }
+
+    private void TrySelectDevice(string? deviceId)
+    {
+        if (string.IsNullOrEmpty(deviceId) || !int.TryParse(deviceId, out var id)) return;
+        var outputs = GetManager()?.GetDevices(GetDevicesTargets.Outputs);
+        if (outputs is null) return;
+        foreach (var device in outputs)
+            if (device.Id == id)
+            {
+                _player?.SetPreferredDevice(device);
+                return;
+            }
     }
 
     public void Pause() => _player?.Pause();

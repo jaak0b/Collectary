@@ -10,7 +10,8 @@ Everything here updates live — no restart.
 ### Theme and style
 
 Pick a **color theme**: Light, Dark, Nord, Dracula, Solarized (light and dark), Catppuccin, Gruvbox,
-One Dark, or High Contrast. The **style** dropdown sets the overall shape — Windows 11, Flat, or
+One Dark, High Contrast, or Graphite — a soft shades-of-grey dark theme with a blurple accent. The
+**style** dropdown sets the overall shape — Windows 11, Flat, or
 Classic — which controls corners and control sizes.
 
 ### Customize colors
@@ -28,6 +29,14 @@ Classic — which controls corners and control sizes.
 The app-wide default for where field labels sit in the item editor: **beside**, **above**, or
 **adaptive** (beside for single-column collections, above once a collection uses more). Any
 collection can override this; collections left on *Inherit* follow this setting.
+
+## Audio
+
+When the app can record and play sound (the desktop and Android apps), an **Audio** section lets you
+choose which **microphone** Audio Note fields record from and which **playback device** they play back
+through. Both start on **System default**, so they follow whatever your operating system is using —
+pick a specific device only if you want to override that. The choice is app-wide and is used the next
+time you record or play a clip; the browser build has no audio, so the section is hidden there.
 
 ## Language
 

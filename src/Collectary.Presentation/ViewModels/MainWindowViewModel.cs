@@ -13,6 +13,7 @@ using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels.Import;
 using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.Presentation.ViewModels;
@@ -94,7 +95,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect(),
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync,
-            switchProfile: () => SwitchProfileCommand.Execute(null));
+            switchProfile: () => SwitchProfileCommand.Execute(null),
+            audioRecorder: _scope.ResolveOptional<IAudioRecorder>(),
+            audioPlayer: _scope.ResolveOptional<IAudioPlayer>());
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
         CloseSidebarIfNarrow();
     }
@@ -425,6 +428,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         home.OnNavigateToPreset = NavigateToPreset;
         home.OnCreatePreset = () => NavigateToPresetEditor(null);
         home.OnCreateFromTemplate = NavigateToTemplatePicker;
+        home.OnImportFromExcel = () => { _ = NavigateToExcelImportAsync(); };
+        home.OnImportFromCsv = () => { _ = NavigateToCsvImportAsync(); };
         home.OnEditPreset = preset => NavigateToPresetEditor(preset);
         home.OnNavigateToSharedFields = NavigateToSharedFieldLibrary;
         home.OnSharePreset = SharePreset;
@@ -584,6 +589,93 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CloseSidebarIfNarrow();
     }
 
+    private Task NavigateToExcelImportAsync() =>
+        ImportFromFileAsync(
+            new FilePickerFileType("Excel workbook") { Patterns = ["*.xlsx"] },
+            stream => _scope.Resolve<IExcelWorkbookReader>().Read(stream),
+            "Import_Excel_Title");
+
+    private Task NavigateToCsvImportAsync() =>
+        ImportFromFileAsync(
+            new FilePickerFileType("CSV file") { Patterns = ["*.csv"] },
+            stream => _scope.Resolve<ICsvWorkbookReader>().Read(stream),
+            "Import_Csv_Title");
+
+    private async Task ImportFromFileAsync(
+        FilePickerFileType fileType,
+        Func<Stream, Core.Domain.Import.WorkbookData> read,
+        string breadcrumbTitleKey)
+    {
+        var storage = TopLevel.GetTopLevel(Host)?.StorageProvider;
+        if (storage is null) return;
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = false,
+            FileTypeFilter = [fileType],
+        });
+        var file = files.FirstOrDefault();
+        if (file is null) return;
+
+        Core.Domain.Import.WorkbookData data;
+        try
+        {
+            using var buffer = new MemoryStream();
+            await CopyFileToAsync(file, buffer);
+            buffer.Position = 0;
+            data = read(buffer);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Import file read failed");
+            await _dialogService.ShowMessageAsync(
+                LocalizationService.Instance["Import_ReadFailed"], LocalizationService.Instance["Import_Title"]);
+            return;
+        }
+
+        if (data.Sheets.Count == 0)
+        {
+            await _dialogService.ShowMessageAsync(
+                LocalizationService.Instance["Import_NoSheets"], LocalizationService.Instance["Import_Title"]);
+            return;
+        }
+
+        var presets = await _presetUseCase.GetAllPresetsAsync();
+        var vm = new ExcelImportViewModel(
+            data,
+            _scope.Resolve<IGridShaper>(),
+            _scope.Resolve<ICultureDetector>(),
+            _scope.Resolve<IFieldTypeInference>(),
+            _scope.Resolve<ISpreadsheetImportService>(),
+            _presetUseCase,
+            _dialogService,
+            presets,
+            onFinished: async preset =>
+            {
+                if (SidebarViewModel is not null) await SidebarViewModel.LoadAsync();
+                NavigateToPreset(preset);
+            },
+            onClose: () => { _ = NavigateToHomeAsync(); });
+
+        ResetBreadcrumb(LocalizationService.Instance[breadcrumbTitleKey], vm);
+        CloseSidebarIfNarrow();
+    }
+
+    private async Task CopyFileToAsync(IStorageFile file, Stream destination)
+    {
+        try
+        {
+            await using var input = await file.OpenReadAsync();
+            await input.CopyToAsync(destination);
+        }
+        catch (IOException) when (file.TryGetLocalPath() is { } localPath)
+        {
+            await using var input = new FileStream(
+                localPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            await input.CopyToAsync(destination);
+        }
+    }
+
     private void NavigateToTemplatePicker()
     {
         AppLogger.Log.Debug("Navigate: TemplatePicker");
@@ -714,6 +806,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
         context.AudioRecorder = _scope.ResolveOptional<IAudioRecorder>();
         context.AudioPlayer = _scope.ResolveOptional<IAudioPlayer>();
+        context.ResolveAudioInputDeviceId = () => AppPreferences.Load().AudioInputDeviceId;
+        context.ResolveAudioOutputDeviceId = () => AppPreferences.Load().AudioOutputDeviceId;
+        context.OpenSettings = NavigateToSettings;
         context.StoreAudioAsync = stream => _imageStore.SaveAsync(stream, $"audio-{Guid.NewGuid():N}.wav");
         context.OpenAudioStream = key => _imageStore.Exists(key) ? _imageStore.Open(key) : null;
 

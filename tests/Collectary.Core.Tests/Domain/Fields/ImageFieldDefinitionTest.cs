@@ -6,6 +6,10 @@ namespace Collectary.Core.Tests.Domain.Fields;
 public class ImageFieldDefinitionTest
 {
     [Test]
+    public void IsNotTextImportable() =>
+        Assert.That(new ImageFieldDefinition() is ITextImportable, Is.False);
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new ImageFieldDefinition();

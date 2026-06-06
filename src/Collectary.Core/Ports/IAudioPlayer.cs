@@ -1,8 +1,11 @@
 namespace Collectary.Core.Ports;
 
+public sealed record AudioOutputDevice(string Id, string Name);
+
 public interface IAudioPlayer
 {
-    Task PlayAsync(Stream audio);
+    IReadOnlyList<AudioOutputDevice> GetOutputDevices();
+    Task PlayAsync(Stream audio, string? deviceId);
     void Pause();
     void Resume();
     void Stop();

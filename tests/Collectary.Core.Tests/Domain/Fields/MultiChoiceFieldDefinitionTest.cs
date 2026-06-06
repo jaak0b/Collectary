@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain.Fields;
 
 namespace Collectary.Core.Tests.Domain.Fields;
@@ -5,6 +6,21 @@ namespace Collectary.Core.Tests.Domain.Fields;
 [TestFixture]
 public class MultiChoiceFieldDefinitionTest
 {
+    [Test]
+    public void TryImportFromText_SplitsOnCommaAndSemicolon()
+    {
+        var ok = ((ITextImportable)new MultiChoiceFieldDefinition()).TryImportFromText("a, b; c", CultureInfo.InvariantCulture, out var v);
+        Assert.That(ok, Is.True);
+        Assert.That(((MultiChoiceFieldValue)v).Selected, Is.EqualTo(new[] { "a", "b", "c" }));
+    }
+
+    [Test]
+    public void TryImportFromText_RejectsWhitespace()
+    {
+        var ok = ((ITextImportable)new MultiChoiceFieldDefinition()).TryImportFromText("  ", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
     [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {

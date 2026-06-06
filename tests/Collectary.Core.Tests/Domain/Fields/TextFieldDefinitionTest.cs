@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 
@@ -69,4 +70,25 @@ public class TextFieldDefinitionTest
         target.ApplyTypeSpecificProperties(new IntegerFieldDefinition());
         Assert.That(target.MaxLength, Is.EqualTo(12));
     }
+
+    [Test]
+    public void TryImportFromText_AcceptsAnyNonEmptyText()
+    {
+        var def = new TextFieldDefinition();
+        var ok = ((ITextImportable)def).TryImportFromText("hello", CultureInfo.InvariantCulture, out var v);
+        Assert.That(ok, Is.True);
+        Assert.That(((TextFieldValue)v).Value, Is.EqualTo("hello"));
+        Assert.That(v.FieldDefinitionId, Is.EqualTo(def.Id));
+    }
+
+    [Test]
+    public void TryImportFromText_RejectsWhitespace()
+    {
+        var ok = ((ITextImportable)new TextFieldDefinition()).TryImportFromText("   ", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
+    public void ImportInferenceOrder_IsCatchAllLast() =>
+        Assert.That(((ITextImportable)new TextFieldDefinition()).ImportInferenceOrder, Is.EqualTo(int.MaxValue));
 }

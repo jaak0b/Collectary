@@ -6,6 +6,10 @@ namespace Collectary.Core.Tests.Domain.Fields;
 public class ListFieldDefinitionTest
 {
     [Test]
+    public void IsNotTextImportable() =>
+        Assert.That(new ListFieldDefinition() is ITextImportable, Is.False);
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new ListFieldDefinition();

@@ -1,11 +1,24 @@
+using System.Globalization;
+
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Percentage")]
 [FieldIcon(IconGlyphs.Percent)]
 [FieldCatalog(4, FieldCategory.TextAndNumbers)]
-public class PercentageFieldDefinition : FieldDefinition<PercentageFieldValue>, IListDisplayable
+public class PercentageFieldDefinition : FieldDefinition<PercentageFieldValue>, IListDisplayable, ITextImportable
 {
     public bool ShowInList { get; set; }
+
+    public int ImportInferenceOrder => 300;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        var cleaned = raw.Replace("%", "").Trim();
+        if (!decimal.TryParse(cleaned, NumberStyles.Number, culture, out var d)) return false;
+        value = new PercentageFieldValue { FieldDefinitionId = Id, Value = d };
+        return true;
+    }
 }
 
 public class PercentageFieldValue : FieldValue<PercentageFieldDefinition>

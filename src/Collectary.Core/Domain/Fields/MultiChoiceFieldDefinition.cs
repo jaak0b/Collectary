@@ -3,11 +3,22 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_MultiChoice")]
 [FieldIcon(IconGlyphs.Multiselect)]
 [FieldCatalog(2, FieldCategory.Choice)]
-public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable
+public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable, ITextImportable
 {
     public override int DefaultColumnSpan => 2;
     public List<ChoiceOption> Choices { get; set; } = new();
     public bool ShowInList { get; set; }
+
+    public int ImportInferenceOrder => int.MaxValue;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        var parts = raw.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length == 0) return false;
+        value = new MultiChoiceFieldValue { FieldDefinitionId = Id, Selected = parts.ToList() };
+        return true;
+    }
 
     public override void ApplyTypeSpecificProperties(FieldDefinition source)
     {
