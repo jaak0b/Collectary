@@ -18,8 +18,27 @@ When you first run the app — or whenever you want to add another user — you 
 On launch you log in with your username and password. The logged-in user determines which
 collections you see: your own, plus any that other users have shared with you.
 
+The sign-in screen is part of the app itself — it shows up right inside the main window rather than
+as a separate pop-up, so it works the same on desktop and on a phone. Once you're in, you stay on
+the same single screen the whole time.
+
 A failed login looks and takes the same whether the username exists or not, so the sign-in screen
 can't be used to fish for which usernames are registered.
+
+### Where login is required
+
+- **Desktop** asks you to log in by default. You can turn this off — see
+  [Settings](settings.md).
+- **The mobile app** always asks you to log in.
+- **The web version** asks you to log in too, but there's a *Require login on the web* toggle in
+  [Settings](settings.md) if you'd rather skip it. The public demo on this site ships with that
+  switched off, so you can poke around without an account.
+
+## Logging out
+
+When login is in use, **Settings** has a **Log out** button. It drops you back to the sign-in
+screen without closing the app, so you (or someone else) can sign in as a different user straight
+away.
 
 ## Changing your password
 

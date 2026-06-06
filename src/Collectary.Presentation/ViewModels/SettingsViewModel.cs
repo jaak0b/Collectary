@@ -22,8 +22,26 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Func<string?>? _detectInstalledCloudFolder;
     private readonly Func<Task<bool>>? _exportBackup;
     private readonly Func<Task<BackupImportResult?>>? _importBackup;
+    private readonly Action? _logout;
     private bool _loadingSync;
     private bool _loadingAppearance;
+
+    public bool IsWeb => OperatingSystem.IsBrowser();
+
+    [ObservableProperty]
+    public partial bool CanLogout { get; set; }
+
+    [ObservableProperty]
+    public partial bool RequireLoginOnWeb { get; set; }
+
+    partial void OnRequireLoginOnWebChanged(bool value)
+    {
+        if (_loadingSync) return;
+        AppPreferences.Update(p => p with { RequireLoginOnWeb = value });
+    }
+
+    [RelayCommand]
+    private void Logout() => _logout?.Invoke();
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
     [
@@ -408,7 +426,9 @@ public partial class SettingsViewModel : ViewModelBase
         Func<CloudProvider, Task>? disconnectCloud = null,
         Func<string?>? detectInstalledCloudFolder = null,
         Func<Task<bool>>? exportBackup = null,
-        Func<Task<BackupImportResult?>>? importBackup = null)
+        Func<Task<BackupImportResult?>>? importBackup = null,
+        Action? logout = null,
+        bool canLogout = false)
     {
         _navigateToSystemFields = navigateToSystemFields;
         _pickFolder = pickFolder;
@@ -419,6 +439,8 @@ public partial class SettingsViewModel : ViewModelBase
         _detectInstalledCloudFolder = detectInstalledCloudFolder;
         _exportBackup = exportBackup;
         _importBackup = importBackup;
+        _logout = logout;
+        CanLogout = canLogout;
         var currentCode = LocalizationService.Instance.CurrentCode;
         SelectedLanguage = LanguageOptions.FirstOrDefault(o => o.Code == currentCode) ?? LanguageOptions[0];
 
@@ -429,6 +451,7 @@ public partial class SettingsViewModel : ViewModelBase
         SyncLocation = prefs.SyncLocation;
         AutoSyncEnabled = prefs.AutoSyncEnabled;
         AutoSyncIntervalMinutes = prefs.AutoSyncIntervalMinutes;
+        RequireLoginOnWeb = prefs.RequireLoginOnWeb ?? true;
 
         SelectedSkin = Skins.FirstOrDefault(s => s.Id == ThemeService.Instance.CurrentSkinId) ?? Skins[0];
         SelectedColorTheme = ColorThemes.FirstOrDefault(t => t.Id == ThemeService.Instance.CurrentColorThemeId) ?? ColorThemes[0];

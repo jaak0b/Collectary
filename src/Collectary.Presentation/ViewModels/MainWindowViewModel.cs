@@ -33,6 +33,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public partial ViewModelBase? ContentViewModel { get; set; }
 
     [ObservableProperty]
+    public partial bool IsAuthenticated { get; set; }
+
+    [ObservableProperty]
+    public partial bool CanLogout { get; set; }
+
+    [ObservableProperty]
+    public partial LoginViewModel? Login { get; set; }
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsMobileSidebarVisible))]
     [NotifyPropertyChangedFor(nameof(IsDesktopSidebarVisible))]
     public partial bool IsSidebarOpen { get; set; }
@@ -77,7 +86,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             disconnectCloud: DisconnectCloudAsync,
             detectInstalledCloudFolder: () => new InstalledCloudFolderDetector().Detect(),
             exportBackup: ExportBackupAsync,
-            importBackup: ImportBackupAsync);
+            importBackup: ImportBackupAsync,
+            logout: () => LogoutCommand.Execute(null),
+            canLogout: CanLogout);
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
         CloseSidebarIfNarrow();
     }
@@ -246,6 +257,52 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         if (storage is null) return null;
         var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions { AllowMultiple = false });
         return folders.FirstOrDefault()?.TryGetLocalPath();
+    }
+
+    public async Task StartAsync(bool requireLogin)
+    {
+        if (requireLogin)
+        {
+            CanLogout = true;
+            ShowLogin();
+            return;
+        }
+
+        IsAuthenticated = true;
+        await InitializeAsync();
+    }
+
+    private void ShowLogin()
+    {
+        Login = new LoginViewModel(
+            _scope.Resolve<IAuthService>(),
+            _scope.Resolve<IAccountBootstrapper>(),
+            onAuthenticated: OnAuthenticated);
+        IsAuthenticated = false;
+    }
+
+    private async void OnAuthenticated()
+    {
+        try
+        {
+            Login = null;
+            IsAuthenticated = true;
+            await InitializeAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Initialization after login failed");
+            await _dialogService.ShowMessageAsync(ex.Message, LocalizationService.Instance["Login_Title"]);
+        }
+    }
+
+    [RelayCommand]
+    private void Logout()
+    {
+        _scope.Resolve<IAuthService>().Logout();
+        Breadcrumbs.Clear();
+        ContentViewModel = null;
+        ShowLogin();
     }
 
     public async Task InitializeAsync()

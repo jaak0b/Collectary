@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Collectary.UI.Views;
 
-public partial class LoginWindow : Window
+public partial class LoginView : UserControl
 {
-    public LoginWindow()
+    public LoginView()
     {
         InitializeComponent();
     }

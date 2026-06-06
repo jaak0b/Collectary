@@ -6,7 +6,9 @@
              x:Class="Collectary.UI.Views.MainView"
              x:DataType="vm:MainWindowViewModel">
 
-    <Grid RowDefinitions="48,*">
+    <Panel>
+
+    <Grid RowDefinitions="48,*" IsVisible="{Binding IsAuthenticated}">
 
         <Border Grid.Row="0"
                 Background="{DynamicResource SurfaceBrush}"
@@ -178,4 +180,9 @@
         </Panel>
 
     </Grid>
+
+    <ContentControl Content="{Binding Login}"
+                    IsVisible="{Binding !IsAuthenticated}"/>
+
+    </Panel>
 </UserControl>

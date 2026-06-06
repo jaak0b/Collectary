@@ -27,7 +27,8 @@ public record AppPreferencesData(
     string? AccentColor = null,
     Dictionary<string, string>? CustomColors = null,
     bool ExpertColorMode = false,
-    FieldLabelLayout FieldLabelLayout = FieldLabelLayout.Adaptive)
+    FieldLabelLayout FieldLabelLayout = FieldLabelLayout.Adaptive,
+    bool? RequireLoginOnWeb = null)
 {
     public string EffectiveColorTheme() =>
         ColorTheme == "Light" && Theme == AppTheme.Dark ? "Dark" : ColorTheme;

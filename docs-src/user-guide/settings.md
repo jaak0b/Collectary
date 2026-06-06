@@ -52,6 +52,15 @@ Collectary should sync on its own on a timer, how often that timer fires, and ho
 are remembered. There's quite a bit to it, so it has its own page — see [Sync](sync.md) for the
 full story.
 
+## Account
+
+When you're signed in, Settings has a **Log out** button that returns you to the sign-in screen
+without closing the app — handy for switching users.
+
+On the **web version** you'll also find a **Require login on the web** switch. Leave it on to keep
+the sign-in screen, or turn it off to jump straight into the app. (On desktop and mobile the login
+behaviour is fixed — see [Accounts & Users](accounts.md).)
+
 ## A few things it just remembers
 
 Beyond the settings you deliberately choose, Collectary quietly keeps track of smaller things too —

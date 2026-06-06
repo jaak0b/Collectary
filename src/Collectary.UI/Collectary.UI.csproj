@@ -6,6 +6,10 @@
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(WikiDemo)' == 'true'">
+    <DefineConstants>$(DefineConstants);WIKI_DEMO</DefineConstants>
+  </PropertyGroup>
   
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />

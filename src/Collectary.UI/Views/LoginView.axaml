@@ -1,17 +1,17 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Collectary.Presentation.ViewModels"
-        xmlns:loc="using:Collectary.Presentation.Localization"
-        x:Class="Collectary.UI.Views.LoginWindow"
-        x:DataType="vm:LoginViewModel"
-        Width="380"
-        SizeToContent="Height"
-        CanResize="False"
-        WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource BackgroundBrush}"
-        Title="Collectary">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.LoginView"
+             x:DataType="vm:LoginViewModel"
+             Background="{DynamicResource BackgroundBrush}">
 
-    <StackPanel Margin="28" Spacing="12">
+    <StackPanel Margin="28"
+                Spacing="12"
+                Width="380"
+                MaxWidth="380"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
 
         <TextBlock Text="{Binding Title}"
                    FontSize="20"
@@ -56,4 +56,4 @@
                 Foreground="{DynamicResource TextSecondaryBrush}"/>
 
     </StackPanel>
-</Window>
+</UserControl>

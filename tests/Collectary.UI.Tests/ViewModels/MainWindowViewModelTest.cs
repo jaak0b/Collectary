@@ -22,6 +22,8 @@ public class MainWindowViewModelTest
     private IImageStore _imageStore = null!;
     private IDialogService _dialogService = null!;
     private ISyncScheduler _syncScheduler = null!;
+    private IAuthService _authService = null!;
+    private IAccountBootstrapper _accountBootstrapper = null!;
 
     [SetUp]
     public void SetUp()
@@ -34,6 +36,8 @@ public class MainWindowViewModelTest
         _imageStore = A.Fake<IImageStore>();
         _dialogService = A.Fake<IDialogService>();
         _syncScheduler = A.Fake<ISyncScheduler>();
+        _authService = A.Fake<IAuthService>();
+        _accountBootstrapper = A.Fake<IAccountBootstrapper>();
 
         A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>());
         A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Returns((IReadOnlyList<SystemField>)new List<SystemField>());
@@ -43,6 +47,8 @@ public class MainWindowViewModelTest
         builder.RegisterInstance(A.Fake<ISyncStatus>()).As<ISyncStatus>();
         builder.RegisterInstance(_presetUseCase).As<IPresetUseCase>();
         builder.RegisterInstance(_systemFieldUseCase).As<ISystemFieldUseCase>();
+        builder.RegisterInstance(_authService).As<IAuthService>();
+        builder.RegisterInstance(_accountBootstrapper).As<IAccountBootstrapper>();
         builder.RegisterInstance(new TestFieldEditorMapper().Create()).As<IFieldEditorMapper>();
         builder.RegisterInstance(A.Fake<Collectary.Presentation.Templates.IPresetTemplateLibrary>())
             .As<Collectary.Presentation.Templates.IPresetTemplateLibrary>();
@@ -256,5 +262,77 @@ public class MainWindowViewModelTest
         sut.NavigateToSettingsCommand.Execute(null);
 
         Assert.That(sut.IsSidebarOpen, Is.True);
+    }
+
+    [Test]
+    public async Task StartAsync_WhenRequireLogin_ShowsLoginAndIsNotAuthenticated()
+    {
+        var sut = CreateSut();
+
+        await sut.StartAsync(requireLogin: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.Login, Is.Not.Null);
+            Assert.That(sut.IsAuthenticated, Is.False);
+            Assert.That(sut.CanLogout, Is.True);
+            Assert.That(sut.SidebarViewModel, Is.Null);
+        });
+    }
+
+    [Test]
+    public async Task StartAsync_WhenNoLogin_InitializesAndIsAuthenticated()
+    {
+        var sut = CreateSut();
+
+        await sut.StartAsync(requireLogin: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.IsAuthenticated, Is.True);
+            Assert.That(sut.CanLogout, Is.False);
+            Assert.That(sut.Login, Is.Null);
+            Assert.That(sut.SidebarViewModel, Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public async Task OnAuthenticated_AfterLoginSucceeds_SetsAuthenticatedAndInitializes()
+    {
+        A.CallTo(() => _authService.LoginAsync("alice", "pw")).Returns(new User { Username = "alice" });
+        var sut = CreateSut();
+        await sut.StartAsync(requireLogin: true);
+        sut.Login!.Username = "alice";
+        sut.Login!.Password = "pw";
+
+        await sut.Login!.SubmitCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.IsAuthenticated, Is.True);
+            Assert.That(sut.Login, Is.Null);
+            Assert.That(sut.SidebarViewModel, Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public async Task Logout_ClearsSessionAndReturnsToLogin()
+    {
+        A.CallTo(() => _authService.LoginAsync("alice", "pw")).Returns(new User { Username = "alice" });
+        var sut = CreateSut();
+        await sut.StartAsync(requireLogin: true);
+        sut.Login!.Username = "alice";
+        sut.Login!.Password = "pw";
+        await sut.Login!.SubmitCommand.ExecuteAsync(null);
+
+        sut.LogoutCommand.Execute(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.IsAuthenticated, Is.False);
+            Assert.That(sut.Login, Is.Not.Null);
+            Assert.That(sut.Breadcrumbs, Is.Empty);
+        });
+        A.CallTo(() => _authService.Logout()).MustHaveHappenedOnceExactly();
     }
 }

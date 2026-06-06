@@ -69,28 +69,37 @@ public partial class App : Application
             AppLogger.Log.Information("Application started");
 
             var prefs = AppPreferences.Load();
-            var requireLogin = prefs.RequireLogin && !OperatingSystem.IsBrowser();
+
+            bool webLoginDefault =
+#if WIKI_DEMO
+                false;
+#else
+                true;
+#endif
+
+            var requireLogin =
+                OperatingSystem.IsBrowser() ? prefs.RequireLoginOnWeb ?? webLoginDefault
+              : OperatingSystem.IsAndroid() ? true
+              : prefs.RequireLogin;
+
+            if (!requireLogin) EnsureDefaultUser();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                if (requireLogin)
-                {
-                    ShowLoginThenMain(desktop);
-                }
-                else
-                {
-                    EnsureDefaultUser();
-                    ShowMainWindow(desktop);
-                }
+                var vm = _container.Resolve<MainWindowViewModel>();
+                var window = _container.Resolve<MainWindow>();
+                window.DataContext = vm;
+                vm.Host = window;
+                desktop.MainWindow = window;
+                _ = vm.StartAsync(requireLogin);
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleView)
             {
-                EnsureDefaultUser();
-                var mainWindowVm = _container.Resolve<MainWindowViewModel>();
-                _ = mainWindowVm.InitializeAsync();
-                var view = new MainView();
-                view.DataContext = mainWindowVm;
+                var vm = _container.Resolve<MainWindowViewModel>();
+                var view = new MainView { DataContext = vm };
+                vm.Host = view;
                 singleView.MainView = view;
+                _ = vm.StartAsync(requireLogin);
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -192,38 +201,6 @@ public partial class App : Application
         var bootstrapper = _container!.Resolve<IAccountBootstrapper>();
         var user = bootstrapper.EnsureDefaultUserAsync().GetAwaiter().GetResult();
         bootstrapper.BackfillOwnerlessAsync(user.Id).GetAwaiter().GetResult();
-    }
-
-    private void ShowMainWindow(IClassicDesktopStyleApplicationLifetime desktop)
-    {
-        var vm = _container!.Resolve<MainWindowViewModel>();
-        _ = vm.InitializeAsync();
-        var window = _container.Resolve<MainWindow>();
-        window.DataContext = vm;
-        vm.Host = window;
-        desktop.MainWindow = window;
-    }
-
-    private void ShowLoginThenMain(IClassicDesktopStyleApplicationLifetime desktop)
-    {
-        LoginWindow? login = null;
-        var loginVm = new LoginViewModel(
-            _container!.Resolve<IAuthService>(),
-            _container.Resolve<IAccountBootstrapper>(),
-            onAuthenticated: () =>
-            {
-                var vm = _container.Resolve<MainWindowViewModel>();
-                _ = vm.InitializeAsync();
-                var window = _container.Resolve<MainWindow>();
-                window.DataContext = vm;
-                vm.Host = window;
-                desktop.MainWindow = window;
-                window.Show();
-                login?.Close();
-            });
-
-        login = new LoginWindow { DataContext = loginVm };
-        desktop.MainWindow = login;
     }
 
     private IContainer BuildContainer()
