@@ -138,6 +138,7 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
         {
             IsPlaying = false;
             IsPaused = false;
+            await stream.DisposeAsync();
         }
     }
 

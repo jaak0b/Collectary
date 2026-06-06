@@ -210,6 +210,45 @@ public class AudioFieldEditorViewModelTest
     }
 
     [Test]
+    public async Task TogglePlayback_DisposesOpenedStreamAfterPlayback()
+    {
+        var player = A.Fake<IAudioPlayer>();
+        A.CallTo(() => player.PlayAsync(A<Stream>._)).Returns(Task.CompletedTask);
+        var opened = new DisposeTrackingStream(new byte[] { 9 });
+        var vm = Make(MakeContext(player: player, open: _ => opened),
+            new AudioFieldValue { AudioKey = "k" });
+
+        await vm.TogglePlaybackCommand.ExecuteAsync(null);
+
+        Assert.That(opened.Disposed, Is.True);
+    }
+
+    [Test]
+    public async Task TogglePlayback_PlayerThrows_DisposesOpenedStream()
+    {
+        var player = A.Fake<IAudioPlayer>();
+        A.CallTo(() => player.PlayAsync(A<Stream>._)).Throws(new InvalidOperationException("boom"));
+        var opened = new DisposeTrackingStream(new byte[] { 9 });
+        var vm = Make(MakeContext(player: player, open: _ => opened),
+            new AudioFieldValue { AudioKey = "k" });
+
+        await vm.TogglePlaybackCommand.ExecuteAsync(null);
+
+        Assert.That(opened.Disposed, Is.True);
+    }
+
+    private sealed class DisposeTrackingStream(byte[] data) : MemoryStream(data)
+    {
+        public bool Disposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            Disposed = true;
+            base.Dispose(disposing);
+        }
+    }
+
+    [Test]
     public async Task TogglePlayback_PlayerThrows_SetsErrorMessage()
     {
         var player = A.Fake<IAudioPlayer>();

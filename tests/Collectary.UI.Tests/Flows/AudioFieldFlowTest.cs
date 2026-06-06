@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Infrastructure.Storage;
@@ -42,8 +43,22 @@ public class AudioFieldFlowTest
         OpenAudioStream = key => _store.Exists(key) ? _store.Open(key) : null,
     };
 
+    private static void Pump(Task task)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (!task.IsCompleted && DateTime.UtcNow < deadline)
+        {
+            Dispatcher.UIThread.RunJobs();
+            Thread.Sleep(1);
+        }
+
+        if (!task.IsCompleted)
+            throw new TimeoutException("Command did not complete while pumping the dispatcher.");
+        task.GetAwaiter().GetResult();
+    }
+
     [Test]
-    public async Task RecordThenStop_PersistsBlob_AndReloadsAsHasAudio()
+    public void RecordThenStop_PersistsBlob_AndReloadsAsHasAudio()
     {
         var clip = new byte[] { 0x52, 0x49, 0x46, 0x46, 9, 8, 7 };
         var recorder = A.Fake<IAudioRecorder>();
@@ -52,8 +67,8 @@ public class AudioFieldFlowTest
         var ctx = MakeContext(recorder, A.Fake<IAudioPlayer>());
 
         var vm = new AudioFieldEditorViewModel(new AudioFieldDefinition(), new AudioFieldValue(), ctx);
-        await vm.ToggleRecordCommand.ExecuteAsync(null);
-        await vm.ToggleRecordCommand.ExecuteAsync(null);
+        Pump(vm.ToggleRecordCommand.ExecuteAsync(null));
+        Pump(vm.ToggleRecordCommand.ExecuteAsync(null));
 
         var saved = (AudioFieldValue)vm.GetCurrentValue();
         Assert.Multiple(() =>
@@ -68,7 +83,7 @@ public class AudioFieldFlowTest
     }
 
     [Test]
-    public async Task Playback_OpensStoredBlobAndHandsItToPlayer()
+    public void Playback_OpensStoredBlobAndHandsItToPlayer()
     {
         var clip = new byte[] { 1, 2, 3, 4, 5 };
         var recorder = A.Fake<IAudioRecorder>();
@@ -84,9 +99,9 @@ public class AudioFieldFlowTest
         var ctx = MakeContext(recorder, player);
 
         var vm = new AudioFieldEditorViewModel(new AudioFieldDefinition(), new AudioFieldValue(), ctx);
-        await vm.ToggleRecordCommand.ExecuteAsync(null);
-        await vm.ToggleRecordCommand.ExecuteAsync(null);
-        await vm.TogglePlaybackCommand.ExecuteAsync(null);
+        Pump(vm.ToggleRecordCommand.ExecuteAsync(null));
+        Pump(vm.ToggleRecordCommand.ExecuteAsync(null));
+        Pump(vm.TogglePlaybackCommand.ExecuteAsync(null));
 
         Assert.That(played, Is.EqualTo(clip));
     }
