@@ -10,7 +10,8 @@ Everything here updates live — no restart.
 ### Theme and style
 
 Pick a **color theme**: Light, Dark, Nord, Dracula, Solarized (light and dark), Catppuccin, Gruvbox,
-One Dark, or High Contrast. The **style** dropdown sets the overall shape — Windows 11, Flat, or
+One Dark, High Contrast, or Graphite — a soft shades-of-grey dark theme with a blurple accent. The
+**style** dropdown sets the overall shape — Windows 11, Flat, or
 Classic — which controls corners and control sizes.
 
 ### Customize colors

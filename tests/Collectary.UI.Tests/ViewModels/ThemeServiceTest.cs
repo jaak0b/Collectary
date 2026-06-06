@@ -26,9 +26,37 @@ public class ThemeServiceTest
         {
             "Light", "Dark", "Nord", "Dracula", "SolarizedLight", "SolarizedDark",
             "CatppuccinLatte", "CatppuccinMocha", "GruvboxLight", "GruvboxDark",
-            "HighContrast", "OneDark"
+            "HighContrast", "OneDark", "Graphite"
         }));
         Assert.That(ids, Has.Count.GreaterThanOrEqualTo(8));
+    }
+
+    [Test]
+    public void Themes_IncludeGraphiteGreyDarkTheme()
+    {
+        var graphite = ThemeService.Instance.Themes.FirstOrDefault(t => t.Id == "Graphite");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(graphite, Is.Not.Null);
+            Assert.That(graphite!.IsDark, Is.True);
+        });
+    }
+
+    [Test]
+    public void ApplyColorTheme_Graphite_LoadsGreyPaletteWithGreySelection()
+    {
+        ThemeService.Instance.ApplyColorTheme("Graphite");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ThemeService.Instance.CurrentColorThemeId, Is.EqualTo("Graphite"));
+            Assert.That(Resource<Color>("BackgroundColor"), Is.EqualTo(Color.Parse("#313338")));
+            Assert.That(Resource<Color>("SurfaceColor"), Is.EqualTo(Color.Parse("#2B2D31")));
+            Assert.That(Resource<Color>("SidebarSelectedColor"), Is.EqualTo(Color.Parse("#404249")),
+                "Graphite highlights the selected item with a grey, not a coloured fill");
+            Assert.That(Application.Current!.RequestedThemeVariant, Is.EqualTo(Avalonia.Styling.ThemeVariant.Dark));
+        });
     }
 
     [Test]
