@@ -534,4 +534,32 @@ public class MainWindowViewModelTest
 
         Assert.That(sut.ContentViewModel, Is.InstanceOf<ShareDialogViewModel>());
     }
+
+    [Test]
+    public async Task SharePreset_WhenNarrow_ClosesSidebar()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = true;
+        sut.IsSidebarOpen = true;
+        var preset = new Preset { Id = Guid.NewGuid(), Name = "My collection" };
+
+        sut.SidebarViewModel!.OnSharePreset?.Invoke(preset);
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public async Task SharePreset_WhenWide_LeavesSidebarOpen()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = false;
+        sut.IsSidebarOpen = true;
+        var preset = new Preset { Id = Guid.NewGuid(), Name = "My collection" };
+
+        sut.SidebarViewModel!.OnSharePreset?.Invoke(preset);
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
+    }
 }

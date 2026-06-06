@@ -446,6 +446,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         await vm.LoadAsync();
         ResetBreadcrumb(LocalizationService.Instance["Share_Title"], vm);
+        CloseSidebarIfNarrow();
     }
 
     private void NavigateToPreset(Preset preset)
