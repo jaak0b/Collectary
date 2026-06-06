@@ -252,8 +252,9 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
     [RelayCommand]
     private async Task SaveAndGoBackAsync()
     {
-        if (await PersistAsync())
-            _onSaved();
+        if (!await PersistAsync()) return;
+        if (NavigateUpOneLevel()) return;
+        _onSaved();
     }
 
     [RelayCommand]

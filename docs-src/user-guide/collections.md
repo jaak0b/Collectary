@@ -48,6 +48,10 @@ shows up in the **breadcrumb at the very top of the window**, right after the co
 click any earlier step to jump straight back out, and click the collection's own step to return to
 the top level of the editor.
 
+While you're drilled in, **Save and go back** saves your work and steps up just one level — back to
+the parent group or list — rather than leaving the editor entirely. Keep clicking it to walk back out
+one step at a time; from the top level it saves and returns you to your collections.
+
 ### Layout: columns and label position
 
 The collection editor also controls how the item editor is laid out:

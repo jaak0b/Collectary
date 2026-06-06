@@ -96,6 +96,27 @@ public class SystemFieldLibraryViewModelTest
     }
 
     [Test]
+    public async Task SaveAndGoBackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
+    {
+        var listSf = new SystemField
+        {
+            Name = "L",
+            Definition = new ListFieldDefinition { Label = "L" }
+        };
+        listSf.Definition.SystemFieldId = listSf.Id;
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SystemField> { listSf });
+        var exited = false;
+        var sut = CreateSut(onDone: () => exited = true);
+        await sut.LoadAsync();
+        sut.DrillIntoCommand.Execute(sut.CurrentRows[0]);
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
+        Assert.That(exited, Is.False);
+    }
+
+    [Test]
     public async Task AddTextField_AtRoot_CreatesSystemFieldViaUseCase()
     {
         await _sut.AddFieldAsync<TextFieldDefinition>();

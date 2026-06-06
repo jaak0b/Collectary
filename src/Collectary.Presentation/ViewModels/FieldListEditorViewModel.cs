@@ -130,6 +130,13 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
         if (Levels.Count > 1) NavigateToLevel(Levels[0]);
     }
 
+    protected bool NavigateUpOneLevel()
+    {
+        if (Levels.Count <= 1) return false;
+        NavigateToLevel(Levels[^2]);
+        return true;
+    }
+
     protected void InitRoot(
         string title,
         ObservableCollection<IEditorNode> rootRows,

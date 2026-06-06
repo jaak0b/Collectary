@@ -76,6 +76,51 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
+    public async Task SaveAndGoBackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
+    {
+        var exited = false;
+        var sut = CreateSut(onSaved: () => exited = true);
+        sut.Name = "P";
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        sut.DrillIntoCommand.Execute(group);
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
+        Assert.That(exited, Is.False);
+    }
+
+    [Test]
+    public async Task SaveAndGoBackAsync_WhenNested_StillPersists()
+    {
+        var sut = CreateSut();
+        sut.Name = "P";
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        sut.DrillIntoCommand.Execute(group);
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task SaveAndGoBackAsync_WhenNestedAndPersistFails_StaysNested()
+    {
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).Throws<InvalidOperationException>();
+        var sut = CreateSut();
+        sut.Name = "P";
+        sut.AddGroupCommand.Execute(null);
+        var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        sut.DrillIntoCommand.Execute(group);
+
+        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(2));
+    }
+
+    [Test]
     public void Cancel_InvokesOnCancelledCallback()
     {
         var onCancelledInvoked = false;

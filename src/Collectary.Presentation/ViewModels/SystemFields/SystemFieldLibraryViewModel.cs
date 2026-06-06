@@ -144,6 +144,7 @@ public partial class SystemFieldLibraryViewModel : FieldListEditorViewModel
     private async Task SaveAndGoBackAsync()
     {
         await SaveAsync();
+        if (NavigateUpOneLevel()) return;
         _onDone();
     }
 
