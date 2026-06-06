@@ -209,30 +209,46 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public bool HasBreadcrumbs => Breadcrumbs.Count > 0;
 
-    public IReadOnlyList<BreadcrumbNode> VisibleBreadcrumbs { get; private set; } = Array.Empty<BreadcrumbNode>();
+    public ObservableCollection<BreadcrumbItem> BreadcrumbItems { get; } = new();
 
-    public IReadOnlyList<BreadcrumbNode> CollapsedBreadcrumbs { get; private set; } = Array.Empty<BreadcrumbNode>();
+    private FieldListEditorViewModel? _trackedEditor;
 
-    public bool HasCollapsedBreadcrumbs => CollapsedBreadcrumbs.Count > 0;
-
-    private int MaxVisibleBreadcrumbs => IsNarrow ? 1 : 2;
-
-    public double BreadcrumbMaxWidth => IsNarrow ? 140 : 400;
-
-    private void RebuildBreadcrumbTrail()
+    partial void OnContentViewModelChanged(ViewModelBase? oldValue, ViewModelBase? newValue)
     {
-        var trail = new BreadcrumbTrail<BreadcrumbNode>(Breadcrumbs, MaxVisibleBreadcrumbs);
-        VisibleBreadcrumbs = trail.Visible;
-        CollapsedBreadcrumbs = trail.Collapsed;
-        OnPropertyChanged(nameof(VisibleBreadcrumbs));
-        OnPropertyChanged(nameof(CollapsedBreadcrumbs));
-        OnPropertyChanged(nameof(HasCollapsedBreadcrumbs));
+        if (_trackedEditor is not null)
+            _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
+
+        _trackedEditor = newValue as FieldListEditorViewModel;
+
+        if (_trackedEditor is not null)
+            _trackedEditor.DrillBreadcrumbs.CollectionChanged += OnDrillBreadcrumbsChanged;
+
+        RebuildUnifiedTrail();
     }
 
-    partial void OnIsNarrowChanged(bool value)
+    private void OnDrillBreadcrumbsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
+        RebuildUnifiedTrail();
+
+    private void RebuildUnifiedTrail()
     {
-        RebuildBreadcrumbTrail();
-        OnPropertyChanged(nameof(BreadcrumbMaxWidth));
+        var items = new List<BreadcrumbItem>
+        {
+            new(LocalizationService.Instance["MyCollections"], NavigateHomeCommand, null, isHome: true, isCurrent: false)
+        };
+
+        foreach (var node in Breadcrumbs)
+            items.Add(new BreadcrumbItem(node.Title, NavigateToBreadcrumbCommand, node, isHome: false, isCurrent: false));
+
+        if (_trackedEditor is not null)
+            foreach (var level in _trackedEditor.DrillBreadcrumbs)
+                items.Add(new BreadcrumbItem(level.Title, _trackedEditor.NavigateToLevelCommand, level, isHome: false, isCurrent: false));
+
+        var last = items[^1];
+        items[^1] = new BreadcrumbItem(last.Title, last.NavigateCommand, last.CommandParameter, last.IsHome, isCurrent: true);
+
+        BreadcrumbItems.Clear();
+        foreach (var item in items)
+            BreadcrumbItems.Add(item);
     }
 
     private void PushBreadcrumb(string title, ViewModelBase content)
@@ -282,8 +298,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Breadcrumbs.CollectionChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(HasBreadcrumbs));
-            RebuildBreadcrumbTrail();
+            RebuildUnifiedTrail();
         };
+        RebuildUnifiedTrail();
     }
 
     private async Task<string?> PickSyncFolderAsync()
@@ -413,6 +430,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        if (_trackedEditor is not null)
+            _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
         _syncScheduler.Dispose();
         Sync.Synced -= OnSynced;
     }
