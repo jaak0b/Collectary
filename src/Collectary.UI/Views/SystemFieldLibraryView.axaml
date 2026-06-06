@@ -178,7 +178,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             HorizontalAlignment="Left"
-                            Padding="0,0,0,8">
+                            Margin="0,0,0,8">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Text="←" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <TextBlock Text="{Binding [Back], Source={x:Static loc:LocalizationService.Instance}}"
