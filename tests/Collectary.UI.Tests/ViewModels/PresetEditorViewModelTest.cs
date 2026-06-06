@@ -340,6 +340,68 @@ public class PresetEditorViewModelTest
         Assert.That(sut.DrillBreadcrumbs, Is.Empty);
     }
 
+    private static void DrillLevels(PresetEditorViewModel sut, int depth)
+    {
+        for (var i = 0; i < depth; i++)
+        {
+            sut.AddGroupCommand.Execute(null);
+            var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().Last();
+            sut.DrillIntoCommand.Execute(group);
+        }
+    }
+
+    [Test]
+    public void VisibleDrillBreadcrumbs_WhenDeepAndWide_CollapsesLeadingKeepsTrailing()
+    {
+        var sut = CreateSut();
+        sut.IsNarrow = false;
+        DrillLevels(sut, 4);
+
+        Assert.That(sut.DrillBreadcrumbs.Count, Is.EqualTo(4));
+        Assert.That(sut.HasCollapsedDrillBreadcrumbs, Is.True);
+        Assert.That(
+            sut.CollapsedDrillBreadcrumbs.Count + sut.VisibleDrillBreadcrumbs.Count,
+            Is.EqualTo(4));
+        Assert.That(sut.VisibleDrillBreadcrumbs.Last(), Is.SameAs(sut.DrillBreadcrumbs[^1]));
+    }
+
+    [Test]
+    public void VisibleDrillBreadcrumbs_WhenNarrow_ShowsOnlyCurrent()
+    {
+        var sut = CreateSut();
+        sut.IsNarrow = true;
+        DrillLevels(sut, 3);
+
+        Assert.That(sut.VisibleDrillBreadcrumbs.Count, Is.EqualTo(1));
+        Assert.That(sut.VisibleDrillBreadcrumbs[0], Is.SameAs(sut.DrillBreadcrumbs[^1]));
+        Assert.That(sut.CollapsedDrillBreadcrumbs.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void VisibleDrillBreadcrumbs_WhenShallow_DoesNotCollapse()
+    {
+        var sut = CreateSut();
+        sut.IsNarrow = false;
+        DrillLevels(sut, 1);
+
+        Assert.That(sut.HasCollapsedDrillBreadcrumbs, Is.False);
+        Assert.That(sut.VisibleDrillBreadcrumbs.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void DrillBreadcrumbMaxWidth_IsSmallerWhenNarrow()
+    {
+        var sut = CreateSut();
+
+        sut.IsNarrow = false;
+        var wide = sut.DrillBreadcrumbMaxWidth;
+        sut.IsNarrow = true;
+        var narrow = sut.DrillBreadcrumbMaxWidth;
+
+        Assert.That(narrow, Is.LessThan(wide));
+        Assert.That(narrow, Is.GreaterThan(0));
+    }
+
     [Test]
     public void ResetToRoot_WhenNested_ReturnsToRootLevel()
     {

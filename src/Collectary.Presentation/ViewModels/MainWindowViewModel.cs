@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Autofac;
 using Avalonia;
@@ -208,6 +210,32 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public bool HasBreadcrumbs => Breadcrumbs.Count > 0;
 
+    public IReadOnlyList<BreadcrumbNode> VisibleBreadcrumbs { get; private set; } = Array.Empty<BreadcrumbNode>();
+
+    public IReadOnlyList<BreadcrumbNode> CollapsedBreadcrumbs { get; private set; } = Array.Empty<BreadcrumbNode>();
+
+    public bool HasCollapsedBreadcrumbs => CollapsedBreadcrumbs.Count > 0;
+
+    private int MaxVisibleBreadcrumbs => IsNarrow ? 1 : 2;
+
+    public double BreadcrumbMaxWidth => IsNarrow ? 140 : 400;
+
+    private void RebuildBreadcrumbTrail()
+    {
+        var trail = new BreadcrumbTrail<BreadcrumbNode>(Breadcrumbs, MaxVisibleBreadcrumbs);
+        VisibleBreadcrumbs = trail.Visible;
+        CollapsedBreadcrumbs = trail.Collapsed;
+        OnPropertyChanged(nameof(VisibleBreadcrumbs));
+        OnPropertyChanged(nameof(CollapsedBreadcrumbs));
+        OnPropertyChanged(nameof(HasCollapsedBreadcrumbs));
+    }
+
+    partial void OnIsNarrowChanged(bool value)
+    {
+        RebuildBreadcrumbTrail();
+        OnPropertyChanged(nameof(BreadcrumbMaxWidth));
+    }
+
     private void PushBreadcrumb(string title, ViewModelBase content)
     {
         Breadcrumbs.Add(new BreadcrumbNode(title, content));
@@ -252,7 +280,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _syncScheduler = syncScheduler;
         Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>());
         Sync.Synced += OnSynced;
-        Breadcrumbs.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasBreadcrumbs));
+        Breadcrumbs.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasBreadcrumbs));
+            RebuildBreadcrumbTrail();
+        };
     }
 
     private async Task<string?> PickSyncFolderAsync()

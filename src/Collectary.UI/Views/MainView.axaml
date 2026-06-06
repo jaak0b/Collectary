@@ -42,10 +42,11 @@
                           Stretch="Uniform"/>
                 </Button>
 
-                <!-- Breadcrumb trail -->
+                <!-- Breadcrumb trail (root + optional collapsed dropdown + trimmed trailing crumbs) -->
                 <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
+                            ClipToBounds="True"
                             Spacing="0">
 
                     <Button Content="{Binding [MyCollections], Source={x:Static loc:LocalizationService.Instance}}"
@@ -57,7 +58,44 @@
                             FontSize="14"
                             VerticalAlignment="Center"/>
 
-                    <ItemsControl ItemsSource="{Binding Breadcrumbs}">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding HasCollapsedBreadcrumbs}">
+                        <TextBlock Text="/"
+                                   Margin="2,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <Button Content="{x:Static icons:IconGlyphs.MoreHorizontal}"
+                                Classes="icon"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="6,0"
+                                FontSize="14"
+                                VerticalAlignment="Center">
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                    <ItemsControl ItemsSource="{Binding CollapsedBreadcrumbs}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:BreadcrumbNode">
+                                                <Button Content="{Binding Title}"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8,4"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Left"
+                                                        FontSize="14"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).NavigateToBreadcrumbCommand}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding VisibleBreadcrumbs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
@@ -71,20 +109,61 @@
                                                VerticalAlignment="Center"
                                                FontSize="14"
                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                    <Button Content="{Binding Title}"
-                                            Background="Transparent"
+                                    <Button Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,0"
-                                            FontSize="14"
                                             VerticalAlignment="Center"
                                             Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).NavigateToBreadcrumbCommand}"
-                                            CommandParameter="{Binding}"/>
+                                            CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="14"
+                                                   MaxWidth="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).BreadcrumbMaxWidth}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"/>
+                                    </Button>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <ItemsControl ItemsSource="{Binding ActiveFieldEditor.DrillBreadcrumbs}">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding ActiveFieldEditor.HasCollapsedDrillBreadcrumbs, FallbackValue=False}">
+                        <TextBlock Text="/"
+                                   Margin="2,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <Button Content="{x:Static icons:IconGlyphs.MoreHorizontal}"
+                                Classes="icon"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="6,0"
+                                FontSize="14"
+                                VerticalAlignment="Center">
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedLeft">
+                                    <ItemsControl ItemsSource="{Binding ActiveFieldEditor.CollapsedDrillBreadcrumbs}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:EditorLevel">
+                                                <Button Content="{Binding Title}"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="8,4"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Left"
+                                                        FontSize="14"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ActiveFieldEditor.NavigateToLevelCommand}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding ActiveFieldEditor.VisibleDrillBreadcrumbs}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
@@ -98,20 +177,26 @@
                                                VerticalAlignment="Center"
                                                FontSize="14"
                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                    <Button Content="{Binding Title}"
-                                            IsVisible="{Binding !IsCurrent}"
+                                    <Button IsVisible="{Binding !IsCurrent}"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Padding="6,0"
-                                            FontSize="14"
                                             VerticalAlignment="Center"
                                             Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ActiveFieldEditor.NavigateToLevelCommand}"
-                                            CommandParameter="{Binding}"/>
+                                            CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="14"
+                                                   MaxWidth="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ActiveFieldEditor.DrillBreadcrumbMaxWidth}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"/>
+                                    </Button>
                                     <TextBlock Text="{Binding Title}"
                                                IsVisible="{Binding IsCurrent}"
                                                FontWeight="Medium"
                                                FontSize="14"
                                                Padding="6,0"
+                                               MaxWidth="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ActiveFieldEditor.DrillBreadcrumbMaxWidth}"
+                                               TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"
                                                Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 </StackPanel>
