@@ -12,6 +12,7 @@
         <StackPanel Spacing="6" VerticalAlignment="Top">
             <TextBox Text="{Binding Content}"
                      PlaceholderText="{Binding [QrCode_Placeholder], Source={x:Static loc:LocalizationService.Instance}}"
+                     MaxLength="500"
                      MinWidth="180"/>
             <Image Source="{Binding Preview}"
                    IsVisible="{Binding HasPreview, FallbackValue=False}"

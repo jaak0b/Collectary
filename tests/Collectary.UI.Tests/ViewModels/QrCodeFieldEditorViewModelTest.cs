@@ -49,6 +49,41 @@ public class QrCodeFieldEditorViewModelTest
     }
 
     [Test]
+    public void Content_LongerThan500_IsTruncatedTo500()
+    {
+        var ctx = MakeContext(out _);
+        var sut = new QrCodeFieldEditorViewModel(new QrCodeFieldDefinition(), new QrCodeFieldValue(), ctx);
+
+        sut.Content = new string('A', 750);
+
+        Assert.That(sut.Content, Has.Length.EqualTo(500));
+    }
+
+    [Test]
+    public void Content_At500_IsNotTruncated()
+    {
+        var ctx = MakeContext(out _);
+        var sut = new QrCodeFieldEditorViewModel(new QrCodeFieldDefinition(), new QrCodeFieldValue(), ctx);
+
+        var exact = new string('B', 500);
+        sut.Content = exact;
+
+        Assert.That(sut.Content, Is.EqualTo(exact));
+    }
+
+    [Test]
+    public void Generation_ThatThrows_DoesNotCrashAndLeavesNoPreview()
+    {
+        var ctx = MakeContext(out _);
+        ctx.GenerateQrBitmap = _ => throw new InvalidOperationException("Data too big");
+        var sut = new QrCodeFieldEditorViewModel(new QrCodeFieldDefinition(), new QrCodeFieldValue(), ctx);
+
+        Assert.That(() => sut.Content = "anything", Throws.Nothing);
+        Assert.That(sut.Preview, Is.Null);
+        Assert.That(sut.HasPreview, Is.False);
+    }
+
+    [Test]
     public void EmptyContent_ProducesNoPreview()
     {
         var ctx = MakeContext(out var generated);
