@@ -75,11 +75,15 @@
   <data name="FieldType_Audio" xml:space="preserve"><value>Audionotiz</value></data>
   <data name="Audio_Microphone" xml:space="preserve"><value>Mikrofon</value></data>
   <data name="Audio_StartRecording" xml:space="preserve"><value>Aufnehmen</value></data>
-  <data name="Audio_StopRecording" xml:space="preserve"><value>Stopp</value></data>
+  <data name="Audio_StopRecording" xml:space="preserve"><value>Aufnahme stoppen</value></data>
   <data name="Audio_Play" xml:space="preserve"><value>Abspielen</value></data>
   <data name="Audio_Pause" xml:space="preserve"><value>Pause</value></data>
   <data name="Audio_Unavailable" xml:space="preserve"><value>Aufnahme ist auf diesem Gerät nicht verfügbar</value></data>
   <data name="Audio_RecordFailed" xml:space="preserve"><value>Audio konnte nicht aufgenommen werden</value></data>
+  <data name="Audio_RecordTooltip" xml:space="preserve"><value>Audionotiz aufnehmen. Mikrofon und Wiedergabegerät unter Einstellungen → Audio wählen.</value></data>
+  <data name="Audio_PlaybackDevice" xml:space="preserve"><value>Wiedergabegerät</value></data>
+  <data name="Audio_SystemDefault" xml:space="preserve"><value>Systemstandard</value></data>
+  <data name="Settings_Audio" xml:space="preserve"><value>Audio</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Erscheinungsbild</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Hell</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dunkel</value></data>

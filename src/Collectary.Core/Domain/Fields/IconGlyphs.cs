@@ -67,5 +67,7 @@ public static class IconGlyphs
     public const string Dismiss = "\uE6CB";
     public const string ArrowUp = "\uE1A5";
     public const string Play = "\uEE57";
+    public const string Pause = "\uED26";
+    public const string Stop = "\uF146";
     public const string ChevronRight = "\uE48A";
 }

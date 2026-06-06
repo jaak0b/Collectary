@@ -50,6 +50,15 @@ public partial class ItemEditingContext : ObservableObject
 
     public IAudioPlayer? AudioPlayer { get; set; }
 
+    /// <summary>The microphone the user picked in Settings, or null for the system default.</summary>
+    public Func<string?> ResolveAudioInputDeviceId { get; set; } = () => null;
+
+    /// <summary>The playback device the user picked in Settings, or null for the system default.</summary>
+    public Func<string?> ResolveAudioOutputDeviceId { get; set; } = () => null;
+
+    /// <summary>Opens the app Settings screen. Default: no-op (no host navigation available).</summary>
+    public Action OpenSettings { get; set; } = () => { };
+
     public Func<Stream, Task<string>> StoreAudioAsync { get; set; } = _ => Task.FromResult(string.Empty);
 
     public Func<string, Stream?> OpenAudioStream { get; set; } = _ => null;
