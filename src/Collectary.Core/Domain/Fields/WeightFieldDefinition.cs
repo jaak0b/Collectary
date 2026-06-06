@@ -3,7 +3,7 @@ namespace Collectary.Core.Domain.Fields;
 /// <summary>A weight — a number plus a mass unit (grams, ounces, kilograms, pounds).</summary>
 [LocalizedName("FieldType_Weight")]
 [FieldIcon(IconGlyphs.Scales)]
-[FieldCatalog(15, FieldCategory.TextAndNumbers)]
+[FieldCatalog(16, FieldCategory.TextAndNumbers)]
 public class WeightFieldDefinition : FieldDefinition<WeightFieldValue>, IListDisplayable
 {
     public bool ShowInList { get; set; }

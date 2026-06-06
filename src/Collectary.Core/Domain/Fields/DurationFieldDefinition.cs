@@ -2,7 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Duration")]
 [FieldIcon(IconGlyphs.Timer)]
-[FieldCatalog(8, FieldCategory.TextAndNumbers)]
+[FieldCatalog(9, FieldCategory.TextAndNumbers)]
 public class DurationFieldDefinition : FieldDefinition<DurationFieldValue>, IListDisplayable
 {
     public bool ShowInList { get; set; }

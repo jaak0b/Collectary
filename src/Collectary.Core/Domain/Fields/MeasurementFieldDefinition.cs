@@ -3,7 +3,7 @@ namespace Collectary.Core.Domain.Fields;
 /// <summary>A physical measurement — a number plus a length unit (diameter, case size, dimensions, scale).</summary>
 [LocalizedName("FieldType_Measurement")]
 [FieldIcon(IconGlyphs.Ruler)]
-[FieldCatalog(14, FieldCategory.TextAndNumbers)]
+[FieldCatalog(15, FieldCategory.TextAndNumbers)]
 public class MeasurementFieldDefinition : FieldDefinition<MeasurementFieldValue>, IListDisplayable
 {
     public bool ShowInList { get; set; }
