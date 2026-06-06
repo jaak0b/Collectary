@@ -392,16 +392,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             shareUseCase,
             preset.Id,
             preset.Name,
-            onTransferred: () => { _ = SidebarViewModel?.LoadAsync(); });
-        _ = ShowShareDialogAsync(vm);
+            onTransferred: () => { _ = SidebarViewModel?.LoadAsync(); },
+            onBack: () => { _ = NavigateToHomeAsync(); });
+        _ = NavigateToShareAsync(vm);
     }
 
-    private async Task ShowShareDialogAsync(ShareDialogViewModel vm)
+    private async Task NavigateToShareAsync(ShareDialogViewModel vm)
     {
         await vm.LoadAsync();
-        await _dialogService.ShowShareDialogAsync(vm);
-        if (SidebarViewModel is not null)
-            await SidebarViewModel.LoadAsync();
+        ResetBreadcrumb(LocalizationService.Instance["Share_Title"], vm);
     }
 
     private void NavigateToPreset(Preset preset)

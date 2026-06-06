@@ -118,4 +118,15 @@ public class ShareDialogViewModelTest
             Assert.That(_transferredCalls, Is.EqualTo(0));
         });
     }
+
+    [Test]
+    public void CloseCommand_InvokesOnBack()
+    {
+        var backCalls = 0;
+        var vm = new ShareDialogViewModel(_shares, _presetId, "Model trains", onBack: () => backCalls++);
+
+        vm.CloseCommand.Execute(null);
+
+        Assert.That(backCalls, Is.EqualTo(1));
+    }
 }

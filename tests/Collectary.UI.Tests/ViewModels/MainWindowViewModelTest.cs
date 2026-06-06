@@ -24,6 +24,7 @@ public class MainWindowViewModelTest
     private ISyncScheduler _syncScheduler = null!;
     private IAuthService _authService = null!;
     private IAccountBootstrapper _accountBootstrapper = null!;
+    private IShareUseCase _shareUseCase = null!;
 
     [SetUp]
     public void SetUp()
@@ -38,9 +39,11 @@ public class MainWindowViewModelTest
         _syncScheduler = A.Fake<ISyncScheduler>();
         _authService = A.Fake<IAuthService>();
         _accountBootstrapper = A.Fake<IAccountBootstrapper>();
+        _shareUseCase = A.Fake<IShareUseCase>();
 
         A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>());
         A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Returns((IReadOnlyList<SystemField>)new List<SystemField>());
+        A.CallTo(() => _shareUseCase.ListSharesAsync(A<Guid>._)).Returns(new List<ShareInfo>());
 
         var builder = new ContainerBuilder();
         builder.RegisterInstance(A.Fake<ISyncService>()).As<ISyncService>();
@@ -49,6 +52,7 @@ public class MainWindowViewModelTest
         builder.RegisterInstance(_systemFieldUseCase).As<ISystemFieldUseCase>();
         builder.RegisterInstance(_authService).As<IAuthService>();
         builder.RegisterInstance(_accountBootstrapper).As<IAccountBootstrapper>();
+        builder.RegisterInstance(_shareUseCase).As<IShareUseCase>();
         builder.RegisterInstance(new TestFieldEditorMapper().Create()).As<IFieldEditorMapper>();
         builder.RegisterInstance(A.Fake<Collectary.Presentation.Templates.IPresetTemplateLibrary>())
             .As<Collectary.Presentation.Templates.IPresetTemplateLibrary>();
@@ -334,5 +338,17 @@ public class MainWindowViewModelTest
             Assert.That(sut.Breadcrumbs, Is.Empty);
         });
         A.CallTo(() => _authService.Logout()).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task SharePreset_SetsContentViewModelToShareDialogViewModel()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        var preset = new Preset { Id = Guid.NewGuid(), Name = "My collection" };
+
+        sut.SidebarViewModel!.OnSharePreset?.Invoke(preset);
+
+        Assert.That(sut.ContentViewModel, Is.InstanceOf<ShareDialogViewModel>());
     }
 }

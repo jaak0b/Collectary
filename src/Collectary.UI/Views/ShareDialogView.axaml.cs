@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Collectary.UI.Views;
 
-public partial class ShareDialog : Window
+public partial class ShareDialogView : UserControl
 {
-    public ShareDialog()
+    public ShareDialogView()
     {
         InitializeComponent();
     }

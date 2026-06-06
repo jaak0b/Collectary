@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:domain="using:Collectary.Core.Domain"
+             xmlns:ports="using:Collectary.Core.Ports"
+             xmlns:conv="using:Collectary.UI.Converters"
+             x:Class="Collectary.UI.Views.ShareDialogView"
+             x:DataType="vm:ShareDialogViewModel">
+
+    <UserControl.Resources>
+        <conv:SharePermissionConverter x:Key="PermConv"/>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="*,Auto" Margin="24">
+
+        <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="480" Spacing="14">
+
+            <TextBlock Text="{Binding CollectionName}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <TextBlock Text="{Binding [Share_AddUser], Source={x:Static loc:LocalizationService.Instance}}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBox Grid.Column="0"
+                         Text="{Binding TargetUsername}"
+                         Watermark="{Binding [Share_Username], Source={x:Static loc:LocalizationService.Instance}}"
+                         Margin="0,0,8,0"/>
+                <ComboBox Grid.Column="1"
+                          MinWidth="100"
+                          ItemsSource="{Binding Permissions}"
+                          SelectedItem="{Binding SelectedPermission}"
+                          Margin="0,0,8,0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="domain:SharePermission">
+                            <TextBlock Text="{Binding Converter={StaticResource PermConv}}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Grid.Column="2"
+                        Content="{Binding [Share_ShareButton], Source={x:Static loc:LocalizationService.Instance}}"
+                        Command="{Binding ShareCommand}"
+                        Background="{DynamicResource PrimaryBrush}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        Padding="12,6"/>
+            </Grid>
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="{DynamicResource DangerBrush}"
+                       IsVisible="{Binding HasError}"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock Text="{Binding [Share_CurrentShares], Source={x:Static loc:LocalizationService.Instance}}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding [Share_NoShares], Source={x:Static loc:LocalizationService.Instance}}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       FontStyle="Italic"
+                       IsVisible="{Binding !HasShares}"/>
+            <ItemsControl ItemsSource="{Binding Shares}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="ports:ShareInfo">
+                        <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,3">
+                            <TextBlock Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}">
+                                <Run Text="{Binding Username}"/>
+                            </TextBlock>
+                            <TextBlock Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Text="{Binding Permission, Converter={StaticResource PermConv}}"/>
+                            <Button Grid.Column="2"
+                                    Content="{Binding [Share_Revoke], Source={x:Static loc:LocalizationService.Instance}}"
+                                    Command="{Binding $parent[UserControl].((vm:ShareDialogViewModel)DataContext).RevokeCommand}"
+                                    CommandParameter="{Binding}"
+                                    Padding="8,4"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,12,0,0" Margin="0,8,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding [Share_Transfer], Source={x:Static loc:LocalizationService.Instance}}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding TransferUsername}"
+                                 Watermark="{Binding [Share_TransferTo], Source={x:Static loc:LocalizationService.Instance}}"
+                                 Margin="0,0,8,0"/>
+                        <Button Grid.Column="1"
+                                Content="{Binding [Share_TransferButton], Source={x:Static loc:LocalizationService.Instance}}"
+                                Command="{Binding TransferCommand}"
+                                Padding="12,6"/>
+                    </Grid>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               IsVisible="{Binding HasStatus}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+            <Button Command="{Binding CloseCommand}"
+                    Content="{Binding [Back], Source={x:Static loc:LocalizationService.Instance}}"
+                    Background="{DynamicResource PrimaryBrush}"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Padding="16,6"/>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

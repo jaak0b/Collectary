@@ -13,6 +13,7 @@ public partial class ShareDialogViewModel : ViewModelBase
     private readonly IShareUseCase _shares;
     private readonly Guid _presetId;
     private readonly Action? _onTransferred;
+    private readonly Action? _onBack;
 
     public string CollectionName { get; }
 
@@ -46,14 +47,18 @@ public partial class ShareDialogViewModel : ViewModelBase
 
     partial void OnStatusMessageChanged(string? value) => OnPropertyChanged(nameof(HasStatus));
 
-    public ShareDialogViewModel(IShareUseCase shares, Guid presetId, string collectionName, Action? onTransferred = null)
+    public ShareDialogViewModel(IShareUseCase shares, Guid presetId, string collectionName, Action? onTransferred = null, Action? onBack = null)
     {
         _shares = shares;
         _presetId = presetId;
         _onTransferred = onTransferred;
+        _onBack = onBack;
         CollectionName = collectionName;
         Shares.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasShares));
     }
+
+    [RelayCommand]
+    private void Close() => _onBack?.Invoke();
 
     public async Task LoadAsync()
     {
