@@ -9,7 +9,7 @@ using Collectary.Presentation.ViewModels;
 
 namespace Collectary.Presentation.ViewModels.SharedFields;
 
-public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel
+public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel, ISystemBackHandler
 {
     private readonly ISharedFieldUseCase _useCase;
     private readonly IDialogService _dialogService;
@@ -150,4 +150,10 @@ public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel
 
     [RelayCommand]
     private void Cancel() => _onDone();
+
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        await SaveAndGoBackCommand.ExecuteAsync(null);
+        return true;
+    }
 }

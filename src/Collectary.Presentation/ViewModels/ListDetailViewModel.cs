@@ -4,7 +4,7 @@ using Collectary.Core.Domain;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class ListDetailViewModel : ViewModelBase
+public partial class ListDetailViewModel : ViewModelBase, ISystemBackHandler
 {
     public ListFieldEditorViewModel List { get; }
 
@@ -22,5 +22,11 @@ public partial class ListDetailViewModel : ViewModelBase
     public ListDetailViewModel(ListFieldEditorViewModel list, ItemEditingContext context)
     {
         List = list;
+    }
+
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        await SaveAndGoBackCommand.ExecuteAsync(null);
+        return true;
     }
 }

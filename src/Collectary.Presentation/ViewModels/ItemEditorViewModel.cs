@@ -9,7 +9,7 @@ using Collectary.Presentation.Services;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost
+public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISystemBackHandler
 {
     private readonly IItemUseCase _itemUseCase;
     private readonly Preset _preset;
@@ -162,4 +162,9 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost
     [RelayCommand]
     private void Cancel() => _onCancelled();
 
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        await SaveAndGoBackCommand.ExecuteAsync(null);
+        return true;
+    }
 }

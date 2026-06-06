@@ -8,7 +8,7 @@ using Collectary.Presentation.Services;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
+public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost, ISystemBackHandler
 {
     private readonly ListEntry _entry;
     private readonly ItemEditingContext _context;
@@ -79,4 +79,10 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
 
     [RelayCommand]
     private void GoBack() => _context.GoBack();
+
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        await SaveAndGoBackCommand.ExecuteAsync(null);
+        return true;
+    }
 }

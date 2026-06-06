@@ -144,4 +144,20 @@ public class ListEntryEditorViewModelTest
 
         Assert.That(order, Is.EqualTo(new[] { "save", "back" }));
     }
+
+    [Test]
+    public async Task HandleSystemBackAsync_SavesThenGoesBackAndReturnsTrue()
+    {
+        var order = new List<string>();
+        var sut = new ListEntryEditorViewModel(new ListFieldDefinition(), new ListEntry(), 1,
+            MakeContext(goBack: () => order.Add("back"), save: () => { order.Add("save"); return Task.CompletedTask; }));
+
+        var handled = await ((ISystemBackHandler)sut).HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(order, Is.EqualTo(new[] { "save", "back" }));
+        });
+    }
 }

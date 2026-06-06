@@ -255,6 +255,26 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ContentViewModel = Breadcrumbs[^1].Content;
     }
 
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        if (ContentViewModel is ISystemBackHandler handler)
+            return await handler.HandleSystemBackAsync();
+
+        if (Breadcrumbs.Count > 1)
+        {
+            GoBack();
+            return true;
+        }
+
+        if (ContentViewModel is not null and not WelcomeViewModel)
+        {
+            await NavigateToHomeAsync();
+            return true;
+        }
+
+        return false;
+    }
+
     [RelayCommand]
     private void NavigateToBreadcrumb(BreadcrumbNode node)
     {

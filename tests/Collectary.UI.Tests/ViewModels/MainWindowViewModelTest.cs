@@ -562,4 +562,88 @@ public class MainWindowViewModelTest
 
         Assert.That(sut.IsSidebarOpen, Is.True);
     }
+
+    private sealed class StubBackContent : ViewModelBase, ISystemBackHandler
+    {
+        public int Calls { get; private set; }
+        public bool Result { get; init; } = true;
+
+        public Task<bool> HandleSystemBackAsync()
+        {
+            Calls++;
+            return Task.FromResult(Result);
+        }
+    }
+
+    private sealed class PlainContent : ViewModelBase;
+
+    [Test]
+    public async Task HandleSystemBackAsync_WhenContentHandlesBack_DelegatesAndReturnsTrue()
+    {
+        var sut = CreateSut();
+        var content = new StubBackContent { Result = true };
+        sut.ContentViewModel = content;
+
+        var handled = await sut.HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(content.Calls, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_WhenContentDeclinesBack_ReturnsFalse()
+    {
+        var sut = CreateSut();
+        sut.ContentViewModel = new StubBackContent { Result = false };
+
+        Assert.That(await sut.HandleSystemBackAsync(), Is.False);
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_WithNestedBreadcrumbs_PopsToPreviousAndReturnsTrue()
+    {
+        var sut = CreateSut();
+        var first = new PlainContent();
+        var second = new PlainContent();
+        sut.Breadcrumbs.Add(new BreadcrumbNode("first", first));
+        sut.Breadcrumbs.Add(new BreadcrumbNode("second", second));
+        sut.ContentViewModel = second;
+
+        var handled = await sut.HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(sut.ContentViewModel, Is.SameAs(first));
+            Assert.That(sut.Breadcrumbs, Has.Count.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_AtTopLevelNonHome_NavigatesHomeAndReturnsTrue()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.ContentViewModel = new PlainContent();
+
+        var handled = await sut.HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(sut.ContentViewModel, Is.InstanceOf<WelcomeViewModel>());
+        });
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_AtHome_ReturnsFalseSoTheOsCanExit()
+    {
+        var sut = CreateSut();
+        sut.ContentViewModel = new WelcomeViewModel();
+
+        Assert.That(await sut.HandleSystemBackAsync(), Is.False);
+    }
 }

@@ -64,6 +64,25 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
+    public async Task HandleSystemBackAsync_SavesNewPresetAndReturnsTrue()
+    {
+        var onSavedInvoked = false;
+        var sut = CreateSut(onSaved: () => { onSavedInvoked = true; });
+        sut.Name = "Captured";
+
+        var handled = await ((ISystemBackHandler)sut).HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(onSavedInvoked, Is.True);
+        });
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(
+            A<Preset>.That.Matches(p => p.Name == "Captured")))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public async Task SaveAndGoBackAsync_InvokesOnSavedCallbackAfterSuccess()
     {
         var onSavedInvoked = false;
