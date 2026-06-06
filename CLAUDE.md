@@ -6,7 +6,14 @@
 2. **Localization is resx-only.** All translatable strings live in `Strings.en/de.resx` or a domain-specific resx pair. Reference via `LocalizationService.Instance["Key"]` / `{Binding [Key], Source=…}`. Both language files must have every key.
 3. **TDD mandatory, test-first, no exceptions.** For EVERY behavior change incl. bug fixes: commit the test before the production code. Order is non-negotiable: (a) write the test, (b) run it and PASTE the failing output, (c) only then touch production code, (d) re-run to green. A red run you can quote is the gate — no red proof = the fix does not start. Writing the fix first, or "I'll add a test after", is a rule violation; if you catch yourself having edited production code first, revert it and restart from (a).
 4. **Three test layers per change.** Every feature and bug fix needs unit + integration + headless tests. "It's only a small change" is not an exemption — if it changes behavior, all three layers apply. Untestable-by-design code (pure XAML, generated code) is the only exception, and you must say so explicitly.
-5. **Verification gate — mandatory, every change, no exceptions.** A change is NOT done until all four steps below have actually been run and their real output quoted. Never claim a feature is finished, never hand back to the user, and never commit until this whole gate is green. Skipping, deferring ("I'll run it after"), or *assuming* a result is a rule violation.
+5. **Verification gate — scaled to the change.** A change is NOT done until it has been verified and the real command output quoted. Never claim a feature is finished, never hand back to the user, and never commit on *assumed* results. The depth of the gate depends on the blast radius of the change:
+
+   - **Small, localized change** (a few files inside one project, no cross-project/API/schema/DI surface touched — e.g. a single ViewModel tweak, one resx value, a catalog reorder): run only the **directly relevant test fixtures** (`dotnet test … --filter`) and quote their totals. Coverage and mutation are **not** required. State that you classified it as small and which fixtures you ran.
+   - **Big or multi-file / multi-project change** (touches more than one project, or changes a public API, DB schema/migration, DI wiring, sync/backup format, or shared infrastructure): run the **full gate** below, all steps, output quoted.
+
+   When unsure which bucket applies, **ask the user for confirmation** before choosing — do not silently pick one. The TDD red-proof (rule #3) and three-layer thinking (rule #4) apply to *every* change regardless of size; this rule scales only *how much of the suite* you run to verify.
+
+   Full gate:
    1. **Full suite green.** Run the complete `.\build.ps1 --target Test` (not just the fixtures you touched) and paste the pass/fail totals. A single failure blocks everything.
    2. **Coverage ≥95% and not dropped.** Run `.\build.ps1 --target Coverage`, quote the exact merged line-coverage number. If it dropped versus the baseline — even while still ≥95% — that is a regression: add tests until it recovers, or state precisely why (e.g. pre-existing untested code in an unrelated assembly) with the measured baseline to prove it.
    3. **Mutation testing run and surviving mutants addressed.** Run `.\build.ps1 --target Mutate`. Stop the running Desktop app first (`Get-Process Collectary.UI.Desktop | Stop-Process -Force`) — a live instance locks `Collectary.UI.dll` and fails Stryker's build. Quote the mutation score and review survivors in the code you changed; kill them with tests or justify each explicitly.
@@ -30,9 +37,9 @@ A feature or fix is complete **only** when every box below is genuinely ticked, 
 
 - [ ] **Tests written first** (rule #3) — red output quoted before the production code existed.
 - [ ] **All three layers present** (rule #4) — unit + integration + headless, or an explicit note on why a layer doesn't apply.
-- [ ] **Full test suite green** (rule #5.1) — `.\build.ps1 --target Test`, totals quoted.
-- [ ] **Coverage ≥95% and not dropped** (rule #5.2) — exact number quoted; regressions explained with a measured baseline.
-- [ ] **Mutation run, survivors handled** (rule #5.3) — Desktop app stopped first; score quoted; new survivors killed or justified.
+- [ ] **Tests run, scaled to the change** (rule #5) — small localized change: relevant fixtures green, totals quoted, classification stated. Big/multi-project change: full suite green (`.\build.ps1 --target Test`), totals quoted.
+- [ ] **Coverage ≥95% and not dropped** (rule #5.2) — *big changes only*; exact number quoted; regressions explained with a measured baseline.
+- [ ] **Mutation run, survivors handled** (rule #5.3) — *big changes only*; Desktop app stopped first; score quoted; new survivors killed or justified.
 - [ ] **Manual UI verification requested** (rule #5.4) — for any UI change, exact repro steps handed to the user.
 - [ ] **Docs updated** (rule #13).
 - [ ] **Localization complete** (rule #2) — every new key in both `Strings.en.resx` and `Strings.de.resx`.
