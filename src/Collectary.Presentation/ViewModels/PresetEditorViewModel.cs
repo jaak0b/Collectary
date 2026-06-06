@@ -10,7 +10,7 @@ using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class PresetEditorViewModel : FieldListEditorViewModel
+public partial class PresetEditorViewModel : FieldListEditorViewModel, ISystemBackHandler
 {
     private readonly IPresetUseCase _presetUseCase;
     private readonly ISharedFieldUseCase _sharedFieldUseCase;
@@ -259,4 +259,10 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
     [RelayCommand]
     private void Cancel() => _onCancelled();
+
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        await SaveAndGoBackCommand.ExecuteAsync(null);
+        return true;
+    }
 }

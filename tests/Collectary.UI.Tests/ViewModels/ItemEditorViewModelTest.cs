@@ -233,6 +233,23 @@ public class ItemEditorViewModelTest
     }
 
     [Test]
+    public async Task HandleSystemBackAsync_PersistsItemNavigatesBackAndReturnsTrue()
+    {
+        var invoked = false;
+        var sut = CreateSut(onSaved: () => { invoked = true; });
+        sut.DisplayName = "Captured";
+
+        var handled = await ((ISystemBackHandler)sut).HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(invoked, Is.True);
+        });
+        A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public async Task SaveCommand_WhenPersistFails_SetsErrorMessage()
     {
         A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).Throws<InvalidOperationException>();

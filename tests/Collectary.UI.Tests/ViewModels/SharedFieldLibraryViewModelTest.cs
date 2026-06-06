@@ -96,6 +96,23 @@ public class SharedFieldLibraryViewModelTest
     }
 
     [Test]
+    public async Task HandleSystemBackAsync_SavesInvokesOnDoneAndReturnsTrue()
+    {
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField>());
+        var invoked = false;
+        var sut = CreateSut(onDone: () => { invoked = true; });
+        await sut.LoadAsync();
+
+        var handled = await ((Collectary.Presentation.ViewModels.ISystemBackHandler)sut).HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            Assert.That(invoked, Is.True);
+        });
+    }
+
+    [Test]
     public async Task SaveAndGoBackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
     {
         var listSf = new SharedField
