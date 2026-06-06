@@ -1,0 +1,10 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Default every dotnet test run to tests.runsettings so the blame session-hang
+         timeout is always armed, even for ad-hoc filtered runs that pass no settings file;
+         without this a deadlocked test blocks forever instead of aborting after 60s. -->
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\tests.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+</Project>
