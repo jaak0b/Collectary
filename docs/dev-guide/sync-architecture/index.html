@@ -489,7 +489,7 @@
         
   
   <span class="md-ellipsis">
-    Accounts &amp; Users
+    Profiles
   </span>
   
 
@@ -1244,7 +1244,7 @@ in terms of Core <strong>ports</strong>, with concrete adapters in Infrastructur
 </tbody>
 </table>
 <h2 id="what-syncs">What syncs<a class="headerlink" href="#what-syncs" title="Permanent link">&para;</a></h2>
-<p>Presets (collections), items, and system fields, plus the image <strong>blobs</strong> they reference.</p>
+<p>Presets (collections), items, and shared fields, plus the image <strong>blobs</strong> they reference.</p>
 <h2 id="a-sync-run">A sync run<a class="headerlink" href="#a-sync-run" title="Permanent link">&para;</a></h2>
 <p><code>SyncService.SyncAsync()</code>:</p>
 <ol>
@@ -1256,7 +1256,7 @@ in terms of Core <strong>ports</strong>, with concrete adapters in Infrastructur
 </ol>
 <h2 id="the-file-system-backend">The file-system backend<a class="headerlink" href="#the-file-system-backend" title="Permanent link">&para;</a></h2>
 <p><code>FileSystemSyncBackend</code> stores each entity as a per-revision JSON file (e.g.
-<code>{id}.{revision}.json</code>) in kind-specific subdirectories (<code>presets/</code>, <code>items/</code>, <code>systemfields/</code>),
+<code>{id}.{revision}.json</code>) in kind-specific subdirectories (<code>presets/</code>, <code>items/</code>, <code>sharedfields/</code>),
 and images under an <code>images/</code> directory. The root directory is configurable via app preferences —
 point multiple devices at the same shared folder (a cloud-drive folder, network share, etc.).</p>
 <h2 id="conflicts">Conflicts<a class="headerlink" href="#conflicts" title="Permanent link">&para;</a></h2>

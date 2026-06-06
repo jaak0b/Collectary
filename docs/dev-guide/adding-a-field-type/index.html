@@ -489,7 +489,7 @@
         
   
   <span class="md-ellipsis">
-    Accounts &amp; Users
+    Profiles
   </span>
   
 
@@ -1095,7 +1095,7 @@ update anywhere in the codebase.</p>
 <p>You never touch a menu when adding a type. <code>FieldTypeCatalog</code>
 (<code>src/Collectary.Presentation/ViewModels/FieldTypeCatalog.cs</code>) discovers every <code>FieldDefinition</code>
 carrying a <code>[FieldCatalog]</code> attribute by reflection and orders them by <code>(category, order)</code>. Both the
-<strong>preset editor</strong> (Collection Settings) and the <strong>System Fields library</strong> render this one catalog, so
+<strong>preset editor</strong> (Collection Settings) and the <strong>Shared Fields library</strong> render this one catalog, so
 their menus are always identical — a type added with <code>[FieldCatalog]</code> appears in both automatically.
 A guard test (<code>FieldCatalogAttributeTest</code>) fails the build if a new addable type forgets the attribute.</p>
 <h2 id="icons">Icons<a class="headerlink" href="#icons" title="Permanent link">&para;</a></h2>
