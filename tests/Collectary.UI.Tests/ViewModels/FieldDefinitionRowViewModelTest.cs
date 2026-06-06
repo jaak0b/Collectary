@@ -1,5 +1,6 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 using Collectary.Presentation.ViewModels.Mapping;
 
@@ -9,6 +10,9 @@ namespace Collectary.UI.Tests.ViewModels;
 public class FieldDefinitionRowViewModelTest
 {
     private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
+
+    [TearDown]
+    public void ResetLanguage() => LocalizationService.Instance.Apply("en");
 
     [Test]
     public void Constructor_LoadsLabelFromDefinition()
@@ -605,6 +609,34 @@ public class FieldDefinitionRowViewModelTest
         Assert.That(new FieldDefinitionRowViewModel(new BoolFieldDefinition()).HasTypeSettings, Is.True);
 
     [Test]
+    public void HasTypeSettings_TrueForCurrency() =>
+        Assert.That(new FieldDefinitionRowViewModel(new CurrencyFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForColor() =>
+        Assert.That(new FieldDefinitionRowViewModel(new ColorFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForRating() =>
+        Assert.That(new FieldDefinitionRowViewModel(new RatingFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForPicture() =>
+        Assert.That(new FieldDefinitionRowViewModel(new ImageFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForChoices() =>
+        Assert.That(new FieldDefinitionRowViewModel(new SingleChoiceFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForList() =>
+        Assert.That(new FieldDefinitionRowViewModel(new ListFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_FalseForPlainType() =>
+        Assert.That(new FieldDefinitionRowViewModel(new DateFieldDefinition()).HasTypeSettings, Is.False);
+
+    [Test]
     public void BuildDefinition_Text_PreservesMaxLength()
     {
         var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition()) { MaxLength = 25 };
@@ -618,5 +650,166 @@ public class FieldDefinitionRowViewModelTest
         var sut = new FieldDefinitionRowViewModel(new BoolFieldDefinition()) { ThreeState = true };
         var result = (BoolFieldDefinition)_mapper.ToDefinition(sut);
         Assert.That(result.ThreeState, Is.True);
+    }
+
+    [Test]
+    public void SelectedGroup_SetNull_RaisesSelectedGroupAndRefreshesColumns()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        sut.SetParentColumnCount(3);
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        sut.SelectedGroup = null;
+
+        Assert.That(raised, Does.Contain(nameof(sut.SelectedGroup)));
+        Assert.That(raised, Does.Contain(nameof(sut.ColumnSpanOptions)));
+    }
+
+    [Test]
+    public void SelectedGroup_SetViaGroupMove_RaisesSelectedGroup()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        var group = new FieldGroupRowViewModel("G");
+        sut.AvailableGroups.Add(group);
+        sut.GroupMoveRequested = (_, _) => { };
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        sut.SelectedGroup = group;
+
+        Assert.That(raised, Does.Contain(nameof(sut.SelectedGroup)));
+    }
+
+    [Test]
+    public void AvailableGroups_Add_RaisesGroupNotifications()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        sut.AvailableGroups.Add(new FieldGroupRowViewModel("G"));
+
+        Assert.That(raised, Does.Contain(nameof(sut.HasAvailableGroups)));
+        Assert.That(raised, Does.Contain(nameof(sut.SelectedGroup)));
+    }
+
+    [Test]
+    public void SubFieldRows_Add_RaisesSubFieldCount()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        sut.SubFieldRows.Add(new FieldDefinitionRowViewModel(new TextFieldDefinition()));
+
+        Assert.That(raised, Does.Contain(nameof(sut.SubFieldCount)));
+    }
+
+    [Test]
+    public void LanguageChanged_RaisesTypeDisplayNameAndDisplayLabel()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        LocalizationService.Instance.Apply("de");
+
+        Assert.That(raised, Does.Contain(nameof(sut.TypeDisplayName)));
+        Assert.That(raised, Does.Contain(nameof(sut.DisplayLabel)));
+    }
+
+    [Test]
+    public void ClearGroup_ViaGroupMove_RaisesSelectedGroup()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        var group = new FieldGroupRowViewModel("G");
+        sut.AvailableGroups.Add(group);
+        sut.AssignedGroupId = group.Id;
+        sut.GroupMoveRequested = (_, _) => { };
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        sut.ClearGroupCommand.Execute(null);
+
+        Assert.That(raised, Does.Contain(nameof(sut.SelectedGroup)));
+    }
+
+    [Test]
+    public void AddChoice_AddsOptionWithEmptyValue()
+    {
+        var sut = new FieldDefinitionRowViewModel(new SingleChoiceFieldDefinition());
+
+        sut.AddChoiceCommand.Execute(null);
+
+        Assert.That(sut.ChoiceItems[0].Value, Is.Empty);
+    }
+
+    [Test]
+    public void Constructor_UngroupedSubField_InheritsListColumnCount()
+    {
+        var sub = new TextFieldDefinition { Label = "F" };
+        var def = new ListFieldDefinition { ColumnCount = 3, SubFields = [sub] };
+        var sut = new FieldDefinitionRowViewModel(def);
+
+        var child = sut.SubFieldRows.OfType<FieldDefinitionRowViewModel>().Single();
+
+        Assert.That(child.IsInMultiColumnContext, Is.True);
+    }
+
+    [Test]
+    public void Constructor_GroupedSubField_InheritsGroupColumnCount()
+    {
+        var group = new FieldGroup { Name = "G", ColumnCount = 3, ShowInList = true };
+        var sub = new TextFieldDefinition { Label = "F", GroupId = group.Id };
+        var def = new ListFieldDefinition { Groups = [group], SubFields = [sub] };
+        var sut = new FieldDefinitionRowViewModel(def);
+
+        var groupRow = sut.SubFieldRows.OfType<FieldGroupRowViewModel>().Single();
+        var child = groupRow.ChildNodes.OfType<FieldDefinitionRowViewModel>().Single();
+
+        Assert.That(child.IsInMultiColumnContext, Is.True);
+    }
+
+    [Test]
+    public void Constructor_GroupShownInList_LeavesChildColumnVisible()
+    {
+        var group = new FieldGroup { Name = "G", ShowInList = true };
+        var sub = new TextFieldDefinition { Label = "F", GroupId = group.Id };
+        var def = new ListFieldDefinition { Groups = [group], SubFields = [sub] };
+        var sut = new FieldDefinitionRowViewModel(def);
+
+        var groupRow = sut.SubFieldRows.OfType<FieldGroupRowViewModel>().Single();
+        var child = groupRow.ChildNodes.OfType<FieldDefinitionRowViewModel>().Single();
+
+        Assert.That(child.ListColumnSuppressed, Is.False);
+    }
+
+    [Test]
+    public void Constructor_NonListDisplayableType_DefaultsShowInListFalse()
+    {
+        var sut = new FieldDefinitionRowViewModel(new ImageFieldDefinition());
+        Assert.That(sut.ShowInList, Is.False);
+    }
+
+    [Test]
+    public void Constructor_NonBoolType_DefaultsThreeStateFalse()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
+        Assert.That(sut.ThreeState, Is.False);
+    }
+
+    [Test]
+    public void Constructor_GroupHiddenFromList_SuppressesChildColumn()
+    {
+        var group = new FieldGroup { Name = "G", ShowInList = false };
+        var sub = new TextFieldDefinition { Label = "F", GroupId = group.Id };
+        var def = new ListFieldDefinition { Groups = [group], SubFields = [sub] };
+        var sut = new FieldDefinitionRowViewModel(def);
+
+        var groupRow = sut.SubFieldRows.OfType<FieldGroupRowViewModel>().Single();
+        var child = groupRow.ChildNodes.OfType<FieldDefinitionRowViewModel>().Single();
+
+        Assert.That(child.ListColumnSuppressed, Is.True);
     }
 }
