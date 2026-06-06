@@ -9,8 +9,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Collectary.Core.Domain.Fields;
 using Collectary.UI.Controls;
+using Collectary.UI.Views.Helpers;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
 
@@ -21,10 +21,11 @@ public partial class MainView : UserControl
     private const double MinSidebarWidth = 180;
     private const double MaxSidebarWidth = 480;
 
+    private readonly BreadcrumbVisualBuilder _breadcrumbBuilder = new();
     private MainWindowViewModel? _vm;
     private Button? _overflowButton;
     private Flyout? _overflowFlyout;
-    private IReadOnlyList<int> _appliedCollapsed = Array.Empty<int>();
+    private TextBlock? _overflowSeparator;
 
     public MainView()
     {
@@ -42,7 +43,7 @@ public partial class MainView : UserControl
         _vm = vm;
         _vm.PropertyChanged += OnVmPropertyChanged;
         _vm.BreadcrumbItems.CollectionChanged += OnBreadcrumbItemsChanged;
-        BreadcrumbBar.LayoutUpdated += OnBreadcrumbBarLayoutUpdated;
+        BreadcrumbBar.CollapsedChanged += OnBreadcrumbCollapsedChanged;
         SidebarSplitter.AddHandler(PointerReleasedEvent, OnSplitterReleased, RoutingStrategies.Bubble, handledEventsToo: true);
         ApplySidebarState();
         RebuildBreadcrumbs();
@@ -55,7 +56,7 @@ public partial class MainView : UserControl
             _vm.PropertyChanged -= OnVmPropertyChanged;
             _vm.BreadcrumbItems.CollectionChanged -= OnBreadcrumbItemsChanged;
         }
-        BreadcrumbBar.LayoutUpdated -= OnBreadcrumbBarLayoutUpdated;
+        BreadcrumbBar.CollapsedChanged -= OnBreadcrumbCollapsedChanged;
         SidebarSplitter.RemoveHandler(PointerReleasedEvent, OnSplitterReleased);
     }
 
@@ -66,110 +67,55 @@ public partial class MainView : UserControl
         if (_vm is null) return;
 
         BreadcrumbBar.Children.Clear();
-        _appliedCollapsed = Array.Empty<int>();
 
         var items = _vm.BreadcrumbItems;
         if (items.Count == 0) return;
 
-        BreadcrumbBar.Children.Add(CreateCrumbButton(items[0]));
+        BreadcrumbBar.Children.Add(_breadcrumbBuilder.BuildCrumb(items[0]));
 
         _overflowFlyout = new Flyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
         _overflowButton = CreateOverflowButton(_overflowFlyout);
         BreadcrumbBar.Children.Add(_overflowButton);
 
         for (var i = 1; i < items.Count; i++)
-            BreadcrumbBar.Children.Add(CreateCrumbButton(items[i]));
-    }
-
-    private Button CreateCrumbButton(BreadcrumbItem item)
-    {
-        var title = new TextBlock
-        {
-            Text = item.Title,
-            FontSize = 14,
-            VerticalAlignment = VerticalAlignment.Center,
-            TextTrimming = TextTrimming.CharacterEllipsis,
-            FontWeight = item.IsCurrent ? FontWeight.SemiBold : item.IsHome ? FontWeight.Medium : FontWeight.Normal
-        };
-
-        object content;
-        if (item.IsHome)
-        {
-            content = title;
-        }
-        else
-        {
-            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
-            var separator = new TextBlock
-            {
-                Text = "/",
-                Margin = new Thickness(2, 0),
-                FontSize = 14,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            Grid.SetColumn(separator, 0);
-            Grid.SetColumn(title, 1);
-            grid.Children.Add(separator);
-            grid.Children.Add(title);
-            content = grid;
-        }
-
-        return new Button
-        {
-            Background = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Padding = new Thickness(item.IsHome ? 8 : 6, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-            Content = content,
-            Command = item.NavigateCommand,
-            CommandParameter = item.CommandParameter
-        };
+            BreadcrumbBar.Children.Add(_breadcrumbBuilder.BuildCrumb(items[i]));
     }
 
     private Button CreateOverflowButton(Flyout flyout)
     {
-        var separator = new TextBlock
-        {
-            Text = "/",
-            Margin = new Thickness(2, 0),
-            FontSize = 14,
-            VerticalAlignment = VerticalAlignment.Center
-        };
+        _overflowSeparator = _breadcrumbBuilder.BuildSeparator();
         var glyph = new TextBlock
         {
-            Text = IconGlyphs.MoreHorizontal,
+            Text = "…",
             FontSize = 14,
+            FontWeight = FontWeight.SemiBold,
             VerticalAlignment = VerticalAlignment.Center
         };
-        glyph.Classes.Add("icon");
 
-        var content = new StackPanel { Orientation = Orientation.Horizontal };
-        content.Children.Add(separator);
+        var content = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        content.Children.Add(_overflowSeparator);
         content.Children.Add(glyph);
 
         var button = new Button
         {
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
-            Padding = new Thickness(6, 0),
+            Padding = new Thickness(4, 2),
             VerticalAlignment = VerticalAlignment.Center,
             Content = content,
             Flyout = flyout
         };
+        button.Click += (_, _) => PopulateOverflowFlyout();
         BreadcrumbBarPanel.SetIsOverflow(button, true);
         return button;
     }
 
-    private void OnBreadcrumbBarLayoutUpdated(object? sender, EventArgs e)
+    private void PopulateOverflowFlyout()
     {
         if (_vm is null || _overflowFlyout is null) return;
 
-        var collapsed = BreadcrumbBar.CollapsedIndices;
-        if (collapsed.SequenceEqual(_appliedCollapsed)) return;
-        _appliedCollapsed = collapsed.ToArray();
-
         var panel = new StackPanel();
-        foreach (var index in collapsed)
+        foreach (var index in BreadcrumbBar.CollapsedIndices)
         {
             if (index < 0 || index >= _vm.BreadcrumbItems.Count) continue;
             var item = _vm.BreadcrumbItems[index];
@@ -187,6 +133,12 @@ public partial class MainView : UserControl
             });
         }
         _overflowFlyout.Content = panel;
+    }
+
+    private void OnBreadcrumbCollapsedChanged(object? sender, EventArgs e)
+    {
+        if (_overflowSeparator is not null)
+            _overflowSeparator.Opacity = BreadcrumbBar.CollapsedIndices.Contains(0) ? 0 : 1;
     }
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)

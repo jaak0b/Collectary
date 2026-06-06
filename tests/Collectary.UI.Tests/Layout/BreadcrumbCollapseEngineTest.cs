@@ -54,6 +54,16 @@ public class BreadcrumbCollapseEngineTest
     }
 
     [Test]
+    public void Resolve_AllFitExactly_EverythingVisible()
+    {
+        var widths = new[] { 100.0, 100.0, 100.0, 100.0 };
+        var result = _engine.Resolve(widths, availableWidth: 400, overflowWidth: 40, homeIndex: 0, currentIndex: 3);
+
+        Assert.That(result.VisibleIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
+        Assert.That(result.ShowOverflow, Is.False);
+    }
+
+    [Test]
     public void Resolve_JustOver_CollapsesExactlyOneLeadingMiddleItem()
     {
         var widths = new[] { 100.0, 100.0, 100.0, 100.0 };
@@ -66,7 +76,7 @@ public class BreadcrumbCollapseEngineTest
     }
 
     [Test]
-    public void Resolve_VeryNarrow_KeepsOnlyHomeAndCurrent()
+    public void Resolve_Narrow_KeepsHomeAndCurrentWhenHomeStillFits()
     {
         var widths = new[] { 100.0, 100.0, 100.0, 100.0, 100.0 };
         var result = _engine.Resolve(widths, availableWidth: 260, overflowWidth: 40, homeIndex: 0, currentIndex: 4);
@@ -78,26 +88,35 @@ public class BreadcrumbCollapseEngineTest
     }
 
     [Test]
-    public void Resolve_HomeOverflowCurrentStillTooWide_TrimsCurrentButKeepsBoth()
+    public void Resolve_HomeHasPriorityOverMiddleItems()
     {
-        var widths = new[] { 100.0, 100.0, 100.0, 200.0 };
+        var widths = new[] { 100.0, 300.0, 300.0, 100.0 };
         var result = _engine.Resolve(widths, availableWidth: 300, overflowWidth: 40, homeIndex: 0, currentIndex: 3);
 
         Assert.That(result.VisibleIndices, Is.EqualTo(new[] { 0, 3 }));
         Assert.That(result.CollapsedIndices, Is.EqualTo(new[] { 1, 2 }));
         Assert.That(result.ShowOverflow, Is.True);
-        Assert.That(result.MustTrimCurrent, Is.True);
     }
 
     [Test]
-    public void Resolve_TwoItemsThatDoNotFit_NoOverflowTrimsCurrent()
+    public void Resolve_VeryNarrow_DropsHomeIntoOverflow()
+    {
+        var widths = new[] { 120.0, 100.0, 100.0, 300.0 };
+        var result = _engine.Resolve(widths, availableWidth: 380, overflowWidth: 40, homeIndex: 0, currentIndex: 3);
+
+        Assert.That(result.VisibleIndices, Is.EqualTo(new[] { 3 }));
+        Assert.That(result.CollapsedIndices, Is.EqualTo(new[] { 0, 1, 2 }));
+        Assert.That(result.ShowOverflow, Is.True);
+    }
+
+    [Test]
+    public void Resolve_TwoItemsThatDoNotFit_DropsHomeKeepsCurrent()
     {
         var widths = new[] { 300.0, 300.0 };
         var result = _engine.Resolve(widths, availableWidth: 400, overflowWidth: 40, homeIndex: 0, currentIndex: 1);
 
-        Assert.That(result.VisibleIndices, Is.EqualTo(new[] { 0, 1 }));
-        Assert.That(result.CollapsedIndices, Is.Empty);
-        Assert.That(result.ShowOverflow, Is.False);
-        Assert.That(result.MustTrimCurrent, Is.True);
+        Assert.That(result.VisibleIndices, Is.EqualTo(new[] { 1 }));
+        Assert.That(result.CollapsedIndices, Is.EqualTo(new[] { 0 }));
+        Assert.That(result.ShowOverflow, Is.True);
     }
 }

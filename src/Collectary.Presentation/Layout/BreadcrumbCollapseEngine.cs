@@ -22,28 +22,31 @@ public class BreadcrumbCollapseEngine
         if (itemWidths.Sum() <= availableWidth)
             return new BreadcrumbCollapse(Enumerable.Range(0, count).ToList(), Array.Empty<int>(), false, false);
 
-        double homeWidth = itemWidths[homeIndex];
         double currentWidth = itemWidths[currentIndex];
-        var allVisible = Enumerable.Range(0, count).ToList();
+        double homeWidth = itemWidths[homeIndex];
 
-        if (currentIndex - homeIndex < 2)
-            return new BreadcrumbCollapse(allVisible, Array.Empty<int>(), false, homeWidth + currentWidth > availableWidth);
+        double remaining = availableWidth - currentWidth - overflowWidth;
+        bool keepHome = homeIndex != currentIndex && homeWidth <= remaining;
+        if (keepHome) remaining -= homeWidth;
 
-        double suffixBudget = availableWidth - homeWidth - overflowWidth;
-        int lowestKept = currentIndex;
-        double running = 0;
-        for (int i = currentIndex; i > homeIndex; i--)
+        int lowestTail = currentIndex;
+        for (int i = currentIndex - 1; i > homeIndex; i--)
         {
-            if (i != currentIndex && running + itemWidths[i] > suffixBudget) break;
-            running += itemWidths[i];
-            lowestKept = i;
+            if (itemWidths[i] > remaining) break;
+            remaining -= itemWidths[i];
+            lowestTail = i;
         }
 
-        var visible = new List<int> { homeIndex };
-        visible.AddRange(Enumerable.Range(lowestKept, currentIndex - lowestKept + 1));
-        var collapsed = Enumerable.Range(homeIndex + 1, lowestKept - homeIndex - 1).ToList();
+        var visible = new List<int>();
+        if (keepHome) visible.Add(homeIndex);
+        visible.AddRange(Enumerable.Range(lowestTail, currentIndex - lowestTail + 1));
 
-        bool mustTrim = homeWidth + overflowWidth + currentWidth > availableWidth;
-        return new BreadcrumbCollapse(visible, collapsed, true, mustTrim);
+        var visibleSet = new HashSet<int>(visible);
+        var collapsed = Enumerable.Range(0, count).Where(i => !visibleSet.Contains(i)).ToList();
+
+        bool showOverflow = collapsed.Count > 0;
+        double visibleWidth = visible.Sum(i => itemWidths[i]) + (showOverflow ? overflowWidth : 0);
+        bool mustTrim = visibleWidth > availableWidth;
+        return new BreadcrumbCollapse(visible, collapsed, showOverflow, mustTrim);
     }
 }

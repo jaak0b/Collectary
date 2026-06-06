@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Collectary.Presentation.Layout;
 
 namespace Collectary.UI.Controls;
@@ -27,6 +28,10 @@ public class BreadcrumbBarPanel : Panel
         set => SetValue(OverflowReservationProperty, value);
     }
 
+    public event EventHandler? CollapsedChanged;
+
+    private const double TrailingMargin = 12;
+
     private readonly BreadcrumbCollapseEngine _engine = new();
     private IReadOnlyList<int> _collapsedIndices = Array.Empty<int>();
     private bool _showOverflow;
@@ -45,8 +50,7 @@ public class BreadcrumbBarPanel : Panel
         var crumbs = Crumbs();
         if (crumbs.Count == 0)
         {
-            _collapsedIndices = Array.Empty<int>();
-            _showOverflow = false;
+            SetCollapsed(Array.Empty<int>(), false);
             return new Size(0, 0);
         }
 
@@ -59,12 +63,10 @@ public class BreadcrumbBarPanel : Panel
         var widths = crumbs.Select(c => c.DesiredSize.Width).ToList();
         var plan = _engine.Resolve(widths, available, overflowWidth, 0, crumbs.Count - 1);
 
-        _collapsedIndices = plan.CollapsedIndices;
-        _showOverflow = plan.ShowOverflow;
+        SetCollapsed(plan.CollapsedIndices, plan.ShowOverflow);
 
-        double width = crumbs[0].DesiredSize.Width
-            + (plan.ShowOverflow ? overflowWidth : 0)
-            + plan.VisibleIndices.Where(i => i != 0).Sum(i => widths[i]);
+        double width = plan.VisibleIndices.Sum(i => widths[i])
+            + (plan.ShowOverflow ? overflowWidth : 0);
         double height = Children.Max(c => c.DesiredSize.Height);
         return new Size(Math.Min(width, available), height);
     }
@@ -73,9 +75,10 @@ public class BreadcrumbBarPanel : Panel
     {
         var crumbs = Crumbs();
         var overflow = OverflowChild();
+        double height = finalSize.Height;
 
         if (overflow is not null && !_showOverflow)
-            overflow.Arrange(default);
+            Hide(overflow, height);
 
         if (crumbs.Count == 0)
             return finalSize;
@@ -87,27 +90,48 @@ public class BreadcrumbBarPanel : Panel
 
         for (int i = 0; i < crumbs.Count; i++)
             if (!visible.Contains(i))
-                crumbs[i].Arrange(default);
+                Hide(crumbs[i], height);
 
         double x = 0;
-        double height = finalSize.Height;
+        double remaining = Math.Max(0, finalSize.Width - TrailingMargin);
 
-        x += PlaceSequential(crumbs[0], ref available, x, height);
+        if (plan.VisibleIndices.Contains(0))
+            x += Place(crumbs[0], ref remaining, x, height);
 
         if (plan.ShowOverflow && overflow is not null)
-            x += PlaceSequential(overflow, ref available, x, height);
+            x += Place(overflow, ref remaining, x, height);
 
         foreach (var i in plan.VisibleIndices.Where(i => i != 0))
-            x += PlaceSequential(crumbs[i], ref available, x, height);
+            x += Place(crumbs[i], ref remaining, x, height);
 
         return finalSize;
     }
 
-    private double PlaceSequential(Control child, ref double remaining, double x, double height)
+    private double Place(Control child, ref double remaining, double x, double height)
     {
+        child.Opacity = 1;
+        child.IsHitTestVisible = true;
         double w = Math.Min(child.DesiredSize.Width, Math.Max(0, remaining));
         child.Arrange(new Rect(x, 0, w, height));
         remaining -= w;
         return w;
+    }
+
+    // Collapsed crumbs stay in the tree because the overflow decision needs their measured widths;
+    // IsVisible=false would zero those widths and oscillate, so they are made inert instead.
+    // They are arranged at their natural width (not zero) so a trimming TextBlock never lays out at width 0.
+    private void Hide(Control child, double height)
+    {
+        child.Opacity = 0;
+        child.IsHitTestVisible = false;
+        child.Arrange(new Rect(0, 0, child.DesiredSize.Width, height));
+    }
+
+    private void SetCollapsed(IReadOnlyList<int> collapsed, bool showOverflow)
+    {
+        _showOverflow = showOverflow;
+        if (collapsed.SequenceEqual(_collapsedIndices)) return;
+        _collapsedIndices = collapsed;
+        Dispatcher.UIThread.Post(() => CollapsedChanged?.Invoke(this, EventArgs.Empty), DispatcherPriority.Render);
     }
 }
