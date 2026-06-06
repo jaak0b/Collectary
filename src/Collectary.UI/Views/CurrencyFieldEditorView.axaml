@@ -8,19 +8,28 @@
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
-            <TextBlock Text="{Binding CurrencySymbol}"
-                       VerticalAlignment="Center"
-                       FontWeight="Medium"
-                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <controls:SafeNumericUpDown Value="{Binding Amount}"
-                           Minimum="0"
-                           Maximum="999999999"
-                           FormatString="0.00"
-                           Increment="0.01"
-                           ShowButtonSpinner="False"
-                           MinWidth="140"
-                           HorizontalAlignment="Left"/>
-        </StackPanel>
+        <Border HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="160"
+                Background="{DynamicResource SurfaceAltBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="{DynamicResource ControlBorderThickness}"
+                CornerRadius="{DynamicResource ControlCornerRadius}"
+                MinHeight="{DynamicResource ControlHeight}">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding CurrencySymbol}"
+                           Margin="10,0,2,0"
+                           VerticalAlignment="Center"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <controls:SafeNumericUpDown Value="{Binding Amount}"
+                               Minimum="0"
+                               Maximum="999999999"
+                               FormatString="0.00"
+                               Increment="0.01"
+                               ShowButtonSpinner="False"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
     </controls:FieldEditorScaffold>
 </UserControl>

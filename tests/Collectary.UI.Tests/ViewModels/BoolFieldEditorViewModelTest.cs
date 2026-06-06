@@ -39,6 +39,14 @@ public class BoolFieldEditorViewModelTest
     }
 
     [Test]
+    public void TwoState_NullIsChecked_PersistsAsFalse()
+    {
+        var sut = new BoolFieldEditorViewModel(new BoolFieldDefinition { ThreeState = false }, new BoolFieldValue { Value = true });
+        sut.IsChecked = null;
+        Assert.That(((BoolFieldValue)sut.GetCurrentValue()).Value, Is.False);
+    }
+
+    [Test]
     public void IsThreeState_ReflectsDefinition()
     {
         Assert.That(new BoolFieldEditorViewModel(new BoolFieldDefinition { ThreeState = true }, new BoolFieldValue()).IsThreeState, Is.True);

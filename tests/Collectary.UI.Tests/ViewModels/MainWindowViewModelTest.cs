@@ -110,6 +110,41 @@ public class MainWindowViewModelTest
     }
 
     [Test]
+    public void BecomingNarrow_WhileSidebarOpen_AutoCollapsesSidebar()
+    {
+        var sut = CreateSut();
+        sut.IsSidebarOpen = true;
+
+        sut.IsNarrow = true;
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public void BecomingNarrow_DoesNotOverwriteSavedSidebarPreference()
+    {
+        AppPreferences.Update(p => p with { SidebarOpen = true });
+        var sut = CreateSut();
+        sut.IsSidebarOpen = true;
+
+        sut.IsNarrow = true;
+
+        Assert.That(AppPreferences.Load().SidebarOpen, Is.True);
+    }
+
+    [Test]
+    public void ReturningToWide_RestoresSidebarFromPreference()
+    {
+        AppPreferences.Update(p => p with { SidebarOpen = true });
+        var sut = CreateSut();
+        sut.IsNarrow = true;
+
+        sut.IsNarrow = false;
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
+    }
+
+    [Test]
     public void IsMobileSidebarVisible_WhenNarrowAndClosed_ReturnsFalse()
     {
         var sut = CreateSut();
@@ -163,101 +198,90 @@ public class MainWindowViewModelTest
     }
 
     [Test]
-    public void Breadcrumbs_WhenWithinWideLimit_AllVisibleNoneCollapsed()
+    public void BreadcrumbItems_Initially_ContainsOnlyHome()
     {
         var sut = CreateSut();
-        sut.IsNarrow = false;
+
+        Assert.That(sut.BreadcrumbItems, Has.Count.EqualTo(1));
+        Assert.That(sut.BreadcrumbItems[0].IsHome, Is.True);
+    }
+
+    [Test]
+    public void BreadcrumbItems_ComposesHomeThenMainCrumbs_InOrder()
+    {
+        var sut = CreateSut();
         sut.Breadcrumbs.Add(new BreadcrumbNode("A", A.Fake<ViewModelBase>()));
         sut.Breadcrumbs.Add(new BreadcrumbNode("B", A.Fake<ViewModelBase>()));
 
-        Assert.That(sut.VisibleBreadcrumbs.Select(n => n.Title), Is.EqualTo(new[] { "A", "B" }));
-        Assert.That(sut.HasCollapsedBreadcrumbs, Is.False);
+        Assert.That(sut.BreadcrumbItems[0].IsHome, Is.True);
+        Assert.That(sut.BreadcrumbItems.Skip(1).Select(i => i.Title), Is.EqualTo(new[] { "A", "B" }));
     }
 
     [Test]
-    public void Breadcrumbs_WhenWideAndDeep_CollapsesLeadingKeepsTrailing()
+    public void BreadcrumbItems_LastItem_IsCurrent()
     {
         var sut = CreateSut();
-        sut.IsNarrow = false;
-        foreach (var t in new[] { "A", "B", "C", "D", "E" })
-            sut.Breadcrumbs.Add(new BreadcrumbNode(t, A.Fake<ViewModelBase>()));
+        sut.Breadcrumbs.Add(new BreadcrumbNode("A", A.Fake<ViewModelBase>()));
+        sut.Breadcrumbs.Add(new BreadcrumbNode("B", A.Fake<ViewModelBase>()));
 
-        Assert.That(sut.HasCollapsedBreadcrumbs, Is.True);
-        Assert.That(sut.VisibleBreadcrumbs.Last().Title, Is.EqualTo("E"));
-        Assert.That(sut.CollapsedBreadcrumbs.First().Title, Is.EqualTo("A"));
-        Assert.That(
-            sut.CollapsedBreadcrumbs.Count + sut.VisibleBreadcrumbs.Count,
-            Is.EqualTo(5));
+        Assert.That(sut.BreadcrumbItems[^1].IsCurrent, Is.True);
+        Assert.That(sut.BreadcrumbItems.Take(sut.BreadcrumbItems.Count - 1).Any(i => i.IsCurrent), Is.False);
     }
 
     [Test]
-    public void Breadcrumbs_WhenNarrow_ShowsOnlyCurrentCrumb()
+    public void BreadcrumbItems_MainItem_RoutesToNavigateToBreadcrumbCommand()
     {
         var sut = CreateSut();
-        sut.IsNarrow = true;
-        foreach (var t in new[] { "A", "B", "C" })
-            sut.Breadcrumbs.Add(new BreadcrumbNode(t, A.Fake<ViewModelBase>()));
+        var node = new BreadcrumbNode("A", A.Fake<ViewModelBase>());
+        sut.Breadcrumbs.Add(node);
 
-        Assert.That(sut.VisibleBreadcrumbs.Select(n => n.Title), Is.EqualTo(new[] { "C" }));
-        Assert.That(sut.CollapsedBreadcrumbs.Select(n => n.Title), Is.EqualTo(new[] { "A", "B" }));
+        var item = sut.BreadcrumbItems.Single(i => !i.IsHome);
+        Assert.That(item.NavigateCommand, Is.SameAs(sut.NavigateToBreadcrumbCommand));
+        Assert.That(item.CommandParameter, Is.SameAs(node));
     }
 
     [Test]
-    public void Breadcrumbs_TogglingNarrow_RecomputesTrail()
+    public void BreadcrumbItems_AddingNode_GrowsCollection()
     {
         var sut = CreateSut();
-        sut.IsNarrow = false;
-        foreach (var t in new[] { "A", "B" })
-            sut.Breadcrumbs.Add(new BreadcrumbNode(t, A.Fake<ViewModelBase>()));
-
-        Assert.That(sut.HasCollapsedBreadcrumbs, Is.False);
-
-        sut.IsNarrow = true;
-
-        Assert.That(sut.HasCollapsedBreadcrumbs, Is.True);
-        Assert.That(sut.VisibleBreadcrumbs.Select(n => n.Title), Is.EqualTo(new[] { "B" }));
-    }
-
-    [Test]
-    public void BreadcrumbMaxWidth_IsSmallerWhenNarrow()
-    {
-        var sut = CreateSut();
-
-        sut.IsNarrow = false;
-        var wide = sut.BreadcrumbMaxWidth;
-
-        sut.IsNarrow = true;
-        var narrow = sut.BreadcrumbMaxWidth;
-
-        Assert.That(wide, Is.GreaterThan(narrow), "wide mode allows wider crumbs than narrow mode");
-        Assert.That(narrow, Is.GreaterThan(0), "narrow mode caps crumb width to a finite value so it trims with an ellipsis");
-        Assert.That(wide, Is.LessThan(double.PositiveInfinity), "wide mode still caps crumb width so a single long name can't overrun the bar");
-    }
-
-    [Test]
-    public void BreadcrumbMaxWidth_TogglingNarrow_RaisesPropertyChanged()
-    {
-        var sut = CreateSut();
-        sut.IsNarrow = false;
-        var raised = new List<string>();
-        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
-
-        sut.IsNarrow = true;
-
-        Assert.That(raised, Does.Contain(nameof(MainWindowViewModel.BreadcrumbMaxWidth)));
-    }
-
-    [Test]
-    public void Breadcrumbs_AddingNode_RaisesTrailPropertyChanged()
-    {
-        var sut = CreateSut();
-        var raised = new List<string>();
-        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+        var before = sut.BreadcrumbItems.Count;
 
         sut.Breadcrumbs.Add(new BreadcrumbNode("A", A.Fake<ViewModelBase>()));
 
-        Assert.That(raised, Does.Contain(nameof(MainWindowViewModel.VisibleBreadcrumbs)));
-        Assert.That(raised, Does.Contain(nameof(MainWindowViewModel.HasCollapsedBreadcrumbs)));
+        Assert.That(sut.BreadcrumbItems.Count, Is.EqualTo(before + 1));
+    }
+
+    [Test]
+    public void BreadcrumbItems_WhenEditorDrills_AppendsDrillLevelsRoutedToLevelCommand()
+    {
+        var sut = CreateSut();
+        var editor = CreateEditor();
+        sut.Breadcrumbs.Add(new BreadcrumbNode("Settings", editor));
+        sut.ContentViewModel = editor;
+        editor.AddGroupCommand.Execute(null);
+        var group = editor.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        editor.DrillIntoCommand.Execute(group);
+
+        Assert.That(sut.BreadcrumbItems.Count, Is.GreaterThanOrEqualTo(3));
+        var last = sut.BreadcrumbItems[^1];
+        Assert.That(last.IsCurrent, Is.True);
+        Assert.That(last.NavigateCommand, Is.SameAs(editor.NavigateToLevelCommand));
+    }
+
+    [Test]
+    public void BreadcrumbItems_WhenEditorSwappedAway_StopsTrackingItsDrill()
+    {
+        var sut = CreateSut();
+        var editor = CreateEditor();
+        sut.ContentViewModel = editor;
+        sut.ContentViewModel = new WelcomeViewModel();
+        var before = sut.BreadcrumbItems.Count;
+
+        editor.AddGroupCommand.Execute(null);
+        var group = editor.CurrentRows.OfType<FieldGroupRowViewModel>().First();
+        editor.DrillIntoCommand.Execute(group);
+
+        Assert.That(sut.BreadcrumbItems.Count, Is.EqualTo(before));
     }
 
     [Test]

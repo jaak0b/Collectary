@@ -12,8 +12,14 @@
         <conv:CloudProviderDisplayConverter x:Key="ProviderConv"/>
     </UserControl.Resources>
 
+    <UserControl.Styles>
+        <Style Selector="WrapPanel.buttons > Button">
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+    </UserControl.Styles>
+
     <ScrollViewer>
-        <StackPanel Spacing="28" Margin="24,20,24,24" MaxWidth="520" HorizontalAlignment="Left">
+        <StackPanel Spacing="28" Margin="24,20,24,24" MaxWidth="520" HorizontalAlignment="Stretch">
 
             <!-- Appearance -->
             <StackPanel Spacing="14">
@@ -23,86 +29,63 @@
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            LetterSpacing="1"/>
 
-                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Appearance_Skin], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding Skins}"
+                <controls:SettingsRow Label="{Binding [Appearance_Skin], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding Skins}"
                               SelectedItem="{Binding SelectedSkin}"
                               DisplayMemberBinding="{Binding DisplayName}"
-                              MinWidth="200"/>
-                </Grid>
+                              HorizontalAlignment="Stretch"/>
+                </controls:SettingsRow>
 
-                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Appearance_ColorTheme], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding ColorThemes}"
+                <controls:SettingsRow Label="{Binding [Appearance_ColorTheme], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding ColorThemes}"
                               SelectedItem="{Binding SelectedColorTheme}"
                               DisplayMemberBinding="{Binding DisplayName}"
-                              MinWidth="200"/>
-                </Grid>
+                              HorizontalAlignment="Stretch"/>
+                </controls:SettingsRow>
 
-                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding FieldLabelLayoutOptions}"
+                <controls:SettingsRow Label="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding FieldLabelLayoutOptions}"
                               SelectedItem="{Binding SelectedFieldLabelLayout}"
                               DisplayMemberBinding="{Binding Display}"
-                              MinWidth="200"/>
-                </Grid>
+                              HorizontalAlignment="Stretch"/>
+                </controls:SettingsRow>
 
                 <Expander Header="{Binding [Appearance_Customize], Source={x:Static loc:LocalizationService.Instance}}"
                           HorizontalAlignment="Stretch">
                     <StackPanel Spacing="14" Margin="0,8,0,0">
 
                         <!-- Easy | Expert toggle -->
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <RadioButton GroupName="ColorMode"
+                        <WrapPanel>
+                            <RadioButton GroupName="ColorMode" Margin="0,0,8,0"
                                          Content="{Binding [Appearance_EasyMode], Source={x:Static loc:LocalizationService.Instance}}"
                                          IsChecked="{Binding !ExpertColorMode}"/>
                             <RadioButton GroupName="ColorMode"
                                          Content="{Binding [Appearance_ExpertMode], Source={x:Static loc:LocalizationService.Instance}}"
                                          IsChecked="{Binding ExpertColorMode}"/>
-                        </StackPanel>
+                        </WrapPanel>
 
                         <!-- Accent (Easy mode only — auto-derives button states) -->
-                        <Grid ColumnDefinitions="140,*" VerticalAlignment="Center"
-                              IsVisible="{Binding !ExpertColorMode}">
-                            <TextBlock Grid.Column="0"
-                                       Text="{Binding [Color_Accent], Source={x:Static loc:LocalizationService.Instance}}"
-                                       VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <ColorPicker Color="{Binding AccentColor}"/>
+                        <controls:SettingsRow Label="{Binding [Color_Accent], Source={x:Static loc:LocalizationService.Instance}}"
+                                              IsVisible="{Binding !ExpertColorMode}">
+                            <WrapPanel Classes="buttons">
+                                <ColorPicker Color="{Binding AccentColor}" Margin="0,0,8,8"/>
                                 <Button Content="{Binding [Appearance_ResetAccent], Source={x:Static loc:LocalizationService.Instance}}"
                                         Command="{Binding ResetAccentCommand}"
                                         IsVisible="{Binding HasCustomAccent}"
                                         Padding="12,6"/>
-                            </StackPanel>
-                        </Grid>
+                            </WrapPanel>
+                        </controls:SettingsRow>
 
                         <!-- Per-color pickers (Easy shows essentials, Expert shows all) -->
                         <ItemsControl ItemsSource="{Binding ColorSlots}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:CustomColorSlot">
-                                    <Grid ColumnDefinitions="140,*" Margin="0,0,0,8"
-                                          IsVisible="{Binding IsRowVisible}">
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Label}"
-                                                   VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                        <ColorPicker Grid.Column="1"
-                                                     HorizontalAlignment="Left"
+                                    <controls:SettingsRow Label="{Binding Label}"
+                                                          Margin="0,0,0,8"
+                                                          IsVisible="{Binding IsRowVisible}">
+                                        <ColorPicker HorizontalAlignment="Left"
                                                      Color="{Binding Color}"/>
-                                    </Grid>
+                                    </controls:SettingsRow>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -124,17 +107,12 @@
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            LetterSpacing="1"/>
-                <Grid ColumnDefinitions="140,*">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Language], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding LanguageOptions}"
+                <controls:SettingsRow Label="{Binding [Language], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding LanguageOptions}"
                               SelectedItem="{Binding SelectedLanguage}"
                               DisplayMemberBinding="{Binding DisplayName}"
-                              MinWidth="140"/>
-                </Grid>
+                              HorizontalAlignment="Stretch"/>
+                </controls:SettingsRow>
             </StackPanel>
 
             <Separator/>
@@ -148,30 +126,22 @@
                            LetterSpacing="1"/>
 
                 <!-- Storage provider -->
-                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Settings_SyncProvider], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <ComboBox Grid.Column="1"
-                              ItemsSource="{Binding ProviderOptions}"
+                <controls:SettingsRow Label="{Binding [Settings_SyncProvider], Source={x:Static loc:LocalizationService.Instance}}">
+                    <ComboBox ItemsSource="{Binding ProviderOptions}"
                               SelectedItem="{Binding SyncProvider}"
-                              MinWidth="220">
+                              HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="domain:CloudProvider">
                                 <TextBlock Text="{Binding Converter={StaticResource ProviderConv}}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                </Grid>
+                </controls:SettingsRow>
 
                 <!-- Folder provider -->
-                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center" IsVisible="{Binding !IsCloudProvider}">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Sync_Location], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <StackPanel Grid.Column="1" Spacing="6">
+                <controls:SettingsRow Label="{Binding [Sync_Location], Source={x:Static loc:LocalizationService.Instance}}"
+                                      IsVisible="{Binding !IsCloudProvider}">
+                    <StackPanel Spacing="6">
                         <TextBlock Text="{Binding SyncLocation}"
                                    IsVisible="{Binding IsSyncConfigured}"
                                    TextWrapping="Wrap"
@@ -180,7 +150,7 @@
                                    IsVisible="{Binding !IsSyncConfigured}"
                                    FontStyle="Italic"
                                    Foreground="{DynamicResource TextSecondaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
+                        <WrapPanel Classes="buttons">
                             <Button Content="{Binding [Sync_ChooseFolder], Source={x:Static loc:LocalizationService.Instance}}"
                                     Command="{Binding ChooseSyncFolderCommand}"
                                     Padding="12,6"/>
@@ -191,17 +161,14 @@
                                     Command="{Binding DisableSyncCommand}"
                                     IsVisible="{Binding IsSyncConfigured}"
                                     Padding="12,6"/>
-                        </StackPanel>
+                        </WrapPanel>
                     </StackPanel>
-                </Grid>
+                </controls:SettingsRow>
 
                 <!-- Cloud provider -->
-                <Grid ColumnDefinitions="140,*" VerticalAlignment="Center" IsVisible="{Binding IsCloudProvider}">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Settings_SyncProvider], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <StackPanel Grid.Column="1" Spacing="6">
+                <controls:SettingsRow Label="{Binding [Settings_SyncProvider], Source={x:Static loc:LocalizationService.Instance}}"
+                                      IsVisible="{Binding IsCloudProvider}">
+                    <StackPanel Spacing="6">
                         <TextBlock Text="{Binding ConnectionStatus}"
                                    TextWrapping="Wrap"
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -213,7 +180,7 @@
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
+                        <WrapPanel Classes="buttons">
                             <Button Content="{Binding [Cloud_Connect], Source={x:Static loc:LocalizationService.Instance}}"
                                     Command="{Binding ConnectCommand}"
                                     IsVisible="{Binding !IsCloudConnected}"
@@ -226,19 +193,17 @@
                                     Command="{Binding DisconnectCommand}"
                                     IsVisible="{Binding IsCloudConnected}"
                                     Padding="12,6"/>
-                        </StackPanel>
+                        </WrapPanel>
                     </StackPanel>
-                </Grid>
+                </controls:SettingsRow>
 
-                <Grid ColumnDefinitions="140,*" IsVisible="{Binding IsSyncConfigured}">
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding [Sync_AutoSync], Source={x:Static loc:LocalizationService.Instance}}"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <ToggleSwitch IsChecked="{Binding AutoSyncEnabled}"/>
+                <controls:SettingsRow Label="{Binding [Sync_AutoSync], Source={x:Static loc:LocalizationService.Instance}}"
+                                      IsVisible="{Binding IsSyncConfigured}">
+                    <WrapPanel VerticalAlignment="Center">
+                        <ToggleSwitch IsChecked="{Binding AutoSyncEnabled}" Margin="0,0,12,0"/>
                         <TextBlock Text="{Binding [Sync_IntervalMinutes], Source={x:Static loc:LocalizationService.Instance}}"
                                    VerticalAlignment="Center"
+                                   Margin="0,0,12,0"
                                    IsVisible="{Binding AutoSyncEnabled}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"/>
                         <controls:SafeNumericUpDown Value="{Binding AutoSyncIntervalMinutes}"
@@ -248,8 +213,8 @@
                                        FormatString="0"
                                        IsVisible="{Binding AutoSyncEnabled}"
                                        MinWidth="110"/>
-                    </StackPanel>
-                </Grid>
+                    </WrapPanel>
+                </controls:SettingsRow>
             </StackPanel>
 
             <Separator/>
@@ -265,14 +230,14 @@
                            TextWrapping="Wrap"
                            Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="8">
+                <WrapPanel Classes="buttons">
                     <Button Content="{Binding [Backup_Export], Source={x:Static loc:LocalizationService.Instance}}"
                             Command="{Binding ExportBackupCommand}"
                             Padding="12,6"/>
                     <Button Content="{Binding [Backup_Import], Source={x:Static loc:LocalizationService.Instance}}"
                             Command="{Binding ImportBackupCommand}"
                             Padding="12,6"/>
-                </StackPanel>
+                </WrapPanel>
 
                 <TextBlock Text="{Binding BackupStatus}"
                            IsVisible="{Binding BackupStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -291,6 +256,7 @@
 
                 <Button Content="{Binding [Profile_Switch], Source={x:Static loc:LocalizationService.Instance}}"
                         Command="{Binding SwitchProfileCommand}"
+                        HorizontalAlignment="Left"
                         Padding="12,6"/>
             </StackPanel>
 

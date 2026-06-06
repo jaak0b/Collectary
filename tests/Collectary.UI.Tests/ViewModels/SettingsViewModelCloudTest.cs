@@ -137,6 +137,37 @@ public class SettingsViewModelCloudTest
     }
 
     [Test]
+    public async Task Connect_WhenCallbackThrows_DoesNotPropagateAndStaysDisconnected()
+    {
+        var sut = Make(connect: _ => throw new InvalidOperationException("MSAL boom"));
+        sut.SyncProvider = CloudProvider.OneDrive;
+
+        await sut.ConnectCommand.ExecuteAsync(null);
+
+        Assert.That(sut.IsCloudConnected, Is.False);
+    }
+
+    [Test]
+    public async Task ChooseCloudFolder_WhenCallbackThrows_DoesNotPropagate()
+    {
+        var sut = Make(pickCloudFolder: _ => throw new InvalidOperationException("MSAL boom"));
+        sut.SyncProvider = CloudProvider.OneDrive;
+
+        await sut.ChooseCloudFolderCommand.ExecuteAsync(null);
+
+        Assert.That(AppPreferences.Load().OneDriveRootFolderId, Is.Null);
+    }
+
+    [Test]
+    public async Task Disconnect_WhenCallbackThrows_DoesNotPropagate()
+    {
+        var sut = Make(disconnect: _ => throw new InvalidOperationException("MSAL boom"));
+        sut.SyncProvider = CloudProvider.OneDrive;
+
+        Assert.DoesNotThrowAsync(async () => await sut.DisconnectCommand.ExecuteAsync(null));
+    }
+
+    [Test]
     public void AutoDetectLocalCloudFolder_Found_SetsFolderProviderAndLocation()
     {
         var sut = Make(detect: () => @"C:\Users\me\OneDrive");

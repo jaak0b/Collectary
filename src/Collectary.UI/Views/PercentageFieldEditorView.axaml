@@ -14,6 +14,7 @@
                            Maximum="100"
                            FormatString="0.#"
                            Increment="1"
+                           ShowButtonSpinner="False"
                            MinWidth="100"
                            HorizontalAlignment="Left"/>
             <TextBlock Text="%"

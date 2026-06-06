@@ -31,6 +31,11 @@ breadcrumb at the top of the window — for example *My Collections / Collection
 Identification*. Click any earlier step to jump back; click the collection's own step to return to
 the top.
 
+The breadcrumb always fits the space it has. When the path grows long, or the window gets narrow —
+on a phone, say — the earliest steps fold away into a small **…** menu that sits right after *My
+Collections*. Your starting point and the step you're currently on always stay visible; tap the **…**
+to reach anything in between. It never spills over the profile name on the right.
+
 **Save and go back** saves and steps up one level, back to the parent group or list. From the top
 level it saves and returns you to your collections.
 
