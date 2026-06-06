@@ -216,15 +216,15 @@
                     Padding="16"
                     IsVisible="{Binding IsDetailPanelVisible}">
 
-                <Panel>
+                <Grid RowDefinitions="Auto,*">
 
                 <!-- Mobile back button -->
-                <Button IsVisible="{Binding IsNarrow}"
+                <Button Grid.Row="0"
+                        IsVisible="{Binding IsNarrow}"
                         Command="{Binding MobileNavigateBackCommand}"
                         Background="Transparent"
                         BorderThickness="0"
                         HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
                         Padding="0,0,0,8">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="←" FontSize="16" Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -232,6 +232,8 @@
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
                     </StackPanel>
                 </Button>
+
+                <Panel Grid.Row="1">
 
                 <!-- Empty state -->
                 <TextBlock Text="{Binding [SelectFieldHint], Source={x:Static loc:LocalizationService.Instance}}"
@@ -293,6 +295,7 @@
                                             IsVisible="{Binding $parent[UserControl].((vm:PresetEditorViewModel)DataContext).SelectedGroupRow, Converter={x:Static ObjectConverters.IsNotNull}}"
                                             DrillCommand="{Binding $parent[UserControl].((vm:PresetEditorViewModel)DataContext).DrillIntoCommand}"/>
                 </Panel>
+                </Grid>
             </Border>
         </Grid>
 

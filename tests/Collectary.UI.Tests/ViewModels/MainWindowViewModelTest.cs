@@ -1,9 +1,11 @@
 using Autofac;
 using FakeItEasy;
+using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.Mapping;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -24,12 +26,6 @@ public class MainWindowViewModelTest
     [SetUp]
     public void SetUp()
     {
-        var builder = new ContainerBuilder();
-        builder.RegisterInstance(A.Fake<ISyncService>()).As<ISyncService>();
-        builder.RegisterInstance(A.Fake<ISyncStatus>()).As<ISyncStatus>();
-        _container = builder.Build();
-        _scope = _container.BeginLifetimeScope();
-
         _presetUseCase = A.Fake<IPresetUseCase>();
         _itemUseCase = A.Fake<IItemUseCase>();
         _systemFieldUseCase = A.Fake<ISystemFieldUseCase>();
@@ -38,6 +34,18 @@ public class MainWindowViewModelTest
         _imageStore = A.Fake<IImageStore>();
         _dialogService = A.Fake<IDialogService>();
         _syncScheduler = A.Fake<ISyncScheduler>();
+
+        A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>());
+        A.CallTo(() => _systemFieldUseCase.GetAllAsync()).Returns((IReadOnlyList<SystemField>)new List<SystemField>());
+
+        var builder = new ContainerBuilder();
+        builder.RegisterInstance(A.Fake<ISyncService>()).As<ISyncService>();
+        builder.RegisterInstance(A.Fake<ISyncStatus>()).As<ISyncStatus>();
+        builder.RegisterInstance(_presetUseCase).As<IPresetUseCase>();
+        builder.RegisterInstance(_systemFieldUseCase).As<ISystemFieldUseCase>();
+        builder.RegisterInstance(new TestFieldEditorMapper().Create()).As<IFieldEditorMapper>();
+        _container = builder.Build();
+        _scope = _container.BeginLifetimeScope();
     }
 
     [TearDown]
@@ -142,5 +150,31 @@ public class MainWindowViewModelTest
         sut.IsSidebarOpen = true;
 
         Assert.That(raised, Does.Contain(nameof(MainWindowViewModel.IsDesktopSidebarVisible)));
+    }
+
+    [Test]
+    public async Task NavigateToPresetEditor_WhenNarrow_ClosesSidebar()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = true;
+        sut.IsSidebarOpen = true;
+
+        sut.SidebarViewModel!.OnCreatePreset?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.False);
+    }
+
+    [Test]
+    public async Task NavigateToPresetEditor_WhenWide_LeavesSidebarOpen()
+    {
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+        sut.IsNarrow = false;
+        sut.IsSidebarOpen = true;
+
+        sut.SidebarViewModel!.OnCreatePreset?.Invoke();
+
+        Assert.That(sut.IsSidebarOpen, Is.True);
     }
 }

@@ -384,6 +384,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         vm.OnAnySuccessfulSave = () => { _ = SidebarViewModel?.LoadAsync(); };
         ResetBreadcrumb(LocalizationService.Instance["CollectionSettings"], vm);
         _ = vm.LoadAsync();
+
+        if (IsNarrow)
+        {
+            IsSidebarOpen = false;
+            AppPreferences.Update(p => p with { SidebarOpen = false });
+        }
     }
 
     private void NavigateToTemplatePicker()
