@@ -78,7 +78,6 @@ public partial class OverlayDialogService : ObservableObject, IDialogService, ID
 
         public ViewModelBase ViewModel { get; }
 
-        public TaskCompletionSource<object?> Result { get; } =
-            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object?> Result { get; } = new();
     }
 }

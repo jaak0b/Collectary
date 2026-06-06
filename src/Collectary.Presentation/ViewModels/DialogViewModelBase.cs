@@ -2,8 +2,7 @@ namespace Collectary.Presentation.ViewModels;
 
 public abstract class DialogViewModelBase : ViewModelBase
 {
-    private readonly TaskCompletionSource<object?> _completion =
-        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<object?> _completion = new();
 
     public Task<object?> Completion => _completion.Task;
 
