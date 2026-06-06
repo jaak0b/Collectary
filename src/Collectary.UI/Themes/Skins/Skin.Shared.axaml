@@ -1,5 +1,29 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Styles.Resources>
+        <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{DynamicResource SurfaceColor}"/>
+        <SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="{DynamicResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="DataGridGridLinesBrush" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="DataGridRowHoveredBackgroundColor" Color="{DynamicResource ControlHoverColor}"/>
+        <SolidColorBrush x:Key="DataGridRowSelectedBackgroundBrush" Color="{DynamicResource SidebarSelectedColor}"/>
+        <SolidColorBrush x:Key="DataGridRowSelectedHoveredBackgroundBrush" Color="{DynamicResource SidebarSelectedColor}"/>
+        <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackgroundBrush" Color="{DynamicResource SidebarSelectedColor}"/>
+        <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundBrush" Color="{DynamicResource SidebarSelectedColor}"/>
+
+        <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="{DynamicResource SurfaceColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderForeground" Color="{DynamicResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderBorderBrush" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="{DynamicResource ControlHoverColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderForegroundPointerOver" Color="{DynamicResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver" Color="{DynamicResource BorderStrongColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="{DynamicResource SurfaceAltColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderForegroundPressed" Color="{DynamicResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="ExpanderContentBackground" Color="{DynamicResource SurfaceColor}"/>
+        <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="{DynamicResource BorderColor}"/>
+        <SolidColorBrush x:Key="ExpanderChevronForeground" Color="{DynamicResource TextSecondaryColor}"/>
+    </Styles.Resources>
+
     <Style Selector="Window">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
     </Style>
@@ -55,12 +79,40 @@
         <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
         <Setter Property="MinHeight" Value="{DynamicResource ControlHeight}"/>
         <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}"/>
     </Style>
     <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource FocusRingBrush}"/>
     </Style>
     <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}"/>
+    </Style>
+
+    <!-- Numeric inputs: share the TextBox chrome so the field and its spinner aren't darker than other controls.
+         Selector targets NumericUpDown because SafeNumericUpDown overrides StyleKey to NumericUpDown. -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="{DynamicResource ControlBorderThickness}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+        <Setter Property="MinHeight" Value="{DynamicResource ControlHeight}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Padding" Value="8,0"/>
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent"/>
     </Style>
 
     <!-- ComboBox -->
@@ -74,6 +126,18 @@
         <Setter Property="Padding" Value="10,6"/>
     </Style>
 
+    <Style Selector="ComboBox:pointerover /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}"/>
+    </Style>
+    <Style Selector="ComboBox:pressed /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+    </Style>
+    <Style Selector="ComboBox:focus /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource FocusRingBrush}"/>
+    </Style>
+
     <!-- List items -->
     <Style Selector="ListBoxItem">
         <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
@@ -84,6 +148,20 @@
         <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
+    </Style>
+
+    <!-- Dropdown items: match the list-item selection instead of the OS accent (avoids the red highlight) -->
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+    </Style>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
+    </Style>
+    <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
     </Style>
 
