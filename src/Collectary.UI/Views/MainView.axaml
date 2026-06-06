@@ -261,7 +261,6 @@
             <Grid x:Name="BodyGrid" RowDefinitions="*">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="260" MinWidth="180" MaxWidth="480"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -274,17 +273,19 @@
                     <ContentControl Content="{Binding SidebarViewModel}"/>
                 </Border>
 
-                <!-- Splitter -->
+                <!-- Main content -->
+                <ContentControl Grid.Column="1" Content="{Binding ContentViewModel}"/>
+
+                <!-- Splitter overlays the sidebar/content seam so there is no empty gutter column -->
                 <GridSplitter Grid.Column="1"
                               x:Name="SidebarSplitter"
-                              Width="4"
+                              Width="6"
+                              HorizontalAlignment="Left"
+                              Margin="-3,0,0,0"
                               IsVisible="{Binding IsDesktopSidebarVisible}"
                               Background="Transparent"
-                              ResizeBehavior="PreviousAndNext"
+                              ResizeBehavior="PreviousAndCurrent"
                               ResizeDirection="Columns"/>
-
-                <!-- Main content -->
-                <ContentControl Grid.Column="2" Content="{Binding ContentViewModel}"/>
 
             </Grid>
 
