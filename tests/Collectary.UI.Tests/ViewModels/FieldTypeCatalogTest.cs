@@ -66,6 +66,15 @@ public class FieldTypeCatalogTest
     }
 
     [Test]
+    public void Entries_PlaceImageGalleryImmediatelyAfterImage()
+    {
+        var types = new FieldTypeCatalog().Entries.Select(e => e.Type).ToList();
+        var imageIndex = types.IndexOf(typeof(ImageFieldDefinition));
+
+        Assert.That(types[imageIndex + 1], Is.EqualTo(typeof(MultiImageFieldDefinition)));
+    }
+
+    [Test]
     public void Create_ReturnsMatchingRuntimeTypeWithLabel()
     {
         var entry = new FieldTypeCatalog().Entries.First(e => e.Type == typeof(CurrencyFieldDefinition));

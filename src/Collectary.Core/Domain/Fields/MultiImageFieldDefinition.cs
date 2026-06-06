@@ -3,7 +3,7 @@ namespace Collectary.Core.Domain.Fields;
 /// <summary>Holds several images per item (front/back, condition shots, multiple angles), in order.</summary>
 [LocalizedName("FieldType_MultiImage")]
 [FieldIcon(IconGlyphs.ImageMultiple)]
-[FieldCatalog(5, FieldCategory.Visual)]
+[FieldCatalog(4, FieldCategory.Visual)]
 public class MultiImageFieldDefinition : FieldDefinition<MultiImageFieldValue>
 {
     public override int DefaultColumnSpan => 2;
