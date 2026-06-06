@@ -235,18 +235,18 @@
   <data name="Profile_Switch" xml:space="preserve"><value>Profil wechseln</value></data>
   <data name="Profile_NameRequired" xml:space="preserve"><value>Bitte geben Sie einen Profilnamen ein.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Sammlung teilen</value></data>
-  <data name="Share_AddUser" xml:space="preserve"><value>Mit einem Benutzer teilen</value></data>
-  <data name="Share_Username" xml:space="preserve"><value>Benutzername</value></data>
+  <data name="Share_AddUser" xml:space="preserve"><value>Mit einem Profil teilen</value></data>
+  <data name="Share_Username" xml:space="preserve"><value>Profilname</value></data>
   <data name="Share_Permission" xml:space="preserve"><value>Berechtigung</value></data>
   <data name="Share_ShareButton" xml:space="preserve"><value>Teilen</value></data>
   <data name="Share_Revoke" xml:space="preserve"><value>Entziehen</value></data>
   <data name="Share_CurrentShares" xml:space="preserve"><value>Personen mit Zugriff</value></data>
   <data name="Share_NoShares" xml:space="preserve"><value>Noch mit niemandem geteilt.</value></data>
   <data name="Share_Transfer" xml:space="preserve"><value>Eigentum übertragen</value></data>
-  <data name="Share_TransferTo" xml:space="preserve"><value>Benutzername des neuen Eigentümers</value></data>
+  <data name="Share_TransferTo" xml:space="preserve"><value>Profilname des neuen Eigentümers</value></data>
   <data name="Share_TransferButton" xml:space="preserve"><value>Übertragen</value></data>
   <data name="Share_TransferDone" xml:space="preserve"><value>Eigentum übertragen.</value></data>
-  <data name="Share_UserNotFound" xml:space="preserve"><value>Es existiert kein Benutzer mit diesem Namen.</value></data>
+  <data name="Share_UserNotFound" xml:space="preserve"><value>Es existiert kein Profil mit diesem Namen.</value></data>
   <data name="Share_NotOwner" xml:space="preserve"><value>Nur der Eigentümer kann die Freigabe verwalten.</value></data>
   <data name="Share_Invalid" xml:space="preserve"><value>Diese Freigabeaktion ist nicht zulässig.</value></data>
   <data name="Permission_Read" xml:space="preserve"><value>Lesen</value></data>

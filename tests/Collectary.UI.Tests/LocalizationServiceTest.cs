@@ -51,6 +51,26 @@ public class LocalizationServiceTest
     }
 
     [Test]
+    public void ShareStrings_UseProfileTerminology_InEnglish()
+    {
+        LocalizationService.Instance.Apply("en");
+        Assert.That(LocalizationService.Instance["Share_AddUser"], Is.EqualTo("Share with a profile"));
+        Assert.That(LocalizationService.Instance["Share_Username"], Is.EqualTo("Profile name"));
+        Assert.That(LocalizationService.Instance["Share_TransferTo"], Is.EqualTo("New owner's profile name"));
+        Assert.That(LocalizationService.Instance["Share_UserNotFound"], Is.EqualTo("No profile with that name exists."));
+    }
+
+    [Test]
+    public void ShareStrings_UseProfileTerminology_InGerman()
+    {
+        LocalizationService.Instance.Apply("de");
+        Assert.That(LocalizationService.Instance["Share_AddUser"], Is.EqualTo("Mit einem Profil teilen"));
+        Assert.That(LocalizationService.Instance["Share_Username"], Is.EqualTo("Profilname"));
+        Assert.That(LocalizationService.Instance["Share_TransferTo"], Is.EqualTo("Profilname des neuen Eigentümers"));
+        Assert.That(LocalizationService.Instance["Share_UserNotFound"], Is.EqualTo("Es existiert kein Profil mit diesem Namen."));
+    }
+
+    [Test]
     public void Apply_RaisesLanguageChangedAndPropertyChanged()
     {
         var languageChanged = false;
