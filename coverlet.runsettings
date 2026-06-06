@@ -2,6 +2,11 @@
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
+      <DataCollector friendlyName="blame" enabled="True">
+        <Configuration>
+          <CollectDumpOnTestSessionHang TestTimeout="60000" HangDumpType="None" />
+        </Configuration>
+      </DataCollector>
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>cobertura</Format>

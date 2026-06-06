@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -22,6 +23,7 @@ class Build : NukeBuild
     AbsolutePath CoverageDirectory => RootDirectory / "TestResults" / "coverage";
     AbsolutePath CoverageReportDirectory => RootDirectory / "TestResults" / "CoverageReport";
     AbsolutePath CoverageSettings => RootDirectory / "coverlet.runsettings";
+    AbsolutePath TestSettings => RootDirectory / "tests.runsettings";
 
     string[] TestProjects =>
     [
@@ -51,12 +53,15 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in TestProjects)
-                DotNetTest(s => s
-                    .SetProjectFile(TestProjectsRoot / project / $"{project}.csproj")
+            DotNetTest(s => s
                     .SetConfiguration(Configuration)
                     .EnableNoRestore()
-                    .EnableNoBuild());
+                    .EnableNoBuild()
+                    .SetSettingsFile(TestSettings)
+                    .CombineWith(TestProjects, (settings, project) => settings
+                        .SetProjectFile(TestProjectsRoot / project / $"{project}.csproj")),
+                degreeOfParallelism: TestProjects.Length,
+                completeOnFailure: true);
         });
 
     Target Coverage => _ => _
@@ -66,15 +71,17 @@ class Build : NukeBuild
             CoverageDirectory.CreateOrCleanDirectory();
             CoverageReportDirectory.CreateOrCleanDirectory();
 
-            foreach (var project in TestProjects)
-                DotNetTest(s => s
-                    .SetProjectFile(TestProjectsRoot / project / $"{project}.csproj")
+            DotNetTest(s => s
                     .SetConfiguration(Configuration)
                     .EnableNoRestore()
                     .EnableNoBuild()
                     .SetDataCollector("XPlat Code Coverage")
                     .SetSettingsFile(CoverageSettings)
-                    .SetResultsDirectory(CoverageDirectory));
+                    .SetResultsDirectory(CoverageDirectory)
+                    .CombineWith(TestProjects, (settings, project) => settings
+                        .SetProjectFile(TestProjectsRoot / project / $"{project}.csproj")),
+                degreeOfParallelism: TestProjects.Length,
+                completeOnFailure: true);
 
             var coverageFiles = CoverageDirectory.GlobFiles("**/coverage.cobertura.xml");
             Assert.True(coverageFiles.Count > 0, "No coverage files were produced.");
@@ -119,7 +126,7 @@ class Build : NukeBuild
     }
 
     Target Mutate => _ => _
-        .DependsOn(Test)
+        .DependsOn(Compile)
         .Executes(() =>
         {
             foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation" })
