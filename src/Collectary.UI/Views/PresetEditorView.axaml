@@ -11,69 +11,44 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
 
-        <!-- Header form -->
-        <StackPanel Grid.Row="0" Spacing="12">
-            <TextBlock Text="{Binding [Collection], Source={x:Static loc:LocalizationService.Instance}}"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-
-            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="16">
-                <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    <TextBox Text="{Binding Name}"
-                             PlaceholderText="{Binding [ExampleFieldName], Source={x:Static loc:LocalizationService.Instance}}"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="4">
-                    <TextBlock Text="{Binding [ParentPreset], Source={x:Static loc:LocalizationService.Instance}}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    <ComboBox ItemsSource="{Binding AvailableParents}"
-                              SelectedItem="{Binding SelectedParent}"
-                              HorizontalAlignment="Stretch"
-                              PlaceholderText="{Binding [NoneOption], Source={x:Static loc:LocalizationService.Instance}}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Grid.Column="2" Spacing="4"
-                            x:Name="PresetColumnCountPanel"
-                            IsVisible="{Binding !IsNested}">
-                    <TextBlock Text="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    <controls:SafeNumericUpDown Value="{Binding ColumnCount}"
-                                   Minimum="1"
-                                   Maximum="24"
-                                   Increment="1"
-                                   FormatString="0"
-                                   HorizontalAlignment="Left"
-                                   MinWidth="80"/>
-                    <TextBlock Text="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               Margin="0,6,0,0"/>
-                    <ComboBox ItemsSource="{Binding FieldLabelLayoutOptions}"
-                              SelectedItem="{Binding SelectedFieldLabelLayout}"
-                              DisplayMemberBinding="{Binding Display}"
-                              HorizontalAlignment="Left"
-                              MinWidth="160"/>
-                </StackPanel>
-            </Grid>
-
-            <TextBlock Text="{Binding [Fields], Source={x:Static loc:LocalizationService.Instance}}"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       Margin="0,8,0,0"/>
-        </StackPanel>
+        <!-- Header form — hidden when drilled into a sub-list or when narrow with a field selected -->
+        <Grid Grid.Row="0" x:Name="CollectionSettingsHeader" ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,8"
+              IsVisible="{Binding IsHeaderVisible}">
+            <TextBox Grid.Column="0"
+                     Text="{Binding Name}"
+                     PlaceholderText="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding AvailableParents}"
+                      SelectedItem="{Binding SelectedParent}"
+                      HorizontalAlignment="Stretch"
+                      PlaceholderText="{Binding [NoneOption], Source={x:Static loc:LocalizationService.Instance}}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <controls:SafeNumericUpDown Grid.Column="2"
+                           Value="{Binding ColumnCount}"
+                           Minimum="1"
+                           Maximum="24"
+                           Increment="1"
+                           FormatString="0"
+                           ToolTip.Tip="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
+                           MinWidth="72"/>
+            <ComboBox Grid.Column="3"
+                      ItemsSource="{Binding FieldLabelLayoutOptions}"
+                      SelectedItem="{Binding SelectedFieldLabelLayout}"
+                      DisplayMemberBinding="{Binding Display}"
+                      ToolTip.Tip="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}"
+                      MinWidth="140"/>
+        </Grid>
 
         <!-- Level breadcrumb -->
         <controls:EditorBreadcrumb Grid.Row="1" Margin="-16,8,-16,0"/>
 
         <!-- Master / detail split -->
-        <Grid x:Name="SplitGrid" Grid.Row="2" ColumnDefinitions="2*,Auto,3*">
+        <Grid x:Name="SplitGrid" Grid.Row="2" RowDefinitions="*" ColumnDefinitions="2*,Auto,3*" Margin="0,8,0,0">
 
             <!-- Master: field list + add -->
             <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto"

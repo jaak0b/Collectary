@@ -23,31 +23,50 @@ public class PresetEditorViewTest
             onSaved: () => { }, onCancelled: () => { });
     }
 
-    private static StackPanel FindPanel(PresetEditorView view) =>
-        view.GetLogicalDescendants().OfType<StackPanel>()
-            .First(p => p.Name == "PresetColumnCountPanel");
+    private static Grid FindHeader(PresetEditorView view) =>
+        view.GetLogicalDescendants().OfType<Grid>()
+            .First(g => g.Name == "CollectionSettingsHeader");
 
     [Test]
-    public void PresetColumnCountControl_HiddenWhenDrilledIntoGroup()
+    public void RapidResizeAcrossNarrowThreshold_DoesNotThrow()
+    {
+        var vm = CreateViewModel();
+        var view = new PresetEditorView { DataContext = vm };
+        var window = new Window { Content = view, Width = 1000, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.DoesNotThrow(() =>
+        {
+            for (var i = 0; i < 60; i++)
+            {
+                window.Width = i % 2 == 0 ? 400 : 1000;
+                Dispatcher.UIThread.RunJobs();
+            }
+        });
+    }
+
+    [Test]
+    public void CollectionSettingsHeader_HiddenWhenDrilledIntoGroup()
     {
         var vm = CreateViewModel();
         var view = new PresetEditorView { DataContext = vm };
         Dispatcher.UIThread.RunJobs();
 
-        var panel = FindPanel(view);
-        Assert.That(panel.IsVisible, Is.True, "Preset Columns control is shown at the root level");
+        var header = FindHeader(view);
+        Assert.That(header.IsVisible, Is.True, "Header is shown at the root level");
 
         vm.AddGroupCommand.Execute(null);
         var group = vm.CurrentRows.OfType<FieldGroupRowViewModel>().First();
         vm.DrillIntoCommand.Execute(group);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.That(panel.IsVisible, Is.False,
-            "Preset Columns control must be hidden while drilled into a group, so it can't be edited by mistake");
+        Assert.That(header.IsVisible, Is.False,
+            "Header must be hidden while drilled into a group");
     }
 
     [Test]
-    public void PresetColumnCountControl_VisibleAgainAfterNavigatingBackToRoot()
+    public void CollectionSettingsHeader_VisibleAgainAfterNavigatingBackToRoot()
     {
         var vm = CreateViewModel();
         var view = new PresetEditorView { DataContext = vm };
@@ -59,6 +78,6 @@ public class PresetEditorViewTest
         vm.NavigateToLevelCommand.Execute(vm.Levels[0]);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.That(FindPanel(view).IsVisible, Is.True);
+        Assert.That(FindHeader(view).IsVisible, Is.True);
     }
 }

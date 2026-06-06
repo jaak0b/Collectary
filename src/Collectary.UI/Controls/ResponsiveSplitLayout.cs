@@ -48,10 +48,10 @@ public sealed class ResponsiveSplitLayout
         {
             CaptureRatio();
             _splitGrid.ColumnDefinitions = new ColumnDefinitions("*");
-            _splitGrid.RowDefinitions = new RowDefinitions("Auto,*");
+            _splitGrid.RowDefinitions = new RowDefinitions("*");
             Grid.SetColumn(_masterPane, 0); Grid.SetRow(_masterPane, 0);
-            Grid.SetColumn(_detailPane, 0); Grid.SetRow(_detailPane, 1);
-            _detailPane.Margin = new Thickness(0, 12, 0, 0);
+            Grid.SetColumn(_detailPane, 0); Grid.SetRow(_detailPane, 0);
+            _detailPane.Margin = new Thickness(0);
             _paneSplitter.IsVisible = false;
         }
         else

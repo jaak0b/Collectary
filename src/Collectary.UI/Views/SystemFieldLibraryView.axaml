@@ -27,7 +27,7 @@
         <controls:EditorBreadcrumb Grid.Row="1" Margin="-16,8,-16,0"/>
 
         <!-- Master / detail split -->
-        <Grid x:Name="SplitGrid" Grid.Row="2" ColumnDefinitions="240,Auto,*" Margin="0,8,0,0">
+        <Grid x:Name="SplitGrid" Grid.Row="2" RowDefinitions="*" ColumnDefinitions="240,Auto,*" Margin="0,8,0,0">
 
             <!-- Master: field list -->
             <Grid x:Name="MasterPane" Grid.Column="0" MinWidth="200" RowDefinitions="*,Auto"

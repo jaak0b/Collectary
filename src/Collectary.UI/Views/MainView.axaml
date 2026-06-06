@@ -117,7 +117,7 @@
         <!-- Body: sidebar + content -->
         <Panel Grid.Row="1">
 
-            <Grid x:Name="BodyGrid">
+            <Grid x:Name="BodyGrid" RowDefinitions="*">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="260" MinWidth="180" MaxWidth="480"/>
                     <ColumnDefinition Width="Auto"/>

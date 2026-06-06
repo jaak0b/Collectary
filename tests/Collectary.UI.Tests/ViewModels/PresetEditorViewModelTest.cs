@@ -587,4 +587,100 @@ public class PresetEditorViewModelTest
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _presetUseCase.UpdatePresetAsync(A<Preset>._)).MustNotHaveHappened();
     }
+
+    [Test]
+    public void IsHeaderVisible_WhenNotNestedAndWide_ReturnsTrue()
+    {
+        var sut = CreateSut();
+        sut.IsNarrow = false;
+
+        Assert.That(sut.IsHeaderVisible, Is.True);
+    }
+
+    [Test]
+    public void IsHeaderVisible_WhenDrilledIn_ReturnsFalse()
+    {
+        var sut = CreateSut();
+        sut.AddField<ListFieldDefinition>();
+        var listRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First(r => r.IsList);
+
+        sut.DrillIntoCommand.Execute(listRow);
+
+        Assert.That(sut.IsHeaderVisible, Is.False);
+    }
+
+    [Test]
+    public void IsHeaderVisible_WhenNarrowAndFieldSelected_ReturnsFalse()
+    {
+        var sut = CreateSut();
+        sut.AddField<TextFieldDefinition>();
+        sut.IsNarrow = true;
+
+        sut.SelectedNode = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last();
+
+        Assert.That(sut.IsHeaderVisible, Is.False);
+    }
+
+    [Test]
+    public void IsHeaderVisible_WhenNarrowAndNothingSelected_ReturnsTrue()
+    {
+        var sut = CreateSut();
+        sut.IsNarrow = true;
+        sut.SelectedNode = null;
+
+        Assert.That(sut.IsHeaderVisible, Is.True);
+    }
+
+    [Test]
+    public void IsHeaderVisible_WhenWideAndFieldSelected_ReturnsTrue()
+    {
+        var sut = CreateSut();
+        sut.AddField<TextFieldDefinition>();
+        sut.IsNarrow = false;
+
+        sut.SelectedNode = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last();
+
+        Assert.That(sut.IsHeaderVisible, Is.True);
+    }
+
+    [Test]
+    public void IsHeaderVisible_RaisesPropertyChanged_WhenDrilledIn()
+    {
+        var sut = CreateSut();
+        sut.AddField<ListFieldDefinition>();
+        var listRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First(r => r.IsList);
+        var raised = new List<string>();
+        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        sut.DrillIntoCommand.Execute(listRow);
+
+        Assert.That(raised, Does.Contain(nameof(PresetEditorViewModel.IsHeaderVisible)));
+    }
+
+    [Test]
+    public void IsHeaderVisible_RaisesPropertyChanged_WhenNarrowChanges()
+    {
+        var sut = CreateSut();
+        var raised = new List<string>();
+        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        sut.IsNarrow = true;
+
+        Assert.That(raised, Does.Contain(nameof(PresetEditorViewModel.IsHeaderVisible)));
+    }
+
+    [Test]
+    public void IsHeaderVisible_RaisesPropertyChanged_WhenSelectionChanges()
+    {
+        var sut = CreateSut();
+        sut.AddField<TextFieldDefinition>();
+        sut.IsNarrow = true;
+        sut.SelectedNode = null;
+        var raised = new List<string>();
+        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        sut.SelectedNode = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last();
+
+        Assert.That(raised, Does.Contain(nameof(PresetEditorViewModel.IsHeaderVisible)));
+    }
 }

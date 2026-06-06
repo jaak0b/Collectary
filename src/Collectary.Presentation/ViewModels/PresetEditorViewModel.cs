@@ -24,6 +24,15 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel
 
     public Action? OnAnySuccessfulSave { get; set; }
 
+    public bool IsHeaderVisible => !IsNested && (!IsNarrow || SelectedNode == null);
+
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (e.PropertyName is nameof(IsNested) or nameof(IsNarrow) or nameof(SelectedNode))
+            OnPropertyChanged(nameof(IsHeaderVisible));
+    }
+
     [ObservableProperty]
     public partial string Name { get; set; } = string.Empty;
 
