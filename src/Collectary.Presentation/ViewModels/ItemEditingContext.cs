@@ -41,12 +41,13 @@ public partial class ItemEditingContext : ObservableObject
     public Func<Task<IReadOnlyList<LinkedItemOption>>> LoadLinkableItemsAsync { get; set; }
         = () => Task.FromResult<IReadOnlyList<LinkedItemOption>>(Array.Empty<LinkedItemOption>());
 
-    /// <summary>Records an audio note, returning its blob key and length in seconds. Default: no microphone.</summary>
-    public Func<Task<(string Key, int DurationSeconds)?>> RecordAudioAsync { get; set; }
-        = () => Task.FromResult<(string, int)?>(null);
+    public IAudioRecorder? AudioRecorder { get; set; }
 
-    /// <summary>Plays back a stored audio note. Default: no-op.</summary>
-    public Func<string, Task> PlayAudioAsync { get; set; } = _ => Task.CompletedTask;
+    public IAudioPlayer? AudioPlayer { get; set; }
+
+    public Func<Stream, Task<string>> StoreAudioAsync { get; set; } = _ => Task.FromResult(string.Empty);
+
+    public Func<string, Stream?> OpenAudioStream { get; set; } = _ => null;
     public Action<ListFieldEditorViewModel> OpenList { get; set; } = _ => { };
     public Action<ListEntryEditorViewModel, string> OpenEntry { get; set; } = (_, _) => { };
     public Action GoBack { get; }

@@ -43,13 +43,18 @@ public class ItemEditingContextDefaultsTest
         Assert.That(await Make().LoadLinkableItemsAsync(), Is.Empty);
 
     [Test]
-    public async Task RecordAudio_DefaultsToNull() =>
-        Assert.That(await Make().RecordAudioAsync(), Is.Null);
+    public void AudioRecorder_DefaultsToNull() =>
+        Assert.That(Make().AudioRecorder, Is.Null);
 
     [Test]
-    public async Task PlayAudio_DefaultsToNoOp()
-    {
-        await Make().PlayAudioAsync("k");
-        Assert.Pass();
-    }
+    public void AudioPlayer_DefaultsToNull() =>
+        Assert.That(Make().AudioPlayer, Is.Null);
+
+    [Test]
+    public async Task StoreAudio_DefaultsToEmptyKey() =>
+        Assert.That(await Make().StoreAudioAsync(Stream.Null), Is.Empty);
+
+    [Test]
+    public void OpenAudio_DefaultsToNull() =>
+        Assert.That(Make().OpenAudioStream("k"), Is.Null);
 }

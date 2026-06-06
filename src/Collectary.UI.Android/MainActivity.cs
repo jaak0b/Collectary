@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content.PM;
+using Android.OS;
 using Avalonia;
 using Avalonia.Android;
 
@@ -13,6 +14,13 @@ namespace Collectary.UI.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+        if (CheckSelfPermission(global::Android.Manifest.Permission.RecordAudio) != Permission.Granted)
+            RequestPermissions([global::Android.Manifest.Permission.RecordAudio], 0);
+    }
+
     // MSAL's interactive sign-in needs the foreground Activity to launch its Chrome Custom Tab.
     // Publish it to the Application so the cloud module's parent-activity provider can hand it to MSAL.
     protected override void OnResume()

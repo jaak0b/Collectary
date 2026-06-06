@@ -72,7 +72,13 @@
   <data name="FieldType_DateRange" xml:space="preserve"><value>Date Range</value></data>
   <data name="FieldType_LinkedItem" xml:space="preserve"><value>Linked Item</value></data>
   <data name="FieldType_Audio" xml:space="preserve"><value>Audio Note</value></data>
-  <data name="Audio_Record" xml:space="preserve"><value>Record…</value></data>
+  <data name="Audio_Microphone" xml:space="preserve"><value>Microphone</value></data>
+  <data name="Audio_StartRecording" xml:space="preserve"><value>Record</value></data>
+  <data name="Audio_StopRecording" xml:space="preserve"><value>Stop</value></data>
+  <data name="Audio_Play" xml:space="preserve"><value>Play</value></data>
+  <data name="Audio_Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="Audio_Unavailable" xml:space="preserve"><value>Recording isn't available on this device</value></data>
+  <data name="Audio_RecordFailed" xml:space="preserve"><value>Couldn't record audio</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Theme</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Light</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>

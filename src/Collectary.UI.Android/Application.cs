@@ -47,6 +47,7 @@ namespace Collectary.UI.Android
                     oneDriveMsalOptions,
                     () => AppPreferences.Load().OneDriveRootFolderId,
                     () => AppPreferences.Load().GoogleDriveRootFolderId),
+                new Audio.AndroidAudioModule(),
             };
         }
     }

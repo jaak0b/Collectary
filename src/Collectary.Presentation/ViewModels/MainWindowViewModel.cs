@@ -620,6 +620,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         };
         context.DeleteFileAsync = key => _imageStore.DeleteAsync(key);
 
+        context.AudioRecorder = _scope.ResolveOptional<IAudioRecorder>();
+        context.AudioPlayer = _scope.ResolveOptional<IAudioPlayer>();
+        context.StoreAudioAsync = stream => _imageStore.SaveAsync(stream, $"audio-{Guid.NewGuid():N}.wav");
+        context.OpenAudioStream = key => _imageStore.Exists(key) ? _imageStore.Open(key) : null;
+
         context.LoadLinkableItemsAsync = async () =>
         {
             var options = new List<LinkedItemOption>();

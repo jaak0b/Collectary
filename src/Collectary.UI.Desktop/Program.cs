@@ -57,6 +57,7 @@ sealed class Program
                 oneDriveMsalOptions,
                 () => AppPreferences.Load().OneDriveRootFolderId,
                 () => AppPreferences.Load().GoogleDriveRootFolderId),
+            new Audio.DesktopAudioModule(),
         };
     }
 }

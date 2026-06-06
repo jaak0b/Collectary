@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:ports="using:Collectary.Core.Ports"
              xmlns:loc="using:Collectary.Presentation.Localization"
              x:Class="Collectary.UI.Views.AudioFieldEditorView"
              x:DataType="vm:AudioFieldEditorViewModel">
@@ -10,18 +10,37 @@
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
-            <Button Command="{Binding RecordCommand}"
-                    Content="{Binding [Audio_Record], Source={x:Static loc:LocalizationService.Instance}}"/>
-            <Button Command="{Binding PlayCommand}"
-                    Content="{x:Static icons:IconGlyphs.Play}" Classes="icon"
-                    IsVisible="{Binding HasAudio, FallbackValue=False}"/>
-            <Button Command="{Binding DeleteCommand}"
-                    Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
-                    IsVisible="{Binding HasAudio, FallbackValue=False}"/>
-            <TextBlock Text="{Binding DurationSeconds, StringFormat={}{0}s}"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding HasAudio, FallbackValue=False}"/>
+        <StackPanel Spacing="6" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        IsVisible="{Binding AudioAvailable}">
+                <ComboBox ItemsSource="{Binding Microphones}"
+                          SelectedItem="{Binding SelectedMicrophone}"
+                          MinWidth="180"
+                          IsEnabled="{Binding !IsRecording}"
+                          VerticalAlignment="Center">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="ports:AudioInputDevice">
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Command="{Binding ToggleRecordCommand}"
+                        Content="{Binding RecordButtonLabel}"/>
+                <Button Command="{Binding TogglePlaybackCommand}"
+                        Content="{Binding PlayButtonLabel}"
+                        IsEnabled="{Binding HasAudio}"/>
+                <TextBlock Text="{Binding DurationSeconds, StringFormat={}{0}s}"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding HasAudio, FallbackValue=False}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding [Audio_Unavailable], Source={x:Static loc:LocalizationService.Instance}}"
+                       TextWrapping="Wrap"
+                       Opacity="0.7"
+                       IsVisible="{Binding !AudioAvailable}"/>
+            <TextBlock Text="{Binding ErrorMessage}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource DangerBrush}"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
         </StackPanel>
     </controls:FieldEditorScaffold>
 </UserControl>

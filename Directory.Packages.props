@@ -48,6 +48,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Audio capture/playback (desktop-only: Collectary.UI.Desktop) -->
+    <PackageVersion Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Logging -->
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />

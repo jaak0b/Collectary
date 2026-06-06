@@ -66,6 +66,24 @@ public class FileSystemImageStoreTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task AudioWavBlob_RoundTripsAndDeletes()
+    {
+        var clip = new byte[] { 0x52, 0x49, 0x46, 0x46, 1, 2, 3, 4 };
+        using var stream = new MemoryStream(clip);
+        var key = await _sut.SaveAsync(stream, "audio-abc.wav");
+
+        using (var read = _sut.Open(key))
+        {
+            var buffer = new byte[clip.Length];
+            _ = await read.ReadAsync(buffer);
+            Assert.That(buffer, Is.EqualTo(clip));
+        }
+
+        await _sut.DeleteAsync(key);
+        Assert.That(_sut.Exists(key), Is.False);
+    }
+
+    [Test]
     public async Task DeleteAsync_RemovesFile()
     {
         using var stream = new MemoryStream(new byte[] { 1 });

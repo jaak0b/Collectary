@@ -63,7 +63,10 @@ kind of information you're storing.
 - **Image Gallery** — several pictures in an order you choose (front and back of a coin, a few
   angles).
 - **Color** — a colour value in ARGB, RGB, Hex, or CMYK.
-- **Audio Note** — a short recorded clip kept with the item.
+- **Audio Note** — a short clip you record straight into the item. Pick a microphone from the
+  dropdown, press **Record** to start and again to stop, then use the **Play/Pause** button to listen
+  back. Clips are saved with the item and travel with it through sync and backups. Recording works on
+  the desktop and Android apps; in the browser the field tells you recording isn't available there.
 
 ## Structure
 
