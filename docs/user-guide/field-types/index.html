@@ -688,6 +688,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#type-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type settings
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1137,6 +1146,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#type-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type settings
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1168,7 +1186,7 @@ kind of information you're storing.</p>
 <h2 id="numbers">Numbers<a class="headerlink" href="#numbers" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Integer</strong> — a whole number: a quantity, a year, a count.</li>
-<li><strong>Decimal</strong> — a number with fractions.</li>
+<li><strong>Decimal</strong> — a number with fractions, shown to as many decimal places as you choose.</li>
 <li><strong>Percentage</strong> — 0–100, shown with a <code>%</code>.</li>
 <li><strong>Currency</strong> — an amount plus a currency symbol.</li>
 <li><strong>Rating</strong> — a row of stars.</li>
@@ -1189,7 +1207,9 @@ kind of information you're storing.</p>
 <ul>
 <li><strong>Single Choice</strong> — a dropdown, pick one.</li>
 <li><strong>Multi Choice</strong> — checkboxes, pick any number.</li>
-<li><strong>Bool</strong> — a yes/no toggle.</li>
+<li><strong>Bool</strong> — a yes/no toggle. By default it's a plain checkbox (ticked means yes, unticked means no).
+  Turn on <strong>Allow unanswered</strong> if you'd rather have three states — yes, no, or left blank — so an
+  item you haven't decided on yet stays empty instead of silently counting as "no".</li>
 </ul>
 <h2 id="links-and-contact">Links and contact<a class="headerlink" href="#links-and-contact" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1225,6 +1245,21 @@ kind of information you're storing.</p>
 <li><strong>Linked Item</strong> — points one item at another (a minifig at its set, a lens at its camera body).</li>
 <li><strong>Display Name</strong> — every collection has exactly one. It points at the field used to label each
   item in lists. You set it when designing the collection.</li>
+</ul>
+<h2 id="type-settings">Type settings<a class="headerlink" href="#type-settings" title="Permanent link">&para;</a></h2>
+<p>Some types carry extra settings you adjust when you add or edit the field, under <strong>Type settings</strong> in
+the field panel:</p>
+<ul>
+<li><strong>Text</strong> — set a <strong>maximum length</strong> to stop entries running on past a limit you choose. Leave it
+  blank for no limit.</li>
+<li><strong>Integer</strong> — set a <strong>minimum</strong> and/or <strong>maximum</strong> so the editor won't accept values outside the
+  range. Leave either blank to leave that end open.</li>
+<li><strong>Decimal</strong> — choose how many <strong>decimal places</strong> to show, both while editing and in lists.</li>
+<li><strong>Bool</strong> — choose between a plain yes/no checkbox and the three-state <strong>Allow unanswered</strong> mode.</li>
+<li><strong>Rating</strong> — pick how many <strong>stars</strong> the scale runs to.</li>
+<li><strong>Currency</strong> — set the <strong>symbol</strong> shown beside the amount.</li>
+<li><strong>Color</strong> — pick the format (Hex, RGB, ARGB, CMYK).</li>
+<li><strong>Image</strong> — set the display size and how it scales.</li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Missing a type you need?</p>
