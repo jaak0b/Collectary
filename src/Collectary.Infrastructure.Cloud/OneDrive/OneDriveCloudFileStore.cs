@@ -38,6 +38,8 @@ public class OneDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
 
     public string RootFolderId => _rootFolderIdProvider() ?? string.Empty;
 
+    public void Invalidate() => _driveId = null;
+
     public async Task<string> EnsureFolderAsync(string parentFolderId, string name, CancellationToken ct)
     {
         var existing = (await ChildrenAsync(parentFolderId, ct))
@@ -78,7 +80,11 @@ public class OneDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
 
         using var buffer = new MemoryStream();
         await stream.CopyToAsync(buffer, ct);
-        return buffer.ToArray();
+        var bytes = buffer.ToArray();
+        if (child.Size is long expected && expected > 0 && bytes.Length != expected)
+            throw new InvalidOperationException(
+                $"OneDrive returned {bytes.Length} bytes for '{name}' but {expected} were expected.");
+        return bytes;
     }
 
     public async Task UploadAsync(string folderId, string name, byte[] content, CancellationToken ct)
@@ -89,7 +95,10 @@ public class OneDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
 
         if (content.Length <= _largeUploadThreshold)
         {
-            await item.Content.PutAsync(buffer, cancellationToken: ct);
+            var uploaded = await item.Content.PutAsync(buffer, cancellationToken: ct);
+            if (uploaded?.Size is long stored && stored != content.Length)
+                throw new InvalidOperationException(
+                    $"OneDrive stored {stored} bytes for '{name}' but {content.Length} were sent.");
             return;
         }
 
@@ -102,7 +111,9 @@ public class OneDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
         };
         var session = await item.CreateUploadSession.PostAsync(body, cancellationToken: ct);
         var uploadTask = new LargeFileUploadTask<DriveItem>(session, buffer, UploadSliceSize, _graph.RequestAdapter);
-        await uploadTask.UploadAsync();
+        var result = await uploadTask.UploadAsync();
+        if (!result.UploadSucceeded)
+            throw new InvalidOperationException($"OneDrive upload session for '{name}' did not complete successfully.");
     }
 
     public async Task DeleteAsync(string folderId, string name, CancellationToken ct)

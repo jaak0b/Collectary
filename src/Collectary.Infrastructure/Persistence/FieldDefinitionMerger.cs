@@ -14,6 +14,62 @@ public class FieldDefinitionMerger : IFieldDefinitionMerger
         _logger = logger ?? new NullAppLogger();
     }
 
+    public void MergePreset(InventoryDbContext db, Preset tracked, Preset incoming)
+    {
+        var removedGroupIds = SyncGroups(db, tracked.Groups, incoming.Groups, g => g.PresetId = tracked.Id);
+        foreach (var f in incoming.Fields)
+            if (f.GroupId is Guid fid && removedGroupIds.Contains(fid)) f.GroupId = null;
+        foreach (var r in incoming.SharedFieldRefs)
+            if (r.GroupId is Guid rid && removedGroupIds.Contains(rid)) r.GroupId = null;
+
+        var refsToRemove = tracked.SharedFieldRefs
+            .Where(e => incoming.SharedFieldRefs.All(u => u.SharedFieldId != e.SharedFieldId))
+            .ToList();
+        foreach (var r in refsToRemove) tracked.SharedFieldRefs.Remove(r);
+
+        foreach (var updatedRef in incoming.SharedFieldRefs)
+        {
+            var existingRef = tracked.SharedFieldRefs.FirstOrDefault(r => r.SharedFieldId == updatedRef.SharedFieldId);
+            if (existingRef is null)
+                tracked.SharedFieldRefs.Add(new PresetSharedField
+                {
+                    PresetId = tracked.Id,
+                    SharedFieldId = updatedRef.SharedFieldId,
+                    GroupId = updatedRef.GroupId,
+                    DisplayOrder = updatedRef.DisplayOrder
+                });
+            else
+            {
+                existingRef.DisplayOrder = updatedRef.DisplayOrder;
+                existingRef.GroupId = updatedRef.GroupId;
+            }
+        }
+
+        var trackedTopLevel = tracked.Fields
+            .Where(f => f.ParentListFieldDefinitionId == null)
+            .ToList();
+
+        var toRemove = trackedTopLevel
+            .Where(existing => incoming.Fields.All(updated => updated.Id != existing.Id))
+            .ToList();
+        db.FieldDefinitions.RemoveRange(toRemove);
+
+        foreach (var updatedField in incoming.Fields)
+        {
+            var existingField = trackedTopLevel.FirstOrDefault(f => f.Id == updatedField.Id);
+            if (existingField is null)
+            {
+                updatedField.PresetId = tracked.Id;
+                tracked.Fields.Add(updatedField);
+            }
+            else
+            {
+                existingField.DisplayOrder = updatedField.DisplayOrder;
+                Apply(db, existingField, updatedField);
+            }
+        }
+    }
+
     public void Apply(InventoryDbContext db, FieldDefinition existing, FieldDefinition updated)
     {
         existing.Label = updated.Label;

@@ -1,5 +1,6 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Logging;
 using Collectary.Core.Ports;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +10,13 @@ public class EfSyncStore : ISyncStore
 {
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IFieldDefinitionMerger _merger;
+    private readonly IAppLogger _logger;
 
-    public EfSyncStore(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger)
+    public EfSyncStore(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null)
     {
         _dbFactory = dbFactory;
         _merger = merger;
+        _logger = logger ?? new NullAppLogger();
     }
 
     public async Task<IReadOnlyList<Preset>> GetAllPresetsAsync()
@@ -34,9 +37,30 @@ public class EfSyncStore : ISyncStore
         return await WithSharedFieldDetails(db.SharedFields.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
     }
 
-    public Task ApplyPresetAsync(Preset preset) =>
-        ReplaceAtomicallyAsync(db => WithPresetDetails(db.Presets.IgnoreQueryFilters()), preset.Id,
-            (db, e) => db.Presets.Add(e), preset);
+    public async Task ApplyPresetAsync(Preset preset)
+    {
+        using var db = _dbFactory();
+        var tracked = await WithPresetDetails(db.Presets.IgnoreQueryFilters())
+            .FirstOrDefaultAsync(p => p.Id == preset.Id);
+
+        if (tracked is null)
+        {
+            db.Presets.Add(preset);
+        }
+        else
+        {
+            tracked.Name = preset.Name;
+            tracked.ColumnCount = preset.ColumnCount;
+            tracked.FieldLabelLayout = preset.FieldLabelLayout;
+            tracked.ParentPresetId = preset.ParentPresetId;
+            tracked.DisplayOrder = preset.DisplayOrder;
+            tracked.OwnerId = preset.OwnerId;
+            _merger.MergePreset(db, tracked, preset);
+            CopySyncMetadata(preset, tracked);
+        }
+
+        await db.SaveChangesAsync();
+    }
 
     public Task ApplyItemAsync(Item item) =>
         ReplaceAtomicallyAsync(db => WithItemDetails(db.Items.IgnoreQueryFilters()), item.Id,
@@ -92,10 +116,15 @@ public class EfSyncStore : ISyncStore
             SyncEntityKind.SharedField => await db.SharedFields.IgnoreQueryFilters().FirstOrDefaultAsync(sf => sf.Id == id),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind"),
         };
-        if (tracked is null) return;
+        if (tracked is null)
+        {
+            _logger.Warning("MarkSynced skipped: {Kind} {Id} is no longer present locally", kind, id);
+            return;
+        }
 
         tracked.BaseRevision = baseRevision;
-        tracked.IsDirty = dirty;
+        if (dirty || tracked.Revision == baseRevision)
+            tracked.IsDirty = dirty;
         if (revision.HasValue) tracked.Revision = revision.Value;
         await db.SaveChangesAsync();
     }
@@ -103,23 +132,26 @@ public class EfSyncStore : ISyncStore
     public async Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff)
     {
         using var db = _dbFactory();
-        var presets = await db.Presets.IgnoreQueryFilters()
-            .Where(p => p.IsDeleted && !p.IsDirty && p.DeletedAt != null && p.DeletedAt < cutoff).ToListAsync();
-        var items = await db.Items.IgnoreQueryFilters()
-            .Where(i => i.IsDeleted && !i.IsDirty && i.DeletedAt != null && i.DeletedAt < cutoff).ToListAsync();
-        var sharedFields = await db.SharedFields.IgnoreQueryFilters()
-            .Where(s => s.IsDeleted && !s.IsDirty && s.DeletedAt != null && s.DeletedAt < cutoff).ToListAsync();
 
-        db.Presets.RemoveRange(presets);
-        db.Items.RemoveRange(items);
-        db.SharedFields.RemoveRange(sharedFields);
-        await db.SaveChangesAsync();
+        var presetIds = await PurgeKindAsync(db.Presets, cutoff);
+        var itemIds = await PurgeKindAsync(db.Items, cutoff);
+        var sharedIds = await PurgeKindAsync(db.SharedFields, cutoff);
 
         var purged = new List<PurgedTombstone>();
-        purged.AddRange(presets.Select(p => new PurgedTombstone(SyncEntityKind.Preset, p.Id)));
-        purged.AddRange(items.Select(i => new PurgedTombstone(SyncEntityKind.Item, i.Id)));
-        purged.AddRange(sharedFields.Select(s => new PurgedTombstone(SyncEntityKind.SharedField, s.Id)));
+        purged.AddRange(presetIds.Select(id => new PurgedTombstone(SyncEntityKind.Preset, id)));
+        purged.AddRange(itemIds.Select(id => new PurgedTombstone(SyncEntityKind.Item, id)));
+        purged.AddRange(sharedIds.Select(id => new PurgedTombstone(SyncEntityKind.SharedField, id)));
         return purged;
+    }
+
+    private static async Task<IReadOnlyList<Guid>> PurgeKindAsync<T>(DbSet<T> set, DateTime cutoff)
+        where T : DomainObject, ISyncable
+    {
+        var expired = set.IgnoreQueryFilters()
+            .Where(e => e.IsDeleted && !e.IsDirty && e.DeletedAt != null && e.DeletedAt < cutoff);
+        var ids = await expired.Select(e => e.Id).ToListAsync();
+        await expired.ExecuteDeleteAsync();
+        return ids;
     }
 
     public async Task DeleteLocallyAsync(SyncEntityKind kind, Guid id)

@@ -98,59 +98,7 @@ public class PresetRepository : IPresetRepository
         _logger.Debug("Updating preset id={Id} name={Name} fields={Fields} groups={Groups} systemRefs={Refs}",
             preset.Id, preset.Name, preset.Fields.Count, preset.Groups.Count, preset.SharedFieldRefs.Count);
 
-        var removedGroupIds = _merger.SyncGroups(
-            db, tracked.Groups, preset.Groups, g => g.PresetId = tracked.Id);
-        foreach (var f in preset.Fields)
-            if (f.GroupId is Guid fid && removedGroupIds.Contains(fid)) f.GroupId = null;
-        foreach (var r in preset.SharedFieldRefs)
-            if (r.GroupId is Guid rid && removedGroupIds.Contains(rid)) r.GroupId = null;
-
-        var refsToRemove = tracked.SharedFieldRefs
-            .Where(e => preset.SharedFieldRefs.All(u => u.SharedFieldId != e.SharedFieldId))
-            .ToList();
-        foreach (var r in refsToRemove) tracked.SharedFieldRefs.Remove(r);
-
-        foreach (var updatedRef in preset.SharedFieldRefs)
-        {
-            var existingRef = tracked.SharedFieldRefs.FirstOrDefault(r => r.SharedFieldId == updatedRef.SharedFieldId);
-            if (existingRef is null)
-                tracked.SharedFieldRefs.Add(new PresetSharedField
-                {
-                    PresetId = tracked.Id,
-                    SharedFieldId = updatedRef.SharedFieldId,
-                    GroupId = updatedRef.GroupId,
-                    DisplayOrder = updatedRef.DisplayOrder
-                });
-            else
-            {
-                existingRef.DisplayOrder = updatedRef.DisplayOrder;
-                existingRef.GroupId = updatedRef.GroupId;
-            }
-        }
-
-        var trackedTopLevel = tracked.Fields
-            .Where(f => f.ParentListFieldDefinitionId == null)
-            .ToList();
-
-        var toRemove = trackedTopLevel
-            .Where(existing => preset.Fields.All(updated => updated.Id != existing.Id))
-            .ToList();
-        db.FieldDefinitions.RemoveRange(toRemove);
-
-        foreach (var updatedField in preset.Fields)
-        {
-            var existingField = trackedTopLevel.FirstOrDefault(f => f.Id == updatedField.Id);
-            if (existingField is null)
-            {
-                updatedField.PresetId = tracked.Id;
-                tracked.Fields.Add(updatedField);
-            }
-            else
-            {
-                existingField.DisplayOrder = updatedField.DisplayOrder;
-                _merger.Apply(db, existingField, updatedField);
-            }
-        }
+        _merger.MergePreset(db, tracked, preset);
 
         tracked.UpdatedAt = DateTime.UtcNow;
         ((ISyncable)tracked).StampModified(_currentUser?.AuthenticatedId);

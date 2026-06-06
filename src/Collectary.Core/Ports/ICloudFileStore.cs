@@ -23,4 +23,6 @@ public interface ICloudFileStore
     Task<byte[]?> DownloadAsync(string folderId, string name, CancellationToken ct);
     Task UploadAsync(string folderId, string name, byte[] content, CancellationToken ct);
     Task DeleteAsync(string folderId, string name, CancellationToken ct);
+
+    void Invalidate() { }
 }

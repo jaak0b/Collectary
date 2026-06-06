@@ -85,6 +85,25 @@ public class CloudSyncBackendTest
     }
 
     [Test]
+    public async Task ListAsync_WithMultipleRevisionsPresent_CollapsesToHighest()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ListAsync("items");
+        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
+        var naming = new SyncFileNaming();
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 1), System.Text.Encoding.UTF8.GetBytes("rev1"), CancellationToken.None);
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 2), System.Text.Encoding.UTF8.GetBytes("rev2"), CancellationToken.None);
+
+        var entries = await _sut.ListAsync("items");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(entries, Has.Count.EqualTo(1), "two revisions of one id must collapse to a single entry");
+            Assert.That(entries.Single().Revision, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
     public async Task WriteAsync_DoesNotDeleteAHigherConcurrentRevision()
     {
         var id = Guid.NewGuid();
@@ -199,6 +218,38 @@ public class CloudSyncBackendTest
     {
         _fileStore.IsAvailable = false;
         Assert.That(_sut.IsAvailable, Is.False);
+    }
+
+    [Test]
+    public async Task Invalidate_ForcesKindFolderReresolution()
+    {
+        var id = Guid.NewGuid();
+        await _sut.WriteAsync("items", id, "a", 1);
+        _sut.Invalidate();
+        await _sut.WriteAsync("items", id, "b", 2);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_fileStore.EnsureFolderCalls, Is.EqualTo(2),
+                "after invalidation the kind folder must be resolved again, not served from the stale cache");
+            Assert.That(_fileStore.InvalidateCalls, Is.EqualTo(1),
+                "invalidation must propagate to the underlying file store (e.g. to reset the OneDrive drive id)");
+        });
+    }
+
+    [Test]
+    public async Task KindFolder_WhenRootFolderChanges_ResolvesUnderTheNewRoot()
+    {
+        var id = Guid.NewGuid();
+        await _sut.WriteAsync("items", id, "first", 1);
+
+        _fileStore.RootFolderId = "root2";
+        await _sut.WriteAsync("items", id, "second", 2);
+
+        var newFolder = (await _fileStore.ListFoldersAsync("root2", CancellationToken.None)).SingleOrDefault(f => f.Name == "items");
+        Assert.That(newFolder, Is.Not.Null, "a kind folder must be re-resolved under the newly chosen root, not served from the stale cache");
+        Assert.That(await _fileStore.DownloadAsync(newFolder!.Id, $"{id:N}.2.json", CancellationToken.None), Is.Not.Null,
+            "documents must be written under the new root after the sync folder changed");
     }
 
     [Test]

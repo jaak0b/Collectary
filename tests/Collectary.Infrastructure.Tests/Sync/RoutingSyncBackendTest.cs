@@ -10,13 +10,15 @@ public class RoutingSyncBackendTest
 {
     private CloudSyncBackend _folder = null!;
     private CloudSyncBackend _oneDrive = null!;
+    private FakeCloudFileStore _oneDriveStore = null!;
     private CloudProvider _active;
 
     [SetUp]
     public void SetUp()
     {
         _folder = new CloudSyncBackend(new FakeCloudFileStore());
-        _oneDrive = new CloudSyncBackend(new FakeCloudFileStore());
+        _oneDriveStore = new FakeCloudFileStore();
+        _oneDrive = new CloudSyncBackend(_oneDriveStore);
         _active = CloudProvider.Folder;
     }
 
@@ -110,6 +112,27 @@ public class RoutingSyncBackendTest
         _ = sut.IsAvailable;
         _ = sut.IsAvailable;
         Assert.That(oneDriveResolved, Is.EqualTo(1), "factory resolved once then cached");
+    }
+
+    [Test]
+    public void Invalidate_ClearsResolvedBackends()
+    {
+        var oneDriveResolved = 0;
+        var sut = new RoutingSyncBackend(() => _active, new Dictionary<CloudProvider, Func<ISyncBackend>>
+        {
+            [CloudProvider.Folder] = () => _folder,
+            [CloudProvider.OneDrive] = () => { oneDriveResolved++; return _oneDrive; },
+        });
+        _active = CloudProvider.OneDrive;
+        _ = sut.IsAvailable;
+        sut.Invalidate();
+        _ = sut.IsAvailable;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(oneDriveResolved, Is.EqualTo(2), "invalidation must drop cached backends so they are re-resolved");
+            Assert.That(_oneDriveStore.InvalidateCalls, Is.EqualTo(1), "invalidation must propagate into each cached backend before it is dropped");
+        });
     }
 
     [Test]

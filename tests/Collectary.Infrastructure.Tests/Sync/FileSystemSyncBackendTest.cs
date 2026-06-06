@@ -69,6 +69,49 @@ public class FileSystemSyncBackendTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task ListAsync_WhenMultipleRevisionsExist_CollapsesToHighest()
+    {
+        var id = Guid.NewGuid();
+        var dir = Path.Combine(TempDir, "items");
+        Directory.CreateDirectory(dir);
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.5.json"), "five");
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.6.json"), "six");
+
+        var entries = await _sut.ListAsync("items");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(entries, Has.Count.EqualTo(1), "two leftover revisions of one id must collapse to a single entry");
+            Assert.That(entries.Single().Revision, Is.EqualTo(6));
+        });
+    }
+
+    [Test]
+    public async Task ReadAsync_WhenMultipleRevisionsExist_ReturnsHighest()
+    {
+        var id = Guid.NewGuid();
+        var dir = Path.Combine(TempDir, "items");
+        Directory.CreateDirectory(dir);
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.5.json"), "five");
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.6.json"), "six");
+
+        Assert.That(await _sut.ReadAsync("items", id), Is.EqualTo("six"));
+    }
+
+    [Test]
+    public async Task DeleteAsync_MatchesDocumentRegardlessOfFilenameCase()
+    {
+        var id = Guid.NewGuid();
+        var dir = Path.Combine(TempDir, "items");
+        Directory.CreateDirectory(dir);
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}".ToUpperInvariant() + ".3.json"), "x");
+
+        await _sut.DeleteAsync("items", id);
+
+        Assert.That(await _sut.ListAsync("items"), Is.Empty, "id matching must be case-insensitive so deletes work on case-sensitive filesystems");
+    }
+
+    [Test]
     public async Task ListAsync_WhenKindMissing_ReturnsEmpty() =>
         Assert.That(await _sut.ListAsync("nope"), Is.Empty);
 

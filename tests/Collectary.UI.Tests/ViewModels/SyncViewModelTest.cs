@@ -102,6 +102,16 @@ public class SyncViewModelTest
     }
 
     [Test]
+    public void LastSyncText_WhenLastSyncedSet_ReflectsTheTimestamp()
+    {
+        var vm = Make();
+        var never = vm.LastSyncText;
+        vm.LastSyncedAt = new DateTime(2025, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+
+        Assert.That(vm.LastSyncText, Is.Not.EqualTo(never), "a synced timestamp must render differently from 'never'");
+    }
+
+    [Test]
     public void IsConfigured_ReflectsStatus()
     {
         A.CallTo(() => _status.IsConfigured).Returns(false);
@@ -143,6 +153,26 @@ public class SyncViewModelTest
         await vm.SyncNowCommand.ExecuteAsync(null);
 
         Assert.That(fired, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task ConflictResolution_WithMultipleConflicts_KeepsOthersAndDefersResync()
+    {
+        var c1 = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "M1", "T1", 2, 2);
+        var c2 = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "M2", "T2", 2, 2);
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[] { c1, c2 }));
+        var vm = Make();
+        await vm.SyncNowCommand.ExecuteAsync(null);
+        var secondVm = vm.Conflicts[1];
+
+        await vm.Conflicts[0].KeepMineCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.Conflicts, Has.Count.EqualTo(1), "resolving one conflict must not tear down the others");
+            Assert.That(vm.Conflicts.Single(), Is.SameAs(secondVm), "the still-unresolved conflict instance must be preserved");
+        });
+        A.CallTo(() => _sync.SyncAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Test]

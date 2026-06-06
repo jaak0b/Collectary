@@ -18,9 +18,13 @@ public class FakeCloudFileStore : ICloudFileStore
 
     public bool IsAvailable { get; set; } = true;
 
-    public string RootFolderId => "root";
+    public string RootFolderId { get; set; } = "root";
 
     public int EnsureFolderCalls { get; private set; }
+
+    public int InvalidateCalls { get; private set; }
+
+    public void Invalidate() => InvalidateCalls++;
 
     public Task<string> EnsureFolderAsync(string parentFolderId, string name, CancellationToken ct)
     {

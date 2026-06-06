@@ -14,4 +14,6 @@ public interface ISyncBackend
     Task<byte[]?> ReadBlobAsync(string kind, string key);
     Task WriteBlobAsync(string kind, string key, byte[] content);
     Task DeleteBlobAsync(string kind, string key);
+
+    void Invalidate() { }
 }

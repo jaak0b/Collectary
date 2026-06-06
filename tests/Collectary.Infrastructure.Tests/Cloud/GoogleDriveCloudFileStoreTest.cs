@@ -186,6 +186,43 @@ public class GoogleDriveCloudFileStoreTest
     }
 
     [Test]
+    public async Task DeleteAsync_RemovesAllDuplicateNamedCopies()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files",
+                 """{"files":[{"id":"dup1","name":"a.json","mimeType":"application/octet-stream"},{"id":"dup2","name":"a.json","mimeType":"application/octet-stream"}]}""")
+             .OnStatus(HttpMethod.Delete, "files/dup1", HttpStatusCode.NoContent)
+             .OnStatus(HttpMethod.Delete, "files/dup2", HttpStatusCode.NoContent);
+
+        await Build().DeleteAsync("root", "a.json", CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_stub.CountRequests(HttpMethod.Delete, "files/dup1"), Is.EqualTo(1));
+            Assert.That(_stub.CountRequests(HttpMethod.Delete, "files/dup2"), Is.EqualTo(1), "every duplicate-named copy must be deleted, not just the first");
+        });
+    }
+
+    [Test]
+    public async Task UploadAsync_WhenDuplicateNamesExist_CollapsesToOne()
+    {
+        _stub.OnJson(HttpMethod.Get, "drive/v3/files",
+                 """{"files":[{"id":"keep","name":"a.json","mimeType":"application/octet-stream"},{"id":"extra","name":"a.json","mimeType":"application/octet-stream"}]}""")
+             .OnStatus(HttpMethod.Delete, "files/extra", HttpStatusCode.NoContent)
+             .On(HttpMethod.Patch, "upload/drive/v3/files", () =>
+             {
+                 var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                 response.Headers.Location = new Uri("https://upload.test/session");
+                 return response;
+             })
+             .OnJson(HttpMethod.Put, "upload.test", """{"id":"keep","name":"a.json"}""");
+
+        await Build().UploadAsync("root", "a.json", Encoding.UTF8.GetBytes("hi"), CancellationToken.None);
+
+        Assert.That(_stub.CountRequests(HttpMethod.Delete, "files/extra"), Is.EqualTo(1),
+            "an accidental duplicate name must be collapsed so a single canonical file remains");
+    }
+
+    [Test]
     public async Task DeleteAsync_MissingFile_IssuesNoDelete()
     {
         _stub.OnJson(HttpMethod.Get, "drive/v3/files", """{"files":[]}""");

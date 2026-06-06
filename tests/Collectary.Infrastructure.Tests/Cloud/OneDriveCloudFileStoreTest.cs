@@ -155,6 +155,20 @@ public class OneDriveCloudFileStoreTest
     }
 
     [Test]
+    public async Task Invalidate_RefetchesDriveId()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "/children", """{"value":[]}""");
+        var store = Build();
+        await store.ListFilesAsync("root", CancellationToken.None);
+        store.Invalidate();
+        await store.ListFilesAsync("root", CancellationToken.None);
+
+        Assert.That(_stub.CountRequests(HttpMethod.Get, "me/drive"), Is.EqualTo(2),
+            "after invalidation the drive id must be re-fetched, e.g. when a different account has signed in");
+    }
+
+    [Test]
     public async Task DownloadAsync_ExistingFile_ReturnsBytes()
     {
         _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
@@ -164,6 +178,29 @@ public class OneDriveCloudFileStoreTest
         var bytes = await Build().DownloadAsync("root", "a.json", CancellationToken.None);
 
         Assert.That(bytes, Is.EqualTo(new byte[] { 1, 2, 3 }));
+    }
+
+    [Test]
+    public void DownloadAsync_WhenBytesTruncated_Throws()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Get, "/children", """{"value":[{"id":"f1","name":"a.json","size":5}]}""")
+             .OnBytes(HttpMethod.Get, "/content", new byte[] { 1, 2 });
+
+        Assert.That(async () => await Build().DownloadAsync("root", "a.json", CancellationToken.None),
+            Throws.InstanceOf<InvalidOperationException>(),
+            "a short/truncated download must not be returned as if it were the whole file");
+    }
+
+    [Test]
+    public void UploadAsync_SimplePut_WhenServerStoredWrongSize_Throws()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Put, "/content", """{"id":"x","name":"a.json","size":999}""");
+
+        Assert.That(async () => await Build().UploadAsync("root", "a.json", new byte[] { 1, 2, 3, 4 }, CancellationToken.None),
+            Throws.InstanceOf<InvalidOperationException>(),
+            "a server-confirmed size that differs from what was sent must surface as a failure");
     }
 
     [Test]
@@ -210,6 +247,23 @@ public class OneDriveCloudFileStoreTest
             Assert.That(_stub.CountRequests(HttpMethod.Put, "upload.test"), Is.GreaterThanOrEqualTo(1), "uploads slices");
             Assert.That(_stub.BodyContains(HttpMethod.Post, "createUploadSession", "replace"), Is.True, "conflictBehavior replace");
         });
+    }
+
+    [Test]
+    public void UploadAsync_LargeFile_WhenSessionDoesNotComplete_Throws()
+    {
+        _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
+             .OnJson(HttpMethod.Post, "createUploadSession",
+                 """{"uploadUrl":"https://upload.test/sess","expirationDateTime":"2099-01-01T00:00:00Z","nextExpectedRanges":["0-"]}""")
+             .OnJson(HttpMethod.Put, "upload.test",
+                 """{"expirationDateTime":"2099-01-01T00:00:00Z","nextExpectedRanges":[]}""", HttpStatusCode.Accepted)
+             .OnJson(HttpMethod.Get, "upload.test",
+                 """{"expirationDateTime":"2099-01-01T00:00:00Z","nextExpectedRanges":[]}""");
+
+        Assert.That(async () => await Build(largeUploadThreshold: 1)
+                .UploadAsync("root", "a.json", new byte[] { 1, 2, 3, 4 }, CancellationToken.None),
+            Throws.Exception,
+            "an upload session that never confirms the item must surface as a failure, not a silent success that would let callers prune the good prior revision");
     }
 
     [Test]

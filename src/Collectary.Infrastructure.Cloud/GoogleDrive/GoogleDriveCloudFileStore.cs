@@ -77,9 +77,13 @@ public class GoogleDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
 
     public async Task UploadAsync(string folderId, string name, byte[] content, CancellationToken ct)
     {
-        var existing = (await ChildrenAsync(folderId, ct)).FirstOrDefault(f => f.Name == name);
+        var matches = (await ChildrenAsync(folderId, ct)).Where(f => f.Name == name).ToList();
         using var stream = new MemoryStream(content);
 
+        foreach (var duplicate in matches.Skip(1))
+            await _drive.Files.Delete(duplicate.Id).ExecuteAsync(ct);
+
+        var existing = matches.FirstOrDefault();
         if (existing is null)
         {
             var create = _drive.Files.Create(
@@ -104,9 +108,9 @@ public class GoogleDriveCloudFileStore : ICloudFileStore, ICloudRootProvider
 
     public async Task DeleteAsync(string folderId, string name, CancellationToken ct)
     {
-        var child = (await ChildrenAsync(folderId, ct)).FirstOrDefault(f => f.Name == name);
-        if (child is null) return;
-        await _drive.Files.Delete(child.Id).ExecuteAsync(ct);
+        var matches = (await ChildrenAsync(folderId, ct)).Where(f => f.Name == name).ToList();
+        foreach (var child in matches)
+            await _drive.Files.Delete(child.Id).ExecuteAsync(ct);
     }
 
     private async Task<IReadOnlyList<DriveData.File>> ChildrenAsync(string folderId, CancellationToken ct)

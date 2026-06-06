@@ -11,6 +11,8 @@ public class SyncService : ISyncService
     public const string SharedFieldKind = "sharedfields";
     public const string ImageKind = "images";
 
+    private const int DefaultTombstoneRetentionDays = 30;
+
     private readonly ISyncBackend _backend;
     private readonly ISyncStore _store;
     private readonly ISyncSerializer _serializer;
@@ -56,15 +58,14 @@ public class SyncService : ISyncService
             i => _store.ApplyItemAsync(i),
             conflicts);
 
-        await SyncImagesAsync();
+        var reconcileComplete = conflicts.Count == 0
+            && sharedFields.skipped == 0 && presets.skipped == 0 && items.skipped == 0;
+        await SyncImagesAsync(reconcileComplete);
 
-        if (_syncStatus is not null)
-        {
-            var retentionDays = Math.Max(1, _syncStatus.TombstoneRetentionDays);
-            var purged = await _store.PurgeTombstonesAsync(DateTime.UtcNow.AddDays(-retentionDays));
-            foreach (var tombstone in purged)
-                await _backend.DeleteAsync(KindString(tombstone.Kind), tombstone.Id);
-        }
+        var retentionDays = Math.Max(1, _syncStatus?.TombstoneRetentionDays ?? DefaultTombstoneRetentionDays);
+        var purged = await _store.PurgeTombstonesAsync(DateTime.UtcNow.AddDays(-retentionDays));
+        foreach (var tombstone in purged)
+            await _backend.DeleteAsync(KindString(tombstone.Kind), tombstone.Id);
 
         return new SyncResult(
             sharedFields.pushed + presets.pushed + items.pushed,
@@ -76,8 +77,9 @@ public class SyncService : ISyncService
     {
         if (keepLocal)
         {
+            var nextRevision = Math.Max(conflict.LocalRevision, conflict.RemoteRevision) + 1;
             await _store.MarkSyncedAsync(conflict.Kind, conflict.Id, conflict.RemoteRevision, dirty: true,
-                revision: conflict.RemoteRevision + 1);
+                revision: nextRevision);
             return;
         }
 
@@ -98,7 +100,7 @@ public class SyncService : ISyncService
         }
     }
 
-    private async Task<(int pushed, int pulled)> ReconcileAsync<T>(
+    private async Task<(int pushed, int pulled, int skipped)> ReconcileAsync<T>(
         string kind,
         SyncEntityKind entityKind,
         IReadOnlyList<T> locals,
@@ -110,23 +112,15 @@ public class SyncService : ISyncService
         var remoteEntries = await _backend.ListAsync(kind);
         var remoteRevById = remoteEntries.ToDictionary(e => e.Id, e => e.Revision);
         var localById = locals.ToDictionary(l => l.Id);
-        var remoteHasData = remoteEntries.Count > 0;
 
         var pushed = 0;
         var pulled = 0;
+        var skipped = 0;
 
         foreach (var id in remoteRevById.Keys.Union(localById.Keys))
         {
             localById.TryGetValue(id, out var local);
             var hasRemote = remoteRevById.TryGetValue(id, out var remoteRevision);
-
-            if (local is not null && !hasRemote
-                && !local.IsDirty && local.BaseRevision > 0 && remoteHasData)
-            {
-                await _store.DeleteLocallyAsync(entityKind, id);
-                pulled++;
-                continue;
-            }
 
             var localChanged = local is not null && local.IsDirty;
             var remoteChanged = hasRemote && (local is null || remoteRevision > local.BaseRevision);
@@ -134,8 +128,9 @@ public class SyncService : ISyncService
             if (localChanged && remoteChanged)
             {
                 var remote = await ReadRemoteAsync<T>(kind, id);
-                if (remote is null) continue;
-                conflicts.Add(new SyncConflict(entityKind, id, label(local!), label(remote), local!.Revision, remote.Revision));
+                conflicts.Add(remote is not null
+                    ? new SyncConflict(entityKind, id, label(local!), label(remote), local!.Revision, remoteRevision)
+                    : new SyncConflict(entityKind, id, label(local!), label(local!), local!.Revision, remoteRevision));
             }
             else if (localChanged)
             {
@@ -146,14 +141,15 @@ public class SyncService : ISyncService
             else if (remoteChanged)
             {
                 var remote = await ReadRemoteAsync<T>(kind, id);
-                if (remote is null) continue;
+                if (remote is null) { skipped++; continue; }
+                if (local is null && remote.IsDeleted) continue;
                 remote.MarkPulled();
                 await applyLocal(remote);
                 pulled++;
             }
         }
 
-        return (pushed, pulled);
+        return (pushed, pulled, skipped);
     }
 
     private async Task<T?> ReadRemoteAsync<T>(string kind, Guid id) where T : class, ISyncable
@@ -173,11 +169,11 @@ public class SyncService : ISyncService
         }
     }
 
-    private async Task SyncImagesAsync()
+    private async Task SyncImagesAsync(bool reconcileComplete)
     {
         if (_imageStore is null) return;
 
-        var referenced = (await _store.GetLiveReferencedImageKeysAsync()).ToHashSet();
+        var referenced = (await _store.GetReferencedImageKeysAsync()).ToHashSet();
         var localSet = (await _imageStore.ListKeysAsync()).ToHashSet();
         var remoteSet = (await _backend.ListBlobKeysAsync(ImageKind)).ToHashSet();
 
@@ -193,16 +189,26 @@ public class SyncService : ISyncService
             else if (!localSet.Contains(key) && remoteSet.Contains(key))
             {
                 var bytes = await _backend.ReadBlobAsync(ImageKind, key);
-                if (bytes is null) continue;
+                if (bytes is null)
+                {
+                    _logger.Warning("Referenced image {Key} could not be downloaded; leaving it for the next sync", key);
+                    continue;
+                }
                 using var stream = new MemoryStream(bytes);
                 await _imageStore.ImportAsync(key, stream);
+            }
+            else if (!localSet.Contains(key))
+            {
+                _logger.Warning("Referenced image {Key} is missing from both the local and remote stores", key);
             }
         }
 
         foreach (var key in localSet.Where(k => !referenced.Contains(k)))
             await _imageStore.DeleteAsync(key);
-        foreach (var key in remoteSet.Where(k => !referenced.Contains(k)))
-            await _backend.DeleteBlobAsync(ImageKind, key);
+
+        if (reconcileComplete)
+            foreach (var key in remoteSet.Where(k => !referenced.Contains(k)))
+                await _backend.DeleteBlobAsync(ImageKind, key);
     }
 
     private string KindString(SyncEntityKind kind) => kind switch

@@ -20,12 +20,14 @@ public class FileSystemSyncBackend : ISyncBackend
         var dir = KindDir(kind);
         if (!Directory.Exists(dir)) return Task.FromResult<IReadOnlyList<SyncEntry>>(Array.Empty<SyncEntry>());
 
-        var entries = new List<SyncEntry>();
+        var highest = new Dictionary<Guid, long>();
         foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
-            if (_naming.TryParseDocument(Path.GetFileName(file), out var id, out var revision))
-                entries.Add(new SyncEntry(id, revision));
+            if (_naming.TryParseDocument(Path.GetFileName(file), out var id, out var revision)
+                && (!highest.TryGetValue(id, out var current) || revision > current))
+                highest[id] = revision;
 
-        return Task.FromResult<IReadOnlyList<SyncEntry>>(entries);
+        IReadOnlyList<SyncEntry> entries = highest.Select(kv => new SyncEntry(kv.Key, kv.Value)).ToList();
+        return Task.FromResult(entries);
     }
 
     public async Task<string?> ReadAsync(string kind, Guid id)
@@ -44,8 +46,9 @@ public class FileSystemSyncBackend : ISyncBackend
         await File.WriteAllTextAsync(temp, content);
         File.Move(temp, target, overwrite: true);
 
-        foreach (var stale in Directory.EnumerateFiles(dir, $"{id:N}.*.json"))
-            if (!string.Equals(stale, target, StringComparison.OrdinalIgnoreCase))
+        foreach (var stale in Directory.EnumerateFiles(dir, "*.json"))
+            if (_naming.BelongsTo(Path.GetFileName(stale), id)
+                && !string.Equals(stale, target, StringComparison.OrdinalIgnoreCase))
                 File.Delete(stale);
     }
 
@@ -53,17 +56,27 @@ public class FileSystemSyncBackend : ISyncBackend
     {
         var dir = KindDir(kind);
         if (Directory.Exists(dir))
-            foreach (var file in Directory.EnumerateFiles(dir, $"{id:N}.*.json"))
-                File.Delete(file);
+            foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
+                if (_naming.BelongsTo(Path.GetFileName(file), id))
+                    File.Delete(file);
         return Task.CompletedTask;
     }
 
     private string? FindFile(string kind, Guid id)
     {
         var dir = KindDir(kind);
-        return Directory.Exists(dir)
-            ? Directory.EnumerateFiles(dir, $"{id:N}.*.json").FirstOrDefault()
-            : null;
+        if (!Directory.Exists(dir)) return null;
+
+        string? best = null;
+        var bestRevision = -1L;
+        foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
+            if (_naming.TryParseDocument(Path.GetFileName(file), out var fileId, out var revision)
+                && fileId == id && revision > bestRevision)
+            {
+                best = file;
+                bestRevision = revision;
+            }
+        return best;
     }
 
     public Task<IReadOnlyList<string>> ListBlobKeysAsync(string kind)

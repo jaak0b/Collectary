@@ -15,6 +15,8 @@ public partial class SyncConflictViewModel : ViewModelBase
         _resolve = resolve;
     }
 
+    public SyncConflict Conflict => _conflict;
+
     public string KindText => LocalizationService.Instance[_conflict.Kind switch
     {
         SyncEntityKind.Preset => "Sync_KindCollection",

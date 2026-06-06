@@ -88,6 +88,10 @@ public partial class SyncViewModel : ViewModelBase
     private async Task ResolveAsync(SyncConflict conflict, bool keepLocal)
     {
         await _sync.ResolveAsync(conflict, keepLocal);
-        await SyncNow();
+
+        Conflicts.Remove(Conflicts.FirstOrDefault(c => c.Conflict == conflict)!);
+
+        if (Conflicts.Count == 0)
+            await SyncNow();
     }
 }

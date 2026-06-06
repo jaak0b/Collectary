@@ -1,6 +1,7 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Core.UseCases;
+using Collectary.Infrastructure.Storage;
 using Collectary.Infrastructure.Sync;
 
 namespace Collectary.Infrastructure.Tests.Sync;
@@ -159,6 +160,82 @@ public class SyncServiceTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task SyncAsync_WhenRemoteTombstoneWithNoLocalCopy_DoesNotMaterializeIt()
+    {
+        var id = Guid.NewGuid();
+        var tomb = new Preset { Id = id, Name = "Ghost", Revision = 2, IsDeleted = true, DeletedAt = DateTime.UtcNow };
+        await _backend.WriteAsync(SyncService.PresetKind, id, _serializer.Serialize(tomb), 2);
+
+        await _clientB.SyncAsync();
+
+        Assert.That(_storeB.Presets.ContainsKey(id), Is.False,
+            "a remote tombstone for an id this device never had must not be inserted as a phantom row");
+    }
+
+    [Test]
+    public async Task SyncAsync_Conflict_RecordsAuthoritativeListingRevision()
+    {
+        var id = await EstablishSharedPresetAsync();
+        var a = _storeA.Presets[id]; a.Name = "A-edit"; a.Revision = 2; a.IsDirty = true;
+        await _clientA.SyncAsync();
+
+        var remote = _serializer.Deserialize<Preset>((await _backend.ReadAsync(SyncService.PresetKind, id))!);
+        remote.Revision = 1;
+        await _backend.WriteAsync(SyncService.PresetKind, id, _serializer.Serialize(remote), 5);
+        var b = _storeB.Presets[id]; b.Name = "B-edit"; b.Revision = 2; b.IsDirty = true;
+
+        var conflict = (await _clientB.SyncAsync()).Conflicts.Single();
+
+        Assert.That(conflict.RemoteRevision, Is.EqualTo(5),
+            "the conflict must record the authoritative listing revision, not the document body revision");
+    }
+
+    [Test]
+    public async Task ResolveAsync_KeepLocal_DoesNotRewindRevisionBelowLocal()
+    {
+        var id = Guid.NewGuid();
+        _storeA.Presets[id] = new Preset { Id = id, Name = "x", Revision = 7, BaseRevision = 1, IsDirty = true };
+        var conflict = new SyncConflict(SyncEntityKind.Preset, id, "local", "remote", LocalRevision: 7, RemoteRevision: 2);
+
+        await _clientA.ResolveAsync(conflict, keepLocal: true);
+
+        Assert.That(_storeA.Presets[id].Revision, Is.EqualTo(8),
+            "keep-local must advance past the higher local revision, never rewind to remote+1");
+    }
+
+    [Test]
+    public async Task SyncAsync_PurgesExpiredSharedFieldTombstone()
+    {
+        var sfId = Guid.NewGuid();
+        var sf = new SharedField { Id = sfId, Name = "Gone", Revision = 2, BaseRevision = 2, IsDirty = false, IsDeleted = true, DeletedAt = DateTime.UtcNow.AddDays(-400), Definition = new Collectary.Core.Domain.Fields.TextFieldDefinition { SharedFieldId = sfId } };
+        _storeA.SharedFields[sf.Id] = sf;
+        await _backend.WriteAsync(SyncService.SharedFieldKind, sf.Id, _serializer.Serialize(sf), 2);
+        var service = new SyncService(_backend, _storeA, _serializer);
+
+        await service.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_storeA.SharedFields.ContainsKey(sf.Id), Is.False);
+            Assert.That(_backend.ReadAsync(SyncService.SharedFieldKind, sf.Id).Result, Is.Null, "the remote shared-field tombstone document is deleted via its kind");
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_WithoutSyncStatus_StillPurgesExpiredTombstones()
+    {
+        var p = new Preset { Id = Guid.NewGuid(), Name = "Old", Revision = 2, BaseRevision = 2, IsDirty = false, IsDeleted = true, DeletedAt = DateTime.UtcNow.AddDays(-400) };
+        _storeA.Presets[p.Id] = p;
+        await _backend.WriteAsync(SyncService.PresetKind, p.Id, _serializer.Serialize(p), 2);
+        var service = new SyncService(_backend, _storeA, _serializer);
+
+        await service.SyncAsync();
+
+        Assert.That(_storeA.Presets.ContainsKey(p.Id), Is.False,
+            "expired tombstones must be purged even when no ISyncStatus is configured");
+    }
+
+    [Test]
     public async Task SyncAsync_PropagatesTombstone()
     {
         var id = await EstablishSharedPresetAsync();
@@ -186,24 +263,38 @@ public class SyncServiceTest : FileSystemTestBase
     }
 
     [Test]
-    public async Task SyncAsync_WhenPreviouslySyncedAbsentFromPopulatedRemote_DeletesLocally()
+    public async Task SyncAsync_WhenPreviouslySyncedAbsentFromPopulatedRemote_KeepsLocal()
     {
         var p1 = DirtyPreset("Keep");
-        var p2 = DirtyPreset("Gone");
+        var p2 = DirtyPreset("AlsoKeep");
         _storeA.Presets[p1.Id] = p1;
         _storeA.Presets[p2.Id] = p2;
         await _clientA.SyncAsync();
         await _clientB.SyncAsync();
-        // p2's tombstone has been purged remotely (doc gone), remote still has p1
+        // p2's document is absent from the remote (different/restored folder, partial listing, etc.).
+        // Absence is NOT deletion — a real delete arrives as a tombstone document, so the local copy must survive.
         await _backend.DeleteAsync(SyncService.PresetKind, p2.Id);
 
         await _clientB.SyncAsync();
 
         Assert.Multiple(() =>
         {
-            Assert.That(_storeB.Presets.ContainsKey(p2.Id), Is.False, "absent-from-populated-remote must be deleted locally");
+            Assert.That(_storeB.Presets.ContainsKey(p2.Id), Is.True, "absence must never be treated as deletion");
             Assert.That(_storeB.Presets.ContainsKey(p1.Id), Is.True);
         });
+    }
+
+    [Test]
+    public async Task SyncAsync_WhenRemoteTombstonePresent_SoftDeletesLocally()
+    {
+        var id = await EstablishSharedPresetAsync();
+        var remote = _serializer.Deserialize<Preset>((await _backend.ReadAsync(SyncService.PresetKind, id))!);
+        remote.IsDeleted = true; remote.DeletedAt = DateTime.UtcNow; remote.Revision = 2;
+        await _backend.WriteAsync(SyncService.PresetKind, id, _serializer.Serialize(remote), remote.Revision);
+
+        await _clientB.SyncAsync();
+
+        Assert.That(_storeB.Presets[id].IsDeleted, Is.True, "a real deletion propagates as a tombstone document, not as absence");
     }
 
     [Test]
@@ -274,6 +365,131 @@ public class SyncServiceTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task SyncAsync_WhenBothEditedButRemoteUnreadable_SurfacesConflictNotSilentStrand()
+    {
+        var id = await EstablishSharedPresetAsync();
+        var a = _storeA.Presets[id];
+        a.Name = "A-edit"; a.Revision = 2; a.IsDirty = true;
+        await _clientA.SyncAsync();
+
+        var b = _storeB.Presets[id];
+        b.Name = "B-edit"; b.Revision = 2; b.IsDirty = true;
+        var clientB = new SyncService(_backend, _storeB, new FlakySerializer { PoisonMarker = "A-edit" });
+
+        var result = await clientB.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.HasConflicts, Is.True,
+                "an unreadable remote in a both-changed state must surface a conflict, not silently strand the local edit");
+            Assert.That(result.Conflicts.Single().Id, Is.EqualTo(id));
+            Assert.That(_storeB.Presets[id].IsDirty, Is.True, "the local edit must remain pending, not be lost");
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_WhenRemoteHasDuplicateRevisionFiles_DoesNotThrowAndTakesHighest()
+    {
+        var id = Guid.NewGuid();
+        var dir = Path.Combine(TempDir, SyncService.PresetKind);
+        Directory.CreateDirectory(dir);
+        var json5 = _serializer.Serialize(new Preset { Id = id, Name = "Old", Revision = 5 });
+        var json6 = _serializer.Serialize(new Preset { Id = id, Name = "Dup", Revision = 6 });
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.5.json"), json5);
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.6.json"), json6);
+
+        var result = await _clientB.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.HasConflicts, Is.False);
+            Assert.That(_storeB.Presets[id].Name, Is.EqualTo("Dup"),
+                "duplicate revision files must collapse to the highest and never abort sync");
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_WhenConflictPresent_DoesNotDeleteRemoteBlobs()
+    {
+        var id = await EstablishSharedPresetAsync();
+        var a = _storeA.Presets[id]; a.Name = "A-edit"; a.Revision = 2; a.IsDirty = true;
+        await _clientA.SyncAsync();
+        var b = _storeB.Presets[id]; b.Name = "B-edit"; b.Revision = 2; b.IsDirty = true;
+
+        await _backend.WriteBlobAsync(SyncService.ImageKind, "remote-only", new byte[] { 1, 2, 3 });
+        var images = new FileSystemImageStore(Path.Combine(TempDir, "imgconflict"));
+        var clientB = new SyncService(_backend, _storeB, _serializer, imageStore: images);
+
+        var result = await clientB.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.HasConflicts, Is.True);
+            Assert.That(_backend.ReadBlobAsync(SyncService.ImageKind, "remote-only").Result, Is.Not.Null,
+                "an incomplete reconcile (conflict) must not GC remote blobs from this device's partial view");
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_WhenReconcileClean_DeletesUnreferencedRemoteBlob()
+    {
+        await _backend.WriteBlobAsync(SyncService.ImageKind, "orphan", new byte[] { 9 });
+        var images = new FileSystemImageStore(Path.Combine(TempDir, "imgclean"));
+        var clientB = new SyncService(_backend, _storeB, _serializer, imageStore: images);
+
+        await clientB.SyncAsync();
+
+        Assert.That(_backend.ReadBlobAsync(SyncService.ImageKind, "orphan").Result, Is.Null,
+            "a clean reconcile with the full reference picture GCs genuinely-orphaned remote blobs");
+    }
+
+    [Test]
+    public async Task SyncAsync_WhenReferencedRemoteImageFailsToDownload_LogsAndLeavesIt()
+    {
+        var images = new FileSystemImageStore(Path.Combine(TempDir, "imgnull"));
+        _storeB.ReferencedImageKeys.Add("remote-key");
+        var logger = new RecordingLogger();
+        var service = new SyncService(new NullDownloadBackend("remote-key"), _storeB, _serializer, imageStore: images, logger: logger);
+
+        await service.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(images.Exists("remote-key"), Is.False, "a failed download must not be imported as if it succeeded");
+            Assert.That(logger.Warnings, Is.GreaterThanOrEqualTo(1), "a referenced image that cannot be downloaded must be logged");
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_WhenReferencedImageMissingEverywhere_DoesNotThrow()
+    {
+        var images = new FileSystemImageStore(Path.Combine(TempDir, "imgghost"));
+        _storeB.ReferencedImageKeys.Add("ghost");
+
+        var clientB = new SyncService(_backend, _storeB, _serializer, imageStore: images);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(async () => await clientB.SyncAsync(), Throws.Nothing);
+            Assert.That(images.Exists("ghost"), Is.False);
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_KeepsLocalImagesReferencedByTombstones()
+    {
+        var images = new FileSystemImageStore(Path.Combine(TempDir, "imgtomb"));
+        using (var ms = new MemoryStream(new byte[] { 1, 2 })) await images.ImportAsync("tomb-key", ms);
+        _storeB.ReferencedImageKeys.Add("tomb-key");
+
+        var clientB = new SyncService(_backend, _storeB, _serializer, imageStore: images);
+        await clientB.SyncAsync();
+
+        Assert.That(images.Exists("tomb-key"), Is.True,
+            "image GC must use the tombstone-inclusive referenced set so a soft-deleted item's image survives until purge");
+    }
+
+    [Test]
     public async Task SyncAsync_WhenOneRemoteDocumentCannotDeserialize_StillSyncsTheRest()
     {
         var poison = DirtyPreset("Poison");
@@ -300,10 +516,11 @@ public class SyncServiceTest : FileSystemTestBase
 internal sealed class RecordingLogger : IAppLogger
 {
     public int Errors { get; private set; }
+    public int Warnings { get; private set; }
     public void Verbose(string messageTemplate, params object?[] propertyValues) { }
     public void Debug(string messageTemplate, params object?[] propertyValues) { }
     public void Information(string messageTemplate, params object?[] propertyValues) { }
-    public void Warning(string messageTemplate, params object?[] propertyValues) { }
+    public void Warning(string messageTemplate, params object?[] propertyValues) => Warnings++;
     public void Error(Exception exception, string messageTemplate, params object?[] propertyValues) => Errors++;
 }
 
@@ -328,6 +545,21 @@ internal sealed class TestSyncStatus : ISyncStatus
     public int TombstoneRetentionDays { get; }
 }
 
+
+internal sealed class NullDownloadBackend : ISyncBackend
+{
+    private readonly string _key;
+    public NullDownloadBackend(string key) => _key = key;
+    public bool IsAvailable => true;
+    public Task<IReadOnlyList<SyncEntry>> ListAsync(string kind) => Task.FromResult<IReadOnlyList<SyncEntry>>(Array.Empty<SyncEntry>());
+    public Task<string?> ReadAsync(string kind, Guid id) => Task.FromResult<string?>(null);
+    public Task WriteAsync(string kind, Guid id, string content, long revision) => Task.CompletedTask;
+    public Task DeleteAsync(string kind, Guid id) => Task.CompletedTask;
+    public Task<IReadOnlyList<string>> ListBlobKeysAsync(string kind) => Task.FromResult<IReadOnlyList<string>>(new[] { _key });
+    public Task<byte[]?> ReadBlobAsync(string kind, string key) => Task.FromResult<byte[]?>(null);
+    public Task WriteBlobAsync(string kind, string key, byte[] content) => Task.CompletedTask;
+    public Task DeleteBlobAsync(string kind, string key) => Task.CompletedTask;
+}
 
 internal sealed class InMemorySyncStore : ISyncStore
 {
@@ -403,8 +635,10 @@ internal sealed class InMemorySyncStore : ISyncStore
         }
     }
 
+    public List<string> ReferencedImageKeys { get; } = new();
+
     public Task<IReadOnlyList<string>> GetReferencedImageKeysAsync() =>
-        Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+        Task.FromResult<IReadOnlyList<string>>(ReferencedImageKeys.ToList());
 
     public Task<IReadOnlyList<string>> GetLiveReferencedImageKeysAsync() =>
         Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());

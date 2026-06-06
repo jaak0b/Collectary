@@ -209,6 +209,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         {
             var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
             if (auth is not null) await auth.SignOutAsync();
+            Autofac.ResolutionExtensions.ResolveOptional<ISyncBackend>(_scope)?.Invalidate();
         }
         catch (Exception ex)
         {
@@ -219,6 +220,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void OnSyncSettingsChanged()
     {
+        Autofac.ResolutionExtensions.ResolveOptional<ISyncBackend>(_scope)?.Invalidate();
         Sync.Refresh();
         ConfigureAutoSyncTimer(AppPreferences.Load());
         if (Sync.IsConfigured) _ = SyncThenReloadAsync();

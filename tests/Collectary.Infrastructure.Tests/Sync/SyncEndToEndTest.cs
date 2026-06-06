@@ -136,6 +136,35 @@ public class SyncEndToEndTest
     }
 
     [Test]
+    public async Task PresetRename_DoesNotDestroyItemValuesOnPeer()
+    {
+        var preset = new Preset { Name = "Trains" };
+        var field = new TextFieldDefinition { Label = "Title", PresetId = preset.Id };
+        preset.Fields.Add(field);
+        await _a.Presets.AddAsync(preset);
+        var item = new Item { PresetId = preset.Id, DisplayName = "Loco 42" };
+        item.Values.Add(new TextFieldValue { FieldDefinitionId = field.Id, Value = "Flying Scotsman", ItemId = item.Id });
+        await _a.Items.AddAsync(item);
+        await SyncBothAsync();
+        Assume.That(((TextFieldValue)(await _b.Items.GetByIdAsync(item.Id))!.Values.Single()).Value,
+            Is.EqualTo("Flying Scotsman"), "precondition: item value reached B");
+
+        var local = await _a.Presets.GetByIdAsync(preset.Id);
+        local!.Name = "Locomotives";
+        await _a.Presets.UpdateAsync(local);
+        await SyncBothAsync();
+
+        var onB = await _b.Items.GetByIdAsync(item.Id);
+        var presetNameOnB = (await _b.Presets.GetByIdAsync(preset.Id))!.Name;
+        Assert.Multiple(() =>
+        {
+            Assert.That(presetNameOnB, Is.EqualTo("Locomotives"));
+            Assert.That(((TextFieldValue)onB!.Values.Single()).Value, Is.EqualTo("Flying Scotsman"),
+                "a preset rename must not wipe item field values on the peer");
+        });
+    }
+
+    [Test]
     public async Task ItemEdit_PropagatesAtoB()
     {
         var preset = MakePreset("P");
@@ -390,7 +419,7 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task Image_WhenReferencingItemDeleted_IsGarbageCollectedOnBothPeers()
+    public async Task Image_OfSoftDeletedItem_IsRetainedWhileTombstoneLives()
     {
         var (_, itemId, key) = await SeedItemWithImageAsync(_a, new byte[] { 9, 9, 9 });
         await SyncBothAsync();
@@ -401,22 +430,29 @@ public class SyncEndToEndTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(_a.Images.Exists(key), Is.False, "unreferenced image must be GC'd on A");
-            Assert.That(_b.Images.Exists(key), Is.False, "unreferenced image must be GC'd on B");
+            Assert.That(_a.Images.Exists(key), Is.True, "a soft-deleted item's image must survive while its tombstone is retained");
+            Assert.That(_b.Images.Exists(key), Is.True, "the peer must also retain the image while the tombstone is retained");
         });
     }
 
     [Test]
-    public async Task Image_AfterGarbageCollection_DoesNotResurrect()
+    public async Task Image_AfterTombstonePurged_IsGarbageCollected()
     {
         var (_, itemId, key) = await SeedItemWithImageAsync(_a, new byte[] { 7 });
-        await SyncBothAsync();
-        await _a.Items.DeleteAsync(itemId);
-        await SyncBothAsync();
+        await _a.Sync.SyncAsync();
+        Assume.That(_a.Images.Exists(key), Is.True, "precondition: image pushed to remote");
 
-        await SyncBothAsync();
+        var tomb = (await _a.Store.GetAllItemsAsync()).Single(i => i.Id == itemId);
+        tomb.IsDeleted = true;
+        tomb.DeletedAt = DateTime.UtcNow.AddDays(-60);
+        tomb.IsDirty = true;
+        tomb.Revision = 2;
+        await _a.Store.ApplyItemAsync(tomb);
 
-        Assert.That(_b.Images.Exists(key), Is.False, "a deleted image must not come back on the next sync");
+        await _a.Sync.SyncAsync();
+        await _a.Sync.SyncAsync();
+
+        Assert.That(_a.Images.Exists(key), Is.False, "once the tombstone is purged, its image is finally garbage-collected");
     }
 
     [Test]

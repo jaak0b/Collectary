@@ -42,6 +42,21 @@ When you delete something, Collectary records a **tombstone** so the deletion pr
 devices instead of the item reappearing on the next pull. Tombstones are kept for the retention
 period you configured, then cleaned up.
 
+A deletion only ever travels as a tombstone. If the shared folder is simply *missing* an item — say
+you pointed sync at a fresh or different folder, or restored your database from a backup — Collectary
+treats that as "nothing to pull here," **not** as a deletion, so your local collection is never wiped
+by an empty or unfamiliar folder. An image attached to a deleted item is likewise kept for as long as
+its tombstone lives, so undoing a deletion (or a device that hasn't caught up yet) still finds the
+picture intact.
+
+## Editing the same collection on two devices
+
+Renaming a collection, reordering its fields, or tweaking it on one device never disturbs the items
+and values you entered on another — those edits are merged field by field rather than replacing the
+whole collection, so a label change on your phone can't erase the data on your laptop. Only when the
+*same* record was changed on both sides since the last sync do you get a [conflict](#resolving-conflicts)
+to resolve.
+
 ## Where sync works
 
 Sync runs on the **desktop** app (shared folder, OneDrive, or Google Drive) and on **Android**

@@ -5,6 +5,8 @@ namespace Collectary.Infrastructure.Persistence;
 
 public interface IFieldDefinitionMerger
 {
+    void MergePreset(InventoryDbContext db, Preset tracked, Preset incoming);
+
     void Apply(InventoryDbContext db, FieldDefinition existing, FieldDefinition updated);
 
     void SyncSubFields(InventoryDbContext db, ListFieldDefinition existing, ListFieldDefinition updated);

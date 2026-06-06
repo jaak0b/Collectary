@@ -34,6 +34,13 @@ public class RoutingSyncBackend : ISyncBackend
 
     public bool IsAvailable => Current.IsAvailable;
 
+    public void Invalidate()
+    {
+        foreach (var backend in _resolved.Values)
+            backend.Invalidate();
+        _resolved.Clear();
+    }
+
     public Task<IReadOnlyList<SyncEntry>> ListAsync(string kind) => Current.ListAsync(kind);
 
     public Task<string?> ReadAsync(string kind, Guid id) => Current.ReadAsync(kind, id);

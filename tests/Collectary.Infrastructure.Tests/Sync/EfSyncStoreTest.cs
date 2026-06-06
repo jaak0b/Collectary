@@ -48,6 +48,34 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task ApplyPresetAsync_RemoteEdit_PreservesItemFieldValues()
+    {
+        var presetId = Guid.NewGuid();
+        var fieldId = Guid.NewGuid();
+        var preset = new Preset { Id = presetId, Name = "Trains", Revision = 1 };
+        preset.Fields.Add(new TextFieldDefinition { Id = fieldId, Label = "Title", PresetId = presetId });
+        await _sut.ApplyPresetAsync(preset);
+
+        var itemId = Guid.NewGuid();
+        var item = new Item { Id = itemId, DisplayName = "Loco", PresetId = presetId, Revision = 1 };
+        item.Values.Add(new TextFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = fieldId, Value = "Flying Scotsman", ItemId = itemId });
+        await _sut.ApplyItemAsync(item);
+
+        var renamed = new Preset { Id = presetId, Name = "Locomotives", Revision = 2, BaseRevision = 2 };
+        renamed.Fields.Add(new TextFieldDefinition { Id = fieldId, Label = "Title", PresetId = presetId });
+        await _sut.ApplyPresetAsync(renamed);
+
+        var values = (await _sut.GetAllItemsAsync()).Single(i => i.Id == itemId).Values;
+        var presetName = (await _sut.GetAllPresetsAsync()).Single(p => p.Id == presetId).Name;
+        Assert.Multiple(() =>
+        {
+            Assert.That(((TextFieldValue)values.Single()).Value, Is.EqualTo("Flying Scotsman"),
+                "a preset re-apply must merge in place, not cascade-delete every item's field values");
+            Assert.That(presetName, Is.EqualTo("Locomotives"));
+        });
+    }
+
+    [Test]
     public async Task ApplyItemAsync_RoundTripsValues()
     {
         var presetId = Guid.NewGuid();
@@ -144,10 +172,41 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task MarkSyncedAsync_WhenEntityMissing_LogsWarningAndDoesNotThrow()
+    {
+        var logger = new RecordingLogger();
+        var sut = new EfSyncStore(DbFactory, new FieldDefinitionMerger(), logger);
+
+        await sut.MarkSyncedAsync(SyncEntityKind.Item, Guid.NewGuid(), 1, dirty: false);
+
+        Assert.That(logger.Warnings, Is.EqualTo(1), "a push whose local row vanished must be surfaced, not silently dropped");
+    }
+
+    [Test]
     public void MarkSyncedAsync_WithUnknownKind_Throws()
     {
         Assert.That(async () => await _sut.MarkSyncedAsync((SyncEntityKind)999, Guid.NewGuid(), 1, false),
             Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
+    [Test]
+    public async Task MarkSyncedAsync_WhenLocalRevisionAdvancedPastPush_KeepsDirty()
+    {
+        var id = Guid.NewGuid();
+        var preset = MakePreset(id, "Trains");
+        preset.Revision = 6;
+        preset.IsDirty = true;
+        await _sut.ApplyPresetAsync(preset);
+
+        await _sut.MarkSyncedAsync(SyncEntityKind.Preset, id, baseRevision: 5, dirty: false);
+
+        var stored = (await _sut.GetAllPresetsAsync()).Single(p => p.Id == id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored.IsDirty, Is.True, "a concurrent edit (rev 6) past the pushed rev (5) must stay dirty so it re-pushes");
+            Assert.That(stored.BaseRevision, Is.EqualTo(5));
+            Assert.That(stored.Revision, Is.EqualTo(6));
+        });
     }
 
     [Test]
@@ -172,6 +231,51 @@ public class EfSyncStoreTest : DbIntegrationTestBase
         var all = await _sut.GetAllItemsAsync();
         var survivor = all.Single(i => i.Id == id);
         Assert.That(survivor.DisplayName, Is.EqualTo("Good"), "a failed apply must not destroy the existing aggregate");
+    }
+
+    [Test]
+    public async Task DeleteLocallyAsync_RemovesItem()
+    {
+        var presetId = Guid.NewGuid();
+        var fieldId = Guid.NewGuid();
+        var preset = new Preset { Id = presetId, Name = "P", Revision = 1 };
+        preset.Fields.Add(new TextFieldDefinition { Id = fieldId, Label = "Title", PresetId = presetId });
+        await _sut.ApplyPresetAsync(preset);
+        var itemId = Guid.NewGuid();
+        var item = new Item { Id = itemId, DisplayName = "Gone", PresetId = presetId, Revision = 1 };
+        item.Values.Add(new TextFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = fieldId, Value = "x", ItemId = itemId });
+        await _sut.ApplyItemAsync(item);
+
+        await _sut.DeleteLocallyAsync(SyncEntityKind.Item, itemId);
+
+        Assert.That((await _sut.GetAllItemsAsync()).Any(i => i.Id == itemId), Is.False);
+    }
+
+    [Test]
+    public async Task DeleteLocallyAsync_RemovesPresetAndSharedField()
+    {
+        var presetId = Guid.NewGuid();
+        await _sut.ApplyPresetAsync(MakePreset(presetId, "Gone"));
+        var sfId = Guid.NewGuid();
+        await _sut.ApplySharedFieldAsync(new SharedField { Id = sfId, Name = "Gone", Revision = 1, Definition = new TextFieldDefinition { SharedFieldId = sfId } });
+
+        await _sut.DeleteLocallyAsync(SyncEntityKind.Preset, presetId);
+        await _sut.DeleteLocallyAsync(SyncEntityKind.SharedField, sfId);
+
+        var presetGone = (await _sut.GetAllPresetsAsync()).All(p => p.Id != presetId);
+        var sharedGone = (await _sut.GetAllSharedFieldsAsync()).All(s => s.Id != sfId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(presetGone, Is.True);
+            Assert.That(sharedGone, Is.True);
+        });
+    }
+
+    [Test]
+    public void DeleteLocallyAsync_WithUnknownKind_Throws()
+    {
+        Assert.That(async () => await _sut.DeleteLocallyAsync((SyncEntityKind)999, Guid.NewGuid()),
+            Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
     [Test]
