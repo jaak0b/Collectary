@@ -75,6 +75,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Collectary.UI/Themes/Colors.Light.axaml"/>
                 <ResourceInclude Source="avares://Collectary.UI/Controls/FieldEditorScaffold.axaml"/>
+                <ResourceInclude Source="avares://Collectary.UI/Controls/SettingsRow.axaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="CalendarViewForeground" Color="{DynamicResource TextPrimaryColor}"/>

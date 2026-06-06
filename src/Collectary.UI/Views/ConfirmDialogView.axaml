@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Views.ConfirmDialogView"
+             x:DataType="vm:ConfirmDialogViewModel">
+
+    <Border Background="{DynamicResource SurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="22"
+            Margin="20"
+            MaxWidth="420"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+            <TextBlock Text="{Binding Title}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="{Binding CancelLabel}"
+                        Command="{Binding CancelCommand}"
+                        Padding="16,7"/>
+                <Button Content="{Binding ConfirmLabel}"
+                        Command="{Binding ConfirmCommand}"
+                        Background="{DynamicResource DangerBrush}"
+                        Foreground="{DynamicResource DangerForegroundBrush}"
+                        Padding="16,7"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

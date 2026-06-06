@@ -1,9 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Collectary.UI.Controls;
+using Collectary.UI.Views.Helpers;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
 
@@ -14,7 +21,11 @@ public partial class MainView : UserControl
     private const double MinSidebarWidth = 180;
     private const double MaxSidebarWidth = 480;
 
+    private readonly BreadcrumbVisualBuilder _breadcrumbBuilder = new();
     private MainWindowViewModel? _vm;
+    private Button? _overflowButton;
+    private Flyout? _overflowFlyout;
+    private TextBlock? _overflowSeparator;
 
     public MainView()
     {
@@ -31,15 +42,103 @@ public partial class MainView : UserControl
         if (DataContext is not MainWindowViewModel vm) return;
         _vm = vm;
         _vm.PropertyChanged += OnVmPropertyChanged;
+        _vm.BreadcrumbItems.CollectionChanged += OnBreadcrumbItemsChanged;
+        BreadcrumbBar.CollapsedChanged += OnBreadcrumbCollapsedChanged;
         SidebarSplitter.AddHandler(PointerReleasedEvent, OnSplitterReleased, RoutingStrategies.Bubble, handledEventsToo: true);
         ApplySidebarState();
+        RebuildBreadcrumbs();
     }
 
     private void OnUnloaded(object? sender, RoutedEventArgs e)
     {
         if (_vm is not null)
+        {
             _vm.PropertyChanged -= OnVmPropertyChanged;
+            _vm.BreadcrumbItems.CollectionChanged -= OnBreadcrumbItemsChanged;
+        }
+        BreadcrumbBar.CollapsedChanged -= OnBreadcrumbCollapsedChanged;
         SidebarSplitter.RemoveHandler(PointerReleasedEvent, OnSplitterReleased);
+    }
+
+    private void OnBreadcrumbItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildBreadcrumbs();
+
+    private void RebuildBreadcrumbs()
+    {
+        if (_vm is null) return;
+
+        BreadcrumbBar.Children.Clear();
+
+        var items = _vm.BreadcrumbItems;
+        if (items.Count == 0) return;
+
+        BreadcrumbBar.Children.Add(_breadcrumbBuilder.BuildCrumb(items[0]));
+
+        _overflowFlyout = new Flyout { Placement = PlacementMode.BottomEdgeAlignedLeft };
+        _overflowButton = CreateOverflowButton(_overflowFlyout);
+        BreadcrumbBar.Children.Add(_overflowButton);
+
+        for (var i = 1; i < items.Count; i++)
+            BreadcrumbBar.Children.Add(_breadcrumbBuilder.BuildCrumb(items[i]));
+    }
+
+    private Button CreateOverflowButton(Flyout flyout)
+    {
+        _overflowSeparator = _breadcrumbBuilder.BuildSeparator();
+        var glyph = new TextBlock
+        {
+            Text = "…",
+            FontSize = 14,
+            FontWeight = FontWeight.SemiBold,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        var content = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        content.Children.Add(_overflowSeparator);
+        content.Children.Add(glyph);
+
+        var button = new Button
+        {
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(4, 2),
+            VerticalAlignment = VerticalAlignment.Center,
+            Content = content,
+            Flyout = flyout
+        };
+        button.Click += (_, _) => PopulateOverflowFlyout();
+        BreadcrumbBarPanel.SetIsOverflow(button, true);
+        return button;
+    }
+
+    private void PopulateOverflowFlyout()
+    {
+        if (_vm is null || _overflowFlyout is null) return;
+
+        var panel = new StackPanel();
+        foreach (var index in BreadcrumbBar.CollapsedIndices)
+        {
+            if (index < 0 || index >= _vm.BreadcrumbItems.Count) continue;
+            var item = _vm.BreadcrumbItems[index];
+            panel.Children.Add(new Button
+            {
+                Content = item.Title,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Padding = new Thickness(8, 4),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                FontSize = 14,
+                Command = item.NavigateCommand,
+                CommandParameter = item.CommandParameter
+            });
+        }
+        _overflowFlyout.Content = panel;
+    }
+
+    private void OnBreadcrumbCollapsedChanged(object? sender, EventArgs e)
+    {
+        if (_overflowSeparator is not null)
+            _overflowSeparator.Opacity = BreadcrumbBar.CollapsedIndices.Contains(0) ? 0 : 1;
     }
 
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -79,14 +178,6 @@ public partial class MainView : UserControl
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
-
-        var wasNarrow = vm.IsNarrow;
         vm.IsNarrow = e.NewSize.Width < ResponsiveSplitLayout.NarrowThreshold;
-
-        if (wasNarrow && !vm.IsNarrow)
-        {
-            var prefs = AppPreferences.Load();
-            vm.IsSidebarOpen = prefs.SidebarOpen;
-        }
     }
 }

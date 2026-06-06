@@ -28,6 +28,7 @@
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Dialog_Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="Icon" xml:space="preserve"><value>Icon</value></data>

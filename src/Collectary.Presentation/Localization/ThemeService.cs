@@ -39,6 +39,7 @@ public class ThemeService
         new("GruvboxDark", "Gruvbox Dark", true),
         new("HighContrast", "High Contrast", true),
         new("OneDark", "One Dark", true),
+        new("Graphite", "Graphite", true),
     ];
 
     public IReadOnlyList<SkinInfo> Skins { get; } =

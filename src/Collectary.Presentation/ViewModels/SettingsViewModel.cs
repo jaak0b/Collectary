@@ -278,39 +278,60 @@ public partial class SettingsViewModel : ViewModelBase
     private async Task Connect()
     {
         if (_connectCloud is null) return;
-        var account = await _connectCloud(SyncProvider);
-        if (string.IsNullOrWhiteSpace(account)) return;
+        try
+        {
+            var account = await _connectCloud(SyncProvider);
+            if (string.IsNullOrWhiteSpace(account)) return;
 
-        AppPreferences.Update(p => SyncProvider == CloudProvider.OneDrive
-            ? p with { OneDriveAccount = account }
-            : p with { GoogleDriveAccount = account });
-        RaiseCloudProperties();
+            AppPreferences.Update(p => SyncProvider == CloudProvider.OneDrive
+                ? p with { OneDriveAccount = account }
+                : p with { GoogleDriveAccount = account });
+            RaiseCloudProperties();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud connect command failed for {Provider}", SyncProvider);
+        }
     }
 
     [RelayCommand]
     private async Task ChooseCloudFolder()
     {
         if (_pickCloudFolder is null) return;
-        var folder = await _pickCloudFolder(SyncProvider);
-        if (folder is null) return;
+        try
+        {
+            var folder = await _pickCloudFolder(SyncProvider);
+            if (folder is null) return;
 
-        AppPreferences.Update(p => SyncProvider == CloudProvider.OneDrive
-            ? p with { OneDriveRootFolderId = folder.Id, OneDriveRootFolderName = folder.Name }
-            : p with { GoogleDriveRootFolderId = folder.Id, GoogleDriveRootFolderName = folder.Name });
-        RaiseCloudProperties();
-        _onSyncChanged?.Invoke();
+            AppPreferences.Update(p => SyncProvider == CloudProvider.OneDrive
+                ? p with { OneDriveRootFolderId = folder.Id, OneDriveRootFolderName = folder.Name }
+                : p with { GoogleDriveRootFolderId = folder.Id, GoogleDriveRootFolderName = folder.Name });
+            RaiseCloudProperties();
+            _onSyncChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud folder selection command failed for {Provider}", SyncProvider);
+        }
     }
 
     [RelayCommand]
     private async Task Disconnect()
     {
-        if (_disconnectCloud is not null) await _disconnectCloud(SyncProvider);
+        try
+        {
+            if (_disconnectCloud is not null) await _disconnectCloud(SyncProvider);
 
-        AppPreferences.Update(p => SyncProvider == CloudProvider.OneDrive
-            ? p with { OneDriveAccount = null, OneDriveRootFolderId = null, OneDriveRootFolderName = null }
-            : p with { GoogleDriveAccount = null, GoogleDriveRootFolderId = null, GoogleDriveRootFolderName = null });
-        RaiseCloudProperties();
-        _onSyncChanged?.Invoke();
+            AppPreferences.Update(p => SyncProvider == CloudProvider.OneDrive
+                ? p with { OneDriveAccount = null, OneDriveRootFolderId = null, OneDriveRootFolderName = null }
+                : p with { GoogleDriveAccount = null, GoogleDriveRootFolderId = null, GoogleDriveRootFolderName = null });
+            RaiseCloudProperties();
+            _onSyncChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud disconnect command failed for {Provider}", SyncProvider);
+        }
     }
 
     [RelayCommand]

@@ -59,6 +59,24 @@ On first run Collectary creates its local database, runs migrations, and asks yo
 account. Everything is stored on the device. For the same collections on phone and computer, set up
 [Sync](sync.md) through a shared folder.
 
+## The back button saves your work
+
+On a phone the system back button (gesture or button) is the natural way to step out of a screen, so
+Collectary treats it the same as the on-screen **back** control rather than as "quit". While you're
+editing an item, a collection, a list entry, or the shared-field library, pressing back **saves what
+you've typed and returns to the previous screen** — you won't lose a half-finished entry by reflexively
+swiping back. From a detail screen it takes you home, and pressing back once more from the home screen
+sends Collectary to the background like any other app. Nothing is ever discarded silently.
+
+## Dialogs and prompts
+
+Confirmations ("Delete this item?"), error messages, the cloud-folder picker and the sync-conflict
+resolver all appear **inside the app window** as a dimmed overlay — they are no longer separate
+desktop-style pop-up windows. That's what lets them work on a phone, where the operating system only
+gives the app a single window to draw in. The exact same overlay is used on the desktop, so the two
+platforms behave identically: tapping outside the buttons does nothing, and you dismiss a dialog by
+choosing one of its actions.
+
 ## Troubleshooting
 
 | Symptom | Likely fix |

@@ -43,6 +43,19 @@ public class ViewLocatorTest
             "The template picker ViewModel must map to an existing View type");
     }
 
+    [TestCase(typeof(MessageDialogViewModel), "Collectary.UI.Views.MessageDialogView")]
+    [TestCase(typeof(ConfirmDialogViewModel), "Collectary.UI.Views.ConfirmDialogView")]
+    [TestCase(typeof(SyncViewModel), "Collectary.UI.Views.SyncView")]
+    [TestCase(typeof(CloudFolderPickerViewModel), "Collectary.UI.Views.CloudFolderPickerView")]
+    public void DialogViewModel_MapsToResolvableView(Type viewModelType, string expectedView)
+    {
+        var name = MapToViewTypeName(viewModelType);
+
+        Assert.That(name, Is.EqualTo(expectedView));
+        Assert.That(_uiAssembly.GetType(name), Is.Not.Null,
+            "A dialog ViewModel must map to an existing View type for the overlay host to resolve it");
+    }
+
     [Test]
     public void SubNamespacedViewModel_MapsToViewInMatchingSubNamespace()
     {

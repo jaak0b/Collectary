@@ -84,16 +84,6 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
 
     public ObservableCollection<EditorLevel> DrillBreadcrumbs { get; } = new();
 
-    public IReadOnlyList<EditorLevel> VisibleDrillBreadcrumbs { get; private set; } = System.Array.Empty<EditorLevel>();
-
-    public IReadOnlyList<EditorLevel> CollapsedDrillBreadcrumbs { get; private set; } = System.Array.Empty<EditorLevel>();
-
-    public bool HasCollapsedDrillBreadcrumbs => CollapsedDrillBreadcrumbs.Count > 0;
-
-    public double DrillBreadcrumbMaxWidth => IsNarrow ? 140 : 400;
-
-    private int MaxVisibleDrillBreadcrumbs => IsNarrow ? 1 : 2;
-
     public bool IsNested => Levels.Count > 1;
 
     protected FieldListEditorViewModel()
@@ -106,23 +96,6 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
         DrillBreadcrumbs.Clear();
         for (var i = 1; i < Levels.Count; i++)
             DrillBreadcrumbs.Add(Levels[i]);
-        RebuildCollapsedDrillBreadcrumbs();
-    }
-
-    private void RebuildCollapsedDrillBreadcrumbs()
-    {
-        var trail = new BreadcrumbTrail<EditorLevel>(DrillBreadcrumbs, MaxVisibleDrillBreadcrumbs);
-        VisibleDrillBreadcrumbs = trail.Visible;
-        CollapsedDrillBreadcrumbs = trail.Collapsed;
-        OnPropertyChanged(nameof(VisibleDrillBreadcrumbs));
-        OnPropertyChanged(nameof(CollapsedDrillBreadcrumbs));
-        OnPropertyChanged(nameof(HasCollapsedDrillBreadcrumbs));
-    }
-
-    partial void OnIsNarrowChanged(bool value)
-    {
-        RebuildCollapsedDrillBreadcrumbs();
-        OnPropertyChanged(nameof(DrillBreadcrumbMaxWidth));
     }
 
     public void ResetToRoot()

@@ -67,6 +67,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public SyncViewModel Sync { get; }
 
+    public IDialogHost? DialogHost { get; }
+
     [RelayCommand]
     private async Task ResolveConflicts() => await _dialogService.ShowSyncConflictsAsync(Sync);
 
@@ -154,10 +156,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task<string?> ConnectCloudAsync(CloudProvider provider)
     {
-        var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
-        if (auth is null) return null;
         try
         {
+            var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+            if (auth is null) return null;
             await auth.SignInInteractiveAsync(CancellationToken.None);
             return auth.Account;
         }
@@ -171,11 +173,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task<CloudFolder?> SetUpCloudFolderAsync(CloudProvider provider)
     {
-        var rootProvider = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudRootProvider>(_scope, provider);
-        var store = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudFileStore>(_scope, provider);
-        if (rootProvider is null || store is null) return null;
         try
         {
+            var rootProvider = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudRootProvider>(_scope, provider);
+            var store = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudFileStore>(_scope, provider);
+            if (rootProvider is null || store is null) return null;
             var root = await rootProvider.GetRootFolderAsync(CancellationToken.None);
             var picker = new CloudFolderPickerViewModel(store, root);
             return await _dialogService.ShowCloudFolderPickerAsync(picker);
@@ -188,15 +190,32 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private Task ShowCloudErrorAsync(Exception ex) =>
-        _dialogService.ShowMessageAsync(
-            $"{LocalizationService.Instance["Cloud_AuthFailed"]}\n\n{ex.Message}",
-            LocalizationService.Instance["Settings"]);
+    private async Task ShowCloudErrorAsync(Exception ex)
+    {
+        try
+        {
+            await _dialogService.ShowMessageAsync(
+                $"{LocalizationService.Instance["Cloud_AuthFailed"]}\n\n{ex.Message}",
+                LocalizationService.Instance["Settings"]);
+        }
+        catch (Exception dialogEx)
+        {
+            AppLogger.Log.Error(dialogEx, "Failed to show the cloud error dialog");
+        }
+    }
 
     private async Task DisconnectCloudAsync(CloudProvider provider)
     {
-        var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
-        if (auth is not null) await auth.SignOutAsync();
+        try
+        {
+            var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+            if (auth is not null) await auth.SignOutAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud sign-out failed for {Provider}", provider);
+            await ShowCloudErrorAsync(ex);
+        }
     }
 
     private void OnSyncSettingsChanged()
@@ -210,30 +229,52 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public bool HasBreadcrumbs => Breadcrumbs.Count > 0;
 
-    public IReadOnlyList<BreadcrumbNode> VisibleBreadcrumbs { get; private set; } = Array.Empty<BreadcrumbNode>();
+    public ObservableCollection<BreadcrumbItem> BreadcrumbItems { get; } = new();
 
-    public IReadOnlyList<BreadcrumbNode> CollapsedBreadcrumbs { get; private set; } = Array.Empty<BreadcrumbNode>();
+    private FieldListEditorViewModel? _trackedEditor;
 
-    public bool HasCollapsedBreadcrumbs => CollapsedBreadcrumbs.Count > 0;
-
-    private int MaxVisibleBreadcrumbs => IsNarrow ? 1 : 2;
-
-    public double BreadcrumbMaxWidth => IsNarrow ? 140 : 400;
-
-    private void RebuildBreadcrumbTrail()
+    partial void OnContentViewModelChanged(ViewModelBase? oldValue, ViewModelBase? newValue)
     {
-        var trail = new BreadcrumbTrail<BreadcrumbNode>(Breadcrumbs, MaxVisibleBreadcrumbs);
-        VisibleBreadcrumbs = trail.Visible;
-        CollapsedBreadcrumbs = trail.Collapsed;
-        OnPropertyChanged(nameof(VisibleBreadcrumbs));
-        OnPropertyChanged(nameof(CollapsedBreadcrumbs));
-        OnPropertyChanged(nameof(HasCollapsedBreadcrumbs));
+        if (_trackedEditor is not null)
+            _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
+
+        _trackedEditor = newValue as FieldListEditorViewModel;
+
+        if (_trackedEditor is not null)
+            _trackedEditor.DrillBreadcrumbs.CollectionChanged += OnDrillBreadcrumbsChanged;
+
+        RebuildUnifiedTrail();
+    }
+
+    private void OnDrillBreadcrumbsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
+        RebuildUnifiedTrail();
+
+    private void RebuildUnifiedTrail()
+    {
+        var items = new List<BreadcrumbItem>
+        {
+            new(LocalizationService.Instance["MyCollections"], NavigateHomeCommand, null, isHome: true, isCurrent: false)
+        };
+
+        foreach (var node in Breadcrumbs)
+            items.Add(new BreadcrumbItem(node.Title, NavigateToBreadcrumbCommand, node, isHome: false, isCurrent: false));
+
+        if (_trackedEditor is not null)
+            foreach (var level in _trackedEditor.DrillBreadcrumbs)
+                items.Add(new BreadcrumbItem(level.Title, _trackedEditor.NavigateToLevelCommand, level, isHome: false, isCurrent: false));
+
+        var last = items[^1];
+        items[^1] = new BreadcrumbItem(last.Title, last.NavigateCommand, last.CommandParameter, last.IsHome, isCurrent: true);
+
+        BreadcrumbItems.Clear();
+        foreach (var item in items)
+            BreadcrumbItems.Add(item);
     }
 
     partial void OnIsNarrowChanged(bool value)
     {
-        RebuildBreadcrumbTrail();
-        OnPropertyChanged(nameof(BreadcrumbMaxWidth));
+        RebuildUnifiedTrail();
+        IsSidebarOpen = value ? false : AppPreferences.Load().SidebarOpen;
     }
 
     private void PushBreadcrumb(string title, ViewModelBase content)
@@ -254,6 +295,26 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         if (Breadcrumbs.Count <= 1) return;
         Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
         ContentViewModel = Breadcrumbs[^1].Content;
+    }
+
+    public async Task<bool> HandleSystemBackAsync()
+    {
+        if (ContentViewModel is ISystemBackHandler handler)
+            return await handler.HandleSystemBackAsync();
+
+        if (Breadcrumbs.Count > 1)
+        {
+            GoBack();
+            return true;
+        }
+
+        if (ContentViewModel is not null and not WelcomeViewModel)
+        {
+            await NavigateToHomeAsync();
+            return true;
+        }
+
+        return false;
     }
 
     [RelayCommand]
@@ -278,13 +339,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _imageStore = imageStore;
         _dialogService = dialogService;
         _syncScheduler = syncScheduler;
+        DialogHost = dialogService as IDialogHost;
         Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>());
         Sync.Synced += OnSynced;
         Breadcrumbs.CollectionChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(HasBreadcrumbs));
-            RebuildBreadcrumbTrail();
+            RebuildUnifiedTrail();
         };
+        RebuildUnifiedTrail();
     }
 
     private async Task<string?> PickSyncFolderAsync()
@@ -415,6 +478,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        if (_trackedEditor is not null)
+            _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
         _syncScheduler.Dispose();
         Sync.Synced -= OnSynced;
     }
@@ -628,6 +693,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                 return new Bitmap(stream);
             },
             deleteImageAsync: key => _imageStore.DeleteAsync(key));
+
+        context.Dialogs = _dialogService;
 
         var barcodeDecoder = _scope.Resolve<IBarcodeImageDecoder>();
         context.ScanBarcodeAsync = async () =>

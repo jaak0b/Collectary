@@ -3,6 +3,9 @@ using Android.Content.PM;
 using Android.OS;
 using Avalonia;
 using Avalonia.Android;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
+using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Android;
 
@@ -29,4 +32,26 @@ public class MainActivity : AvaloniaMainActivity
         if (this.Application is Application app)
             app.CurrentActivity = this;
     }
+
+    // The phone's back gesture must not drop the user out of an in-progress edit. We route it through
+    // the shared navigation host, which saves the current screen and steps back; only when there is
+    // nothing left to step back to do we hand the gesture to the OS by sending the app to the background.
+    public override void OnBackPressed()
+    {
+        if (MainViewModel() is not { } vm)
+        {
+            base.OnBackPressed();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(async () =>
+        {
+            if (!await vm.HandleSystemBackAsync())
+                MoveTaskToBack(true);
+        });
+    }
+
+    private MainWindowViewModel? MainViewModel() =>
+        (Avalonia.Application.Current?.ApplicationLifetime as ISingleViewApplicationLifetime)
+            ?.MainView?.DataContext as MainWindowViewModel;
 }
