@@ -153,10 +153,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task<string?> ConnectCloudAsync(CloudProvider provider)
     {
-        var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
-        if (auth is null) return null;
         try
         {
+            var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+            if (auth is null) return null;
             await auth.SignInInteractiveAsync(CancellationToken.None);
             return auth.Account;
         }
@@ -170,11 +170,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private async Task<CloudFolder?> SetUpCloudFolderAsync(CloudProvider provider)
     {
-        var rootProvider = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudRootProvider>(_scope, provider);
-        var store = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudFileStore>(_scope, provider);
-        if (rootProvider is null || store is null) return null;
         try
         {
+            var rootProvider = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudRootProvider>(_scope, provider);
+            var store = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudFileStore>(_scope, provider);
+            if (rootProvider is null || store is null) return null;
             var root = await rootProvider.GetRootFolderAsync(CancellationToken.None);
             var picker = new CloudFolderPickerViewModel(store, root);
             return await _dialogService.ShowCloudFolderPickerAsync(picker);
@@ -187,15 +187,32 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private Task ShowCloudErrorAsync(Exception ex) =>
-        _dialogService.ShowMessageAsync(
-            $"{LocalizationService.Instance["Cloud_AuthFailed"]}\n\n{ex.Message}",
-            LocalizationService.Instance["Settings"]);
+    private async Task ShowCloudErrorAsync(Exception ex)
+    {
+        try
+        {
+            await _dialogService.ShowMessageAsync(
+                $"{LocalizationService.Instance["Cloud_AuthFailed"]}\n\n{ex.Message}",
+                LocalizationService.Instance["Settings"]);
+        }
+        catch (Exception dialogEx)
+        {
+            AppLogger.Log.Error(dialogEx, "Failed to show the cloud error dialog");
+        }
+    }
 
     private async Task DisconnectCloudAsync(CloudProvider provider)
     {
-        var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
-        if (auth is not null) await auth.SignOutAsync();
+        try
+        {
+            var auth = Autofac.ResolutionExtensions.ResolveOptionalKeyed<ICloudAuthClient>(_scope, provider);
+            if (auth is not null) await auth.SignOutAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Cloud sign-out failed for {Provider}", provider);
+            await ShowCloudErrorAsync(ex);
+        }
     }
 
     private void OnSyncSettingsChanged()
@@ -249,6 +266,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         BreadcrumbItems.Clear();
         foreach (var item in items)
             BreadcrumbItems.Add(item);
+    }
+
+    partial void OnIsNarrowChanged(bool value)
+    {
+        RebuildUnifiedTrail();
+        IsSidebarOpen = value ? false : AppPreferences.Load().SidebarOpen;
     }
 
     private void PushBreadcrumb(string title, ViewModelBase content)

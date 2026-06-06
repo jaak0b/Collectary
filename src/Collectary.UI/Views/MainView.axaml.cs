@@ -226,14 +226,6 @@ public partial class MainView : UserControl
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
-
-        var wasNarrow = vm.IsNarrow;
         vm.IsNarrow = e.NewSize.Width < ResponsiveSplitLayout.NarrowThreshold;
-
-        if (wasNarrow && !vm.IsNarrow)
-        {
-            var prefs = AppPreferences.Load();
-            vm.IsSidebarOpen = prefs.SidebarOpen;
-        }
     }
 }

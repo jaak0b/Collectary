@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Collectary.UI.Controls">
+
+    <ControlTheme x:Key="{x:Type controls:SettingsRow}" TargetType="controls:SettingsRow">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto">
+                    <TextBlock x:Name="PART_Label"
+                               Grid.Row="0" Grid.Column="0"
+                               Text="{TemplateBinding Label}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <ContentPresenter x:Name="PART_Content"
+                                      Grid.Row="0" Grid.Column="1"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Center"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:narrow /template/ TextBlock#PART_Label">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+        <Style Selector="^:narrow /template/ ContentPresenter#PART_Content">
+            <Setter Property="Grid.Row" Value="1"/>
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>
