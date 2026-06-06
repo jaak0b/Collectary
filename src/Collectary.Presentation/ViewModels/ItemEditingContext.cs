@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
+using Collectary.Presentation.Services;
 
 namespace Collectary.Presentation.ViewModels;
 
@@ -10,6 +11,8 @@ public partial class ItemEditingContext : ObservableObject
 {
     public IFieldEditorRegistry EditorRegistry { get; }
     public IListCellBuilder ListCellBuilder { get; }
+
+    public ISampleData SampleData { get; set; } = new BogusSampleData();
 
     [ObservableProperty]
     public partial bool IsNarrow { get; set; }

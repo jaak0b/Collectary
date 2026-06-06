@@ -21,6 +21,8 @@ public partial class PercentageFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Number = data.Decimal(0m, 100m, 1);
+
     public override FieldValue GetCurrentValue()
     {
         _value.Value = Number;

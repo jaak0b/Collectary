@@ -28,6 +28,12 @@ public partial class CountryFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        if (Countries.Count > 0)
+            SelectedCountry = data.PickOne(Countries);
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _value.Code = SelectedCountry?.Code;

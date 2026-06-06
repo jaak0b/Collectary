@@ -24,6 +24,9 @@ public partial class IntegerFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) =>
+        Number = data.Int(_definition.Min ?? 1, _definition.Max ?? 1000);
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Value = Number;

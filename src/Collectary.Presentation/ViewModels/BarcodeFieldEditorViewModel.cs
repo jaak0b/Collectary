@@ -28,6 +28,8 @@ public partial class BarcodeFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Code = data.Digits(13);
+
     [RelayCommand]
     private async Task ScanAsync()
     {

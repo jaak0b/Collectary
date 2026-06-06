@@ -25,6 +25,9 @@ public partial class TimeFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) =>
+        Text = $"{data.Int(0, 23):D2}:{data.Int(0, 59):D2}";
+
     public override FieldValue GetCurrentValue()
     {
         var parsed = Parse(Text);

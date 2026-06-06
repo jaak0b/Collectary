@@ -65,6 +65,8 @@ public partial class QrCodeFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Content = data.Words(3);
+
     public override FieldValue GetCurrentValue()
     {
         _value.Content = Content;

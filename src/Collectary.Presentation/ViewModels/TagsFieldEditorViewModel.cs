@@ -39,6 +39,13 @@ public partial class TagsFieldEditorViewModel : FieldEditorViewModelBase
     [RelayCommand]
     private void RemoveTag(string tag) => Tags.Remove(tag);
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        Tags.Clear();
+        foreach (var tag in data.WordList(3))
+            Tags.Add(tag);
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _value.Tags = Tags.ToList();

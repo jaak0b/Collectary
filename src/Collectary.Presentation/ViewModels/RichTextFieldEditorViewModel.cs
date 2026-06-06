@@ -21,6 +21,8 @@ public partial class RichTextFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Markdown = data.Sentence();
+
     public override FieldValue GetCurrentValue()
     {
         _value.Value = Markdown;

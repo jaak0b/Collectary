@@ -22,5 +22,7 @@ public partial class DisplayNameFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Text = data.Words(2);
+
     public override FieldValue GetCurrentValue() => throw new NotSupportedException();
 }

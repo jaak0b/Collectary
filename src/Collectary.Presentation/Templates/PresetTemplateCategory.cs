@@ -6,4 +6,5 @@ public enum PresetTemplateCategory
     Collectibles,
     Lifestyle,
     Practical,
+    Developer,
 }

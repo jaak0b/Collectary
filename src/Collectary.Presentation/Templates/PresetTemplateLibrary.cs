@@ -17,6 +17,7 @@ public sealed class PresetTemplateLibrary : IPresetTemplateLibrary
             PresetTemplateCategory.Collectibles,
             PresetTemplateCategory.Lifestyle,
             PresetTemplateCategory.Practical,
+            PresetTemplateCategory.Developer,
         };
         var groups = new List<PresetTemplateGroup>();
         foreach (var category in categoryOrder)

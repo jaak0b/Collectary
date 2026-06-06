@@ -23,6 +23,8 @@ public partial class TextFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Text = data.Words(2);
+
     public override FieldValue GetCurrentValue()
     {
         _value.Value = Text;

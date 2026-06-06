@@ -23,6 +23,8 @@ public partial class CurrencyFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Amount = data.Decimal(1m, 1000m, 2);
+
     public override FieldValue GetCurrentValue()
     {
         _value.Value = Amount;

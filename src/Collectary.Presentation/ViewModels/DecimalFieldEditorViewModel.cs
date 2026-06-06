@@ -25,6 +25,9 @@ public partial class DecimalFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) =>
+        Number = data.Decimal(1m, 1000m, _definition.DecimalPlaces);
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Value = Number;

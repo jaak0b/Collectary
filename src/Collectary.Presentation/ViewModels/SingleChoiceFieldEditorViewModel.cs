@@ -23,6 +23,12 @@ public partial class SingleChoiceFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        if (Choices.Count > 0)
+            Selected = data.PickOne(Choices);
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Selected = Selected;

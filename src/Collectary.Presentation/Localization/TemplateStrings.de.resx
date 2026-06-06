@@ -21,6 +21,13 @@
   <data name="TemplateCategory_Collectibles" xml:space="preserve"><value>Sammlerstücke</value></data>
   <data name="TemplateCategory_Lifestyle" xml:space="preserve"><value>Lifestyle &amp; Hobbys</value></data>
   <data name="TemplateCategory_Practical" xml:space="preserve"><value>Praktisch &amp; Zuhause</value></data>
+  <data name="TemplateCategory_Developer" xml:space="preserve"><value>Entwickler</value></data>
+  <data name="Tmpl_Developer_Name" xml:space="preserve"><value>Entwickler (alle Felder)</value></data>
+  <data name="Tmpl_Developer_Desc" xml:space="preserve"><value>Eine nur im Debug-Modus verfügbare Sammlung mit je einem Feld jedes Typs, einer konfigurierten Liste und einer Feldgruppe — zum Testen von Layout und Dateneingabe.</value></data>
+  <data name="Tmpl_Developer_Group" xml:space="preserve"><value>Spezifikationen</value></data>
+  <data name="Tmpl_Developer_Opt1" xml:space="preserve"><value>Option eins</value></data>
+  <data name="Tmpl_Developer_Opt2" xml:space="preserve"><value>Option zwei</value></data>
+  <data name="Tmpl_Developer_Opt3" xml:space="preserve"><value>Option drei</value></data>
 
   <data name="Tmpl_books_Name" xml:space="preserve"><value>Bücher</value></data>
   <data name="Tmpl_books_Desc" xml:space="preserve"><value>Verwalte deine persönliche Bibliothek</value></data>

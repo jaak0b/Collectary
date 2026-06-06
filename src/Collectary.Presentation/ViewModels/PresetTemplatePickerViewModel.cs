@@ -42,6 +42,7 @@ public partial class PresetTemplatePickerViewModel : ViewModelBase
         PresetTemplateCategory.Collectibles => "TemplateCategory_Collectibles",
         PresetTemplateCategory.Lifestyle => "TemplateCategory_Lifestyle",
         PresetTemplateCategory.Practical => "TemplateCategory_Practical",
+        PresetTemplateCategory.Developer => "TemplateCategory_Developer",
         _ => category.ToString()
     };
 }

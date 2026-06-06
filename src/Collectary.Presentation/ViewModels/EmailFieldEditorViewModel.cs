@@ -21,6 +21,8 @@ public partial class EmailFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Text = data.Email();
+
     public override FieldValue GetCurrentValue()
     {
         _value.Value = Text;

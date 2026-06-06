@@ -113,6 +113,20 @@ public partial class ListFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        var count = data.Int(2, 3);
+        for (var n = 0; n < count; n++)
+        {
+            var entry = new ListEntry { ListFieldValueId = _value.Id };
+            var vm = new ListEntryEditorViewModel(_definition, entry, Entries.Count + 1, _context);
+            foreach (var sub in vm.FieldEditors)
+                sub.Randomize(data);
+            Entries.Add(vm);
+        }
+        RebuildRows();
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _value.Entries = Entries

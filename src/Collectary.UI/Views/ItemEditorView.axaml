@@ -37,6 +37,10 @@
             <Button Command="{Binding CancelCommand}"
                     Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
                     Padding="12,6"/>
+            <Button Command="{Binding FillRandomCommand}"
+                    Content="{Binding [Item_FillRandom], Source={x:Static loc:LocalizationService.Instance}}"
+                    IsVisible="{Binding IsDebugBuild}"
+                    Padding="12,6"/>
         </StackPanel>
 
     </Grid>

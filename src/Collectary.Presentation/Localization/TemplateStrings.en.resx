@@ -21,6 +21,13 @@
   <data name="TemplateCategory_Collectibles" xml:space="preserve"><value>Collectibles</value></data>
   <data name="TemplateCategory_Lifestyle" xml:space="preserve"><value>Lifestyle &amp; Hobbies</value></data>
   <data name="TemplateCategory_Practical" xml:space="preserve"><value>Practical &amp; Home</value></data>
+  <data name="TemplateCategory_Developer" xml:space="preserve"><value>Developer</value></data>
+  <data name="Tmpl_Developer_Name" xml:space="preserve"><value>Developer (all fields)</value></data>
+  <data name="Tmpl_Developer_Desc" xml:space="preserve"><value>A debug-only collection with one of every field type, a configured list, and a field group — for testing layout and data entry.</value></data>
+  <data name="Tmpl_Developer_Group" xml:space="preserve"><value>Specifications</value></data>
+  <data name="Tmpl_Developer_Opt1" xml:space="preserve"><value>Option one</value></data>
+  <data name="Tmpl_Developer_Opt2" xml:space="preserve"><value>Option two</value></data>
+  <data name="Tmpl_Developer_Opt3" xml:space="preserve"><value>Option three</value></data>
 
   <data name="Tmpl_books_Name" xml:space="preserve"><value>Books</value></data>
   <data name="Tmpl_books_Desc" xml:space="preserve"><value>Track your personal library</value></data>

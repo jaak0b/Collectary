@@ -35,6 +35,13 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
+    public bool IsDebugBuild =>
+#if DEBUG
+        true;
+#else
+        false;
+#endif
+
     public ItemEditorViewModel(
         IItemUseCase itemUseCase,
         IPresetUseCase presetUseCase,
@@ -129,6 +136,25 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Failed to save item");
+            ErrorMessage = LocalizationService.Instance["CouldNotSave"];
+        }
+    }
+
+    [RelayCommand]
+    private void FillRandom()
+    {
+        ErrorMessage = null;
+        try
+        {
+            var data = _context.SampleData;
+            foreach (var editor in FieldEditors)
+                editor.Randomize(data);
+            if (!FieldEditors.OfType<DisplayNameFieldEditorViewModel>().Any())
+                DisplayName = data.Words(2);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Failed to fill item with random data");
             ErrorMessage = LocalizationService.Instance["CouldNotSave"];
         }
     }

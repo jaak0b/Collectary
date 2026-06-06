@@ -23,6 +23,8 @@ public partial class RatingFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Stars = data.Int(1, _definition.MaxStars);
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Stars = Stars > 0 ? Stars : null;

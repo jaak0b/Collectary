@@ -75,6 +75,28 @@ public abstract class PresetTemplateBase
         return def;
     }
 
+    protected FieldGroup Group(string nameKey, int columns, params FieldDefinition[] fields)
+    {
+        var group = new FieldGroup
+        {
+            Name = L(nameKey),
+            ColumnCount = columns,
+            DisplayMode = GroupDisplayMode.Card,
+        };
+        foreach (var field in fields)
+            field.GroupId = group.Id;
+        return group;
+    }
+
+    protected Preset Compose(string nameKey, int columns, IReadOnlyList<FieldDefinition> fields, IReadOnlyList<FieldGroup> groups)
+    {
+        var preset = Compose(nameKey, columns, fields);
+        foreach (var group in groups)
+            group.PresetId = preset.Id;
+        preset.Groups = groups.ToList();
+        return preset;
+    }
+
     protected Preset Compose(string nameKey, int columns, IReadOnlyList<FieldDefinition> fields)
     {
         var ordered = fields.ToList();

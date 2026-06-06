@@ -25,6 +25,12 @@ public partial class DateRangeFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        From = data.PastDateUtc();
+        To = From.Value.AddDays(data.Int(1, 30));
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _value.From = AsUtc(From);

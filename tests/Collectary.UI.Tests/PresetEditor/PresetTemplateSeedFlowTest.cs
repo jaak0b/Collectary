@@ -26,6 +26,19 @@ public class PresetTemplateSeedFlowTest : FlowTestBase
         return (await PresetRepo.GetAllAsync()).Single();
     }
 
+#if DEBUG
+    [Test]
+    public async Task ChooseDeveloperTemplate_PersistsPresetWithGroupedFields()
+    {
+        var saved = await SeedSaveAndReload("developer");
+
+        Assert.That(saved.Groups, Is.Not.Empty, "the field group must survive seed → save → reload");
+        var group = saved.Groups[0];
+        Assert.That(saved.Fields.Count(f => f.GroupId == group.Id), Is.EqualTo(2));
+        Assert.That(saved.Fields.OfType<ListFieldDefinition>().Single().SubFields, Is.Not.Empty);
+    }
+#endif
+
     [Test]
     public async Task ChooseBooksTemplate_PersistsPresetWithFields()
     {

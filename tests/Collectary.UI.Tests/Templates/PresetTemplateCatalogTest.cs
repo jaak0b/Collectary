@@ -15,7 +15,11 @@ public class PresetTemplateCatalogTest
     [Test]
     public void Catalog_HasExpectedNumberOfTemplates()
     {
+#if DEBUG
+        Assert.That(TemplateTestHelper.AllTemplates(), Has.Count.EqualTo(23));
+#else
         Assert.That(TemplateTestHelper.AllTemplates(), Has.Count.EqualTo(22));
+#endif
     }
 
     [Test]

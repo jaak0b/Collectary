@@ -26,6 +26,9 @@ public partial class DurationFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) =>
+        Text = $"{data.Int(1, 5)}h {data.Int(0, 59)}m";
+
     public override FieldValue GetCurrentValue()
     {
         var parsed = Parse(Text);

@@ -21,6 +21,8 @@ public partial class DateFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Date = data.PastDateUtc();
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Value = Date.HasValue ? DateTime.SpecifyKind(Date.Value, DateTimeKind.Utc) : null;

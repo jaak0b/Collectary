@@ -23,6 +23,8 @@ public partial class BoolFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => IsChecked = data.Bool();
+
     public override FieldValue GetCurrentValue()
     {
         _value.Value = _definition.ThreeState ? IsChecked : IsChecked ?? false;

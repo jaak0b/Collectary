@@ -130,6 +130,7 @@
   <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Starte mit einer vorkonfigurierten Sammlung und passe sie an deine Bedürfnisse an.</value></data>
   <data name="Collection" xml:space="preserve"><value>Sammlung</value></data>
   <data name="Item" xml:space="preserve"><value>Eintrag</value></data>
+  <data name="Item_FillRandom" xml:space="preserve"><value>Zufällig füllen</value></data>
   <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>
   <data name="Open" xml:space="preserve"><value>Öffnen</value></data>
   <data name="AddItem" xml:space="preserve"><value>＋ Eintrag hinzufügen</value></data>

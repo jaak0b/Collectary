@@ -21,6 +21,8 @@ public partial class UrlFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data) => Url = data.Url();
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Url = Url;

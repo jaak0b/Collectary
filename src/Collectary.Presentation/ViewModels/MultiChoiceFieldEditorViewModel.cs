@@ -37,6 +37,15 @@ public partial class MultiChoiceFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        if (ChoiceItems.Count == 0) return;
+        foreach (var item in ChoiceItems)
+            item.IsSelected = data.Bool();
+        if (ChoiceItems.All(c => !c.IsSelected))
+            ChoiceItems[data.Int(0, ChoiceItems.Count - 1)].IsSelected = true;
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _fieldValue.Selected = ChoiceItems.Where(c => c.IsSelected).Select(c => c.Label).ToList();

@@ -27,6 +27,12 @@ public partial class WeightFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldDefinition Definition => _definition;
 
+    public override void Randomize(Services.ISampleData data)
+    {
+        Amount = data.Decimal(1m, 5000m, 1);
+        SelectedUnit = data.PickOne(Units);
+    }
+
     public override FieldValue GetCurrentValue()
     {
         _value.Amount = Amount;
