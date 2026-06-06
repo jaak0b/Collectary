@@ -22,7 +22,7 @@
 12. **Credentials are bullet-proof.** Passwords hashed with built-in PBKDF2-HMAC-SHA512, per-user random salt, iteration count + algorithm stored with the hash. Never store/log plaintext; never store anything reversible.
 13. **Every new feature is documented.** Add/update the relevant `docs-src/**` page in the same change. Write in a human, conversational style — not terse machine-speak.
 14. **No code comments.** Code self-explains via names and structure, in all we author (C#, XAML, YAML, JSON, `.csproj`). Banned: *what*-narration (`// build the menu`), divider banners, commented-out code (git is the history), and default XML doc-comments. Only allowed: a short non-obvious **why** the code can't express (external-bug workaround, Avalonia gotcha). Tempted to write *what*? Rename until the comment is redundant, then delete it. Markdown docs are exempt.
-15. **Commits are allowed — but never include AI attribution.** You may run `git commit`/`git push` once the verification gate (rule #5) is green. Never include AI attribution in anything that touches git or GitHub — not in commit messages, PR titles or descriptions, issue/PR comments, tags, or release notes. No `Co-Authored-By` trailer, no "Generated with" line, no AI author/committer identity. This applies to every git and `gh`/GitHub API action without exception. Commits carry the human's authorship only. **Commit messages are a short, single sentence** — one line, no body, no bullet list; if a change feels too big to describe in one sentence, split it into smaller commits.
+15. **Commits require owner review first.** Never run `git commit` or `git push` until the repository owner has explicitly approved the change in chat. Present the diff summary and ask; only proceed after a clear "yes" (or equivalent). Once approved: no AI attribution in anything that touches git or GitHub — not in commit messages, PR titles or descriptions, issue/PR comments, tags, or release notes. No `Co-Authored-By` trailer, no "Generated with" line, no AI author/committer identity. This applies to every git and `gh`/GitHub API action without exception. Commits carry the human's authorship only. **Commit messages are a short, single sentence** — one line, no body, no bullet list; if a change feels too big to describe in one sentence, split it into smaller commits.
 
 ## Definition of Done — run this checklist before calling any change "finished"
 
@@ -37,6 +37,7 @@ A feature or fix is complete **only** when every box below is genuinely ticked, 
 - [ ] **Docs updated** (rule #13).
 - [ ] **Localization complete** (rule #2) — every new key in both `Strings.en.resx` and `Strings.de.resx`.
 - [ ] **No code comments added** (rule #14) — re-read the diff; the only comments left are genuine non-obvious *why* notes, never *what*-narration or commented-out code.
+- [ ] **Owner review obtained** (rule #15) — diff summary presented in chat and owner has explicitly approved before any `git commit` or `git push`.
 
 Do not compress this gate to save time. "Looks done" is not done; the checklist is what makes it done.
 
