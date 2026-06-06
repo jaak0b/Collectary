@@ -1,12 +1,24 @@
+using System.Globalization;
+
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Rating")]
 [FieldIcon(IconGlyphs.Star)]
 [FieldCatalog(1, FieldCategory.Visual)]
-public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDisplayable
+public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDisplayable, ITextImportable
 {
     public int MaxStars { get; set; } = 5;
     public bool ShowInList { get; set; }
+
+    public int ImportInferenceOrder => 200;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        if (!int.TryParse(raw, NumberStyles.Integer, culture, out var stars) || stars < 0 || stars > MaxStars) return false;
+        value = new RatingFieldValue { FieldDefinitionId = Id, Stars = stars };
+        return true;
+    }
 
     public override void ApplyTypeSpecificProperties(FieldDefinition source)
     {

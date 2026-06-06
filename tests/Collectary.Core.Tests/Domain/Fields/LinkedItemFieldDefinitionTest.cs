@@ -7,6 +7,10 @@ namespace Collectary.Core.Tests.Domain.Fields;
 public class LinkedItemFieldDefinitionTest
 {
     [Test]
+    public void IsNotTextImportable() =>
+        Assert.That(new LinkedItemFieldDefinition() is ITextImportable, Is.False);
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new LinkedItemFieldDefinition();

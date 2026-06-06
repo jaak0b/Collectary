@@ -126,6 +126,43 @@
   <data name="NewFromTemplate" xml:space="preserve"><value>＋ From Template</value></data>
   <data name="BlankCollection" xml:space="preserve"><value>Blank collection</value></data>
   <data name="FromTemplate" xml:space="preserve"><value>From template</value></data>
+  <data name="Import_Menu" xml:space="preserve"><value>＋ Import from Excel</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Import from Excel</value></data>
+  <data name="Import_NoSheets" xml:space="preserve"><value>This workbook has no worksheets to import.</value></data>
+  <data name="Import_ReadFailed" xml:space="preserve"><value>That file could not be read as an Excel workbook.</value></data>
+  <data name="Import_Sheet" xml:space="preserve"><value>Worksheet</value></data>
+  <data name="Import_Step_Sheet" xml:space="preserve"><value>Pick a worksheet</value></data>
+  <data name="Import_Step_Preview" xml:space="preserve"><value>Check the data</value></data>
+  <data name="Import_Step_Target" xml:space="preserve"><value>Choose where to import</value></data>
+  <data name="Import_Step_Map" xml:space="preserve"><value>Map the columns</value></data>
+  <data name="Import_Step_Result" xml:space="preserve"><value>Done</value></data>
+  <data name="Import_FirstRowHeader" xml:space="preserve"><value>First row is a header</value></data>
+  <data name="Import_Rotate" xml:space="preserve"><value>Rotate 90° (fields run down, not across)</value></data>
+  <data name="Import_SourceCulture" xml:space="preserve"><value>Source number &amp; date format</value></data>
+  <data name="Import_TargetExisting" xml:space="preserve"><value>Add to an existing collection</value></data>
+  <data name="Import_TargetNew" xml:space="preserve"><value>Create a new collection</value></data>
+  <data name="Import_CollectionName" xml:space="preserve"><value>New collection name</value></data>
+  <data name="Import_ColumnFallback" xml:space="preserve"><value>Column {0}</value></data>
+  <data name="Import_Skip" xml:space="preserve"><value>(don't import)</value></data>
+  <data name="Import_TitleColumn" xml:space="preserve"><value>Item name (title)</value></data>
+  <data name="Import_Include" xml:space="preserve"><value>Include</value></data>
+  <data name="Import_MapTo" xml:space="preserve"><value>Map to field</value></data>
+  <data name="Import_FieldType" xml:space="preserve"><value>Field type</value></data>
+  <data name="Import_FieldLabel" xml:space="preserve"><value>Field name</value></data>
+  <data name="Import_UseAsName" xml:space="preserve"><value>Use as item name</value></data>
+  <data name="Import_Unmappable_Note" xml:space="preserve"><value>Field types like images, files and links can't be filled from a spreadsheet, so they're shown greyed out.</value></data>
+  <data name="Import_Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Import_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Import_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Import_Run" xml:space="preserve"><value>Import</value></data>
+  <data name="Import_Done" xml:space="preserve"><value>Done</value></data>
+  <data name="Import_NoSheet" xml:space="preserve"><value>Please pick a worksheet first.</value></data>
+  <data name="Import_NameRequired" xml:space="preserve"><value>Please enter a name for the new collection.</value></data>
+  <data name="Import_NoCollectionSelected" xml:space="preserve"><value>Please choose a collection to import into.</value></data>
+  <data name="Import_NoColumnsMapped" xml:space="preserve"><value>Map at least one column before importing.</value></data>
+  <data name="Import_Summary_Imported" xml:space="preserve"><value>Imported {0} item(s).</value></data>
+  <data name="Import_Summary_Skipped" xml:space="preserve"><value>Skipped {0} row(s).</value></data>
+  <data name="Import_Summary_Warnings" xml:space="preserve"><value>{0} cell(s) could not be read and were left blank.</value></data>
   <data name="TemplatePickerTitle" xml:space="preserve"><value>Choose a Template</value></data>
   <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Start from a preconfigured collection and customize it to your needs.</value></data>
   <data name="Collection" xml:space="preserve"><value>Collection</value></data>

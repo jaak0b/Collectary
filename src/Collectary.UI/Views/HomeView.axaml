@@ -107,6 +107,8 @@
                                       Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CreatePresetCommand}"/>
                             <MenuItem Header="{Binding [FromTemplate], Source={x:Static loc:LocalizationService.Instance}}"
                                       Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).CreateFromTemplateCommand}"/>
+                            <MenuItem Header="{Binding [Import_Menu], Source={x:Static loc:LocalizationService.Instance}}"
+                                      Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).ImportFromExcelCommand}"/>
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>

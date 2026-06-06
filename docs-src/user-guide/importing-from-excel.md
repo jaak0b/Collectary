@@ -1,0 +1,69 @@
+# Importing from Excel
+
+Already have a collection in a spreadsheet? You don't need to retype it. Collectary can read an
+Excel workbook (`.xlsx`) and turn its rows into items — either adding them to a collection you
+already have, or building a brand-new collection from the sheet.
+
+Excel is the first of several planned importers; CSV and others will follow and reuse the same flow.
+
+## Starting an import
+
+1. On the home screen, open the **＋ New Collection** menu and choose **Import from Excel**.
+2. Pick your `.xlsx` file.
+
+The import opens as a short, guided flow with a few steps. You can go **Back** at any point, or
+**Cancel** to bail out — nothing is saved until the final step.
+
+## Step 1 — Pick a worksheet
+
+A workbook can hold several sheets. Choose the one you want to import. (Importing several sheets at
+once is a future addition — for now, run the import again for each sheet.)
+
+## Step 2 — Check the data
+
+You'll see a live preview of the sheet in a table. Two switches control how Collectary reads it:
+
+- **First row is a header** — when on, the top row supplies the column names instead of becoming an
+  item. Turn it off if your sheet jumps straight into data.
+- **Rotate 90°** — flip the sheet when your fields run *down* the page instead of *across* it (each
+  field is a row, each item a column). The preview updates instantly so you can see which way is right.
+
+There's also a **Source number & date format** picker. Collectary makes a sensible guess, but if your
+sheet was made on a computer with a different language — say a German sheet (`1.234,56`, `31.12.2024`)
+opened on an English machine — set the format here so numbers and dates are read correctly. Cells that
+Excel already stores as real numbers or dates are understood automatically, whatever your settings.
+
+## Step 3 — Choose where the data goes
+
+- **Add to an existing collection** — pick one of your collections. Each spreadsheet column will be
+  matched to one of that collection's fields.
+- **Create a new collection** — give it a name. Collectary inspects each column and suggests a field
+  type (text, number, date, and so on), which you can change.
+
+## Step 4 — Map the columns
+
+This is where you tell Collectary what each column means.
+
+- Untick a column to leave it out of the import.
+- **Into an existing collection:** for each column, choose the field it fills, or mark it as the
+  item's **name**. Field types that can't come from a spreadsheet — images, file attachments, audio,
+  linked items, nested lists — are shown greyed out, so you always see they exist but can't pick them.
+- **Into a new collection:** confirm or change each column's field type and name, and tick one column
+  to use as the item's name.
+
+## Step 5 — Done
+
+Collectary imports the rows and shows a summary:
+
+- how many items were imported,
+- any rows it had to skip (for example, a row missing a required field), with the reason,
+- any individual cells it couldn't read (for example, the word "soon" in a number column) — those are
+  left blank and the rest of the row still comes in.
+
+Click **Done** to jump straight to the collection and see your imported items.
+
+## What can't be imported
+
+Anything that isn't plain text in a cell: images, file attachments, audio, links to other items, and
+nested lists. These fields stay in your collection — they're just not filled in by the import, and you
+can add them by hand afterwards.

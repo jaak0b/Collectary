@@ -3,10 +3,29 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_Bool")]
 [FieldIcon(IconGlyphs.Checkbox)]
 [FieldCatalog(0, FieldCategory.Choice)]
-public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable
+public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable, ITextImportable
 {
     public bool ShowInList { get; set; }
     public bool ThreeState { get; set; }
+
+    public int ImportInferenceOrder => 10;
+
+    public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
+    {
+        value = CreateEmptyValue();
+        var token = raw.Trim().ToLowerInvariant();
+        if (token is "true" or "yes" or "y" or "1" or "x" or "✓" or "ja" or "wahr")
+        {
+            value = new BoolFieldValue { FieldDefinitionId = Id, Value = true };
+            return true;
+        }
+        if (token is "false" or "no" or "n" or "0" or "nein" or "falsch")
+        {
+            value = new BoolFieldValue { FieldDefinitionId = Id, Value = false };
+            return true;
+        }
+        return false;
+    }
 
     public override void ApplyTypeSpecificProperties(FieldDefinition source)
     {

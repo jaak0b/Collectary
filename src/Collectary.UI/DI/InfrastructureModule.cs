@@ -36,6 +36,7 @@ public class InfrastructureModule : Module
         builder.RegisterType<FieldDefinitionMerger>().As<IFieldDefinitionMerger>().SingleInstance();
         builder.RegisterType<Infrastructure.Barcode.ZXingBarcodeImageDecoder>().As<IBarcodeImageDecoder>().SingleInstance();
         builder.RegisterType<Infrastructure.Barcode.ZXingBarcodeImageGenerator>().As<IBarcodeImageGenerator>().SingleInstance();
+        builder.RegisterType<Infrastructure.Import.ClosedXmlWorkbookReader>().As<IExcelWorkbookReader>().SingleInstance();
 
         builder.RegisterType<PresetRepository>().As<IPresetRepository>().SingleInstance();
         builder.RegisterType<ItemRepository>().As<IItemRepository>().SingleInstance();

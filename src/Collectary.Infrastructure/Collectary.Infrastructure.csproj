@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="ZXing.Net" />
     <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="ClosedXML" />
   </ItemGroup>
 
   <PropertyGroup>

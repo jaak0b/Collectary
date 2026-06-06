@@ -6,6 +6,10 @@ namespace Collectary.Core.Tests.Domain.Fields;
 public class FileAttachmentFieldDefinitionTest
 {
     [Test]
+    public void IsNotTextImportable() =>
+        Assert.That(new FileAttachmentFieldDefinition() is ITextImportable, Is.False);
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new FileAttachmentFieldDefinition();

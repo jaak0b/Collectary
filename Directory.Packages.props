@@ -53,6 +53,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Spreadsheet import (.xlsx) -->
+    <PackageVersion Include="ClosedXML" Version="0.104.*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Logging -->
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />

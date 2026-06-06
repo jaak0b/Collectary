@@ -13,6 +13,7 @@ using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
+using Collectary.Presentation.ViewModels.Import;
 using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.Presentation.ViewModels;
@@ -360,6 +361,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         home.OnNavigateToPreset = NavigateToPreset;
         home.OnCreatePreset = () => NavigateToPresetEditor(null);
         home.OnCreateFromTemplate = NavigateToTemplatePicker;
+        home.OnImportFromExcel = () => { _ = NavigateToExcelImportAsync(); };
         home.OnEditPreset = preset => NavigateToPresetEditor(preset);
         home.OnNavigateToSharedFields = NavigateToSharedFieldLibrary;
         home.OnSharePreset = SharePreset;
@@ -491,6 +493,64 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ResetBreadcrumb(LocalizationService.Instance["CollectionSettings"], vm);
         _ = vm.LoadAsync();
 
+        CloseSidebarIfNarrow();
+    }
+
+    private async Task NavigateToExcelImportAsync()
+    {
+        var storage = TopLevel.GetTopLevel(Host)?.StorageProvider;
+        if (storage is null) return;
+
+        var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType("Excel workbook") { Patterns = ["*.xlsx"] }],
+        });
+        var file = files.FirstOrDefault();
+        if (file is null) return;
+
+        Core.Domain.Import.WorkbookData data;
+        try
+        {
+            using var buffer = new MemoryStream();
+            await using (var input = await file.OpenReadAsync())
+                await input.CopyToAsync(buffer);
+            buffer.Position = 0;
+            data = _scope.Resolve<IExcelWorkbookReader>().Read(buffer);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Excel workbook read failed");
+            await _dialogService.ShowMessageAsync(
+                LocalizationService.Instance["Import_ReadFailed"], LocalizationService.Instance["Import_Title"]);
+            return;
+        }
+
+        if (data.Sheets.Count == 0)
+        {
+            await _dialogService.ShowMessageAsync(
+                LocalizationService.Instance["Import_NoSheets"], LocalizationService.Instance["Import_Title"]);
+            return;
+        }
+
+        var presets = await _presetUseCase.GetAllPresetsAsync();
+        var vm = new ExcelImportViewModel(
+            data,
+            _scope.Resolve<IGridShaper>(),
+            _scope.Resolve<ICultureDetector>(),
+            _scope.Resolve<IFieldTypeInference>(),
+            _scope.Resolve<ISpreadsheetImportService>(),
+            _presetUseCase,
+            _dialogService,
+            presets,
+            onFinished: async preset =>
+            {
+                if (SidebarViewModel is not null) await SidebarViewModel.LoadAsync();
+                NavigateToPreset(preset);
+            },
+            onClose: () => { _ = NavigateToHomeAsync(); });
+
+        ResetBreadcrumb(LocalizationService.Instance["Import_Title"], vm);
         CloseSidebarIfNarrow();
     }
 
