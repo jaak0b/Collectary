@@ -17,6 +17,7 @@ public partial class HomeViewModel : ViewModelBase
     public Action? OnCreatePreset { get; set; }
     public Action? OnCreateFromTemplate { get; set; }
     public Action? OnImportFromExcel { get; set; }
+    public Action? OnImportFromCsv { get; set; }
     public Action<Core.Domain.Preset>? OnEditPreset { get; set; }
     public Func<Core.Domain.Preset, Task>? OnDeletePreset { get; set; }
     public Action<Core.Domain.Preset>? OnSharePreset { get; set; }
@@ -92,6 +93,9 @@ public partial class HomeViewModel : ViewModelBase
 
     [RelayCommand]
     private void ImportFromExcel() => OnImportFromExcel?.Invoke();
+
+    [RelayCommand]
+    private void ImportFromCsv() => OnImportFromCsv?.Invoke();
 
     [RelayCommand]
     private void NavigateToSharedFields() => OnNavigateToSharedFields?.Invoke();

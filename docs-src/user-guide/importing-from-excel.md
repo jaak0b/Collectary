@@ -4,7 +4,8 @@ Already have a collection in a spreadsheet? You don't need to retype it. Collect
 Excel workbook (`.xlsx`) and turn its rows into items — either adding them to a collection you
 already have, or building a brand-new collection from the sheet.
 
-Excel is the first of several planned importers; CSV and others will follow and reuse the same flow.
+Collectary can also import **CSV files** — see [CSV files](#csv-files) at the end. Both importers share
+the exact same steps; only the file you pick differs.
 
 ## Starting an import
 
@@ -61,6 +62,25 @@ Collectary imports the rows and shows a summary:
   left blank and the rest of the row still comes in.
 
 Click **Done** to jump straight to the collection and see your imported items.
+
+## CSV files
+
+A CSV (comma-separated values) file is plain text — one row per line, fields separated by a delimiter.
+It's what you get from "Save As → CSV" in Excel, Numbers, Google Sheets, and countless other tools.
+
+To import one, open the **＋ New Collection** menu and choose **Import from CSV**, then pick your `.csv`
+file. From there the steps are identical to the Excel import above: preview, choose a target, map the
+columns, done.
+
+A few CSV-specific notes:
+
+- **Delimiter is detected automatically.** Comma, semicolon, and tab files all work. This matters for
+  files exported on a German-language computer, where Excel uses a semicolon (`;`) as the separator and
+  a comma inside numbers (`1.234,56`).
+- **Quoted fields are understood**, including values that contain the delimiter or span multiple lines
+  (e.g. `"Dune, the novel"`), and doubled quotes (`""`) inside a quoted value.
+- A CSV has **no built-in number or date formatting**, so the **Source number & date format** picker on
+  the preview step is your friend — set it to match the machine the file came from.
 
 ## What can't be imported
 

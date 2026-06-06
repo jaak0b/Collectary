@@ -55,6 +55,9 @@
   <ItemGroup>
     <!-- Spreadsheet import (.xlsx) -->
     <PackageVersion Include="ClosedXML" Version="0.104.*" />
+    <!-- CSV import -->
+    <PackageVersion Include="CsvHelper" Version="33.*" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="8.0.*" />
   </ItemGroup>
 
   <ItemGroup>

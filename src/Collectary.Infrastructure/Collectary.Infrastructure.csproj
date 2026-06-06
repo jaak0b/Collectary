@@ -14,6 +14,8 @@
     <PackageReference Include="ZXing.Net" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="ClosedXML" />
+    <PackageReference Include="CsvHelper" />
+    <PackageReference Include="System.Text.Encoding.CodePages" />
   </ItemGroup>
 
   <PropertyGroup>

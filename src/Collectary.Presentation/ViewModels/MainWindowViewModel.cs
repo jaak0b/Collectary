@@ -425,6 +425,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         home.OnCreatePreset = () => NavigateToPresetEditor(null);
         home.OnCreateFromTemplate = NavigateToTemplatePicker;
         home.OnImportFromExcel = () => { _ = NavigateToExcelImportAsync(); };
+        home.OnImportFromCsv = () => { _ = NavigateToCsvImportAsync(); };
         home.OnEditPreset = preset => NavigateToPresetEditor(preset);
         home.OnNavigateToSharedFields = NavigateToSharedFieldLibrary;
         home.OnSharePreset = SharePreset;
@@ -561,7 +562,22 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CloseSidebarIfNarrow();
     }
 
-    private async Task NavigateToExcelImportAsync()
+    private Task NavigateToExcelImportAsync() =>
+        ImportFromFileAsync(
+            new FilePickerFileType("Excel workbook") { Patterns = ["*.xlsx"] },
+            stream => _scope.Resolve<IExcelWorkbookReader>().Read(stream),
+            "Import_Excel_Title");
+
+    private Task NavigateToCsvImportAsync() =>
+        ImportFromFileAsync(
+            new FilePickerFileType("CSV file") { Patterns = ["*.csv"] },
+            stream => _scope.Resolve<ICsvWorkbookReader>().Read(stream),
+            "Import_Csv_Title");
+
+    private async Task ImportFromFileAsync(
+        FilePickerFileType fileType,
+        Func<Stream, Core.Domain.Import.WorkbookData> read,
+        string breadcrumbTitleKey)
     {
         var storage = TopLevel.GetTopLevel(Host)?.StorageProvider;
         if (storage is null) return;
@@ -569,7 +585,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             AllowMultiple = false,
-            FileTypeFilter = [new FilePickerFileType("Excel workbook") { Patterns = ["*.xlsx"] }],
+            FileTypeFilter = [fileType],
         });
         var file = files.FirstOrDefault();
         if (file is null) return;
@@ -578,14 +594,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         try
         {
             using var buffer = new MemoryStream();
-            await using (var input = await file.OpenReadAsync())
-                await input.CopyToAsync(buffer);
+            await CopyFileToAsync(file, buffer);
             buffer.Position = 0;
-            data = _scope.Resolve<IExcelWorkbookReader>().Read(buffer);
+            data = read(buffer);
         }
         catch (Exception ex)
         {
-            AppLogger.Log.Error(ex, "Excel workbook read failed");
+            AppLogger.Log.Error(ex, "Import file read failed");
             await _dialogService.ShowMessageAsync(
                 LocalizationService.Instance["Import_ReadFailed"], LocalizationService.Instance["Import_Title"]);
             return;
@@ -615,8 +630,23 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             },
             onClose: () => { _ = NavigateToHomeAsync(); });
 
-        ResetBreadcrumb(LocalizationService.Instance["Import_Title"], vm);
+        ResetBreadcrumb(LocalizationService.Instance[breadcrumbTitleKey], vm);
         CloseSidebarIfNarrow();
+    }
+
+    private async Task CopyFileToAsync(IStorageFile file, Stream destination)
+    {
+        try
+        {
+            await using var input = await file.OpenReadAsync();
+            await input.CopyToAsync(destination);
+        }
+        catch (IOException) when (file.TryGetLocalPath() is { } localPath)
+        {
+            await using var input = new FileStream(
+                localPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            await input.CopyToAsync(destination);
+        }
     }
 
     private void NavigateToTemplatePicker()

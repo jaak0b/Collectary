@@ -30,6 +30,12 @@ public class ExcelImportFlowTest : FlowTestBase
             onFinished,
             onClose: () => { });
 
+    private async Task AdvanceToMapAsync(ExcelImportViewModel vm)
+    {
+        while (vm.Step != ImportStep.Map)
+            await vm.NextCommand.ExecuteAsync(null);
+    }
+
     private async Task<Preset> CreateBooksPresetAsync(params FieldDefinition[] extra)
     {
         var preset = new Preset { Name = "Books" };
@@ -98,9 +104,7 @@ public class ExcelImportFlowTest : FlowTestBase
         vm.CreateNewCollection = false;
         vm.SelectedPreset = preset;
 
-        await vm.NextCommand.ExecuteAsync(null); // Sheet -> Preview
-        await vm.NextCommand.ExecuteAsync(null); // Preview -> Target
-        await vm.NextCommand.ExecuteAsync(null); // Target -> Map
+        await AdvanceToMapAsync(vm);
 
         vm.Columns[0].SelectedTarget = vm.Columns[0].TargetOptions.First(o => o.IsTitle);
         vm.Columns[1].SelectedTarget = vm.Columns[1].TargetOptions.First(o => o.Field?.Id == notes.Id);
@@ -121,9 +125,7 @@ public class ExcelImportFlowTest : FlowTestBase
         var vm = MakeVm(data, new[] { preset });
         vm.SelectedPreset = preset;
 
-        await vm.NextCommand.ExecuteAsync(null);
-        await vm.NextCommand.ExecuteAsync(null);
-        await vm.NextCommand.ExecuteAsync(null);
+        await AdvanceToMapAsync(vm);
 
         var cover = vm.Columns.SelectMany(c => c.TargetOptions).First(o => o.Field is ImageFieldDefinition);
         Assert.That(cover.IsMappable, Is.False);
@@ -139,14 +141,36 @@ public class ExcelImportFlowTest : FlowTestBase
         vm.CreateNewCollection = true;
         vm.NewCollectionName = "Imported";
 
-        await vm.NextCommand.ExecuteAsync(null);
-        await vm.NextCommand.ExecuteAsync(null);
-        await vm.NextCommand.ExecuteAsync(null);
-        await vm.NextCommand.ExecuteAsync(null);
+        await AdvanceToMapAsync(vm);
+        await vm.NextCommand.ExecuteAsync(null); // Map -> import
 
         Assert.That(vm.Step, Is.EqualTo(ImportStep.Result));
         Assert.That(vm.Summary!.Imported, Is.EqualTo(1));
         var presets = await PresetUseCase.GetAllPresetsAsync();
         Assert.That(presets.Select(p => p.Name), Does.Contain("Imported"));
+    }
+
+    [Test]
+    public void SingleSheet_SkipsSheetStep()
+    {
+        var data = Workbook("Sheet1", new[] { Cell("Name") }, new[] { Cell("Dune") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+
+        Assert.That(vm.Step, Is.EqualTo(ImportStep.Preview));
+        Assert.That(vm.IsSheetStep, Is.False);
+    }
+
+    [Test]
+    public void MultipleSheets_StartAtSheetStep()
+    {
+        var data = new WorkbookData(new[]
+        {
+            new WorkbookSheet("One", new[] { (IReadOnlyList<WorkbookCell>)new[] { Cell("a") } }),
+            new WorkbookSheet("Two", new[] { (IReadOnlyList<WorkbookCell>)new[] { Cell("b") } })
+        });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+
+        Assert.That(vm.Step, Is.EqualTo(ImportStep.Sheet));
+        Assert.That(vm.SheetNames, Is.EqualTo(new[] { "One", "Two" }));
     }
 }

@@ -128,9 +128,12 @@
   <data name="BlankCollection" xml:space="preserve"><value>Blank collection</value></data>
   <data name="FromTemplate" xml:space="preserve"><value>From template</value></data>
   <data name="Import_Menu" xml:space="preserve"><value>＋ Import from Excel</value></data>
-  <data name="Import_Title" xml:space="preserve"><value>Import from Excel</value></data>
+  <data name="Import_Csv_Menu" xml:space="preserve"><value>＋ Import from CSV</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Import</value></data>
+  <data name="Import_Excel_Title" xml:space="preserve"><value>Import from Excel</value></data>
+  <data name="Import_Csv_Title" xml:space="preserve"><value>Import from CSV</value></data>
   <data name="Import_NoSheets" xml:space="preserve"><value>This workbook has no worksheets to import.</value></data>
-  <data name="Import_ReadFailed" xml:space="preserve"><value>That file could not be read as an Excel workbook.</value></data>
+  <data name="Import_ReadFailed" xml:space="preserve"><value>That file couldn't be opened. It may be open in another program (like Excel) — close it and try again. If it still fails, the file may be corrupted or in an unexpected format.</value></data>
   <data name="Import_Sheet" xml:space="preserve"><value>Worksheet</value></data>
   <data name="Import_Step_Sheet" xml:space="preserve"><value>Pick a worksheet</value></data>
   <data name="Import_Step_Preview" xml:space="preserve"><value>Check the data</value></data>

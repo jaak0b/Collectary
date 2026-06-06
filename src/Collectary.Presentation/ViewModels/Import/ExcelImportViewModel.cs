@@ -36,6 +36,7 @@ public partial class ExcelImportViewModel : ViewModelBase
 
     private ShapedGrid _shaped = new([], []);
     private Preset? _importedPreset;
+    private readonly ImportStep _firstStep;
 
     public ExcelImportViewModel(
         WorkbookData data,
@@ -72,6 +73,9 @@ public partial class ExcelImportViewModel : ViewModelBase
         SelectedSheetName = SheetNames.FirstOrDefault();
         SelectedPreset = ExistingPresets.FirstOrDefault();
         CreateNewCollection = ExistingPresets.Count == 0;
+
+        _firstStep = SheetNames.Count > 1 ? ImportStep.Sheet : ImportStep.Preview;
+        Step = _firstStep;
     }
 
     public ObservableCollection<string> SheetNames { get; } = new();
@@ -202,7 +206,7 @@ public partial class ExcelImportViewModel : ViewModelBase
     [RelayCommand]
     private void Back()
     {
-        if (Step == ImportStep.Sheet)
+        if (Step == _firstStep)
         {
             _onClose();
             return;
