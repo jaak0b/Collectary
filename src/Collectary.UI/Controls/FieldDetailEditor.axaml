@@ -119,6 +119,56 @@
                                  HorizontalAlignment="Left"/>
                     </StackPanel>
 
+                    <!-- Text max length -->
+                    <StackPanel IsVisible="{Binding IsText}" Spacing="4">
+                        <TextBlock Text="{Binding [MaxLength], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <controls:SafeNumericUpDown Value="{Binding MaxLength}"
+                                       Minimum="0"
+                                       Maximum="100000"
+                                       Increment="1"
+                                       FormatString="0"
+                                       HorizontalAlignment="Left"
+                                       MinWidth="120"/>
+                    </StackPanel>
+
+                    <!-- Integer min / max -->
+                    <Grid IsVisible="{Binding IsInteger}" ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="{Binding [MinValue], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <controls:SafeNumericUpDown Value="{Binding Min}" Increment="1" FormatString="0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock Text="{Binding [MaxValue], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <controls:SafeNumericUpDown Value="{Binding Max}" Increment="1" FormatString="0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Decimal places -->
+                    <StackPanel IsVisible="{Binding IsDecimal}" Spacing="4">
+                        <TextBlock Text="{Binding [DecimalPlaces], Source={x:Static loc:LocalizationService.Instance}}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <controls:SafeNumericUpDown Value="{Binding DecimalPlaces}"
+                                       Minimum="0"
+                                       Maximum="10"
+                                       Increment="1"
+                                       FormatString="0"
+                                       HorizontalAlignment="Left"
+                                       MinWidth="120"/>
+                    </StackPanel>
+
+                    <!-- Bool answer mode -->
+                    <StackPanel IsVisible="{Binding IsBool}" Spacing="4">
+                        <CheckBox IsChecked="{Binding ThreeState}"
+                                  Content="{Binding [AllowUnanswered], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    </StackPanel>
+
                     <!-- Color format -->
                     <StackPanel IsVisible="{Binding IsColor}" Spacing="4">
                         <TextBlock Text="{Binding [Format], Source={x:Static loc:LocalizationService.Instance}}"

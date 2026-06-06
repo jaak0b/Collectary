@@ -6,6 +6,12 @@ namespace Collectary.Core.Domain.Fields;
 public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable
 {
     public bool ShowInList { get; set; }
+    public bool ThreeState { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is BoolFieldDefinition src) ThreeState = src.ThreeState;
+    }
 }
 
 public class BoolFieldValue : FieldValue<BoolFieldDefinition>

@@ -8,6 +8,13 @@ public class IntegerFieldDefinition : FieldDefinition<IntegerFieldValue>, IListD
     public int? Min { get; set; }
     public int? Max { get; set; }
     public bool ShowInList { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is not IntegerFieldDefinition src) return;
+        Min = src.Min;
+        Max = src.Max;
+    }
 }
 
 public class IntegerFieldValue : FieldValue<IntegerFieldDefinition>

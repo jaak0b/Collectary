@@ -12,6 +12,8 @@ public partial class TextFieldEditorViewModel : FieldEditorViewModelBase
     [ObservableProperty]
     public partial string? Text { get; set; }
 
+    public int MaxLength => _definition.MaxLength ?? 0;
+
     public TextFieldEditorViewModel(TextFieldDefinition definition, TextFieldValue value)
     {
         _definition = definition;

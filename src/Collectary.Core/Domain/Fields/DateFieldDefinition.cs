@@ -5,8 +5,6 @@ namespace Collectary.Core.Domain.Fields;
 [FieldCatalog(6, FieldCategory.TextAndNumbers)]
 public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplayable
 {
-    public DateTime? Min { get; set; }
-    public DateTime? Max { get; set; }
     public bool ShowInList { get; set; }
 }
 

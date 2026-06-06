@@ -9,6 +9,8 @@
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
         <controls:SafeNumericUpDown Value="{Binding Number}"
+                       Minimum="{Binding Minimum}"
+                       Maximum="{Binding Maximum}"
                        FormatString="0"
                        Increment="1"
                        HorizontalAlignment="Left"

@@ -90,7 +90,13 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     public bool IsList => _definition is ListFieldDefinition;
     public bool IsCurrency => _definition is CurrencyFieldDefinition;
     public bool IsRating => _definition is RatingFieldDefinition;
-    public bool HasTypeSettings => IsCurrency || IsColor || IsRating || IsPicture || HasChoices || IsList;
+    public bool IsText => _definition is TextFieldDefinition;
+    public bool IsInteger => _definition is IntegerFieldDefinition;
+    public bool IsDecimal => _definition is DecimalFieldDefinition;
+    public bool IsBool => _definition is BoolFieldDefinition;
+    public bool HasTypeSettings =>
+        IsCurrency || IsColor || IsRating || IsPicture || HasChoices || IsList
+        || IsText || IsInteger || IsDecimal || IsBool;
     public bool IsGridInline => IsList && InlineStyle == ListInlineStyle.Grid;
     public IReadOnlyList<ColorFormat> ColorFormats { get; } = Enum.GetValues<ColorFormat>();
     public IReadOnlyList<ListInlineStyle> InlineStyles { get; } = Enum.GetValues<ListInlineStyle>();
@@ -147,6 +153,21 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
     [ObservableProperty]
     public partial int MaxStars { get; set; } = 5;
 
+    [ObservableProperty]
+    public partial int? MaxLength { get; set; }
+
+    [ObservableProperty]
+    public partial int? Min { get; set; }
+
+    [ObservableProperty]
+    public partial int? Max { get; set; }
+
+    [ObservableProperty]
+    public partial int DecimalPlaces { get; set; } = 2;
+
+    [ObservableProperty]
+    public partial bool ThreeState { get; set; }
+
     public FieldDefinitionRowViewModel(
         FieldDefinition definition,
         bool isSharedField = false)
@@ -166,6 +187,11 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
         ColumnSpan = definition.ColumnSpan > 1 ? definition.ColumnSpan : definition.DefaultColumnSpan;
         MaxStars = (_definition as RatingFieldDefinition)?.MaxStars ?? 5;
         ColumnCount = (_definition as ListFieldDefinition)?.ColumnCount ?? 1;
+        MaxLength = (_definition as TextFieldDefinition)?.MaxLength;
+        Min = (_definition as IntegerFieldDefinition)?.Min;
+        Max = (_definition as IntegerFieldDefinition)?.Max;
+        DecimalPlaces = (_definition as DecimalFieldDefinition)?.DecimalPlaces ?? 2;
+        ThreeState = (_definition as BoolFieldDefinition)?.ThreeState ?? false;
 
         SubFieldRows.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SubFieldCount));
         AvailableGroups.CollectionChanged += (_, _) =>

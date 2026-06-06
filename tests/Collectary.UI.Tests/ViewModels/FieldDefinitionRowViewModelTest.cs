@@ -558,4 +558,65 @@ public class FieldDefinitionRowViewModelTest
 
         Assert.That(result.Groups.Count, Is.EqualTo(1));
     }
+
+    [Test]
+    public void Constructor_LoadsMaxLengthFromTextDefinition()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition { MaxLength = 64 });
+        Assert.That(sut.MaxLength, Is.EqualTo(64));
+    }
+
+    [Test]
+    public void Constructor_LoadsMinMaxFromIntegerDefinition()
+    {
+        var sut = new FieldDefinitionRowViewModel(new IntegerFieldDefinition { Min = 2, Max = 9 });
+        Assert.That(sut.Min, Is.EqualTo(2));
+        Assert.That(sut.Max, Is.EqualTo(9));
+    }
+
+    [Test]
+    public void Constructor_LoadsDecimalPlacesFromDecimalDefinition()
+    {
+        var sut = new FieldDefinitionRowViewModel(new DecimalFieldDefinition { DecimalPlaces = 4 });
+        Assert.That(sut.DecimalPlaces, Is.EqualTo(4));
+    }
+
+    [Test]
+    public void Constructor_LoadsThreeStateFromBoolDefinition()
+    {
+        var sut = new FieldDefinitionRowViewModel(new BoolFieldDefinition { ThreeState = true });
+        Assert.That(sut.ThreeState, Is.True);
+    }
+
+    [Test]
+    public void HasTypeSettings_TrueForText() =>
+        Assert.That(new FieldDefinitionRowViewModel(new TextFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForInteger() =>
+        Assert.That(new FieldDefinitionRowViewModel(new IntegerFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForDecimal() =>
+        Assert.That(new FieldDefinitionRowViewModel(new DecimalFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void HasTypeSettings_TrueForBool() =>
+        Assert.That(new FieldDefinitionRowViewModel(new BoolFieldDefinition()).HasTypeSettings, Is.True);
+
+    [Test]
+    public void BuildDefinition_Text_PreservesMaxLength()
+    {
+        var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition()) { MaxLength = 25 };
+        var result = (TextFieldDefinition)_mapper.ToDefinition(sut);
+        Assert.That(result.MaxLength, Is.EqualTo(25));
+    }
+
+    [Test]
+    public void BuildDefinition_Bool_PreservesThreeState()
+    {
+        var sut = new FieldDefinitionRowViewModel(new BoolFieldDefinition()) { ThreeState = true };
+        var result = (BoolFieldDefinition)_mapper.ToDefinition(sut);
+        Assert.That(result.ThreeState, Is.True);
+    }
 }

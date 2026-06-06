@@ -63,6 +63,26 @@ public class PresetRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task GetByIdAsync_RoundTripsFieldTypeConfig()
+    {
+        var preset = MakePreset();
+        preset.Fields.Add(new TextFieldDefinition { Label = "Notes", MaxLength = 64, PresetId = preset.Id });
+        preset.Fields.Add(new IntegerFieldDefinition { Label = "Count", Min = 1, Max = 99, PresetId = preset.Id });
+        preset.Fields.Add(new DecimalFieldDefinition { Label = "Score", DecimalPlaces = 4, PresetId = preset.Id });
+        preset.Fields.Add(new BoolFieldDefinition { Label = "Owned", ThreeState = true, PresetId = preset.Id });
+        await _sut.AddAsync(preset);
+
+        var loaded = await _sut.GetByIdAsync(preset.Id);
+
+        Assert.That(loaded!.Fields.OfType<TextFieldDefinition>().Single().MaxLength, Is.EqualTo(64));
+        var integer = loaded.Fields.OfType<IntegerFieldDefinition>().Single();
+        Assert.That(integer.Min, Is.EqualTo(1));
+        Assert.That(integer.Max, Is.EqualTo(99));
+        Assert.That(loaded.Fields.OfType<DecimalFieldDefinition>().Single().DecimalPlaces, Is.EqualTo(4));
+        Assert.That(loaded.Fields.OfType<BoolFieldDefinition>().Single().ThreeState, Is.True);
+    }
+
+    [Test]
     public async Task GetByIdAsync_IncludesSharedFieldRefs()
     {
         var sysFieldRepo = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());

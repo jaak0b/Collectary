@@ -7,6 +7,11 @@ public class DecimalFieldDefinition : FieldDefinition<DecimalFieldValue>, IListD
 {
     public int DecimalPlaces { get; set; } = 2;
     public bool ShowInList { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is DecimalFieldDefinition src) DecimalPlaces = src.DecimalPlaces;
+    }
 }
 
 public class DecimalFieldValue : FieldValue<DecimalFieldDefinition>

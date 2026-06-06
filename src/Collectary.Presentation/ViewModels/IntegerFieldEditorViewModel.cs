@@ -12,6 +12,9 @@ public partial class IntegerFieldEditorViewModel : FieldEditorViewModelBase
     [ObservableProperty]
     public partial int? Number { get; set; }
 
+    public decimal Minimum => _definition.Min ?? int.MinValue;
+    public decimal Maximum => _definition.Max ?? int.MaxValue;
+
     public IntegerFieldEditorViewModel(IntegerFieldDefinition definition, IntegerFieldValue value)
     {
         _definition = definition;

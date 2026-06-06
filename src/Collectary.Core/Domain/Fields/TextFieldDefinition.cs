@@ -8,6 +8,11 @@ public class TextFieldDefinition : FieldDefinition<TextFieldValue>, IListDisplay
     public override int DefaultColumnSpan => 2;
     public int? MaxLength { get; set; }
     public bool ShowInList { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is TextFieldDefinition src) MaxLength = src.MaxLength;
+    }
 }
 
 public class TextFieldValue : FieldValue<TextFieldDefinition>

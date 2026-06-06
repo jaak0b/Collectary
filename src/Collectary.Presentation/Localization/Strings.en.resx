@@ -180,6 +180,13 @@
   <data name="SectionField" xml:space="preserve"><value>Field</value></data>
   <data name="SectionTypeSettings" xml:space="preserve"><value>Type settings</value></data>
   <data name="MaxStars" xml:space="preserve"><value>Max. stars</value></data>
+  <data name="MaxLength" xml:space="preserve"><value>Max. length</value></data>
+  <data name="MinValue" xml:space="preserve"><value>Minimum</value></data>
+  <data name="MaxValue" xml:space="preserve"><value>Maximum</value></data>
+  <data name="DecimalPlaces" xml:space="preserve"><value>Decimal places</value></data>
+  <data name="AllowUnanswered" xml:space="preserve"><value>Allow unanswered (Yes / No / blank)</value></data>
+  <data name="Bool_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Bool_No" xml:space="preserve"><value>No</value></data>
   <data name="GroupCollapsedByDefault" xml:space="preserve"><value>Collapsed by default</value></data>
   <data name="Ungrouped" xml:space="preserve"><value>— Ungrouped —</value></data>
   <data name="GroupShowFieldsInList" xml:space="preserve"><value>Show fields in list</value></data>

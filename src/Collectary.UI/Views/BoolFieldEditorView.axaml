@@ -9,6 +9,7 @@
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
         <CheckBox IsChecked="{Binding IsChecked}"
+                  IsThreeState="{Binding IsThreeState}"
                   VerticalAlignment="Top"/>
     </controls:FieldEditorScaffold>
 </UserControl>

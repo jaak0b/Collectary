@@ -97,9 +97,7 @@ public class UiModule : Module
                 .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(key);
 
         TextCell(nameof(TextFieldDefinition));
-        TextCell(nameof(BoolFieldDefinition));
         TextCell(nameof(IntegerFieldDefinition));
-        TextCell(nameof(DecimalFieldDefinition));
         TextCell(nameof(DateFieldDefinition));
         TextCell(nameof(RatingFieldDefinition));
         TextCell(nameof(UrlFieldDefinition));
@@ -143,6 +141,14 @@ public class UiModule : Module
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new TagsListCellViewModel(fv, fd))
             .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(TagsFieldDefinition));
+
+        builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
+                _ => (fv, fd) => new DecimalListCellViewModel(fv, fd))
+            .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(DecimalFieldDefinition));
+
+        builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
+                _ => (fv, fd) => new BoolListCellViewModel(fv, fd))
+            .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(BoolFieldDefinition));
     }
 
     private void RegisterColorEditors(ContainerBuilder builder)

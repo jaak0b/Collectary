@@ -12,6 +12,10 @@ public partial class DecimalFieldEditorViewModel : FieldEditorViewModelBase
     [ObservableProperty]
     public partial decimal? Number { get; set; }
 
+    public string FormatString => _definition.DecimalPlaces > 0
+        ? "0." + new string('0', _definition.DecimalPlaces)
+        : "0";
+
     public DecimalFieldEditorViewModel(DecimalFieldDefinition definition, DecimalFieldValue value)
     {
         _definition = definition;

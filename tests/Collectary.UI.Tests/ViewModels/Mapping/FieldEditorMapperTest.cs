@@ -69,6 +69,27 @@ public class FieldEditorMapperTest
     }
 
     [Test]
+    public void ToDefinition_CopiesNumericAndBoolConfig()
+    {
+        var text = (TextFieldDefinition)_mapper.ToDefinition(
+            new FieldDefinitionRowViewModel(new TextFieldDefinition()) { MaxLength = 80 });
+        Assert.That(text.MaxLength, Is.EqualTo(80));
+
+        var integer = (IntegerFieldDefinition)_mapper.ToDefinition(
+            new FieldDefinitionRowViewModel(new IntegerFieldDefinition()) { Min = -5, Max = 50 });
+        Assert.That(integer.Min, Is.EqualTo(-5));
+        Assert.That(integer.Max, Is.EqualTo(50));
+
+        var dec = (DecimalFieldDefinition)_mapper.ToDefinition(
+            new FieldDefinitionRowViewModel(new DecimalFieldDefinition()) { DecimalPlaces = 4 });
+        Assert.That(dec.DecimalPlaces, Is.EqualTo(4));
+
+        var boolean = (BoolFieldDefinition)_mapper.ToDefinition(
+            new FieldDefinitionRowViewModel(new BoolFieldDefinition()) { ThreeState = true });
+        Assert.That(boolean.ThreeState, Is.True);
+    }
+
+    [Test]
     public void ToDefinition_List_StampsParentIdAndPreservesSubFieldOrder()
     {
         var sub1 = new TextFieldDefinition { Label = "S1", DisplayOrder = 0 };

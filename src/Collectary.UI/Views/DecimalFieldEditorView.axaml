@@ -9,7 +9,7 @@
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
         <controls:SafeNumericUpDown Value="{Binding Number}"
-                       FormatString="0.##"
+                       FormatString="{Binding FormatString}"
                        Increment="0.1"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top"

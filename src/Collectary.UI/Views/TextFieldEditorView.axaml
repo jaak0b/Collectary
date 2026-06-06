@@ -9,6 +9,7 @@
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
         <TextBox Text="{Binding Text}"
+                 MaxLength="{Binding MaxLength}"
                  PlaceholderText="{Binding Definition.Label}"
                  VerticalAlignment="Top"/>
     </controls:FieldEditorScaffold>

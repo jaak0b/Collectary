@@ -10,20 +10,22 @@ public partial class BoolFieldEditorViewModel : FieldEditorViewModelBase
     private readonly BoolFieldValue _value;
 
     [ObservableProperty]
-    public partial bool IsChecked { get; set; }
+    public partial bool? IsChecked { get; set; }
+
+    public bool IsThreeState => _definition.ThreeState;
 
     public BoolFieldEditorViewModel(BoolFieldDefinition definition, BoolFieldValue value)
     {
         _definition = definition;
         _value = value;
-        IsChecked = value.Value ?? false;
+        IsChecked = definition.ThreeState ? value.Value : value.Value ?? false;
     }
 
     public override FieldDefinition Definition => _definition;
 
     public override FieldValue GetCurrentValue()
     {
-        _value.Value = IsChecked;
+        _value.Value = _definition.ThreeState ? IsChecked : IsChecked ?? false;
         return _value;
     }
 }

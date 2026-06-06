@@ -53,4 +53,20 @@ public class TextFieldDefinitionTest
         Assert.That(def.GetOrCreateEmptyValue(existing), Is.SameAs(existing));
         Assert.Throws<InvalidOperationException>(() => def.GetOrCreateEmptyValue(new BoolFieldValue()));
     }
+
+    [Test]
+    public void ApplyTypeSpecificProperties_CopiesMaxLength()
+    {
+        var target = new TextFieldDefinition { MaxLength = null };
+        target.ApplyTypeSpecificProperties(new TextFieldDefinition { MaxLength = 50 });
+        Assert.That(target.MaxLength, Is.EqualTo(50));
+    }
+
+    [Test]
+    public void ApplyTypeSpecificProperties_IgnoresForeignType()
+    {
+        var target = new TextFieldDefinition { MaxLength = 12 };
+        target.ApplyTypeSpecificProperties(new IntegerFieldDefinition());
+        Assert.That(target.MaxLength, Is.EqualTo(12));
+    }
 }

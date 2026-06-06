@@ -13,7 +13,7 @@ kind of information you're storing.
 ## Numbers
 
 - **Integer** — a whole number: a quantity, a year, a count.
-- **Decimal** — a number with fractions.
+- **Decimal** — a number with fractions, shown to as many decimal places as you choose.
 - **Percentage** — 0–100, shown with a `%`.
 - **Currency** — an amount plus a currency symbol.
 - **Rating** — a row of stars.
@@ -34,7 +34,9 @@ kind of information you're storing.
 
 - **Single Choice** — a dropdown, pick one.
 - **Multi Choice** — checkboxes, pick any number.
-- **Bool** — a yes/no toggle.
+- **Bool** — a yes/no toggle. By default it's a plain checkbox (ticked means yes, unticked means no).
+  Turn on **Allow unanswered** if you'd rather have three states — yes, no, or left blank — so an
+  item you haven't decided on yet stays empty instead of silently counting as "no".
 
 ## Links and contact
 
@@ -70,6 +72,22 @@ kind of information you're storing.
 - **Linked Item** — points one item at another (a minifig at its set, a lens at its camera body).
 - **Display Name** — every collection has exactly one. It points at the field used to label each
   item in lists. You set it when designing the collection.
+
+## Type settings
+
+Some types carry extra settings you adjust when you add or edit the field, under **Type settings** in
+the field panel:
+
+- **Text** — set a **maximum length** to stop entries running on past a limit you choose. Leave it
+  blank for no limit.
+- **Integer** — set a **minimum** and/or **maximum** so the editor won't accept values outside the
+  range. Leave either blank to leave that end open.
+- **Decimal** — choose how many **decimal places** to show, both while editing and in lists.
+- **Bool** — choose between a plain yes/no checkbox and the three-state **Allow unanswered** mode.
+- **Rating** — pick how many **stars** the scale runs to.
+- **Currency** — set the **symbol** shown beside the amount.
+- **Color** — pick the format (Hex, RGB, ARGB, CMYK).
+- **Image** — set the display size and how it scales.
 
 !!! tip "Missing a type you need?"
     Adding a new field type only touches that type's own files — see
