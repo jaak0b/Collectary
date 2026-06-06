@@ -62,7 +62,11 @@ dotnet test "tests\Collectary.UI.Tests\..." --filter "FullyQualifiedName~MethodN
 dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 ```
 
-> DB: `%APPDATA%\Collectary\collectary.db` — migrations run on startup. Logs: `%APPDATA%\Collectary\logs\`.
+> **Data/log location depends on build config** (`AppDataPaths.Resolve()`, `#if DEBUG`). The `%APPDATA%` paths below are **RELEASE only**:
+> - **DEBUG** (what you run/debug locally): everything lives next to the build output — `src\Collectary.UI.Desktop\bin\Debug\net8.0\collectary-data\` → `collectary.db`, `images\`, `preferences.json`, and `logs\Collectary-<date>.log`. This isolates each git worktree. **When diagnosing a local run, read the log here — NOT `%APPDATA%`.** `%APPDATA%` may hold stale release logs that look current but aren't.
+> - **RELEASE:** `%APPDATA%\Collectary\` → `collectary.db`, `logs\`.
+>
+> Migrations run on startup. A startup crash with exit 0 and "no log" almost always means you looked in `%APPDATA%` instead of the DEBUG `collectary-data\logs\`; the `[FTL]` entry is there.
 
 ## Project Structure
 
