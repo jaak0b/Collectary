@@ -551,6 +551,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Logging in">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-login-is-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where login is required
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logging out
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1018,6 +1042,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Logging in">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-login-is-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where login is required
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logging out
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1080,8 +1128,24 @@ collections can be <a href="../sharing/">shared</a> between users.</p>
 <h2 id="logging-in">Logging in<a class="headerlink" href="#logging-in" title="Permanent link">&para;</a></h2>
 <p>On launch you log in with your username and password. The logged-in user determines which
 collections you see: your own, plus any that other users have shared with you.</p>
+<p>The sign-in screen is part of the app itself — it shows up right inside the main window rather than
+as a separate pop-up, so it works the same on desktop and on a phone. Once you're in, you stay on
+the same single screen the whole time.</p>
 <p>A failed login looks and takes the same whether the username exists or not, so the sign-in screen
 can't be used to fish for which usernames are registered.</p>
+<h3 id="where-login-is-required">Where login is required<a class="headerlink" href="#where-login-is-required" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Desktop</strong> asks you to log in by default. You can turn this off — see
+  <a href="../settings/">Settings</a>.</li>
+<li><strong>The mobile app</strong> always asks you to log in.</li>
+<li><strong>The web version</strong> asks you to log in too, but there's a <em>Require login on the web</em> toggle in
+  <a href="../settings/">Settings</a> if you'd rather skip it. The public demo on this site ships with that
+  switched off, so you can poke around without an account.</li>
+</ul>
+<h2 id="logging-out">Logging out<a class="headerlink" href="#logging-out" title="Permanent link">&para;</a></h2>
+<p>When login is in use, <strong>Settings</strong> has a <strong>Log out</strong> button. It drops you back to the sign-in
+screen without closing the app, so you (or someone else) can sign in as a different user straight
+away.</p>
 <h2 id="changing-your-password">Changing your password<a class="headerlink" href="#changing-your-password" title="Permanent link">&para;</a></h2>
 <p>You can change your password from your account at any time. You'll be asked for your <strong>current</strong>
 password first — changing it only succeeds if that matches, so someone who walks up to an unlocked
