@@ -43,6 +43,13 @@ public partial class PresetDetailView : UserControl
             (loc["Delete"], row => vm.DeleteItemCommand.Execute(row))
         });
 
+        ItemGrid.Columns.Add(GridColumnFactory.ActionColumn<ItemRowViewModel>(new (string, Action<ItemRowViewModel>)[]
+        {
+            (loc["Edit"], row => vm.EditItemCommand.Execute(row)),
+            (loc["Delete"], row => vm.DeleteItemCommand.Execute(row))
+        }));
+        ItemGrid.FrozenColumnCount = 1;
+
         var cellIndex = 0;
         foreach (var column in vm.ListColumns)
         {

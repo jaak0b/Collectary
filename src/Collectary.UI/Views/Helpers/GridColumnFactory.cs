@@ -47,13 +47,13 @@ public static class GridColumnFactory
         new DataGridTemplateColumn
         {
             Header = "",
-            Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+            Width = DataGridLength.Auto,
             CellTemplate = new FuncDataTemplate<TRow>((row, _) =>
             {
                 var panel = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Right,
+                    HorizontalAlignment = HorizontalAlignment.Center,
                     Margin = new Thickness(4, 2)
                 };
 

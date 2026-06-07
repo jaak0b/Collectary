@@ -28,6 +28,14 @@ public partial class ListFieldEditorView : UserControl
     {
         var loc = LocalizationService.Instance;
         EntryGrid.Columns.Clear();
+
+        EntryGrid.Columns.Add(GridColumnFactory.ActionColumn<ListEntryRowViewModel>(new (string, Action<ListEntryRowViewModel>)[]
+        {
+            (loc["Edit"], row => vm.EditEntryCommand.Execute(row)),
+            (loc["Delete"], row => vm.DeleteEntryCommand.Execute(row))
+        }));
+        EntryGrid.FrozenColumnCount = 1;
+
         EntryGrid.Columns.Add(new DataGridTextColumn
         {
             Header = loc["NumberSign"],
@@ -38,12 +46,6 @@ public partial class ListFieldEditorView : UserControl
         var cellIndex = 0;
         foreach (var field in vm.ColumnFields)
             EntryGrid.Columns.Add(GridColumnFactory.ValueColumn<ListEntryRowViewModel>(field.Label, cellIndex++));
-
-        EntryGrid.Columns.Add(GridColumnFactory.ActionColumn<ListEntryRowViewModel>(new (string, Action<ListEntryRowViewModel>)[]
-        {
-            (loc["Edit"], row => vm.EditEntryCommand.Execute(row)),
-            (loc["Delete"], row => vm.DeleteEntryCommand.Execute(row))
-        }));
 
         GridColumnFactory.AttachRowContextMenu<ListEntryRowViewModel>(EntryGrid, new (string, Action<ListEntryRowViewModel>)[]
         {
