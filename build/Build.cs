@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
@@ -30,6 +31,16 @@ class Build : NukeBuild
     AbsolutePath CoverageReportDirectory => RootDirectory / "TestResults" / "CoverageReport";
     AbsolutePath CoverageSettings => RootDirectory / "coverlet.runsettings";
     AbsolutePath TestSettings => RootDirectory / "tests.runsettings";
+    AbsolutePath DesktopProject => RootDirectory / "src" / "Collectary.UI.Desktop" / "Collectary.UI.Desktop.csproj";
+    AbsolutePath AndroidProject => RootDirectory / "src" / "Collectary.UI.Android" / "Collectary.UI.Android.csproj";
+
+    IReadOnlyList<CloudCredential> RequiredCredentials =>
+    [
+        new("COLLECTARY_ONEDRIVE_CLIENT_ID", "OneDrive (Azure Entra) public client id"),
+        new("COLLECTARY_ANDROID_SIGNATURE_HASH", "Android OneDrive redirect signature hash"),
+        new("COLLECTARY_GOOGLE_CLIENT_ID", "Google Drive OAuth client id (Windows desktop)"),
+        new("COLLECTARY_GOOGLE_CLIENT_SECRET", "Google Drive OAuth client secret (Windows desktop)")
+    ];
 
     string[] TestProjects =>
     [
@@ -157,6 +168,112 @@ class Build : NukeBuild
             }
         });
 
+    Target CheckCredentials => _ => _
+        .Executes(() =>
+        {
+            var results = RequiredCredentials
+                .Select(c => (c.EnvVariable, c.Purpose,
+                    Present: !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(c.EnvVariable))))
+                .ToList();
+
+            foreach (var r in results)
+                Log.Information("{Status}  {Var} — {Purpose}", r.Present ? "ok     " : "MISSING", r.EnvVariable, r.Purpose);
+
+            var missing = results.Where(r => !r.Present).Select(r => r.EnvVariable).ToList();
+            Assert.True(missing.Count == 0,
+                $"Missing cloud credentials: {string.Join(", ", missing)}. Set them as build-environment "
+                + "variables (system/user env, or Rider → Settings → Build, Execution, Deployment → Toolset and "
+                + "Build → the environment NUKE runs in). A Rider run configuration's env vars are not visible to "
+                + "the build, and are never delivered to the Android device.");
+        });
+
+    Target SetCredentials => _ => _
+        .Executes(() =>
+        {
+            Assert.True(EnvironmentInfo.IsWin,
+                "SetCredentials persists to the per-user Windows environment (HKCU), so it only runs on Windows.");
+            Assert.True(!Console.IsInputRedirected,
+                "SetCredentials prompts interactively — run it directly in a terminal, not through a redirected or CI context.");
+
+            foreach (var credential in RequiredCredentials)
+            {
+                var value = PromptForCredential(credential);
+                Environment.SetEnvironmentVariable(credential.EnvVariable, value, EnvironmentVariableTarget.User);
+                Environment.SetEnvironmentVariable(credential.EnvVariable, value);
+                Log.Information("Persisted {Var} for the current user", credential.EnvVariable);
+            }
+
+            Log.Information("Persisted {Count} credential(s). Restart any running terminals/IDEs to pick them up.",
+                RequiredCredentials.Count);
+        });
+
+    string PromptForCredential(CloudCredential credential)
+    {
+        while (true)
+        {
+            Console.Write($"{credential.EnvVariable} ({credential.Purpose}): ");
+            var value = ReadHiddenLine().Trim();
+            Console.WriteLine();
+            if (value.Length > 0) return value;
+            Console.WriteLine("  Nothing entered — a paste may not have worked. Please try again.");
+        }
+    }
+
+    string ReadHiddenLine()
+    {
+        var builder = new StringBuilder();
+        while (true)
+        {
+            var key = Console.ReadKey(intercept: true);
+            if (key.Key == ConsoleKey.Enter) return builder.ToString();
+            if (key.Key == ConsoleKey.Backspace)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Length--;
+                    Console.Write("\b \b");
+                }
+                continue;
+            }
+            if (char.IsControl(key.KeyChar)) continue;
+            builder.Append(key.KeyChar);
+            Console.Write('*');
+        }
+    }
+
+    Target RunDesktop => _ => _
+        .DependsOn(Compile, CheckCredentials)
+        .Executes(() =>
+        {
+            Assert.True(EnvironmentInfo.IsWin, "RunDesktop targets the Windows desktop head.");
+            DotNetRun(s => s
+                .SetProjectFile(DesktopProject)
+                .SetConfiguration(Configuration)
+                .EnableNoRestore());
+        });
+
+    Target DeployAndroid => _ => _
+        .DependsOn(CheckCredentials)
+        .Executes(() =>
+        {
+            DotNet($"build \"{AndroidProject}\" --configuration {Configuration} -t:Install",
+                workingDirectory: RootDirectory);
+        });
+
+    Target BuildApk => _ => _
+        .DependsOn(CheckCredentials)
+        .Executes(() =>
+        {
+            DotNetPublish(s => s
+                .SetProject(AndroidProject)
+                .SetConfiguration(Configuration));
+
+            var apks = AndroidProject.Parent
+                .GlobFiles($"bin/{Configuration}/**/*-Signed.apk", $"bin/{Configuration}/**/*.apk");
+            foreach (var apk in apks.Distinct())
+                Log.Information("APK: {Apk}", apk);
+        });
+
     IReadOnlyList<string> ChangedMutableSourceFiles()
     {
         IEnumerable<string> Lines(string arguments) =>
@@ -186,4 +303,6 @@ class Build : NukeBuild
         || path.EndsWith("/ThemeService.cs", StringComparison.OrdinalIgnoreCase)
         || path.EndsWith("/AppLogger.cs", StringComparison.OrdinalIgnoreCase)
         || path.EndsWith("/DialogService.cs", StringComparison.OrdinalIgnoreCase);
+
+    record CloudCredential(string EnvVariable, string Purpose);
 }

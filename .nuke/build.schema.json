@@ -24,10 +24,15 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
+        "BuildApk",
+        "CheckCredentials",
         "Compile",
         "Coverage",
+        "DeployAndroid",
         "Mutate",
         "Restore",
+        "RunDesktop",
+        "SetCredentials",
         "Test"
       ]
     },
