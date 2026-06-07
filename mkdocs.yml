@@ -82,6 +82,7 @@ nav:
   - Developer Guide:
       - dev-guide/architecture.md
       - dev-guide/building.md
+      - dev-guide/cloud-setup.md
       - dev-guide/dependency-injection.md
       - dev-guide/localization.md
       - dev-guide/adding-a-field-type.md

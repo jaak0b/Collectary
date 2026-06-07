@@ -97,6 +97,9 @@ DPAPI-encrypted token store, both of which need reworking before it can run on m
 
 ### Setting up OneDrive on Android
 
+For the full, step-by-step credential walkthrough (both OneDrive and Google Drive, from registration
+to running the app), see [Cloud Sync Setup](cloud-setup.md). The short version, Android-specific:
+
 Two one-time steps outside the code, because they depend on your signing certificate and app
 registration:
 

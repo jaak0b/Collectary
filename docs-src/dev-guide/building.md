@@ -41,6 +41,11 @@ up front:
 `RunDesktop`, `DeployAndroid`, and `BuildApk` all depend on `CheckCredentials`, so they refuse to
 run with placeholder cloud credentials rather than producing a build that silently can't sign in.
 
+The build project (`build/_build.csproj`) is in `Collectary.slnx` so you can edit it with full
+IntelliSense, but it's flagged not-to-build for the solution's configurations — a normal
+`dotnet build Collectary.slnx` (and the `Compile`/`Test`/`Coverage` targets) won't compile the
+orchestrator. You still run it through `.\build.ps1`.
+
 ## Cloud credentials
 
 OneDrive and Google Drive sign-in need real OAuth identifiers. They are **not** committed (the source
@@ -53,7 +58,10 @@ ships placeholders), and they are read from environment variables:
 | `COLLECTARY_GOOGLE_CLIENT_ID` | Google Drive (Windows desktop) |
 | `COLLECTARY_GOOGLE_CLIENT_SECRET` | Google Drive (Windows desktop) |
 
-`CheckCredentials` reports each one as `ok` or `MISSING` and throws if any is absent.
+`CheckCredentials` reports each one as `ok` or `MISSING` and throws if any is absent. It looks at the
+process, user, and machine scopes, so a value persisted by `SetCredentials` is found right away — and
+it copies what it finds into the running build so the targets that depend on it (`RunDesktop`,
+`DeployAndroid`) and the processes they launch inherit it, no shell restart required.
 
 `SetCredentials` is interactive. Run it in a terminal and it prompts for each credential in turn:
 
@@ -67,7 +75,9 @@ ships placeholders), and they are read from environment variables:
 - Each value is persisted as a **per-user** environment variable (Windows `HKCU\Environment`) —
   permanent across reboots, scoped to your account, never machine-wide.
 
-Restart any running terminals/IDEs afterwards to pick up the new values.
+The NUKE targets pick the values up immediately (see `CheckCredentials` above). Other
+already-running processes — a separate IDE, or the desktop `.exe` launched by hand — only see them
+after you restart them, because Windows hands each process its environment at launch.
 
 !!! warning "Set them in the build environment, not just a run configuration"
     These must be visible to the **build process**. A Rider *run* configuration's environment
