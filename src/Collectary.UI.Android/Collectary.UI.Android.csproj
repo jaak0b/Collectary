@@ -19,11 +19,25 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Android" />
+    <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
     <PackageReference Include="Xamarin.AndroidX.Camera.Core" />
     <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" />
     <PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" />
+  </ItemGroup>
+
+  <!-- The phone can't read the build machine's environment, so the public OneDrive client id and
+       signing-certificate signature hash are compiled into the assembly from build env variables. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CollectaryOneDriveClientId</_Parameter1>
+      <_Parameter2>$(COLLECTARY_ONEDRIVE_CLIENT_ID)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CollectaryAndroidSignatureHash</_Parameter1>
+      <_Parameter2>$(COLLECTARY_ANDROID_SIGNATURE_HASH)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

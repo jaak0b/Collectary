@@ -39,9 +39,10 @@ namespace Collectary.UI.Android
             if (builder.Instance is not global::Collectary.UI.App app) return;
 
             var cacheDirectory = AppDataPaths.Root;
+            var androidConfig = new AndroidCloudConfig();
             var oneDriveMsalOptions = new AndroidMsalPlatformOptionsFactory(
                 AndroidCloudConfig.PackageName,
-                new AndroidCloudConfig().SignatureHash,
+                androidConfig.SignatureHash,
                 () => CurrentActivity).Create();
 
             app.PlatformModules = new IModule[]
@@ -50,7 +51,8 @@ namespace Collectary.UI.Android
                     cacheDirectory,
                     oneDriveMsalOptions,
                     () => AppPreferences.Load().OneDriveRootFolderId,
-                    () => AppPreferences.Load().GoogleDriveRootFolderId),
+                    () => AppPreferences.Load().GoogleDriveRootFolderId,
+                    androidConfig.OneDriveClientId),
                 new Audio.AndroidAudioModule(),
                 new Camera.AndroidCameraModule(),
                 new Permissions.AndroidPermissionsModule(),

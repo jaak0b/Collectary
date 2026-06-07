@@ -6,20 +6,17 @@
 	<uses-feature android:name="android.hardware.camera.any" android:required="false" />
 	<application android:label="Collectary" android:icon="@drawable/Icon">
 		<!--
-			Catches the OneDrive MSAL sign-in redirect (msauth://com.collectary.app/<signature-hash>)
-			and returns control to the app from the Chrome Custom Tab. The android:path is the raw
-			(URL-decoded) signature hash with a leading slash and MUST match the hash registered for
-			the Android platform in the Azure app registration. Replace the placeholder with the real
-			signing-certificate hash before shipping.
+			Catches the OneDrive MSAL sign-in redirect and returns control to the app from the Chrome
+			Custom Tab. Matching on scheme + host only (no android:path) catches the redirect whatever
+			signature hash it carries, so one manifest works for the debug, release and Play signing
+			keys; the hash that must match Azure is enforced by MSAL against the redirect URI itself.
 		-->
 		<activity android:name="microsoft.identity.client.BrowserTabActivity" android:exported="true">
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="msauth"
-				      android:host="com.collectary.app"
-				      android:path="/&lt;ANDROID_SIGNATURE_HASH&gt;" />
+				<data android:scheme="msauth" android:host="com.collectary.app" />
 			</intent-filter>
 		</activity>
 	</application>

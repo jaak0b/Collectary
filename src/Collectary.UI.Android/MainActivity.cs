@@ -1,4 +1,5 @@
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Avalonia;
@@ -6,6 +7,7 @@ using Avalonia.Android;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Collectary.Presentation.ViewModels;
+using Microsoft.Identity.Client;
 
 namespace Collectary.UI.Android;
 
@@ -33,6 +35,15 @@ public class MainActivity : AvaloniaMainActivity
         base.OnResume();
         if (this.Application is Application app)
             app.CurrentActivity = this;
+    }
+
+    // When MSAL's sign-in browser returns, its activity finishes with a result that has to be handed
+    // back to MSAL to complete the interactive token request; without this the sign-in silently ends
+    // as cancelled and the app stays disconnected.
+    protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
+    {
+        base.OnActivityResult(requestCode, resultCode, data);
+        AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
     }
 
     // The phone's back gesture must not drop the user out of an in-progress edit. We route it through

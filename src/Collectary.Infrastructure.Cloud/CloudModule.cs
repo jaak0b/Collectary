@@ -24,18 +24,21 @@ public class CloudModule : Module
     private readonly MsalPlatformOptions _oneDriveMsalOptions;
     private readonly Func<string?> _oneDriveRootFolderId;
     private readonly Func<string?> _googleDriveRootFolderId;
+    private readonly string? _oneDriveClientId;
     private readonly ClientIdResolver _clientIds = new();
 
     public CloudModule(
         string tokenCacheDirectory,
         MsalPlatformOptions oneDriveMsalOptions,
         Func<string?> oneDriveRootFolderId,
-        Func<string?> googleDriveRootFolderId)
+        Func<string?> googleDriveRootFolderId,
+        string? oneDriveClientId = null)
     {
         _tokenCacheDirectory = tokenCacheDirectory;
         _oneDriveMsalOptions = oneDriveMsalOptions;
         _oneDriveRootFolderId = oneDriveRootFolderId;
         _googleDriveRootFolderId = googleDriveRootFolderId;
+        _oneDriveClientId = oneDriveClientId;
     }
 
     protected override void Load(ContainerBuilder builder)
@@ -50,7 +53,9 @@ public class CloudModule : Module
 
     private void RegisterOneDrive(ContainerBuilder builder)
     {
-        var clientId = _clientIds.Resolve("COLLECTARY_ONEDRIVE_CLIENT_ID", CloudClientIds.OneDrive);
+        var clientId = string.IsNullOrWhiteSpace(_oneDriveClientId)
+            ? _clientIds.Resolve("COLLECTARY_ONEDRIVE_CLIENT_ID", CloudClientIds.OneDrive)
+            : _oneDriveClientId;
 
         builder.Register(_ => new MsalAuthClient(clientId, _oneDriveMsalOptions))
             .Keyed<ICloudAuthClient>(CloudProvider.OneDrive)
