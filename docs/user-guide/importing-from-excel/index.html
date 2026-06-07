@@ -748,6 +748,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#when-a-value-doesnt-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      When a value doesn't fit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-cant-be-imported" class="md-nav__link">
     <span class="md-ellipsis">
       What can't be imported
@@ -1139,6 +1148,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#when-a-value-doesnt-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      When a value doesn't fit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-cant-be-imported" class="md-nav__link">
     <span class="md-ellipsis">
       What can't be imported
@@ -1233,8 +1251,17 @@ columns, done.</p>
 <li><strong>Quoted fields are understood</strong>, including values that contain the delimiter or span multiple lines
   (e.g. <code>"Dune, the novel"</code>), and doubled quotes (<code>""</code>) inside a quoted value.</li>
 <li>A CSV has <strong>no built-in number or date formatting</strong>, so the <strong>Source number &amp; date format</strong> picker on
-  the preview step is your friend — set it to match the machine the file came from.</li>
+  the preview step is your friend — set it to match the machine the file came from. Values that are
+  already written in the universal form — a plain number like <code>1234.56</code> or an ISO date like <code>2024-12-31</code> —
+  are recognised on their own and read the same way no matter what that picker is set to, so a file
+  exported by a program rather than a person just works.</li>
 </ul>
+<h2 id="when-a-value-doesnt-fit">When a value doesn't fit<a class="headerlink" href="#when-a-value-doesnt-fit" title="Permanent link">&para;</a></h2>
+<p>The import never invents data. If a cell can't be read as the field you mapped it to — a word in a
+number column, a value that isn't one of a choice field's options, a date range that ends before it
+starts — that cell is left out and the row is listed on the final <strong>Check the data</strong> summary, so you
+always know exactly what was skipped and why. Mapping two spreadsheet columns onto the same field keeps
+the first and ignores the rest, so a collection never ends up with two conflicting values for one field.</p>
 <h2 id="what-cant-be-imported">What can't be imported<a class="headerlink" href="#what-cant-be-imported" title="Permanent link">&para;</a></h2>
 <p>Anything that isn't plain text in a cell: images, file attachments, audio, links to other items, and
 nested lists. These fields stay in your collection — they're just not filled in by the import, and you
