@@ -18,7 +18,6 @@ public sealed class DesktopLiveCamera : ILiveCamera
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly object _devicesLock = new();
-    private IReadOnlyList<CameraDevice>? _devices;
 
     private VideoCapture? _capture;
     private CancellationTokenSource? _loopCts;
@@ -27,7 +26,7 @@ public sealed class DesktopLiveCamera : ILiveCamera
     public IReadOnlyList<CameraDevice> GetDevices()
     {
         lock (_devicesLock)
-            return _devices ??= ProbeDevices();
+            return ProbeDevices();
     }
 
     private IReadOnlyList<CameraDevice> ProbeDevices()

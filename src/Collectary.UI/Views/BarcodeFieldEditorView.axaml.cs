@@ -16,6 +16,6 @@ public partial class BarcodeFieldEditorView : UserControl
     private void OnScanFlyoutOpened(object? sender, EventArgs e)
     {
         if (DataContext is BarcodeFieldEditorViewModel vm)
-            vm.EnsureCameraAvailabilityCommand.Execute(null);
+            vm.RefreshCameraAvailabilityCommand.Execute(null);
     }
 }
