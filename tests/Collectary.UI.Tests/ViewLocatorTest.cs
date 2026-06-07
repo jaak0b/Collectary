@@ -1,4 +1,6 @@
+using System.Linq;
 using Collectary.Presentation.ViewModels;
+using Collectary.Presentation.ViewModels.ListCells;
 using Collectary.Presentation.ViewModels.SharedFields;
 
 namespace Collectary.UI.Tests;
@@ -55,6 +57,25 @@ public class ViewLocatorTest
         Assert.That(name, Is.EqualTo(expectedView));
         Assert.That(_uiAssembly.GetType(name), Is.Not.Null,
             "A dialog ViewModel must map to an existing View type for the overlay host to resolve it");
+    }
+
+    [Test]
+    public void EveryListCellViewModel_MapsToResolvableView()
+    {
+        var cellViewModels = typeof(ListCellViewModelBase).Assembly.GetTypes()
+            .Where(t => !t.IsAbstract && typeof(ListCellViewModelBase).IsAssignableFrom(t))
+            .ToList();
+
+        Assert.That(cellViewModels, Is.Not.Empty, "expected to discover the list-cell view models");
+        Assert.Multiple(() =>
+        {
+            foreach (var vm in cellViewModels)
+            {
+                var name = MapToViewTypeName(vm);
+                Assert.That(_uiAssembly.GetType(name), Is.Not.Null,
+                    $"List-cell ViewModel {vm.Name} must map to an existing View ({name}); otherwise the DataGrid shows 'Not Found' for an in-list column");
+            }
+        });
     }
 
     [Test]
