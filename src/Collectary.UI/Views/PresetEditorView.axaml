@@ -9,6 +9,15 @@
              x:Class="Collectary.UI.Views.PresetEditorView"
              x:DataType="vm:PresetEditorViewModel">
 
+    <UserControl.Styles>
+        <Style Selector="Border.dragging">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BoxShadow" Value="0 6 16 0 #50000000"/>
+            <Setter Property="ZIndex" Value="1"/>
+            <Setter Property="RenderTransform" Value="scale(1.01)"/>
+        </Style>
+    </UserControl.Styles>
+
     <Grid RowDefinitions="Auto,*,Auto" Margin="16">
 
         <!-- Header form — hidden when drilled into a sub-list or when narrow with a field selected -->
@@ -56,11 +65,11 @@
                         CornerRadius="4">
                     <ListBox ItemsSource="{Binding CurrentRows}"
                              SelectedItem="{Binding SelectedNode}"
-                             DragDrop.AllowDrop="True"
                              Background="Transparent"
                              x:Name="FieldListBox">
                         <ListBox.DataTemplates>
                             <DataTemplate DataType="vm:FieldDefinitionRowViewModel">
+                                <Border Background="Transparent" Classes.dragging="{Binding IsDragging}">
                                 <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
                                     <TextBlock Grid.Column="0"
                                                Text="{x:Static icons:IconGlyphs.ReOrderDotsVertical}" Classes="icon"
@@ -110,9 +119,11 @@
                                             Command="{Binding $parent[ListBox].((vm:PresetEditorViewModel)DataContext).RemoveFieldCommand}"
                                             CommandParameter="{Binding}"/>
                                 </Grid>
+                                </Border>
                             </DataTemplate>
 
                             <DataTemplate DataType="vm:FieldGroupRowViewModel">
+                                <Border Background="Transparent" Classes.dragging="{Binding IsDragging}">
                                 <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                                     <TextBlock Grid.Column="0"
                                                Text="{x:Static icons:IconGlyphs.ReOrderDotsVertical}" Classes="icon"
@@ -148,6 +159,7 @@
                                             Command="{Binding $parent[ListBox].((vm:PresetEditorViewModel)DataContext).RemoveFieldCommand}"
                                             CommandParameter="{Binding}"/>
                                 </Grid>
+                                </Border>
                             </DataTemplate>
                         </ListBox.DataTemplates>
                     </ListBox>

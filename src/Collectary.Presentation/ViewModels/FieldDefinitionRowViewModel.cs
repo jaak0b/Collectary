@@ -8,8 +8,11 @@ using Collectary.Presentation.Localization;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode
+public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, IDraggableRow
 {
+    [ObservableProperty]
+    public partial bool IsDragging { get; set; }
+
     private readonly FieldDefinition _definition;
     internal FieldDefinition Definition => _definition;
     public Guid Id => _definition.Id;

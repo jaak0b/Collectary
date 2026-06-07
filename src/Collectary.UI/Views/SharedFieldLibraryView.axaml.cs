@@ -11,15 +11,17 @@ namespace Collectary.UI.Views.SharedFields;
 public partial class SharedFieldLibraryView : UserControl
 {
     private readonly ResponsiveSplitLayout _layout;
-    private readonly ListReorderBehavior _reorder;
+    private readonly PointerReorderBehavior _reorder;
     private readonly AddFieldMenuBuilder _menuBuilder = new();
 
     public SharedFieldLibraryView()
     {
         InitializeComponent();
         _layout = new ResponsiveSplitLayout(SplitGrid, MasterPane, PaneSplitter, DetailPane);
-        _reorder = new ListReorderBehavior(FieldListBox,
-            (from, to) => _ = (DataContext as SharedFieldLibraryViewModel)?.ReorderAsync(from, to));
+        _reorder = new PointerReorderBehavior(FieldListBox,
+            (from, to) => (DataContext as SharedFieldLibraryViewModel)?.MoveField(from, to),
+            () => _ = (DataContext as SharedFieldLibraryViewModel)?.CommitReorderAsync(),
+            OnDragActive);
         DataContextChanged += OnDataContextChanged;
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
     }
@@ -48,6 +50,11 @@ public partial class SharedFieldLibraryView : UserControl
         items.Add(addGroup);
 
         ((MenuFlyout)AddFieldButton.Flyout!).ItemsSource = items;
+    }
+
+    private void OnDragActive(object? item, bool active)
+    {
+        if (item is IDraggableRow row) row.IsDragging = active;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

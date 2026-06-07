@@ -11,6 +11,20 @@ public class FieldGroupRowViewModelTest
     private readonly IFieldEditorMapper _mapper = new TestFieldEditorMapper().Create();
 
     [Test]
+    public void IsDragging_TogglesAndRaisesPropertyChanged()
+    {
+        var row = new FieldGroupRowViewModel("Specs");
+        Assert.That(((IDraggableRow)row).IsDragging, Is.False);
+        var raised = false;
+        row.PropertyChanged += (_, e) => raised |= e.PropertyName == nameof(FieldGroupRowViewModel.IsDragging);
+
+        ((IDraggableRow)row).IsDragging = true;
+
+        Assert.That(row.IsDragging, Is.True);
+        Assert.That(raised, Is.True);
+    }
+
+    [Test]
     public void NameConstructor_DefaultsToCardAndShowInList()
     {
         var row = new FieldGroupRowViewModel("Specs");

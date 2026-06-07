@@ -5,9 +5,12 @@ using Collectary.Core.Domain.Fields;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode
+public partial class FieldGroupRowViewModel : ViewModelBase, IEditorNode, IDraggableRow
 {
     public Guid Id { get; }
+
+    [ObservableProperty]
+    public partial bool IsDragging { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DisplayLabel))]

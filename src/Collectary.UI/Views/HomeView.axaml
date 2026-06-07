@@ -18,16 +18,22 @@
                            IsVisible="{Binding !Rows.Count}"/>
 
                 <ItemsControl x:Name="PresetItemsControl"
-                              ItemsSource="{Binding Rows}"
-                              DragDrop.AllowDrop="True">
+                              ItemsSource="{Binding Rows}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:PresetRowViewModel">
                             <Border BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="0,0,0,1"
-                                    Classes.selected="{Binding IsSelected}">
+                                    Classes.selected="{Binding IsSelected}"
+                                    Classes.dragging="{Binding IsDragging}">
                                 <Border.Styles>
                                     <Style Selector="Border.selected">
                                         <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
+                                    </Style>
+                                    <Style Selector="Border.dragging">
+                                        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                                        <Setter Property="BoxShadow" Value="0 6 16 0 #50000000"/>
+                                        <Setter Property="ZIndex" Value="1"/>
+                                        <Setter Property="RenderTransform" Value="scale(1.02)"/>
                                     </Style>
                                 </Border.Styles>
                                 <Border.ContextMenu>
@@ -46,7 +52,6 @@
                                                Cursor="SizeAll"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
-                                               Padding="0,12,10,12"
                                                FontSize="16"/>
                                 <Button Grid.Column="1"
                                         Command="{Binding NavigateCommand}"

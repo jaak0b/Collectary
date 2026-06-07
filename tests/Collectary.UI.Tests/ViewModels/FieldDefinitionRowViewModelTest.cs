@@ -15,6 +15,20 @@ public class FieldDefinitionRowViewModelTest
     public void ResetLanguage() => LocalizationService.Instance.Apply("en");
 
     [Test]
+    public void IsDragging_TogglesAndRaisesPropertyChanged()
+    {
+        var row = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "L" });
+        Assert.That(((IDraggableRow)row).IsDragging, Is.False);
+        var raised = false;
+        row.PropertyChanged += (_, e) => raised |= e.PropertyName == nameof(FieldDefinitionRowViewModel.IsDragging);
+
+        ((IDraggableRow)row).IsDragging = true;
+
+        Assert.That(row.IsDragging, Is.True);
+        Assert.That(raised, Is.True);
+    }
+
+    [Test]
     public void Constructor_LoadsLabelFromDefinition()
     {
         var def = new TextFieldDefinition { Label = "My Label" };

@@ -120,7 +120,11 @@ public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel, ISy
     public async Task ReorderAsync(int from, int to)
     {
         MoveField(from, to);
+        await CommitReorderAsync();
+    }
 
+    public async Task CommitReorderAsync()
+    {
         if (IsNested) return;
 
         try

@@ -4,13 +4,16 @@ using Collectary.Core.Domain;
 
 namespace Collectary.Presentation.ViewModels;
 
-public partial class PresetRowViewModel : ViewModelBase
+public partial class PresetRowViewModel : ViewModelBase, IDraggableRow
 {
     public Preset Preset { get; }
     public int ItemCount { get; }
 
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDragging { get; set; }
 
     public IRelayCommand NavigateCommand { get; }
     public IRelayCommand EditCommand { get; }

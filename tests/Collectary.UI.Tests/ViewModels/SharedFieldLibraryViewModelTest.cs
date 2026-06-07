@@ -271,4 +271,41 @@ public class SharedFieldLibraryViewModelTest
 
         A.CallTo(() => _useCase.ReorderAsync(A<IReadOnlyList<Guid>>._)).MustNotHaveHappened();
     }
+
+    [Test]
+    public async Task CommitReorderAsync_PersistsCurrentOrder()
+    {
+        var fieldA = MakeTrackedField("A");
+        var fieldB = MakeTrackedField("B");
+        var fieldC = MakeTrackedField("C");
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { fieldA, fieldB, fieldC });
+        await _sut.LoadAsync();
+
+        _sut.MoveField(0, 2);
+        await _sut.CommitReorderAsync();
+
+        A.CallTo(() => _useCase.ReorderAsync(
+            A<IReadOnlyList<Guid>>.That.Matches(ids =>
+                ids.Count == 3 && ids[2] == fieldA.Id)))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task CommitReorderAsync_WhenNested_DoesNotCallUseCase()
+    {
+        var listSf = new SharedField
+        {
+            Name = "L",
+            Definition = new ListFieldDefinition { Label = "L" }
+        };
+        listSf.Definition.SharedFieldId = listSf.Id;
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { listSf });
+        await _sut.LoadAsync();
+        _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
+        Fake.ClearRecordedCalls(_useCase);
+
+        await _sut.CommitReorderAsync();
+
+        A.CallTo(() => _useCase.ReorderAsync(A<IReadOnlyList<Guid>>._)).MustNotHaveHappened();
+    }
 }

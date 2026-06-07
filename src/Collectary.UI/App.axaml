@@ -108,6 +108,11 @@
         <Style Selector="TextBlock.icon">
             <Setter Property="FontFamily" Value="avares://Collectary.UI/Assets/Fonts/CollectaryIcons.ttf#CollectaryIcons"/>
         </Style>
+        <Style Selector="TextBlock.icon[Tag=DragHandle]">
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
         <Style Selector="Button.icon">
             <Setter Property="FontFamily" Value="avares://Collectary.UI/Assets/Fonts/CollectaryIcons.ttf#CollectaryIcons"/>
         </Style>

@@ -12,7 +12,7 @@ namespace Collectary.UI.Views;
 public partial class PresetEditorView : UserControl
 {
     private readonly ResponsiveSplitLayout _layout;
-    private readonly ListReorderBehavior _reorder;
+    private readonly PointerReorderBehavior _reorder;
     private readonly AddFieldMenuBuilder _menuBuilder = new();
 
     private ObservableCollection<SharedFieldRowViewModel>? _sharedFields;
@@ -21,8 +21,10 @@ public partial class PresetEditorView : UserControl
     {
         InitializeComponent();
         _layout = new ResponsiveSplitLayout(SplitGrid, MasterPane, PaneSplitter, DetailPane);
-        _reorder = new ListReorderBehavior(FieldListBox,
-            (from, to) => (DataContext as PresetEditorViewModel)?.MoveField(from, to));
+        _reorder = new PointerReorderBehavior(FieldListBox,
+            (from, to) => (DataContext as PresetEditorViewModel)?.MoveField(from, to),
+            () => { },
+            OnDragActive);
         DataContextChanged += OnDataContextChanged;
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
     }
@@ -80,6 +82,11 @@ public partial class PresetEditorView : UserControl
                     CommandParameter = row,
                 });
         return items;
+    }
+
+    private void OnDragActive(object? item, bool active)
+    {
+        if (item is IDraggableRow row) row.IsDragging = active;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
