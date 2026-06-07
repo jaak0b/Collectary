@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Ports;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 
@@ -76,6 +77,11 @@ public partial class AudioFieldEditorViewModel : FieldEditorViewModelBase
             ErrorMessage = null;
             if (!IsRecording)
             {
+                if (!await _context.RequestPermissionAsync(RuntimePermission.Microphone))
+                {
+                    ErrorMessage = LocalizationService.Instance["Audio_PermissionDenied"];
+                    return;
+                }
                 recorder.Start(_context.ResolveAudioInputDeviceId());
                 IsRecording = true;
                 return;

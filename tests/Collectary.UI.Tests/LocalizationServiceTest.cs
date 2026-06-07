@@ -71,6 +71,38 @@ public class LocalizationServiceTest
     }
 
     [Test]
+    public void BarcodeCameraStrings_AreLocalized_InEnglish()
+    {
+        LocalizationService.Instance.Apply("en");
+        Assert.Multiple(() =>
+        {
+            Assert.That(LocalizationService.Instance["Barcode_ScanFromFile"], Is.EqualTo("From file…"));
+            Assert.That(LocalizationService.Instance["Barcode_ScanFromCamera"], Is.EqualTo("From camera…"));
+            Assert.That(LocalizationService.Instance["Barcode_NoCameraAvailable"], Is.EqualTo("No camera available"));
+            Assert.That(LocalizationService.Instance["Barcode_CameraScanner"], Is.EqualTo("Camera scanner"));
+            Assert.That(LocalizationService.Instance["Barcode_CameraPermissionDenied"], Is.EqualTo("Camera access is needed to scan."));
+            Assert.That(LocalizationService.Instance["Barcode_CameraStartFailed"], Is.EqualTo("The camera couldn't be started."));
+            Assert.That(LocalizationService.Instance["Barcode_SwitchCamera"], Is.EqualTo("Switch camera"));
+        });
+    }
+
+    [Test]
+    public void BarcodeCameraStrings_AreLocalized_InGerman()
+    {
+        LocalizationService.Instance.Apply("de");
+        Assert.Multiple(() =>
+        {
+            Assert.That(LocalizationService.Instance["Barcode_ScanFromFile"], Is.EqualTo("Aus Datei…"));
+            Assert.That(LocalizationService.Instance["Barcode_ScanFromCamera"], Is.EqualTo("Mit Kamera…"));
+            Assert.That(LocalizationService.Instance["Barcode_NoCameraAvailable"], Is.EqualTo("Keine Kamera verfügbar"));
+            Assert.That(LocalizationService.Instance["Barcode_CameraScanner"], Is.EqualTo("Kamera-Scanner"));
+            Assert.That(LocalizationService.Instance["Barcode_CameraPermissionDenied"], Is.EqualTo("Kamerazugriff wird zum Scannen benötigt."));
+            Assert.That(LocalizationService.Instance["Barcode_CameraStartFailed"], Is.EqualTo("Die Kamera konnte nicht gestartet werden."));
+            Assert.That(LocalizationService.Instance["Barcode_SwitchCamera"], Is.EqualTo("Kamera wechseln"));
+        });
+    }
+
+    [Test]
     public void Apply_RaisesLanguageChangedAndPropertyChanged()
     {
         var languageChanged = false;

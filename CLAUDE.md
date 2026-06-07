@@ -16,7 +16,7 @@
    Full gate:
    1. **Full suite green.** Run the complete `.\build.ps1 --target Test` (not just the fixtures you touched) and paste the pass/fail totals. A single failure blocks everything.
    2. **Coverage ≥95% and not dropped.** Run `.\build.ps1 --target Coverage`, quote the exact merged line-coverage number. If it dropped versus the baseline — even while still ≥95% — that is a regression: add tests until it recovers, or state precisely why (e.g. pre-existing untested code in an unrelated assembly) with the measured baseline to prove it.
-   3. **Mutation testing run and surviving mutants addressed.** Run `.\build.ps1 --target Mutate`. Stop the running Desktop app first (`Get-Process Collectary.UI.Desktop | Stop-Process -Force`) — a live instance locks `Collectary.UI.dll` and fails Stryker's build. Quote the mutation score and review survivors in the code you changed; kill them with tests or justify each explicitly.
+   3. **Mutation testing — scoped to your local changes only, surviving mutants addressed. Running full Stryker is forbidden.** Stryker over the whole codebase takes far too long; never do it. Always run it scoped to your diff: `.\build.ps1 --target Mutate` `git diff`s against `HEAD` and mutates only those files, so it covers just the code you have changed since your last commit (your uncommitted working-tree changes). Run it **before you commit** — once your work is committed there is nothing left in the diff to mutate. Override the baseline only when you need a wider sweep (`.\build.ps1 --target Mutate --since <branch-or-commit>`). (`--since` is the git diff base, not Stryker's own `--since`, which LibGit2Sharp can't use in this relative-path worktree.) Stop the running Desktop app first (`Get-Process Collectary.UI.Desktop | Stop-Process -Force`) — a live instance locks `Collectary.UI.dll` and fails Stryker's build. Quote the mutation score and review survivors in the code you changed; kill them with tests or justify each explicitly.
    4. **Manual UI verification (for UI changes).** Ask the user to run the app with exact repro steps (see "Verifying UI Fixes"). Tests do not replace this; they are in addition to it.
 
    If any gate cannot be completed (e.g. a pre-existing failure you did not introduce), STOP and surface it to the user with the evidence — do not quietly proceed as if it passed.
@@ -39,7 +39,7 @@ A feature or fix is complete **only** when every box below is genuinely ticked, 
 - [ ] **All three layers present** (rule #4) — unit + integration + headless, or an explicit note on why a layer doesn't apply.
 - [ ] **Tests run, scaled to the change** (rule #5) — small localized change: relevant fixtures green, totals quoted, classification stated. Big/multi-project change: full suite green (`.\build.ps1 --target Test`), totals quoted.
 - [ ] **Coverage ≥95% and not dropped** (rule #5.2) — *big changes only*; exact number quoted; regressions explained with a measured baseline.
-- [ ] **Mutation run, survivors handled** (rule #5.3) — *big changes only*; Desktop app stopped first; score quoted; new survivors killed or justified.
+- [ ] **Mutation run scoped to local changes, survivors handled** (rule #5.3) — *big changes only*; run `.\build.ps1 --target Mutate` (diff vs `HEAD`, your uncommitted changes) **before** committing — never full Stryker; Desktop app stopped first; score quoted; new survivors killed or justified.
 - [ ] **Manual UI verification requested** (rule #5.4) — for any UI change, exact repro steps handed to the user.
 - [ ] **Docs updated** (rule #13).
 - [ ] **Localization complete** (rule #2) — every new key in both `Strings.en.resx` and `Strings.de.resx`.
@@ -57,7 +57,7 @@ dotnet build "src\Collectary.UI.Desktop\Collectary.UI.Desktop.csproj"
 
 .\build.ps1 --target Test      # all tests (default)
 .\build.ps1 --target Coverage  # coverage gate ≥95%
-.\build.ps1 --target Mutate    # mutation testing
+.\build.ps1 --target Mutate    # mutation testing — scoped to your uncommitted changes since HEAD (full runs forbidden)
 dotnet test "tests\Collectary.UI.Tests\..." --filter "FullyQualifiedName~MethodName"
 dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 ```

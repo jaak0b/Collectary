@@ -14,9 +14,20 @@
                      PlaceholderText="{Binding [Barcode_Placeholder], Source={x:Static loc:LocalizationService.Instance}}"
                      MinWidth="180"
                      VerticalAlignment="Top"/>
-            <Button Command="{Binding ScanCommand}"
+            <Button x:Name="ScanButton"
                     Content="{Binding [Barcode_Scan], Source={x:Static loc:LocalizationService.Instance}}"
-                    VerticalAlignment="Top"/>
+                    VerticalAlignment="Top">
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuItem Command="{Binding ScanFromFileCommand}"
+                                  Header="{Binding [Barcode_ScanFromFile], Source={x:Static loc:LocalizationService.Instance}}"/>
+                        <MenuItem Command="{Binding ScanFromCameraCommand}"
+                                  IsEnabled="{Binding CanScanFromCamera}"
+                                  Header="{Binding [Barcode_ScanFromCamera], Source={x:Static loc:LocalizationService.Instance}}"
+                                  ToolTip.Tip="{Binding CameraTooltip}"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
         </StackPanel>
     </controls:FieldEditorScaffold>
 </UserControl>

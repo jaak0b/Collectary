@@ -84,6 +84,7 @@ public class RoutingSyncBackendTest
             Assert.That(sut.ListAsync("items").Result, Is.Empty);
             Assert.That(sut.ListBlobKeysAsync("images").Result, Is.Empty);
             Assert.That(sut.ReadAsync("items", Guid.NewGuid()).Result, Is.Null);
+            Assert.That(sut.ReadAtRevisionAsync("items", Guid.NewGuid(), 1).Result, Is.Null);
             Assert.That(sut.ReadBlobAsync("images", "k").Result, Is.Null);
         });
 
@@ -112,6 +113,25 @@ public class RoutingSyncBackendTest
         _ = sut.IsAvailable;
         _ = sut.IsAvailable;
         Assert.That(oneDriveResolved, Is.EqualTo(1), "factory resolved once then cached");
+    }
+
+    [Test]
+    public async Task ReadAtRevision_RoutesToActiveProviderWithoutListing()
+    {
+        var sut = Build();
+        var id = Guid.NewGuid();
+        _active = CloudProvider.OneDrive;
+        await sut.WriteAsync("items", id, "od", 1);
+        var listsBefore = _oneDriveStore.ListFilesCalls;
+
+        var content = await sut.ReadAtRevisionAsync("items", id, 1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(content, Is.EqualTo("od"));
+            Assert.That(_oneDriveStore.ListFilesCalls - listsBefore, Is.EqualTo(0),
+                "routing must delegate to the provider's revision-addressed read, not fall through to its listing read");
+        });
     }
 
     [Test]

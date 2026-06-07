@@ -36,6 +36,13 @@ public class FileSystemSyncBackend : ISyncBackend
         return file is not null ? await File.ReadAllTextAsync(file) : null;
     }
 
+    public async Task<string?> ReadAtRevisionAsync(string kind, Guid id, long revision)
+    {
+        var path = Path.Combine(KindDir(kind), _naming.DocumentName(id, revision));
+        if (File.Exists(path)) return await File.ReadAllTextAsync(path);
+        return await ReadAsync(kind, id);
+    }
+
     public async Task WriteAsync(string kind, Guid id, string content, long revision)
     {
         var dir = KindDir(kind);

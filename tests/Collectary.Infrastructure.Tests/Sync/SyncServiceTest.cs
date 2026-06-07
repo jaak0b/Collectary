@@ -409,6 +409,26 @@ public class SyncServiceTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task SyncAsync_PullingChangedRemote_DoesNotReListPerItem()
+    {
+        var fake = new Collectary.Infrastructure.Tests.Infrastructure.FakeCloudFileStore();
+        var backend = new CloudSyncBackend(fake);
+        var store = new InMemorySyncStore();
+        var client = new SyncService(backend, store, _serializer);
+        for (var i = 0; i < 5; i++)
+        {
+            var p = DirtyPreset($"P{i}");
+            await backend.WriteAsync(SyncService.PresetKind, p.Id, _serializer.Serialize(p), 1);
+        }
+        var listsBefore = fake.ListFilesCalls;
+
+        await client.SyncAsync();
+
+        Assert.That(fake.ListFilesCalls - listsBefore, Is.EqualTo(3),
+            "one listing per kind (shared fields, presets, items); the 5 pulled presets must add no per-read listing");
+    }
+
+    [Test]
     public async Task SyncAsync_WhenConflictPresent_DoesNotDeleteRemoteBlobs()
     {
         var id = await EstablishSharedPresetAsync();

@@ -239,6 +239,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     partial void OnContentViewModelChanged(ViewModelBase? oldValue, ViewModelBase? newValue)
     {
+        if (oldValue is CameraScannerViewModel scanner)
+            scanner.NotifyClosedExternally();
+
         if (_trackedEditor is not null)
             _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
 
@@ -756,8 +759,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         var barcodeDecoder = _scope.Resolve<IBarcodeImageDecoder>();
         context.ScanBarcodeAsync = async () =>
         {
-            // Snapshot model: the user supplies a still image of the code (a photo or webcam frame
-            // exported to a file); ZXing decodes it. Live in-app webcam capture is a future addition.
             var sp = TopLevel.GetTopLevel(Host)?.StorageProvider;
             if (sp is null) return null;
             var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -771,6 +772,28 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             using var buffer = new MemoryStream();
             await stream.CopyToAsync(buffer);
             return barcodeDecoder.Decode(buffer.ToArray());
+        };
+
+        var permissions = _scope.ResolveOptional<IRuntimePermissions>();
+        if (permissions is not null)
+            context.RequestPermissionAsync = permissions.RequestAsync;
+
+        var liveCamera = _scope.ResolveOptional<ILiveCamera>();
+        context.IsCameraScanAvailableAsync = () =>
+            liveCamera is null
+                ? Task.FromResult(false)
+                : Task.Run(() => liveCamera.GetDevices().Count > 0);
+        context.ScanBarcodeFromCameraAsync = () =>
+        {
+            if (liveCamera is null) return Task.FromResult<BarcodeReadResult?>(null);
+            var tcs = new TaskCompletionSource<BarcodeReadResult?>();
+            var scanner = new CameraScannerViewModel(liveCamera, barcodeDecoder, _dialogService,
+                () => context.RequestPermissionAsync(RuntimePermission.Camera),
+                result => tcs.TrySetResult(result),
+                navigateBack: GoBack);
+            PushBreadcrumb(LocalizationService.Instance["Barcode_CameraScanner"], scanner);
+            CloseSidebarIfNarrow();
+            return tcs.Task;
         };
 
         var qrGenerator = _scope.Resolve<IBarcodeImageGenerator>();

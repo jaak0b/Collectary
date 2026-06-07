@@ -53,6 +53,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Webcam capture for live barcode scanning (desktop-only: Collectary.UI.Desktop) -->
+    <PackageVersion Include="OpenCvSharp4.Windows" Version="4.10.0.20241108" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Spreadsheet import (.xlsx) -->
     <PackageVersion Include="ClosedXML" Version="0.104.*" />
     <!-- CSV import -->
@@ -70,6 +75,10 @@
   <ItemGroup>
     <!-- Android -->
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.17" />
+    <!-- CameraX — live barcode scanning camera pipeline (Android-only: Collectary.UI.Android) -->
+    <PackageVersion Include="Xamarin.AndroidX.Camera.Core" Version="1.6.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Camera.Camera2" Version="1.6.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.6.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -58,6 +58,13 @@
   <data name="FieldType_Tags" xml:space="preserve"><value>Tags</value></data>
   <data name="FieldType_Barcode" xml:space="preserve"><value>Barcode / QR</value></data>
   <data name="Barcode_Scan" xml:space="preserve"><value>Scan…</value></data>
+  <data name="Barcode_ScanFromFile" xml:space="preserve"><value>From file…</value></data>
+  <data name="Barcode_ScanFromCamera" xml:space="preserve"><value>From camera…</value></data>
+  <data name="Barcode_NoCameraAvailable" xml:space="preserve"><value>No camera available</value></data>
+  <data name="Barcode_CameraScanner" xml:space="preserve"><value>Camera scanner</value></data>
+  <data name="Barcode_CameraPermissionDenied" xml:space="preserve"><value>Camera access is needed to scan.</value></data>
+  <data name="Barcode_CameraStartFailed" xml:space="preserve"><value>The camera couldn't be started.</value></data>
+  <data name="Barcode_SwitchCamera" xml:space="preserve"><value>Switch camera</value></data>
   <data name="Barcode_Placeholder" xml:space="preserve"><value>Scan or type a code</value></data>
   <data name="Time_Watermark" xml:space="preserve"><value>HH:mm</value></data>
   <data name="Duration_Watermark" xml:space="preserve"><value>2h 30m</value></data>
@@ -80,6 +87,7 @@
   <data name="Audio_Pause" xml:space="preserve"><value>Pause</value></data>
   <data name="Audio_Unavailable" xml:space="preserve"><value>Recording isn't available on this device</value></data>
   <data name="Audio_RecordFailed" xml:space="preserve"><value>Couldn't record audio</value></data>
+  <data name="Audio_PermissionDenied" xml:space="preserve"><value>Microphone access is needed to record. You can enable it in your device settings.</value></data>
   <data name="Audio_RecordTooltip" xml:space="preserve"><value>Record an audio note. Choose the microphone and playback device in Settings → Audio.</value></data>
   <data name="Audio_PlaybackDevice" xml:space="preserve"><value>Playback device</value></data>
   <data name="Audio_SystemDefault" xml:space="preserve"><value>System default</value></data>

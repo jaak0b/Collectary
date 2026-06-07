@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -6,8 +7,10 @@ using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.Git;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.Git.GitTasks;
 
 class Build : NukeBuild
 {
@@ -18,6 +21,9 @@ class Build : NukeBuild
 
     [Parameter("Minimum acceptable line coverage percentage for the Coverage gate")]
     readonly double CoverageThreshold = 95;
+
+    [Parameter("Git baseline that scopes mutation testing to your local changes. Defaults to 'HEAD' — only the code you have changed since your last commit. The Mutate target diffs against this with the git CLI and mutates just those files; running mutation across the whole codebase is intentionally not supported — it is far too slow.")]
+    readonly string Since = "HEAD";
 
     AbsolutePath TestProjectsRoot => RootDirectory / "tests";
     AbsolutePath CoverageDirectory => RootDirectory / "TestResults" / "coverage";
@@ -129,8 +135,55 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
+            var changed = ChangedMutableSourceFiles();
+            if (changed.Count == 0)
+            {
+                Log.Information("Mutate: no changed source files since {Since}; nothing to mutate.", Since);
+                return;
+            }
+
             foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation" })
-                DotNet($"stryker -p \"{RootDirectory / "src" / project / $"{project}.csproj"}\"",
+            {
+                var prefix = $"src/{project}/";
+                var relative = changed
+                    .Where(f => f.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    .Select(f => f.Substring(prefix.Length))
+                    .ToArray();
+                if (relative.Length == 0) continue;
+
+                var patterns = string.Join(" ", relative.Select(f => $"--mutate \"{f}\""));
+                DotNet($"stryker -p \"{RootDirectory / "src" / project / $"{project}.csproj"}\" {patterns}",
                     workingDirectory: RootDirectory);
+            }
         });
+
+    IReadOnlyList<string> ChangedMutableSourceFiles()
+    {
+        IEnumerable<string> Lines(string arguments) =>
+            Git(arguments, workingDirectory: RootDirectory, logOutput: false)
+                .Where(o => o.Type == OutputType.Std)
+                .Select(o => o.Text);
+
+        return Lines($"diff --name-only {Since}")
+            .Concat(Lines("ls-files --others --exclude-standard"))
+            .Select(p => p.Trim().Replace('\\', '/'))
+            .Where(p => p.StartsWith("src/", StringComparison.OrdinalIgnoreCase)
+                        && p.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                        && !IsExcludedFromMutation(p))
+            .Distinct()
+            .ToList();
+    }
+
+    bool IsExcludedFromMutation(string path) =>
+        path.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase)
+        || path.Contains("/Views/", StringComparison.OrdinalIgnoreCase)
+        || path.Contains("/Controls/", StringComparison.OrdinalIgnoreCase)
+        || path.Contains("/Migrations/", StringComparison.OrdinalIgnoreCase)
+        || path.Contains("/DI/", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/CloudModule.cs", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/InventoryDbContext.cs", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/MainWindowViewModel.cs", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/ThemeService.cs", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/AppLogger.cs", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith("/DialogService.cs", StringComparison.OrdinalIgnoreCase);
 }

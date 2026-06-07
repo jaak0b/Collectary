@@ -20,6 +20,10 @@ namespace Collectary.UI.Android
         /// MSAL sign-in can launch its Chrome Custom Tab against it.</summary>
         public Activity? CurrentActivity { get; set; }
 
+        /// <summary>Coordinates runtime permission prompts: the DI service starts a request and
+        /// <see cref="MainActivity"/> routes the result back here so the awaiting feature resumes.</summary>
+        public Permissions.AndroidPermissionCoordinator PermissionCoordinator { get; } = new();
+
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
             return base.CustomizeAppBuilder(builder)
@@ -48,6 +52,8 @@ namespace Collectary.UI.Android
                     () => AppPreferences.Load().OneDriveRootFolderId,
                     () => AppPreferences.Load().GoogleDriveRootFolderId),
                 new Audio.AndroidAudioModule(),
+                new Camera.AndroidCameraModule(),
+                new Permissions.AndroidPermissionsModule(),
             };
         }
     }

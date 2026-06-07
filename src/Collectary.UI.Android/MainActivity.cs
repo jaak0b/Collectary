@@ -17,11 +17,13 @@ namespace Collectary.UI.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
-    protected override void OnCreate(Bundle? savedInstanceState)
+    // Microphone and camera permissions are requested lazily, the first time the user records or scans
+    // (see AndroidPermissionCoordinator), so we don't prompt at launch for features they may never use.
+    public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
     {
-        base.OnCreate(savedInstanceState);
-        if (CheckSelfPermission(global::Android.Manifest.Permission.RecordAudio) != Permission.Granted)
-            RequestPermissions([global::Android.Manifest.Permission.RecordAudio], 0);
+        base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (this.Application is Application app)
+            app.PermissionCoordinator.OnResult(requestCode, grantResults);
     }
 
     // MSAL's interactive sign-in needs the foreground Activity to launch its Chrome Custom Tab.
