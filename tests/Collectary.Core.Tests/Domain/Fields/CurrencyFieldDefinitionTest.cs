@@ -40,6 +40,13 @@ public class CurrencyFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_RejectsParenthesizedAccountingNegative()
+    {
+        var ok = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("(123)", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
     public void TryImportFromText_RejectsNonNumber()
     {
         var ok = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("free", CultureInfo.InvariantCulture, out _);

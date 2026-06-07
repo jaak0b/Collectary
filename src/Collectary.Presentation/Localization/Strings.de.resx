@@ -136,6 +136,11 @@
   <data name="Import_Title" xml:space="preserve"><value>Importieren</value></data>
   <data name="Import_Excel_Title" xml:space="preserve"><value>Aus Excel importieren</value></data>
   <data name="Import_Csv_Title" xml:space="preserve"><value>Aus CSV importieren</value></data>
+  <data name="Import_NoData" xml:space="preserve"><value>Es gibt keine Datenzeilen zum Importieren.</value></data>
+  <data name="Import_Issue_NoValues" xml:space="preserve"><value>Es konnten keine Werte importiert werden ({0})</value></data>
+  <data name="Import_Issue_Unparsed" xml:space="preserve"><value>Nicht erkannte Zellen: {0}</value></data>
+  <data name="Import_FileType_Excel" xml:space="preserve"><value>Excel-Arbeitsmappe</value></data>
+  <data name="Import_FileType_Csv" xml:space="preserve"><value>CSV-Datei</value></data>
   <data name="Import_NoSheets" xml:space="preserve"><value>Diese Arbeitsmappe enthält keine importierbaren Tabellen.</value></data>
   <data name="Import_ReadFailed" xml:space="preserve"><value>Die Datei konnte nicht geöffnet werden. Möglicherweise ist sie in einem anderen Programm (z. B. Excel) geöffnet – bitte schließen und erneut versuchen. Falls es weiterhin fehlschlägt, ist die Datei eventuell beschädigt oder hat ein unerwartetes Format.</value></data>
   <data name="Import_Sheet" xml:space="preserve"><value>Tabelle</value></data>

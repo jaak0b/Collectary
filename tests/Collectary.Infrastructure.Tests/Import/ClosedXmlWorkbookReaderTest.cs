@@ -77,6 +77,24 @@ public class ClosedXmlWorkbookReaderTest
     }
 
     [Test]
+    public void Read_TreatsErrorCellsAsBlank()
+    {
+        using var stream = BuildWorkbook(ws => ws.Cell(1, 1).Value = XLError.DivisionByZero);
+        var cell = new ClosedXmlWorkbookReader().Read(stream).Sheets[0].Rows[0][0];
+        Assert.That(cell.Kind, Is.EqualTo(WorkbookCellKind.Blank));
+        Assert.That(cell.Text, Is.Null);
+    }
+
+    [Test]
+    public void Read_EmitsTimeSpanCellsAsText()
+    {
+        using var stream = BuildWorkbook(ws => ws.Cell(1, 1).Value = TimeSpan.FromMinutes(90));
+        var cell = new ClosedXmlWorkbookReader().Read(stream).Sheets[0].Rows[0][0];
+        Assert.That(cell.Kind, Is.EqualTo(WorkbookCellKind.Text));
+        Assert.That(cell.Text, Is.EqualTo("01:30:00"));
+    }
+
+    [Test]
     public void Read_TagsEmptyCellsAsBlank()
     {
         using var stream = BuildWorkbook(ws =>

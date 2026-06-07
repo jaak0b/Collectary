@@ -23,6 +23,16 @@ public class PresetUseCase : IPresetUseCase
     public Task<IReadOnlyList<Preset>> GetAllPresetsAsync() =>
         _presets.GetAllAsync();
 
+    public async Task<IReadOnlyList<Preset>> GetWritablePresetsAsync()
+    {
+        var all = await _presets.GetAllAsync();
+        var writable = new List<Preset>(all.Count);
+        foreach (var preset in all)
+            if (await _authorization.CanWriteAsync(preset.Id))
+                writable.Add(preset);
+        return writable;
+    }
+
     public Task<Preset?> GetPresetAsync(Guid id) =>
         _presets.GetByIdAsync(id);
 

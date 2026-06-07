@@ -22,6 +22,21 @@ public class ColorFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_RejectsMalformedRgb()
+    {
+        var ok = ((ITextImportable)new ColorFieldDefinition()).TryImportFromText("rgb(banana)", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
+    public void TryImportFromText_AcceptsValidRgb()
+    {
+        var ok = ((ITextImportable)new ColorFieldDefinition()).TryImportFromText("rgb(255, 0, 0)", CultureInfo.InvariantCulture, out var v);
+        Assert.That(ok, Is.True);
+        Assert.That(((ColorFieldValue)v).Value, Is.EqualTo("rgb(255, 0, 0)"));
+    }
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new ColorFieldDefinition();

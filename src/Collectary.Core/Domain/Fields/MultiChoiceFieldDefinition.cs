@@ -16,6 +16,8 @@ public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>
         value = CreateEmptyValue();
         var parts = raw.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (parts.Length == 0) return false;
+        if (Choices.Count > 0 && parts.Any(p => !Choices.Any(c => string.Equals(c.Value, p, StringComparison.OrdinalIgnoreCase))))
+            return false;
         value = new MultiChoiceFieldValue { FieldDefinitionId = Id, Selected = parts.ToList() };
         return true;
     }

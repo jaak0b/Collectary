@@ -4,6 +4,13 @@ public sealed record ColumnMapping(int ColumnIndex, Guid FieldDefinitionId, bool
 
 public sealed record NewFieldColumn(int ColumnIndex, FieldDefinition Definition, bool IsTitle);
 
-public sealed record ImportIssue(int RowNumber, string Reason);
+public enum ImportIssueKind
+{
+    NoValues,
+    UnparsedCells,
+    Error
+}
+
+public sealed record ImportIssue(int RowNumber, ImportIssueKind Kind, string Detail);
 
 public sealed record ImportSummary(int Imported, IReadOnlyList<ImportIssue> Skipped, IReadOnlyList<ImportIssue> Warnings);

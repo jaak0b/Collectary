@@ -14,7 +14,8 @@ public class PercentageFieldDefinition : FieldDefinition<PercentageFieldValue>, 
     public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
     {
         value = CreateEmptyValue();
-        var cleaned = raw.Replace("%", "").Trim();
+        var cleaned = raw.Trim();
+        if (cleaned.EndsWith('%')) cleaned = cleaned[..^1].Trim();
         if (!decimal.TryParse(cleaned, NumberStyles.Number, culture, out var d)) return false;
         value = new PercentageFieldValue { FieldDefinitionId = Id, Value = d };
         return true;

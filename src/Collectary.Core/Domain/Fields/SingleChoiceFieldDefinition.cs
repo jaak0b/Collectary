@@ -15,7 +15,10 @@ public class SingleChoiceFieldDefinition : FieldDefinition<SingleChoiceFieldValu
     {
         value = CreateEmptyValue();
         if (string.IsNullOrWhiteSpace(raw)) return false;
-        value = new SingleChoiceFieldValue { FieldDefinitionId = Id, Selected = raw.Trim() };
+        var text = raw.Trim();
+        if (Choices.Count > 0 && !Choices.Any(c => string.Equals(c.Value, text, StringComparison.OrdinalIgnoreCase)))
+            return false;
+        value = new SingleChoiceFieldValue { FieldDefinitionId = Id, Selected = text };
         return true;
     }
 

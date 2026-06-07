@@ -23,6 +23,13 @@ public class CountryFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_RejectsUnknownTwoLetterCode()
+    {
+        var ok = ((ITextImportable)new CountryFieldDefinition()).TryImportFromText("xx", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
     public void CreateEmptyValue_ReturnsTypedValueWithDefinitionId()
     {
         var def = new CountryFieldDefinition();

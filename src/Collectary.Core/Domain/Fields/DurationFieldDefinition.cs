@@ -18,26 +18,33 @@ public class DurationFieldDefinition : FieldDefinition<DurationFieldValue>, ILis
         var text = raw.Trim();
         if (text.Length == 0) return false;
 
+        int totalMinutes;
         if (int.TryParse(text, NumberStyles.Integer, culture, out var plainMinutes))
         {
-            value = new DurationFieldValue { FieldDefinitionId = Id, TotalMinutes = plainMinutes };
-            return true;
+            if (plainMinutes < 0) return false;
+            totalMinutes = plainMinutes;
         }
-
-        if (text.Contains(':'))
+        else if (text.Contains(':'))
         {
             var parts = text.Split(':');
-            if (parts.Length != 2 || !int.TryParse(parts[0], out var hours) || !int.TryParse(parts[1], out var minutes))
-                return false;
-            value = new DurationFieldValue { FieldDefinitionId = Id, TotalMinutes = hours * 60 + minutes };
-            return true;
+            if (parts.Length is < 2 or > 3) return false;
+            if (!int.TryParse(parts[0], NumberStyles.Integer, culture, out var hours) || hours < 0) return false;
+            if (!int.TryParse(parts[1], NumberStyles.Integer, culture, out var minutes) || minutes is < 0 or > 59) return false;
+            if (parts.Length == 3 && (!int.TryParse(parts[2], NumberStyles.Integer, culture, out var seconds) || seconds is < 0 or > 59)) return false;
+            totalMinutes = hours * 60 + minutes;
+        }
+        else
+        {
+            var match = Regex.Match(text, @"^\s*(?:(\d+)\s*h(?:ours?|rs?)?)?\s*(?:(\d+)\s*m(?:in(?:utes?)?)?)?\s*$", RegexOptions.IgnoreCase);
+            if (!match.Success || (!match.Groups[1].Success && !match.Groups[2].Success)) return false;
+            var h = 0;
+            var m = 0;
+            if (match.Groups[1].Success && !int.TryParse(match.Groups[1].Value, NumberStyles.Integer, culture, out h)) return false;
+            if (match.Groups[2].Success && !int.TryParse(match.Groups[2].Value, NumberStyles.Integer, culture, out m)) return false;
+            totalMinutes = h * 60 + m;
         }
 
-        var match = Regex.Match(text, @"^\s*(?:(\d+)\s*h(?:ours?|rs?)?)?\s*(?:(\d+)\s*m(?:in(?:utes?)?)?)?\s*$", RegexOptions.IgnoreCase);
-        if (!match.Success || (!match.Groups[1].Success && !match.Groups[2].Success)) return false;
-        var h = match.Groups[1].Success ? int.Parse(match.Groups[1].Value) : 0;
-        var m = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 0;
-        value = new DurationFieldValue { FieldDefinitionId = Id, TotalMinutes = h * 60 + m };
+        value = new DurationFieldValue { FieldDefinitionId = Id, TotalMinutes = totalMinutes };
         return true;
     }
 }

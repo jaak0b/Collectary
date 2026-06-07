@@ -15,6 +15,14 @@ public class UrlFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_PrependsSchemeToSchemelessWww()
+    {
+        var ok = ((ITextImportable)new UrlFieldDefinition()).TryImportFromText("www.example.com", CultureInfo.InvariantCulture, out var v);
+        Assert.That(ok, Is.True);
+        Assert.That(((UrlFieldValue)v).Url, Is.EqualTo("https://www.example.com"));
+    }
+
+    [Test]
     public void TryImportFromText_RejectsPlainText()
     {
         var ok = ((ITextImportable)new UrlFieldDefinition()).TryImportFromText("not a url", CultureInfo.InvariantCulture, out _);

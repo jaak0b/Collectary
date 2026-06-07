@@ -17,7 +17,7 @@ public class UrlFieldDefinition : FieldDefinition<UrlFieldValue>, IListDisplayab
         var hasScheme = Uri.TryCreate(text, UriKind.Absolute, out var uri)
             && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeFtp);
         if (!hasScheme && !text.StartsWith("www.", StringComparison.OrdinalIgnoreCase)) return false;
-        value = new UrlFieldValue { FieldDefinitionId = Id, Url = text };
+        value = new UrlFieldValue { FieldDefinitionId = Id, Url = hasScheme ? text : $"https://{text}" };
         return true;
     }
 }

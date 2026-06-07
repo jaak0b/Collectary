@@ -88,4 +88,32 @@ public class SpreadsheetImportServiceTest : DbIntegrationTestBase
         Assert.That(items.SelectMany(i => i.Values).OfType<TextFieldValue>().Select(v => v.Value),
             Is.EquivalentTo(new[] { "a classic", "cosy" }));
     }
+
+    [Test]
+    public async Task ImportExistingAsync_DuplicateColumnMappings_PersistSingleValue()
+    {
+        var preset = new Preset { Name = "Books" };
+        preset.Fields.Add(new DisplayNameFieldDefinition { PresetId = preset.Id });
+        var notes = new TextFieldDefinition { Label = "Notes", PresetId = preset.Id };
+        preset.Fields.Add(notes);
+        await _presetUseCase.CreatePresetAsync(preset);
+
+        var grid = new ShapedGrid(new[] { "Name", "Notes", "Notes" }, new IReadOnlyList<WorkbookCell>[]
+        {
+            new[] { Text("Dune"), Text("first"), Text("second") }
+        });
+        var mappings = new[]
+        {
+            new ColumnMapping(0, Guid.Empty, true),
+            new ColumnMapping(1, notes.Id, false),
+            new ColumnMapping(2, notes.Id, false)
+        };
+
+        var summary = await _sut.ImportExistingAsync(preset.Id, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(1));
+        var items = await _itemRepo.GetByPresetAsync(preset.Id);
+        Assert.That(items.Single().Values.OfType<TextFieldValue>().Count(), Is.EqualTo(1));
+        Assert.That(items.Single().Values.OfType<TextFieldValue>().Single().Value, Is.EqualTo("first"));
+    }
 }

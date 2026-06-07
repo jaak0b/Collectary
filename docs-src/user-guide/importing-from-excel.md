@@ -80,7 +80,18 @@ A few CSV-specific notes:
 - **Quoted fields are understood**, including values that contain the delimiter or span multiple lines
   (e.g. `"Dune, the novel"`), and doubled quotes (`""`) inside a quoted value.
 - A CSV has **no built-in number or date formatting**, so the **Source number & date format** picker on
-  the preview step is your friend — set it to match the machine the file came from.
+  the preview step is your friend — set it to match the machine the file came from. Values that are
+  already written in the universal form — a plain number like `1234.56` or an ISO date like `2024-12-31` —
+  are recognised on their own and read the same way no matter what that picker is set to, so a file
+  exported by a program rather than a person just works.
+
+## When a value doesn't fit
+
+The import never invents data. If a cell can't be read as the field you mapped it to — a word in a
+number column, a value that isn't one of a choice field's options, a date range that ends before it
+starts — that cell is left out and the row is listed on the final **Check the data** summary, so you
+always know exactly what was skipped and why. Mapping two spreadsheet columns onto the same field keeps
+the first and ignores the rest, so a collection never ends up with two conflicting values for one field.
 
 ## What can't be imported
 

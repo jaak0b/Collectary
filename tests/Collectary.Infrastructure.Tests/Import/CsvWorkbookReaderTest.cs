@@ -41,6 +41,32 @@ public class CsvWorkbookReaderTest
     }
 
     [Test]
+    public void Read_TagsInvariantNumbersAsNumber()
+    {
+        using var stream = Stream("Price\n1234.56");
+        var cell = Reader().Read(stream).Sheets[0].Rows[1][0];
+        Assert.That(cell.Kind, Is.EqualTo(WorkbookCellKind.Number));
+        Assert.That(cell.Text, Is.EqualTo("1234.56"));
+    }
+
+    [Test]
+    public void Read_TagsIsoDatesAsDateTime()
+    {
+        using var stream = Stream("When\n2024-12-31");
+        var cell = Reader().Read(stream).Sheets[0].Rows[1][0];
+        Assert.That(cell.Kind, Is.EqualTo(WorkbookCellKind.DateTime));
+    }
+
+    [Test]
+    public void Read_KeepsLocaleFormattedNumbersAsText()
+    {
+        using var stream = Stream("Preis;Note\n1.234,56;x");
+        var cell = Reader().Read(stream).Sheets[0].Rows[1][0];
+        Assert.That(cell.Kind, Is.EqualTo(WorkbookCellKind.Text));
+        Assert.That(cell.Text, Is.EqualTo("1.234,56"));
+    }
+
+    [Test]
     public void Read_HonoursSemicolonDelimiter()
     {
         using var stream = Stream("Name;Preis\nDune;1.234,56");

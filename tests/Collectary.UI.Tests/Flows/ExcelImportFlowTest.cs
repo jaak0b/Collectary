@@ -3,6 +3,7 @@ using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Domain.Import;
 using Collectary.Core.UseCases.Import;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels.Import;
 using Collectary.UI.Tests.Infrastructure;
@@ -118,6 +119,59 @@ public class ExcelImportFlowTest : FlowTestBase
     }
 
     [Test]
+    public async Task ExistingImport_DuplicateHeaderColumns_WriteSingleValue()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var preset = await CreateBooksPresetAsync(notes);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Name"), Cell("Notes"), Cell("Notes") },
+            new[] { Cell("Dune"), Cell("first"), Cell("second") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+
+        vm.Columns[0].SelectedTarget = vm.Columns[0].TargetOptions.First(o => o.IsTitle);
+        vm.Columns[1].SelectedTarget = vm.Columns[1].TargetOptions.First(o => o.Field?.Id == notes.Id);
+        vm.Columns[2].SelectedTarget = vm.Columns[2].TargetOptions.First(o => o.Field?.Id == notes.Id);
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Summary!.Imported, Is.EqualTo(1));
+        var items = await ItemRepo.GetByPresetAsync(preset.Id);
+        Assert.That(items.Single().Values.OfType<TextFieldValue>().Count(), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task DuplicateHeaders_AutoMapOnlyFirstColumnToField()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var preset = await CreateBooksPresetAsync(notes);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Name"), Cell("Notes"), Cell("Notes") },
+            new[] { Cell("Dune"), Cell("a"), Cell("b") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+
+        Assert.That(vm.Columns[1].SelectedTarget!.Field?.Id, Is.EqualTo(notes.Id));
+        Assert.That(vm.Columns[2].SelectedTarget!.IsSkip, Is.True);
+    }
+
+    [Test]
+    public async Task HeaderOnlySheet_NextFromPreviewWarnsAndStays()
+    {
+        var data = Workbook("Sheet1", new[] { Cell("Name") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        Assert.That(vm.Step, Is.EqualTo(ImportStep.Preview));
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Step, Is.EqualTo(ImportStep.Preview));
+    }
+
+    [Test]
     public async Task UnmappableFieldType_IsDisabledInTargets()
     {
         var preset = await CreateBooksPresetAsync(new ImageFieldDefinition { Label = "Cover" });
@@ -148,6 +202,28 @@ public class ExcelImportFlowTest : FlowTestBase
         Assert.That(vm.Summary!.Imported, Is.EqualTo(1));
         var presets = await PresetUseCase.GetAllPresetsAsync();
         Assert.That(presets.Select(p => p.Name), Does.Contain("Imported"));
+    }
+
+    [Test]
+    public void SummaryText_LocalizesIssueReasons()
+    {
+        var data = Workbook("Sheet1", new[] { Cell("Name") }, new[] { Cell("Dune") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        vm.Summary = new ImportSummary(
+            0,
+            new[] { new ImportIssue(2, ImportIssueKind.NoValues, "Pages: 'abc'") },
+            new[] { new ImportIssue(3, ImportIssueKind.UnparsedCells, "Pages: 'xyz'") });
+
+        try
+        {
+            LocalizationService.Instance.Apply("de");
+            Assert.That(vm.SummarySkippedText, Does.Contain("Werte"));
+            Assert.That(vm.SummaryWarningsText, Does.Contain("Zellen"));
+        }
+        finally
+        {
+            LocalizationService.Instance.Apply("en");
+        }
     }
 
     [Test]

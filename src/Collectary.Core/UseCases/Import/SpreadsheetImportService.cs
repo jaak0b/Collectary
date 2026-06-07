@@ -56,7 +56,8 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
         IReadOnlyList<ColumnMapping> mappings,
         CultureInfo culture)
     {
-        var fieldsById = fields.ToDictionary(f => f.Id);
+        var fieldsById = fields.GroupBy(f => f.Id).ToDictionary(g => g.Key, g => g.First());
+        var distinctMappings = DistinctMappings(mappings);
         var imported = 0;
         var skipped = new List<ImportIssue>();
         var warnings = new List<ImportIssue>();
@@ -68,7 +69,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             var item = new Item { PresetId = presetId };
             var unparsed = new List<string>();
 
-            foreach (var mapping in mappings)
+            foreach (var mapping in distinctMappings)
             {
                 if (mapping.ColumnIndex >= row.Count) continue;
                 var cell = row[mapping.ColumnIndex];
@@ -87,7 +88,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
                     continue;
                 }
 
-                var cellCulture = EffectiveCulture(cell, culture);
+                var cellCulture = cell.EffectiveCulture(culture);
                 if (importable.TryImportFromText(cell.Text!, cellCulture, out var value))
                 {
                     value.FieldDefinitionId = definition.Id;
@@ -102,7 +103,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             if (string.IsNullOrWhiteSpace(item.DisplayName) && item.Values.Count == 0)
             {
                 if (unparsed.Count > 0)
-                    skipped.Add(new ImportIssue(rowNumber, $"No values could be imported ({string.Join("; ", unparsed)})"));
+                    skipped.Add(new ImportIssue(rowNumber, ImportIssueKind.NoValues, string.Join("; ", unparsed)));
                 continue;
             }
 
@@ -111,19 +112,35 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
                 await _items.CreateItemAsync(item);
                 imported++;
                 if (unparsed.Count > 0)
-                    warnings.Add(new ImportIssue(rowNumber, $"Unparsed cells: {string.Join("; ", unparsed)}"));
+                    warnings.Add(new ImportIssue(rowNumber, ImportIssueKind.UnparsedCells, string.Join("; ", unparsed)));
             }
             catch (Exception ex)
             {
-                skipped.Add(new ImportIssue(rowNumber, ex.Message));
+                skipped.Add(new ImportIssue(rowNumber, ImportIssueKind.Error, ex.Message));
             }
         }
 
         return new ImportSummary(imported, skipped, warnings);
     }
 
-    private IFormatProvider EffectiveCulture(WorkbookCell cell, CultureInfo culture) =>
-        cell.Kind is WorkbookCellKind.Number or WorkbookCellKind.DateTime or WorkbookCellKind.Boolean
-            ? CultureInfo.InvariantCulture
-            : culture;
+    private IReadOnlyList<ColumnMapping> DistinctMappings(IReadOnlyList<ColumnMapping> mappings)
+    {
+        var result = new List<ColumnMapping>(mappings.Count);
+        var seenFields = new HashSet<Guid>();
+        var titleSeen = false;
+        foreach (var mapping in mappings)
+        {
+            if (mapping.IsTitle)
+            {
+                if (titleSeen) continue;
+                titleSeen = true;
+            }
+            else if (!seenFields.Add(mapping.FieldDefinitionId))
+            {
+                continue;
+            }
+            result.Add(mapping);
+        }
+        return result;
+    }
 }

@@ -33,14 +33,9 @@ public sealed class FieldTypeInference : IFieldTypeInference
         if (samples.Count == 0) return new TextFieldDefinition();
 
         foreach (var (probe, type) in _candidates)
-            if (samples.All(cell => probe.TryImportFromText(cell.Text!, EffectiveCulture(cell, culture), out _)))
+            if (samples.All(cell => probe.TryImportFromText(cell.Text!, cell.EffectiveCulture(culture), out _)))
                 return (FieldDefinition)Activator.CreateInstance(type)!;
 
         return new TextFieldDefinition();
     }
-
-    private IFormatProvider EffectiveCulture(WorkbookCell cell, CultureInfo culture) =>
-        cell.Kind is WorkbookCellKind.Number or WorkbookCellKind.DateTime or WorkbookCellKind.Boolean
-            ? CultureInfo.InvariantCulture
-            : culture;
 }

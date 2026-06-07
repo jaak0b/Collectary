@@ -74,7 +74,8 @@ public class SpreadsheetImportServiceTest
         Assert.That(summary.Imported, Is.EqualTo(0));
         Assert.That(summary.Skipped, Has.Count.EqualTo(1));
         Assert.That(summary.Skipped[0].RowNumber, Is.EqualTo(1));
-        Assert.That(summary.Skipped[0].Reason, Does.Contain("Required"));
+        Assert.That(summary.Skipped[0].Kind, Is.EqualTo(ImportIssueKind.Error));
+        Assert.That(summary.Skipped[0].Detail, Does.Contain("Required"));
     }
 
     [Test]
@@ -92,7 +93,8 @@ public class SpreadsheetImportServiceTest
 
         Assert.That(summary.Imported, Is.EqualTo(1));
         Assert.That(summary.Warnings, Has.Count.EqualTo(1));
-        Assert.That(summary.Warnings[0].Reason, Does.Contain("Pages"));
+        Assert.That(summary.Warnings[0].Kind, Is.EqualTo(ImportIssueKind.UnparsedCells));
+        Assert.That(summary.Warnings[0].Detail, Does.Contain("Pages"));
         Assert.That(_created[0].Values, Is.Empty);
         Assert.That(_created[0].DisplayName, Is.EqualTo("Dune"));
     }
@@ -151,6 +153,48 @@ public class SpreadsheetImportServiceTest
         Assert.That(_created[0].DisplayName, Is.EqualTo("Dune"));
         Assert.That(_created[0].Values.OfType<IntegerFieldValue>().Select(v => v.Value),
             Is.EquivalentTo(new int?[] { 412, 1965 }));
+    }
+
+    [Test]
+    public async Task ImportExistingAsync_DuplicateColumnMappings_WriteSingleValuePerField()
+    {
+        var presetId = Guid.NewGuid();
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId))
+            .Returns(new EffectiveFields { Fields = new FieldDefinition[] { new DisplayNameFieldDefinition(), notes } });
+
+        var grid = Grid(new[] { "Name", "Notes", "Notes" },
+            new[] { Text("Dune"), Text("first"), Text("second") });
+        var mappings = new[]
+        {
+            new ColumnMapping(0, Guid.Empty, true),
+            new ColumnMapping(1, notes.Id, false),
+            new ColumnMapping(2, notes.Id, false)
+        };
+
+        var summary = await _sut.ImportExistingAsync(presetId, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(1));
+        Assert.That(_created[0].Values, Has.Count.EqualTo(1));
+        Assert.That(((TextFieldValue)_created[0].Values.Single()).Value, Is.EqualTo("first"));
+    }
+
+    [Test]
+    public async Task ImportExistingAsync_DuplicateEffectiveFieldIds_DoesNotThrow()
+    {
+        var presetId = Guid.NewGuid();
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var duplicate = new TextFieldDefinition { Id = notes.Id, Label = "Notes (shared)" };
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId))
+            .Returns(new EffectiveFields { Fields = new FieldDefinition[] { new DisplayNameFieldDefinition(), notes, duplicate } });
+
+        var grid = Grid(new[] { "Name", "Notes" }, new[] { Text("Dune"), Text("good") });
+        var mappings = new[] { new ColumnMapping(0, Guid.Empty, true), new ColumnMapping(1, notes.Id, false) };
+
+        var summary = await _sut.ImportExistingAsync(presetId, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(1));
+        Assert.That(((TextFieldValue)_created[0].Values.Single()).Value, Is.EqualTo("good"));
     }
 
     [Test]

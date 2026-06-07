@@ -8,6 +8,8 @@ public class DurationFieldDefinitionTest
 {
     [TestCase("90", 90)]
     [TestCase("1:30", 90)]
+    [TestCase("1:30:00", 90)]
+    [TestCase("1:30:45", 90)]
     [TestCase("2 h 15 min", 135)]
     [TestCase("1h30m", 90)]
     public void TryImportFromText_ParsesDurations(string raw, int expectedMinutes)
@@ -17,10 +19,15 @@ public class DurationFieldDefinitionTest
         Assert.That(((DurationFieldValue)v).TotalMinutes, Is.EqualTo(expectedMinutes));
     }
 
-    [Test]
-    public void TryImportFromText_RejectsGibberish()
+    [TestCase("soon")]
+    [TestCase("-5")]
+    [TestCase("-1:30")]
+    [TestCase("1:75")]
+    [TestCase("5h 99999999999m")]
+    [TestCase("99999999999:00")]
+    public void TryImportFromText_RejectsInvalidDurations(string raw)
     {
-        var ok = ((ITextImportable)new DurationFieldDefinition()).TryImportFromText("soon", CultureInfo.InvariantCulture, out _);
+        var ok = ((ITextImportable)new DurationFieldDefinition()).TryImportFromText(raw, CultureInfo.InvariantCulture, out _);
         Assert.That(ok, Is.False);
     }
 

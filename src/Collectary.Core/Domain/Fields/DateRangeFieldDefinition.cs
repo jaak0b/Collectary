@@ -26,6 +26,7 @@ public class DateRangeFieldDefinition : FieldDefinition<DateRangeFieldValue>, IL
             if (!DateTime.TryParse(left, culture, DateTimeStyles.None, out var from)
                 || !DateTime.TryParse(right, culture, DateTimeStyles.None, out var to))
                 continue;
+            if (from.Date > to.Date) return false;
             value = new DateRangeFieldValue { FieldDefinitionId = Id, From = from.Date, To = to.Date };
             return true;
         }

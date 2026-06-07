@@ -15,9 +15,10 @@ public class CurrencyFieldDefinition : FieldDefinition<CurrencyFieldValue>, ILis
     public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
     {
         value = CreateEmptyValue();
+        const NumberStyles styles = NumberStyles.Currency & ~NumberStyles.AllowParentheses;
         var withoutSymbol = string.IsNullOrEmpty(CurrencySymbol) ? raw : raw.Replace(CurrencySymbol, "");
-        if (!decimal.TryParse(raw, NumberStyles.Currency, culture, out var d)
-            && !decimal.TryParse(withoutSymbol, NumberStyles.Currency, culture, out d))
+        if (!decimal.TryParse(raw, styles, culture, out var d)
+            && !decimal.TryParse(withoutSymbol, styles, culture, out d))
             return false;
         value = new CurrencyFieldValue { FieldDefinitionId = Id, Value = d };
         return true;

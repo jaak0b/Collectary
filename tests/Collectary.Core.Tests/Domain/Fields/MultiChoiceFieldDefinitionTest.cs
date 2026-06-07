@@ -15,6 +15,16 @@ public class MultiChoiceFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_RejectsAnyValueNotInDefinedChoices()
+    {
+        var def = new MultiChoiceFieldDefinition();
+        def.Choices.Add(new ChoiceOption { Value = "Red" });
+        def.Choices.Add(new ChoiceOption { Value = "Green" });
+        var ok = ((ITextImportable)def).TryImportFromText("Red; Blue", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
     public void TryImportFromText_RejectsWhitespace()
     {
         var ok = ((ITextImportable)new MultiChoiceFieldDefinition()).TryImportFromText("  ", CultureInfo.InvariantCulture, out _);

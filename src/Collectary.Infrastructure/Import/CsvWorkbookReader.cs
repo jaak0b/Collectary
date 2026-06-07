@@ -9,6 +9,11 @@ namespace Collectary.Infrastructure.Import;
 
 public sealed class CsvWorkbookReader : ICsvWorkbookReader
 {
+    private readonly string[] _isoDateFormats =
+    {
+        "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss"
+    };
+
     public CsvWorkbookReader() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
     public WorkbookData Read(Stream stream)
@@ -64,8 +69,21 @@ public sealed class CsvWorkbookReader : ICsvWorkbookReader
         }
     }
 
-    private WorkbookCell ToCell(string value) =>
-        string.IsNullOrEmpty(value)
-            ? new WorkbookCell(null, WorkbookCellKind.Blank)
-            : new WorkbookCell(value, WorkbookCellKind.Text);
+    private WorkbookCell ToCell(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return new WorkbookCell(null, WorkbookCellKind.Blank);
+        if (LooksLikeInvariantNumber(value)) return new WorkbookCell(value, WorkbookCellKind.Number);
+        if (LooksLikeIsoDate(value)) return new WorkbookCell(value, WorkbookCellKind.DateTime);
+        return new WorkbookCell(value, WorkbookCellKind.Text);
+    }
+
+    private bool LooksLikeInvariantNumber(string value) =>
+        decimal.TryParse(
+            value,
+            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
+            CultureInfo.InvariantCulture,
+            out _);
+
+    private bool LooksLikeIsoDate(string value) =>
+        DateTime.TryParseExact(value, _isoDateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
 }

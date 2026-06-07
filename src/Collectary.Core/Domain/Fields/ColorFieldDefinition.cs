@@ -18,7 +18,7 @@ public class ColorFieldDefinition : FieldDefinition<ColorFieldValue>, IListDispl
         value = CreateEmptyValue();
         var text = raw.Trim();
         var isHex = Regex.IsMatch(text, @"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$");
-        var isRgb = Regex.IsMatch(text, @"^rgba?\(.+\)$", RegexOptions.IgnoreCase);
+        var isRgb = Regex.IsMatch(text, @"^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:\d+(?:\.\d+)?|\.\d+)\s*)?\)$", RegexOptions.IgnoreCase);
         if (!isHex && !isRgb) return false;
         value = new ColorFieldValue { FieldDefinitionId = Id, Value = text };
         return true;

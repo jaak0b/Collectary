@@ -152,12 +152,19 @@ public partial class ExcelImportViewModel : ViewModelBase
     public string SummarySkippedText => Summary is null
         ? string.Empty
         : string.Format(LocalizationService.Instance["Import_Summary_Skipped"], Summary.Skipped.Count)
-          + "\n" + string.Join("\n", Summary.Skipped.Select(s => $"#{s.RowNumber}: {s.Reason}"));
+          + "\n" + string.Join("\n", Summary.Skipped.Select(s => $"#{s.RowNumber}: {DescribeIssue(s)}"));
 
     public string SummaryWarningsText => Summary is null
         ? string.Empty
         : string.Format(LocalizationService.Instance["Import_Summary_Warnings"], Summary.Warnings.Count)
-          + "\n" + string.Join("\n", Summary.Warnings.Select(w => $"#{w.RowNumber}: {w.Reason}"));
+          + "\n" + string.Join("\n", Summary.Warnings.Select(w => $"#{w.RowNumber}: {DescribeIssue(w)}"));
+
+    private string DescribeIssue(ImportIssue issue) => issue.Kind switch
+    {
+        ImportIssueKind.NoValues => string.Format(LocalizationService.Instance["Import_Issue_NoValues"], issue.Detail),
+        ImportIssueKind.UnparsedCells => string.Format(LocalizationService.Instance["Import_Issue_Unparsed"], issue.Detail),
+        _ => issue.Detail
+    };
 
     partial void OnSelectedSheetNameChanged(string? value) => Recompute();
     partial void OnFirstRowIsHeaderChanged(bool value) => Recompute();
@@ -229,6 +236,11 @@ public partial class ExcelImportViewModel : ViewModelBase
                 Step = ImportStep.Preview;
                 break;
             case ImportStep.Preview:
+                if (_shaped.Rows.Count == 0)
+                {
+                    await WarnAsync("Import_NoData");
+                    return;
+                }
                 Step = ImportStep.Target;
                 break;
             case ImportStep.Target:
@@ -273,6 +285,7 @@ public partial class ExcelImportViewModel : ViewModelBase
             .Select(f => new ColumnTargetOption(f.Label, f, false, false, f is ITextImportable))
             .ToList();
 
+        var claimed = new HashSet<Guid>();
         foreach (var column in Columns)
         {
             column.TargetOptions.Clear();
@@ -282,7 +295,9 @@ public partial class ExcelImportViewModel : ViewModelBase
                 column.TargetOptions.Add(option);
 
             var match = fieldOptions.FirstOrDefault(o =>
-                o.IsMappable && string.Equals(o.Label, column.Header, StringComparison.OrdinalIgnoreCase));
+                o.IsMappable && o.Field is not null && !claimed.Contains(o.Field.Id)
+                && string.Equals(o.Label, column.Header, StringComparison.OrdinalIgnoreCase));
+            if (match?.Field is not null) claimed.Add(match.Field.Id);
             column.SelectedTarget = match ?? skip;
         }
     }

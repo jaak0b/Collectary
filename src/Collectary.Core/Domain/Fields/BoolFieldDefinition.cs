@@ -8,7 +8,7 @@ public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplay
     public bool ShowInList { get; set; }
     public bool ThreeState { get; set; }
 
-    public int ImportInferenceOrder => 10;
+    public int ImportInferenceOrder => 310;
 
     public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
     {

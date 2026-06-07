@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Collectary.Core.Domain.Fields;
 
 /// <summary>Stores a country as an ISO 3166-1 alpha-2 code (e.g. "DE"), shown with its flag and name.</summary>
@@ -15,8 +17,22 @@ public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListD
         value = CreateEmptyValue();
         var text = raw.Trim();
         if (text.Length != 2 || !text.All(char.IsLetter)) return false;
-        value = new CountryFieldValue { FieldDefinitionId = Id, Code = text.ToUpperInvariant() };
+        var code = text.ToUpperInvariant();
+        if (!IsKnownCountryCode(code)) return false;
+        value = new CountryFieldValue { FieldDefinitionId = Id, Code = code };
         return true;
+    }
+
+    private bool IsKnownCountryCode(string code)
+    {
+        try
+        {
+            return string.Equals(new RegionInfo(code).TwoLetterISORegionName, code, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 }
 

@@ -591,13 +591,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private Task NavigateToExcelImportAsync() =>
         ImportFromFileAsync(
-            new FilePickerFileType("Excel workbook") { Patterns = ["*.xlsx"] },
+            new FilePickerFileType(LocalizationService.Instance["Import_FileType_Excel"]) { Patterns = ["*.xlsx"] },
             stream => _scope.Resolve<IExcelWorkbookReader>().Read(stream),
             "Import_Excel_Title");
 
     private Task NavigateToCsvImportAsync() =>
         ImportFromFileAsync(
-            new FilePickerFileType("CSV file") { Patterns = ["*.csv"] },
+            new FilePickerFileType(LocalizationService.Instance["Import_FileType_Csv"]) { Patterns = ["*.csv"] },
             stream => _scope.Resolve<ICsvWorkbookReader>().Read(stream),
             "Import_Csv_Title");
 
@@ -640,7 +640,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        var presets = await _presetUseCase.GetAllPresetsAsync();
+        var presets = await _presetUseCase.GetWritablePresetsAsync();
         var vm = new ExcelImportViewModel(
             data,
             _scope.Resolve<IGridShaper>(),

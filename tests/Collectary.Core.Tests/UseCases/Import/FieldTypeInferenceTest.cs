@@ -23,6 +23,13 @@ public class FieldTypeInferenceTest
     }
 
     [Test]
+    public void Infer_AllZeroOne_ReturnsIntegerNotBool()
+    {
+        var column = new[] { Text("1"), Text("0"), Text("1"), Text("1") };
+        Assert.That(new FieldTypeInference().Infer(column, _invariant), Is.TypeOf<IntegerFieldDefinition>());
+    }
+
+    [Test]
     public void Infer_AllDates_ReturnsDate()
     {
         var column = new[] { Text("2024-01-01"), Text("2024-02-15") };

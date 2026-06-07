@@ -38,6 +38,20 @@ public class PresetUseCaseTest
     }
 
     [Test]
+    public async Task GetWritablePresetsAsync_ExcludesReadOnlyShares()
+    {
+        var writable = new Preset { Name = "Mine" };
+        var readOnly = new Preset { Name = "Shared (read-only)" };
+        A.CallTo(() => _presets.GetAllAsync()).Returns(new List<Preset> { writable, readOnly });
+        A.CallTo(() => _auth.CanWriteAsync(writable.Id)).Returns(true);
+        A.CallTo(() => _auth.CanWriteAsync(readOnly.Id)).Returns(false);
+
+        var result = await _sut.GetWritablePresetsAsync();
+
+        Assert.That(result.Select(p => p.Name), Is.EqualTo(new[] { "Mine" }));
+    }
+
+    [Test]
     public async Task GetPresetAsync_ReturnsRepositoryResult()
     {
         var id = Guid.NewGuid();

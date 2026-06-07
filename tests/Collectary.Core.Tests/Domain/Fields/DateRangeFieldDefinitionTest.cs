@@ -18,6 +18,13 @@ public class DateRangeFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_RejectsInvertedRange()
+    {
+        var ok = ((ITextImportable)new DateRangeFieldDefinition()).TryImportFromText("12/31/2024 - 01/01/2024", new CultureInfo("en-US"), out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
     public void TryImportFromText_RejectsSingleDate()
     {
         var ok = ((ITextImportable)new DateRangeFieldDefinition()).TryImportFromText("01/01/2024", new CultureInfo("en-US"), out _);

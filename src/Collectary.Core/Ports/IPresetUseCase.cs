@@ -5,6 +5,7 @@ namespace Collectary.Core.Ports;
 public interface IPresetUseCase
 {
     Task<IReadOnlyList<Preset>> GetAllPresetsAsync();
+    Task<IReadOnlyList<Preset>> GetWritablePresetsAsync();
     Task<Preset?> GetPresetAsync(Guid id);
     Task<IReadOnlyList<Preset>> GetChildPresetsAsync(Guid parentId);
     Task<EffectiveFields> GetEffectiveFieldsAsync(Guid presetId);

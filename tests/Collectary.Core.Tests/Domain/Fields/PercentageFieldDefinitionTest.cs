@@ -32,6 +32,13 @@ public class PercentageFieldDefinitionTest
     }
 
     [Test]
+    public void TryImportFromText_RejectsInternalPercentSign()
+    {
+        var ok = ((ITextImportable)new PercentageFieldDefinition()).TryImportFromText("1%2", CultureInfo.InvariantCulture, out _);
+        Assert.That(ok, Is.False);
+    }
+
+    [Test]
     public void TryImportFromText_AcceptsPlainNumberButInfersLast()
     {
         var importable = (ITextImportable)new PercentageFieldDefinition();
