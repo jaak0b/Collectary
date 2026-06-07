@@ -75,6 +75,8 @@
   <ItemGroup>
     <!-- Android -->
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.17" />
+    <!-- AndroidX Browser (Chrome Custom Tabs) — MSAL's interactive OneDrive sign-in activity loads it on resume (Android-only: Collectary.UI.Android) -->
+    <PackageVersion Include="Xamarin.AndroidX.Browser" Version="1.8.0.11" />
     <!-- CameraX — live barcode scanning camera pipeline (Android-only: Collectary.UI.Android) -->
     <PackageVersion Include="Xamarin.AndroidX.Camera.Core" Version="1.6.1" />
     <PackageVersion Include="Xamarin.AndroidX.Camera.Camera2" Version="1.6.1" />

@@ -85,6 +85,13 @@ Each head builds the options with a factory — `DesktopMsalPlatformOptionsFacto
 `net8.0`; because the Android head targets `net10.0-android`, NuGet still ships MSAL's
 `net8.0-android` runtime asset (Custom Tabs + Keystore), so no multi-targeting is needed.
 
+MSAL's Custom Tabs flow launches its own `AuthenticationActivity`, which loads the AndroidX Browser
+binding the moment that activity resumes. That binding is **not** dragged in transitively, so the
+Android head references `Xamarin.AndroidX.Browser` explicitly — without it, tapping **Connect** for
+OneDrive crashes with a `FileNotFoundException` for `Xamarin.AndroidX.Browser` inside
+`AuthenticationActivity.onResume`. `AndroidMsalBrowserDependencyTest` guards the reference so it can't
+be dropped again.
+
 Google Drive remains desktop-only for now: its sign-in uses a loopback HTTP listener and a
 DPAPI-encrypted token store, both of which need reworking before it can run on mobile.
 
