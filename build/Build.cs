@@ -162,7 +162,7 @@ class Build : NukeBuild
                     .ToArray();
                 if (relative.Length == 0) continue;
 
-                var patterns = string.Join(" ", relative.Select(f => $"--mutate \"{f}\""));
+                var patterns = string.Join(" ", relative.Select(f => $"--mutate **/{System.IO.Path.GetFileName(f)}"));
                 DotNet($"stryker -p \"{RootDirectory / "src" / project / $"{project}.csproj"}\" {patterns}",
                     workingDirectory: RootDirectory);
             }
