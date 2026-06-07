@@ -29,6 +29,18 @@ public partial class OverlayDialogService : ObservableObject, IDialogService, ID
         return await entry.Result.Task is true;
     }
 
+    public async Task<bool> ConfirmAsync(string message, string confirmLabel, string title)
+    {
+        var vm = new ConfirmDialogViewModel(
+            message: message,
+            confirmLabel: confirmLabel,
+            cancelLabel: LocalizationService.Instance["Cancel"],
+            title: title);
+        var entry = Enqueue(vm);
+        vm.Closed += result => Complete(entry, result);
+        return await entry.Result.Task is true;
+    }
+
     public async Task ShowMessageAsync(string message, string title = "")
     {
         var effectiveTitle = string.IsNullOrEmpty(title)

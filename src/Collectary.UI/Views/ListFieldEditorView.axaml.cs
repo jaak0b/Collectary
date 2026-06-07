@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 using Collectary.UI.Views.Helpers;
@@ -10,18 +11,20 @@ public partial class ListFieldEditorView : UserControl
     public ListFieldEditorView()
     {
         InitializeComponent();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => ((ListFieldEditorView)recipient).RebuildGrid()));
+    }
+
+    private void RebuildGrid()
+    {
+        if (DataContext is ListFieldEditorViewModel vm && vm.IsGridInline) BuildGrid(vm);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
         if (DataContext is ListFieldEditorViewModel vm && vm.IsGridInline)
-        {
             BuildGrid(vm);
-
-            LocalizationService.Instance.LanguageChanged += (_, _) =>
-                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => BuildGrid(vm));
-        }
     }
 
     private void BuildGrid(ListFieldEditorViewModel vm)

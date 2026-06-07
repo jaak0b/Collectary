@@ -25,6 +25,8 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Func<Task<bool>>? _exportBackup;
     private readonly Func<Task<BackupImportResult?>>? _importBackup;
     private readonly Action? _switchProfile;
+    private readonly Func<Task<bool>>? _confirmDiscardCustomizations;
+    private string _appliedColorThemeId = "Light";
     private bool _loadingSync;
     private bool _loadingAppearance;
     private bool _loadingAudio;
@@ -100,6 +102,12 @@ public partial class SettingsViewModel : ViewModelBase
     public partial bool HasCustomAccent { get; set; }
 
     [ObservableProperty]
+    public partial bool HasCustomizations { get; set; }
+
+    [ObservableProperty]
+    public partial string CustomThemeLabel { get; set; } = "";
+
+    [ObservableProperty]
     public partial bool ExpertColorMode { get; set; }
 
     public IReadOnlyList<FieldLabelLayoutOption> FieldLabelLayoutOptions { get; } =
@@ -159,6 +167,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         if (_loadingAppearance) return;
         ThemeService.Instance.ApplyCustomColors(CurrentOverrideMap());
+        RefreshCustomizationState();
         SaveAppearance();
     }
 
@@ -187,6 +196,7 @@ public partial class SettingsViewModel : ViewModelBase
             slot.Revert(CurrentColorFor(slot.Key));
         AccentColor = CurrentThemePrimary();
         _loadingAppearance = false;
+        RefreshCustomizationState();
         SaveAppearance();
     }
 
@@ -200,10 +210,51 @@ public partial class SettingsViewModel : ViewModelBase
     partial void OnSelectedColorThemeChanged(ColorThemeInfo? value)
     {
         if (_loadingAppearance || value is null) return;
-        ThemeService.Instance.ApplyColorTheme(value.Id);
-        foreach (var slot in ColorSlots.Where(s => !s.IsOverridden))
+
+        if (HasCustomizations)
+        {
+            _ = ConfirmAndSwitchBaseThemeAsync(value);
+            return;
+        }
+
+        ApplyBaseTheme(value);
+    }
+
+    private async Task ConfirmAndSwitchBaseThemeAsync(ColorThemeInfo target)
+    {
+        var confirmed = _confirmDiscardCustomizations is null || await _confirmDiscardCustomizations();
+        if (!confirmed)
+        {
+            _loadingAppearance = true;
+            SelectedColorTheme = ColorThemes.FirstOrDefault(t => t.Id == _appliedColorThemeId) ?? SelectedColorTheme;
+            _loadingAppearance = false;
+            return;
+        }
+
+        ApplyBaseTheme(target);
+    }
+
+    private void ApplyBaseTheme(ColorThemeInfo target)
+    {
+        _loadingAppearance = true;
+        ThemeService.Instance.ApplyCustomColors((IReadOnlyDictionary<string, Color>?)null);
+        ThemeService.Instance.ApplyAccent(null);
+        ThemeService.Instance.ApplyColorTheme(target.Id);
+        HasCustomAccent = false;
+        foreach (var slot in ColorSlots)
             slot.Revert(CurrentColorFor(slot.Key));
+        AccentColor = CurrentThemePrimary();
+        _appliedColorThemeId = target.Id;
+        _loadingAppearance = false;
+        RefreshCustomizationState();
         SaveAppearance();
+    }
+
+    private void RefreshCustomizationState()
+    {
+        HasCustomizations = HasCustomAccent || ColorSlots.Any(s => s.IsOverridden);
+        var baseName = ColorThemes.FirstOrDefault(t => t.Id == _appliedColorThemeId)?.DisplayName ?? _appliedColorThemeId;
+        CustomThemeLabel = string.Format(LocalizationService.Instance["Theme_CustomBasedOn"], baseName);
     }
 
     partial void OnAccentColorChanged(Color value)
@@ -211,6 +262,7 @@ public partial class SettingsViewModel : ViewModelBase
         if (_loadingAppearance) return;
         HasCustomAccent = true;
         ThemeService.Instance.ApplyAccent(value);
+        RefreshCustomizationState();
         SaveAppearance();
     }
 
@@ -222,6 +274,7 @@ public partial class SettingsViewModel : ViewModelBase
         _loadingAppearance = true;
         AccentColor = CurrentThemePrimary();
         _loadingAppearance = false;
+        RefreshCustomizationState();
         SaveAppearance();
     }
 
@@ -232,6 +285,7 @@ public partial class SettingsViewModel : ViewModelBase
             .ToDictionary(s => s.Key, s => s.Color.ToString());
         AppPreferences.Update(p => p with
         {
+            Theme = AppTheme.Light,
             Skin = SelectedSkin?.Id ?? "Windows11",
             ColorTheme = SelectedColorTheme?.Id ?? "Light",
             AccentColor = HasCustomAccent ? AccentColor.ToString() : null,
@@ -474,10 +528,12 @@ public partial class SettingsViewModel : ViewModelBase
         Func<Task<bool>>? exportBackup = null,
         Func<Task<BackupImportResult?>>? importBackup = null,
         Action? switchProfile = null,
+        Func<Task<bool>>? confirmDiscardCustomizations = null,
         IAudioRecorder? audioRecorder = null,
         IAudioPlayer? audioPlayer = null)
     {
         _navigateToSharedFields = navigateToSharedFields;
+        _confirmDiscardCustomizations = confirmDiscardCustomizations;
         _pickFolder = pickFolder;
         _onSyncChanged = onSyncChanged;
         _connectCloud = connectCloud;
@@ -508,6 +564,7 @@ public partial class SettingsViewModel : ViewModelBase
 
         SelectedSkin = Skins.FirstOrDefault(s => s.Id == ThemeService.Instance.CurrentSkinId) ?? Skins[0];
         SelectedColorTheme = ColorThemes.FirstOrDefault(t => t.Id == ThemeService.Instance.CurrentColorThemeId) ?? ColorThemes[0];
+        _appliedColorThemeId = SelectedColorTheme.Id;
         HasCustomAccent = ThemeService.Instance.CurrentAccent is not null;
         AccentColor = ThemeService.Instance.CurrentAccent ?? CurrentThemePrimary();
         ExpertColorMode = prefs.ExpertColorMode;
@@ -518,12 +575,13 @@ public partial class SettingsViewModel : ViewModelBase
             ColorSlots.Add(new CustomColorSlot(key, labelKey, isEasy, CurrentColorFor(key), overridden, OnColorSlotChanged));
         }
         UpdateSlotVisibility();
+        RefreshCustomizationState();
         _loadingSync = false;
         _loadingAppearance = false;
         _loadingAudio = false;
     }
 
-    private static Color CurrentThemePrimary()
+    private Color CurrentThemePrimary()
     {
         if (Avalonia.Application.Current?.TryGetResource(
                 "PrimaryColor", Avalonia.Application.Current.ActualThemeVariant, out var value) == true

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Data;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
@@ -12,6 +13,13 @@ public partial class PresetDetailView : UserControl
     public PresetDetailView()
     {
         InitializeComponent();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => ((PresetDetailView)recipient).RebuildColumns()));
+    }
+
+    private void RebuildColumns()
+    {
+        if (DataContext is PresetDetailViewModel vm) BuildColumns(vm);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
@@ -26,9 +34,6 @@ public partial class PresetDetailView : UserControl
                 if (args.PropertyName == nameof(PresetDetailViewModel.ListColumns))
                     Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => BuildColumns(vm));
             };
-
-            LocalizationService.Instance.LanguageChanged += (_, _) =>
-                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => BuildColumns(vm));
         }
     }
 

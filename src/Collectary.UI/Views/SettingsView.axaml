@@ -43,6 +43,14 @@
                               HorizontalAlignment="Stretch"/>
                 </controls:SettingsRow>
 
+                <TextBlock x:Name="CustomThemeBadge"
+                           Text="{Binding CustomThemeLabel}"
+                           IsVisible="{Binding HasCustomizations}"
+                           FontSize="12"
+                           FontStyle="Italic"
+                           Foreground="{DynamicResource PrimaryBrush}"
+                           Margin="0,-6,0,0"/>
+
                 <controls:SettingsRow Label="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}">
                     <ComboBox ItemsSource="{Binding FieldLabelLayoutOptions}"
                               SelectedItem="{Binding SelectedFieldLabelLayout}"

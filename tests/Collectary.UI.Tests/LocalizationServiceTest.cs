@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests;
@@ -123,5 +124,25 @@ public class LocalizationServiceTest
 
         void Handler(object? s, EventArgs e) => languageChanged = true;
         void PropHandler(object? s, System.ComponentModel.PropertyChangedEventArgs e) => propertyChanged = true;
+    }
+
+    [Test]
+    public void Apply_BroadcastsLanguageChangedMessageToWeakRecipients()
+    {
+        var recipient = new object();
+        var received = 0;
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(recipient, (_, _) => received++);
+        try
+        {
+            LocalizationService.Instance.Apply("de");
+            Assert.That(received, Is.EqualTo(1));
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.Unregister<LanguageChangedMessage>(recipient);
+            LocalizationService.Instance.Apply("en");
+        }
+
+        GC.KeepAlive(recipient);
     }
 }

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.UI.Controls;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
@@ -23,12 +24,11 @@ public partial class SharedFieldLibraryView : UserControl
             () => _ = (DataContext as SharedFieldLibraryViewModel)?.CommitReorderAsync(),
             OnDragActive);
         DataContextChanged += OnDataContextChanged;
-        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
+            ((SharedFieldLibraryView)recipient).BuildAddFieldMenu());
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
-
-    private void OnLanguageChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
 
     private void BuildAddFieldMenu()
     {

@@ -177,6 +177,134 @@ public class SettingsViewModelTest
     }
 
     [Test]
+    public void SavingAppearance_NeutralizesStaleLegacyThemeField_SoExplicitColorThemeWins()
+    {
+        AppPreferences.Save(new AppPreferencesData(Theme: AppTheme.Dark, ColorTheme: "Dark"));
+        ThemeService.Instance.ApplyColorTheme("Dark");
+        var sut = new SettingsViewModel(() => { });
+
+        sut.SelectedColorTheme = sut.ColorThemes.First(t => t.Id == "Light");
+
+        var saved = AppPreferences.Load();
+        Assert.Multiple(() =>
+        {
+            Assert.That(saved.ColorTheme, Is.EqualTo("Light"));
+            Assert.That(saved.EffectiveColorTheme(), Is.EqualTo("Light"),
+                "a stale legacy Theme=Dark must not override an explicitly chosen Light color theme on next boot");
+        });
+    }
+
+    [Test]
+    public void SelectedColorTheme_Change_RefreshesAccentSwatchToNewThemePrimary()
+    {
+        var sut = new SettingsViewModel(() => { });
+        var lightPrimary = sut.AccentColor;
+
+        sut.SelectedColorTheme = sut.ColorThemes.First(t => t.Id == "Dark");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.AccentColor, Is.EqualTo(Color.Parse("#60A5FA")),
+                "the accent swatch must follow the newly selected theme's primary colour");
+            Assert.That(sut.AccentColor, Is.Not.EqualTo(lightPrimary));
+        });
+    }
+
+    [Test]
+    public void Customizing_AColorSlot_FlagsCustomizationWithBasedOnLabel()
+    {
+        LocalizationService.Instance.Apply("en");
+        var sut = new SettingsViewModel(() => { });
+
+        sut.ColorSlots.First(s => s.Key == "Background").Color = Colors.Magenta;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.HasCustomizations, Is.True);
+            Assert.That(sut.CustomThemeLabel, Does.Contain("Light"),
+                "the badge names the built-in theme the customization is based on");
+        });
+    }
+
+    [Test]
+    public void Constructor_SeedsHasCustomizations_FromSavedCustomColors()
+    {
+        ThemeService.Instance.ApplyCustomColors(new Dictionary<string, Color> { ["Background"] = Colors.Magenta });
+
+        var sut = new SettingsViewModel(() => { });
+
+        Assert.That(sut.HasCustomizations, Is.True);
+    }
+
+    [Test]
+    public void SwitchingBaseTheme_WithCustomizations_OnConfirm_ClearsColorsAccentAndApplies()
+    {
+        var sut = new SettingsViewModel(() => { }, confirmDiscardCustomizations: () => Task.FromResult(true));
+        sut.ColorSlots.First(s => s.Key == "Background").Color = Colors.Magenta;
+        sut.AccentColor = Colors.Red;
+        Assume.That(sut.HasCustomizations, Is.True);
+
+        sut.SelectedColorTheme = sut.ColorThemes.First(t => t.Id == "Dark");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ThemeService.Instance.CurrentColorThemeId, Is.EqualTo("Dark"));
+            Assert.That(ThemeService.Instance.CurrentCustomColors, Is.Empty);
+            Assert.That(ThemeService.Instance.CurrentAccent, Is.Null, "switching base theme must clear the custom accent");
+            Assert.That(sut.HasCustomAccent, Is.False);
+            Assert.That(sut.HasCustomizations, Is.False);
+            Assert.That(sut.SelectedColorTheme.Id, Is.EqualTo("Dark"));
+            Assert.That(AppPreferences.Load().CustomColors, Is.Null);
+            Assert.That(AppPreferences.Load().AccentColor, Is.Null);
+        });
+    }
+
+    [Test]
+    public void CustomThemeLabel_UsesTheBaseThemesDisplayName_NotItsId()
+    {
+        LocalizationService.Instance.Apply("en");
+        ThemeService.Instance.ApplyColorTheme("SolarizedLight");
+        var sut = new SettingsViewModel(() => { });
+
+        sut.ColorSlots.First(s => s.Key == "Background").Color = Colors.Magenta;
+
+        Assert.That(sut.CustomThemeLabel, Does.Contain("Solarized Light"),
+            "the badge shows the human display name (\"Solarized Light\"), not the id (\"SolarizedLight\")");
+    }
+
+    [Test]
+    public void SwitchingBaseTheme_WithCustomizations_OnCancel_KeepsCustomizationsAndReverts()
+    {
+        ThemeService.Instance.ApplyColorTheme("Light");
+        var sut = new SettingsViewModel(() => { }, confirmDiscardCustomizations: () => Task.FromResult(false));
+        sut.ColorSlots.First(s => s.Key == "Background").Color = Colors.Magenta;
+
+        sut.SelectedColorTheme = sut.ColorThemes.First(t => t.Id == "Dark");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ThemeService.Instance.CurrentColorThemeId, Is.EqualTo("Light"),
+                "cancelling the confirm must not switch the theme");
+            Assert.That(ThemeService.Instance.CurrentCustomColors["Background"], Is.EqualTo(Colors.Magenta));
+            Assert.That(sut.HasCustomizations, Is.True);
+            Assert.That(sut.SelectedColorTheme.Id, Is.EqualTo("Light"),
+                "the dropdown selection reverts to the based-on theme");
+        });
+    }
+
+    [Test]
+    public void ResetColors_ClearsHasCustomizations()
+    {
+        var sut = new SettingsViewModel(() => { });
+        sut.ColorSlots.First(s => s.Key == "Background").Color = Colors.Magenta;
+        Assume.That(sut.HasCustomizations, Is.True);
+
+        sut.ResetColorsCommand.Execute(null);
+
+        Assert.That(sut.HasCustomizations, Is.False);
+    }
+
+    [Test]
     public void SelectedFieldLabelLayout_Change_Persists()
     {
         var sut = new SettingsViewModel(() => { });

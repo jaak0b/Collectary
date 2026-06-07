@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.UI.Controls;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
@@ -26,7 +27,8 @@ public partial class PresetEditorView : UserControl
             () => { },
             OnDragActive);
         DataContextChanged += OnDataContextChanged;
-        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
+            ((PresetEditorView)recipient).BuildAddFieldMenu());
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -44,8 +46,6 @@ public partial class PresetEditorView : UserControl
 
     private void OnSharedFieldsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         BuildAddFieldMenu();
-
-    private void OnLanguageChanged(object? sender, EventArgs e) => BuildAddFieldMenu();
 
     private void BuildAddFieldMenu()
     {

@@ -101,6 +101,69 @@ public class ThemeServiceTest
     }
 
     [Test]
+    public void ApplyColorTheme_WhenPaletteUntracked_InsertsWithoutClobberingOtherDictionaries()
+    {
+        var app = Application.Current!;
+        var merged = app.Resources.MergedDictionaries;
+        var snapshot = merged.ToList();
+        try
+        {
+            merged.Clear();
+            var sentinel = new Avalonia.Controls.ResourceDictionary { ["SentinelColor"] = Colors.HotPink };
+            merged.Add(sentinel);
+
+            ThemeService.Instance.ApplyColorTheme("Dark");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(merged, Does.Contain(sentinel),
+                    "applying a theme must not overwrite an unrelated (non-palette) merged dictionary");
+                Assert.That(Resource<Color>("SentinelColor"), Is.EqualTo(Colors.HotPink));
+                Assert.That(Resource<Color>("BackgroundColor"), Is.EqualTo(Color.Parse("#121212")));
+            });
+        }
+        finally
+        {
+            merged.Clear();
+            foreach (var d in snapshot) merged.Add(d);
+            ThemeService.Instance.ApplyColorTheme("Light");
+        }
+    }
+
+    [Test]
+    public void ApplyColorTheme_WhenPaletteUntracked_ReplacesExistingPaletteBySource_WithoutDuplicating()
+    {
+        var app = Application.Current!;
+        var merged = app.Resources.MergedDictionaries;
+        var snapshot = merged.ToList();
+        try
+        {
+            merged.Clear();
+            var decoyUri = new Uri("avares://Collectary.UI/Controls/FieldEditorScaffold.axaml");
+            var decoy = new Avalonia.Markup.Xaml.Styling.ResourceInclude(decoyUri) { Source = decoyUri };
+            merged.Add(decoy);
+            var lightUri = new Uri("avares://Collectary.UI/Themes/Colors.Light.axaml");
+            merged.Add(new Avalonia.Markup.Xaml.Styling.ResourceInclude(lightUri) { Source = lightUri });
+
+            ThemeService.Instance.ApplyColorTheme("Dark");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(merged, Does.Contain(decoy),
+                    "a non-palette UI resource dictionary must never be mistaken for the palette and replaced");
+                Assert.That(Resource<Color>("BackgroundColor"), Is.EqualTo(Color.Parse("#121212")),
+                    "the Colors.* palette is the dictionary located by source and replaced in place");
+            });
+        }
+        finally
+        {
+            merged.Clear();
+            foreach (var d in snapshot) merged.Add(d);
+            ThemeService.Instance.ApplyColorTheme("Light");
+        }
+    }
+
+    [Test]
     public void ApplyColorTheme_SwapsPaletteAndVariant()
     {
         ThemeService.Instance.ApplyColorTheme("Dark");
@@ -115,6 +178,8 @@ public class ThemeServiceTest
             Assert.That(ThemeService.Instance.CurrentColorThemeId, Is.EqualTo("Light"));
             Assert.That(dark, Is.Not.EqualTo(light));
             Assert.That(darkVariant, Is.EqualTo(Avalonia.Styling.ThemeVariant.Dark));
+            Assert.That(Application.Current!.RequestedThemeVariant, Is.EqualTo(Avalonia.Styling.ThemeVariant.Light),
+                "a light theme must request the Light variant");
         });
     }
 

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 using Collectary.UI.Views.Helpers;
@@ -10,18 +11,20 @@ public partial class ListDetailView : UserControl
     public ListDetailView()
     {
         InitializeComponent();
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => ((ListDetailView)recipient).RebuildColumns()));
+    }
+
+    private void RebuildColumns()
+    {
+        if (DataContext is ListDetailViewModel vm) BuildColumns(vm);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
         if (DataContext is ListDetailViewModel vm)
-        {
             BuildColumns(vm);
-
-            LocalizationService.Instance.LanguageChanged += (_, _) =>
-                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => BuildColumns(vm));
-        }
     }
 
     private void BuildColumns(ListDetailViewModel vm)

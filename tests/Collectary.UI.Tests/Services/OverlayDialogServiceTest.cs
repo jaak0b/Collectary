@@ -54,6 +54,34 @@ public class OverlayDialogServiceTest
     }
 
     [Test]
+    public async Task ConfirmAsync_ReturnsTrueWhenConfirmed_WithGivenLabels()
+    {
+        var task = _sut.ConfirmAsync("Discard?", "Discard", "Title");
+        var vm = (ConfirmDialogViewModel)_sut.ActiveDialog!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.Message, Is.EqualTo("Discard?"));
+            Assert.That(vm.ConfirmLabel, Is.EqualTo("Discard"));
+            Assert.That(vm.Title, Is.EqualTo("Title"));
+            Assert.That(vm.CancelLabel, Is.EqualTo(Collectary.Presentation.Localization.LocalizationService.Instance["Cancel"]));
+        });
+        vm.ConfirmCommand.Execute(null);
+
+        Assert.That(await task, Is.True);
+        Assert.That(_sut.HasActiveDialog, Is.False);
+    }
+
+    [Test]
+    public async Task ConfirmAsync_ReturnsFalseWhenCancelled()
+    {
+        var task = _sut.ConfirmAsync("Discard?", "Discard", "Title");
+        ((ConfirmDialogViewModel)_sut.ActiveDialog!).CancelCommand.Execute(null);
+
+        Assert.That(await task, Is.False);
+    }
+
+    [Test]
     public async Task ShowCloudFolderPickerAsync_ReturnsSelectedFolder()
     {
         var store = A.Fake<ICloudFileStore>();

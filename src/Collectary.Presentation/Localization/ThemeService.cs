@@ -80,10 +80,11 @@ public class ThemeService
         var dict = new ResourceInclude(uri) { Source = uri };
         var merged = app.Resources.MergedDictionaries;
 
-        if (_palette is not null && merged.Contains(_palette))
-            merged[merged.IndexOf(_palette)] = dict;
-        else if (merged.Count > 0)
-            merged[0] = dict;
+        var existing = _palette is not null && merged.Contains(_palette)
+            ? _palette
+            : FindExistingPalette(merged);
+        if (existing is not null)
+            merged[merged.IndexOf(existing)] = dict;
         else
             merged.Insert(0, dict);
         _palette = dict;
@@ -91,6 +92,13 @@ public class ThemeService
         app.RequestedThemeVariant = info.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 
         ReapplyOverrides();
+    }
+
+    private ResourceInclude? FindExistingPalette(IList<Avalonia.Controls.IResourceProvider> merged)
+    {
+        var palettePrefix = $"{AssemblyRoot}/Themes/Colors.";
+        return merged.OfType<ResourceInclude>()
+            .FirstOrDefault(r => r.Source is { } s && s.OriginalString.StartsWith(palettePrefix, StringComparison.Ordinal));
     }
 
     public void ApplySkin(string id)

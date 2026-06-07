@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.Localization;
@@ -43,7 +44,8 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
         _context = context;
         _ungroupedColumnCount = definition.ColumnCount;
 
-        LocalizationService.Instance.LanguageChanged += (_, _) => OnPropertyChanged(nameof(EntryLabel));
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
+            ((ListEntryEditorViewModel)recipient).OnPropertyChanged(nameof(EntryLabel)));
 
         var groupByFieldId = new Dictionary<Guid, Guid?>();
         foreach (var subDef in definition.SubFields.OrderBy(f => f.DisplayOrder))

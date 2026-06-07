@@ -103,6 +103,10 @@
   <data name="Appearance_EasyMode" xml:space="preserve"><value>Easy</value></data>
   <data name="Appearance_ExpertMode" xml:space="preserve"><value>Expert</value></data>
   <data name="Appearance_ResetColors" xml:space="preserve"><value>Reset colors</value></data>
+  <data name="Theme_CustomBasedOn" xml:space="preserve"><value>Custom (based on {0})</value></data>
+  <data name="Theme_DiscardCustomTitle" xml:space="preserve"><value>Discard customizations?</value></data>
+  <data name="Theme_DiscardCustomBody" xml:space="preserve"><value>Switching to a built-in theme will discard your custom colors and accent. Continue?</value></data>
+  <data name="Theme_DiscardCustomConfirm" xml:space="preserve"><value>Discard</value></data>
   <data name="Color_Accent" xml:space="preserve"><value>Accent</value></data>
   <data name="Color_Background" xml:space="preserve"><value>Window background</value></data>
   <data name="Color_Surface" xml:space="preserve"><value>Surface / cards</value></data>

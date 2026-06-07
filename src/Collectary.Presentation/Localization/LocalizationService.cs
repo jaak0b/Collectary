@@ -1,8 +1,11 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Resources;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Collectary.Presentation.Localization;
+
+public sealed class LanguageChangedMessage;
 
 public class LocalizationService : INotifyPropertyChanged
 {
@@ -52,6 +55,7 @@ public class LocalizationService : INotifyPropertyChanged
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         LanguageChanged?.Invoke(this, EventArgs.Empty);
+        WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

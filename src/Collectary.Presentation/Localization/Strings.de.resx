@@ -103,6 +103,10 @@
   <data name="Appearance_EasyMode" xml:space="preserve"><value>Einfach</value></data>
   <data name="Appearance_ExpertMode" xml:space="preserve"><value>Experte</value></data>
   <data name="Appearance_ResetColors" xml:space="preserve"><value>Farben zurücksetzen</value></data>
+  <data name="Theme_CustomBasedOn" xml:space="preserve"><value>Eigenes (basiert auf {0})</value></data>
+  <data name="Theme_DiscardCustomTitle" xml:space="preserve"><value>Anpassungen verwerfen?</value></data>
+  <data name="Theme_DiscardCustomBody" xml:space="preserve"><value>Beim Wechsel zu einem integrierten Design werden deine eigenen Farben und die Akzentfarbe verworfen. Fortfahren?</value></data>
+  <data name="Theme_DiscardCustomConfirm" xml:space="preserve"><value>Verwerfen</value></data>
   <data name="Color_Accent" xml:space="preserve"><value>Akzent</value></data>
   <data name="Color_Background" xml:space="preserve"><value>Fensterhintergrund</value></data>
   <data name="Color_Surface" xml:space="preserve"><value>Oberfläche / Karten</value></data>

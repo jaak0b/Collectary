@@ -22,7 +22,13 @@ Classic — which controls corners and control sizes.
   text, and sidebar. Changing the accent derives matching hover and pressed shades automatically.
 - **Expert** — every background, text, border, sidebar, and danger colour the app uses.
 
-**Reset colors** returns everything to the chosen theme.
+The moment you change a colour or the accent, a small **Custom (based on …)** note appears under
+the colour-theme dropdown. It's there to remind you that what you're looking at is your own tweaked
+version of a built-in theme, not the theme as it ships — the dropdown still shows the theme you
+started from. Built-in themes always stay pristine: if you pick a different one from the dropdown
+while you have customizations, the app first asks whether to **discard** them, so a stray click can't
+quietly wipe a palette you spent time on. **Reset colors** clears your tweaks and returns to the
+chosen theme straight away.
 
 ### Field label position
 

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.Localization;
@@ -202,11 +203,12 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
             OnPropertyChanged(nameof(HasAvailableGroups));
             OnPropertyChanged(nameof(SelectedGroup));
         };
-        LocalizationService.Instance.LanguageChanged += (_, _) =>
+        WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
         {
-            OnPropertyChanged(nameof(TypeDisplayName));
-            OnPropertyChanged(nameof(DisplayLabel));
-        };
+            var vm = (FieldDefinitionRowViewModel)recipient;
+            vm.OnPropertyChanged(nameof(TypeDisplayName));
+            vm.OnPropertyChanged(nameof(DisplayLabel));
+        });
 
         var existingChoices = definition switch
         {

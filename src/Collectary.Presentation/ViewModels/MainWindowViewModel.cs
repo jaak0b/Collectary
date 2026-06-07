@@ -96,6 +96,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync,
             switchProfile: () => SwitchProfileCommand.Execute(null),
+            confirmDiscardCustomizations: () => _dialogService.ConfirmAsync(
+                LocalizationService.Instance["Theme_DiscardCustomBody"],
+                LocalizationService.Instance["Theme_DiscardCustomConfirm"],
+                LocalizationService.Instance["Theme_DiscardCustomTitle"]),
             audioRecorder: _scope.ResolveOptional<IAudioRecorder>(),
             audioPlayer: _scope.ResolveOptional<IAudioPlayer>());
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
