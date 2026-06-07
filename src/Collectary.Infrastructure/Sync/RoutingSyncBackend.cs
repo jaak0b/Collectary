@@ -45,6 +45,9 @@ public class RoutingSyncBackend : ISyncBackend
 
     public Task<string?> ReadAsync(string kind, Guid id) => Current.ReadAsync(kind, id);
 
+    public Task<string?> ReadAtRevisionAsync(string kind, Guid id, long revision) =>
+        Current.ReadAtRevisionAsync(kind, id, revision);
+
     public Task WriteAsync(string kind, Guid id, string content, long revision) =>
         Current.WriteAsync(kind, id, content, revision);
 

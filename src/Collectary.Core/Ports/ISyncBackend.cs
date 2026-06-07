@@ -16,4 +16,6 @@ public interface ISyncBackend
     Task DeleteBlobAsync(string kind, string key);
 
     void Invalidate() { }
+
+    Task<string?> ReadAtRevisionAsync(string kind, Guid id, long revision) => ReadAsync(kind, id);
 }

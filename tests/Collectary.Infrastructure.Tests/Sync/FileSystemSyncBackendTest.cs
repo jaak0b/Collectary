@@ -112,6 +112,27 @@ public class FileSystemSyncBackendTest : FileSystemTestBase
     }
 
     [Test]
+    public async Task ReadAtRevisionAsync_ReadsTheExactRevision()
+    {
+        var id = Guid.NewGuid();
+        await _sut.WriteAsync("items", id, "hi", 3);
+
+        Assert.That(await _sut.ReadAtRevisionAsync("items", id, 3), Is.EqualTo("hi"));
+    }
+
+    [Test]
+    public async Task ReadAtRevisionAsync_WhenExactRevisionMissing_FallsBackToHighest()
+    {
+        var id = Guid.NewGuid();
+        var dir = Path.Combine(TempDir, "items");
+        Directory.CreateDirectory(dir);
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{id:N}.6.json"), "six");
+
+        Assert.That(await _sut.ReadAtRevisionAsync("items", id, 5), Is.EqualTo("six"),
+            "a superseded exact revision must fall back to the highest present revision");
+    }
+
+    [Test]
     public async Task ListAsync_WhenKindMissing_ReturnsEmpty() =>
         Assert.That(await _sut.ListAsync("nope"), Is.Empty);
 

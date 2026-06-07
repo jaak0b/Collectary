@@ -127,7 +127,7 @@ public class SyncService : ISyncService
 
             if (localChanged && remoteChanged)
             {
-                var remote = await ReadRemoteAsync<T>(kind, id);
+                var remote = await ReadRemoteAsync<T>(kind, id, remoteRevision);
                 conflicts.Add(remote is not null
                     ? new SyncConflict(entityKind, id, label(local!), label(remote), local!.Revision, remoteRevision)
                     : new SyncConflict(entityKind, id, label(local!), label(local!), local!.Revision, remoteRevision));
@@ -140,7 +140,7 @@ public class SyncService : ISyncService
             }
             else if (remoteChanged)
             {
-                var remote = await ReadRemoteAsync<T>(kind, id);
+                var remote = await ReadRemoteAsync<T>(kind, id, remoteRevision);
                 if (remote is null) { skipped++; continue; }
                 if (local is null && remote.IsDeleted) continue;
                 remote.MarkPulled();
@@ -152,9 +152,9 @@ public class SyncService : ISyncService
         return (pushed, pulled, skipped);
     }
 
-    private async Task<T?> ReadRemoteAsync<T>(string kind, Guid id) where T : class, ISyncable
+    private async Task<T?> ReadRemoteAsync<T>(string kind, Guid id, long revision) where T : class, ISyncable
     {
-        var content = await _backend.ReadAsync(kind, id);
+        var content = await _backend.ReadAtRevisionAsync(kind, id, revision);
         if (content is null) return null;
         try
         {

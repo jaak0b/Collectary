@@ -24,6 +24,10 @@ public class FakeCloudFileStore : ICloudFileStore
 
     public int InvalidateCalls { get; private set; }
 
+    public int ListFilesCalls { get; private set; }
+
+    public int DownloadCalls { get; private set; }
+
     public void Invalidate() => InvalidateCalls++;
 
     public Task<string> EnsureFolderAsync(string parentFolderId, string name, CancellationToken ct)
@@ -39,6 +43,7 @@ public class FakeCloudFileStore : ICloudFileStore
 
     public Task<IReadOnlyList<CloudFile>> ListFilesAsync(string folderId, CancellationToken ct)
     {
+        ListFilesCalls++;
         IReadOnlyList<CloudFile> files = _files
             .Where(kv => kv.Key.FolderId == folderId)
             .Select(kv => new CloudFile(kv.Key.Name, kv.Key.Name, kv.Value.Length))
@@ -55,8 +60,11 @@ public class FakeCloudFileStore : ICloudFileStore
         return Task.FromResult(folders);
     }
 
-    public Task<byte[]?> DownloadAsync(string folderId, string name, CancellationToken ct) =>
-        Task.FromResult(_files.TryGetValue((folderId, name), out var bytes) ? bytes : null);
+    public Task<byte[]?> DownloadAsync(string folderId, string name, CancellationToken ct)
+    {
+        DownloadCalls++;
+        return Task.FromResult(_files.TryGetValue((folderId, name), out var bytes) ? bytes : null);
+    }
 
     public Task UploadAsync(string folderId, string name, byte[] content, CancellationToken ct)
     {

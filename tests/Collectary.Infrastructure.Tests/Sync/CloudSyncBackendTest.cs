@@ -104,6 +104,41 @@ public class CloudSyncBackendTest
     }
 
     [Test]
+    public async Task ReadAtRevisionAsync_ReadsDirectlyWithoutListingTheFolder()
+    {
+        var id = Guid.NewGuid();
+        await _sut.WriteAsync("items", id, "hi", 3);
+        var listsBefore = _fileStore.ListFilesCalls;
+
+        var content = await _sut.ReadAtRevisionAsync("items", id, 3);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(content, Is.EqualTo("hi"));
+            Assert.That(_fileStore.ListFilesCalls - listsBefore, Is.EqualTo(0),
+                "a revision-addressed read must download the document directly, not re-list the folder");
+        });
+    }
+
+    [Test]
+    public async Task ReadAtRevisionAsync_WhenExactRevisionMissing_FallsBackToHighest()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ListAsync("items");
+        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
+        var naming = new SyncFileNaming();
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 1), System.Text.Encoding.UTF8.GetBytes("rev1"), CancellationToken.None);
+        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 2), System.Text.Encoding.UTF8.GetBytes("rev2"), CancellationToken.None);
+
+        Assert.That(await _sut.ReadAtRevisionAsync("items", id, 9), Is.EqualTo("rev2"),
+            "a superseded exact revision must fall back to the highest available revision");
+    }
+
+    [Test]
+    public async Task ReadAtRevisionAsync_WhenAbsentEntirely_ReturnsNull() =>
+        Assert.That(await _sut.ReadAtRevisionAsync("items", Guid.NewGuid(), 1), Is.Null);
+
+    [Test]
     public async Task WriteAsync_DoesNotDeleteAHigherConcurrentRevision()
     {
         var id = Guid.NewGuid();
