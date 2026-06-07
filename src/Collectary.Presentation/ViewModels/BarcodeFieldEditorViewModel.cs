@@ -12,6 +12,7 @@ public partial class BarcodeFieldEditorViewModel : FieldEditorViewModelBase
     private readonly BarcodeFieldDefinition _definition;
     private readonly BarcodeFieldValue _value;
     private readonly ItemEditingContext _context;
+    private bool _cameraAvailabilityProbed;
 
     /// <summary>The decoded (or manually entered) code. Editable so the field is never blocked without a camera.</summary>
     [ObservableProperty]
@@ -33,17 +34,17 @@ public partial class BarcodeFieldEditorViewModel : FieldEditorViewModelBase
         _value = value;
         _context = context;
         Code = value.Code;
-        CameraAvailabilityResolved = ResolveCameraAvailabilityAsync();
     }
 
     public override FieldDefinition Definition => _definition;
 
     public override void Randomize(Services.ISampleData data) => Code = data.Digits(13);
 
-    public Task CameraAvailabilityResolved { get; }
-
-    private async Task ResolveCameraAvailabilityAsync()
+    [RelayCommand]
+    private async Task EnsureCameraAvailabilityAsync()
     {
+        if (_cameraAvailabilityProbed) return;
+        _cameraAvailabilityProbed = true;
         try
         {
             CanScanFromCamera = await _context.IsCameraScanAvailableAsync();

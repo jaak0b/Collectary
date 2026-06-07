@@ -14,7 +14,8 @@
                      PlaceholderText="{Binding [Barcode_Placeholder], Source={x:Static loc:LocalizationService.Instance}}"
                      MinWidth="180"
                      VerticalAlignment="Top"/>
-            <Button Content="{Binding [Barcode_Scan], Source={x:Static loc:LocalizationService.Instance}}"
+            <Button x:Name="ScanButton"
+                    Content="{Binding [Barcode_Scan], Source={x:Static loc:LocalizationService.Instance}}"
                     VerticalAlignment="Top">
                 <Button.Flyout>
                     <MenuFlyout>
