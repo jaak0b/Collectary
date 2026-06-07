@@ -172,20 +172,35 @@ class Build : NukeBuild
         .Executes(() =>
         {
             var results = RequiredCredentials
-                .Select(c => (c.EnvVariable, c.Purpose,
-                    Present: !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(c.EnvVariable))))
+                .Select(c => (c.EnvVariable, c.Purpose, Value: ResolveCredential(c.EnvVariable)))
                 .ToList();
 
-            foreach (var r in results)
-                Log.Information("{Status}  {Var} — {Purpose}", r.Present ? "ok     " : "MISSING", r.EnvVariable, r.Purpose);
+            foreach (var (envVariable, purpose, value) in results)
+            {
+                var present = !string.IsNullOrWhiteSpace(value);
+                // A user/machine var persisted after this shell launched is absent from the inherited
+                // process block; copy it in so dependent targets and their child processes inherit it.
+                if (present) Environment.SetEnvironmentVariable(envVariable, value);
+                Log.Information("{Status}  {Var} — {Purpose}", present ? "ok     " : "MISSING", envVariable, purpose);
+            }
 
-            var missing = results.Where(r => !r.Present).Select(r => r.EnvVariable).ToList();
+            var missing = results.Where(r => string.IsNullOrWhiteSpace(r.Value)).Select(r => r.EnvVariable).ToList();
             Assert.True(missing.Count == 0,
-                $"Missing cloud credentials: {string.Join(", ", missing)}. Set them as build-environment "
-                + "variables (system/user env, or Rider → Settings → Build, Execution, Deployment → Toolset and "
-                + "Build → the environment NUKE runs in). A Rider run configuration's env vars are not visible to "
-                + "the build, and are never delivered to the Android device.");
+                $"Missing cloud credentials: {string.Join(", ", missing)}. Persist them with "
+                + "`.\\build.ps1 --target SetCredentials`, or set them as user/system environment variables.");
         });
+
+    string ResolveCredential(string envVariable)
+    {
+        var process = Environment.GetEnvironmentVariable(envVariable);
+        if (!string.IsNullOrWhiteSpace(process)) return process;
+        if (!OperatingSystem.IsWindows()) return string.Empty;
+
+        var user = Environment.GetEnvironmentVariable(envVariable, EnvironmentVariableTarget.User);
+        if (!string.IsNullOrWhiteSpace(user)) return user;
+        var machine = Environment.GetEnvironmentVariable(envVariable, EnvironmentVariableTarget.Machine);
+        return string.IsNullOrWhiteSpace(machine) ? string.Empty : machine;
+    }
 
     Target SetCredentials => _ => _
         .Executes(() =>
