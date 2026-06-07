@@ -53,6 +53,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Webcam capture for live barcode scanning (desktop-only: Collectary.UI.Desktop) -->
+    <PackageVersion Include="OpenCvSharp4.Windows" Version="4.10.0.20241108" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Spreadsheet import (.xlsx) -->
     <PackageVersion Include="ClosedXML" Version="0.104.*" />
     <!-- CSV import -->

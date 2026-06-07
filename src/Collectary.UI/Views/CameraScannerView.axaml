@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             xmlns:ports="using:Collectary.Core.Ports"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             x:Class="Collectary.UI.Views.CameraScannerView"
+             x:DataType="vm:CameraScannerViewModel">
+
+    <Grid RowDefinitions="*,Auto" Background="Black">
+        <Image Grid.Row="0"
+               Source="{Binding Preview}"
+               Stretch="Uniform"
+               Margin="12"/>
+
+        <DockPanel Grid.Row="1" Margin="12" LastChildFill="False">
+            <ComboBox DockPanel.Dock="Left"
+                      ItemsSource="{Binding Cameras}"
+                      SelectedItem="{Binding SelectedCamera}"
+                      MinWidth="160"
+                      IsVisible="{Binding CanSwitchCamera}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="ports:CameraDevice">
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Button DockPanel.Dock="Left"
+                    Margin="8,0,0,0"
+                    Command="{Binding SwitchCameraCommand}"
+                    Content="{Binding [Barcode_SwitchCamera], Source={x:Static loc:LocalizationService.Instance}}"
+                    IsVisible="{Binding CanSwitchCamera}"/>
+
+            <Button DockPanel.Dock="Right"
+                    Command="{Binding CancelCommand}"
+                    Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"/>
+        </DockPanel>
+    </Grid>
+</UserControl>

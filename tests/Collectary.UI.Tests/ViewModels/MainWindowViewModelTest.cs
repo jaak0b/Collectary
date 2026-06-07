@@ -1,6 +1,7 @@
 using Autofac;
 using FakeItEasy;
 using Collectary.Core.Domain;
+using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Services;
@@ -486,6 +487,30 @@ public class MainWindowViewModelTest
         sut.ContentViewModel = editor;
 
         Assert.That(sut.ActiveFieldEditor, Is.SameAs(editor));
+    }
+
+    [Test]
+    public void SwappingAwayFromCameraScanner_ClosesItWithNullResultAndStopsCamera()
+    {
+        var sut = CreateSut();
+        var camera = A.Fake<ILiveCamera>();
+        A.CallTo(() => camera.GetDevices()).Returns(new[] { new CameraDevice("0", "Front") });
+        A.CallTo(() => camera.StopAsync()).Returns(Task.CompletedTask);
+        BarcodeReadResult? result = new("x", BarcodeSymbology.QrCode);
+        var resultDelivered = false;
+        var scanner = new CameraScannerViewModel(camera, A.Fake<IBarcodeImageDecoder>(), _dialogService,
+            () => Task.FromResult(true),
+            r => { resultDelivered = true; result = r; }, () => { });
+        sut.ContentViewModel = scanner;
+
+        sut.ContentViewModel = new WelcomeViewModel();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(resultDelivered, Is.True);
+            Assert.That(result, Is.Null);
+        });
+        A.CallTo(() => camera.StopAsync()).MustHaveHappened();
     }
 
     [Test]

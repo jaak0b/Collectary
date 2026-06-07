@@ -47,6 +47,7 @@ public class ViewLocatorTest
     [TestCase(typeof(ConfirmDialogViewModel), "Collectary.UI.Views.ConfirmDialogView")]
     [TestCase(typeof(SyncViewModel), "Collectary.UI.Views.SyncView")]
     [TestCase(typeof(CloudFolderPickerViewModel), "Collectary.UI.Views.CloudFolderPickerView")]
+    [TestCase(typeof(CameraScannerViewModel), "Collectary.UI.Views.CameraScannerView")]
     public void DialogViewModel_MapsToResolvableView(Type viewModelType, string expectedView)
     {
         var name = MapToViewTypeName(viewModelType);

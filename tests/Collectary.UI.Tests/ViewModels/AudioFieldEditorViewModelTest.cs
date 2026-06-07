@@ -110,6 +110,39 @@ public class AudioFieldEditorViewModelTest
     }
 
     [Test]
+    public async Task ToggleRecord_RequestsMicrophonePermissionBeforeStarting()
+    {
+        var recorder = RecorderWith();
+        var ctx = MakeContext(recorder, inputDeviceId: "mic-1");
+        RuntimePermission? requested = null;
+        ctx.RequestPermissionAsync = p => { requested = p; return Task.FromResult(true); };
+        var vm = Make(ctx);
+
+        await vm.ToggleRecordCommand.ExecuteAsync(null);
+
+        Assert.That(requested, Is.EqualTo(RuntimePermission.Microphone));
+        A.CallTo(() => recorder.Start("mic-1")).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task ToggleRecord_WhenMicPermissionDenied_DoesNotStartAndSetsError()
+    {
+        var recorder = RecorderWith();
+        var ctx = MakeContext(recorder, inputDeviceId: "mic-1");
+        ctx.RequestPermissionAsync = _ => Task.FromResult(false);
+        var vm = Make(ctx);
+
+        await vm.ToggleRecordCommand.ExecuteAsync(null);
+
+        A.CallTo(() => recorder.Start(A<string?>._)).MustNotHaveHappened();
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.IsRecording, Is.False);
+            Assert.That(vm.ErrorMessage, Is.Not.Null.And.Not.Empty);
+        });
+    }
+
+    [Test]
     public async Task ToggleRecord_SecondPress_StoresKeyAndDuration()
     {
         var recorder = RecorderWith();
