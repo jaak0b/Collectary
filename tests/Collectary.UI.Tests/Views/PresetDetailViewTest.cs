@@ -1,3 +1,4 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using FakeItEasy;
@@ -38,7 +39,7 @@ public class PresetDetailViewTest
     }
 
     [Test]
-    public async Task ActionColumn_IsFirstAndFrozen_SoItStaysReachableWhenGridOverflows()
+    public async Task ActionColumn_AppearsExactlyOnce_AsTheLastColumn()
     {
         var vm = await LoadedVmWithOneColumn();
 
@@ -49,9 +50,8 @@ public class PresetDetailViewTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(grid.FrozenColumnCount, Is.EqualTo(1), "the action column must be frozen so it never scrolls off screen");
-            Assert.That(grid.Columns, Has.Count.GreaterThan(1));
-            Assert.That(grid.Columns[0].Header, Is.EqualTo(""), "the action (⋯) column must be the first, frozen column");
+            Assert.That(grid.Columns.Count(c => c.Header as string == ""), Is.EqualTo(1), "the ⋯ action column must appear exactly once");
+            Assert.That(grid.Columns[^1].Header, Is.EqualTo(""), "the ⋯ action column must be the last column");
         });
     }
 }
