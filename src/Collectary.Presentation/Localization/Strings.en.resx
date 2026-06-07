@@ -80,6 +80,7 @@
   <data name="Audio_Pause" xml:space="preserve"><value>Pause</value></data>
   <data name="Audio_Unavailable" xml:space="preserve"><value>Recording isn't available on this device</value></data>
   <data name="Audio_RecordFailed" xml:space="preserve"><value>Couldn't record audio</value></data>
+  <data name="Audio_PermissionDenied" xml:space="preserve"><value>Microphone access is needed to record. You can enable it in your device settings.</value></data>
   <data name="Audio_RecordTooltip" xml:space="preserve"><value>Record an audio note. Choose the microphone and playback device in Settings → Audio.</value></data>
   <data name="Audio_PlaybackDevice" xml:space="preserve"><value>Playback device</value></data>
   <data name="Audio_SystemDefault" xml:space="preserve"><value>System default</value></data>

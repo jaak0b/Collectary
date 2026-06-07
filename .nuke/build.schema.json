@@ -110,6 +110,10 @@
           "type": "number",
           "description": "Minimum acceptable line coverage percentage for the Coverage gate",
           "format": "double"
+        },
+        "Since": {
+          "type": "string",
+          "description": "Git baseline that scopes mutation testing to your local changes. Defaults to 'HEAD' — only the code you have changed since your last commit. The Mutate target diffs against this with the git CLI and mutates just those files; running mutation across the whole codebase is intentionally not supported — it is far too slow"
         }
       }
     },

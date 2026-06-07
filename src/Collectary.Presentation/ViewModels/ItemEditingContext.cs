@@ -29,6 +29,15 @@ public partial class ItemEditingContext : ObservableObject
     /// <summary>Acquires a still image from the camera/file and decodes a barcode from it. Default: no scanner available.</summary>
     public Func<Task<BarcodeReadResult?>> ScanBarcodeAsync { get; set; } = () => Task.FromResult<BarcodeReadResult?>(null);
 
+    /// <summary>Opens the live-camera scanner and resolves with the first decoded barcode, or null when cancelled. Default: no camera.</summary>
+    public Func<Task<BarcodeReadResult?>> ScanBarcodeFromCameraAsync { get; set; } = () => Task.FromResult<BarcodeReadResult?>(null);
+
+    /// <summary>Resolves whether a live camera with at least one device exists. Probed off the UI thread; default: none.</summary>
+    public Func<Task<bool>> IsCameraScanAvailableAsync { get; set; } = () => Task.FromResult(false);
+
+    /// <summary>Requests an OS permission at the moment a feature needs it, prompting the user the first time. Default: granted (desktop/browser gate access themselves).</summary>
+    public Func<RuntimePermission, Task<bool>> RequestPermissionAsync { get; set; } = _ => Task.FromResult(true);
+
     /// <summary>Renders text as a QR-code bitmap for preview. Default: no generator available.</summary>
     public Func<string, Bitmap?> GenerateQrBitmap { get; set; } = _ => null;
 

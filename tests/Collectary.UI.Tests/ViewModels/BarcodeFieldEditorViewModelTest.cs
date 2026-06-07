@@ -2,6 +2,7 @@ using FakeItEasy;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -9,7 +10,10 @@ namespace Collectary.UI.Tests.ViewModels;
 [TestFixture]
 public class BarcodeFieldEditorViewModelTest
 {
-    private static ItemEditingContext MakeContext(Func<Task<BarcodeReadResult?>>? scan = null)
+    private static ItemEditingContext MakeContext(
+        Func<Task<BarcodeReadResult?>>? scan = null,
+        Func<Task<BarcodeReadResult?>>? cameraScan = null,
+        Func<Task<bool>>? cameraAvailableAsync = null)
     {
         var ctx = new ItemEditingContext(
             editorRegistry: A.Fake<IFieldEditorRegistry>(),
@@ -20,6 +24,8 @@ public class BarcodeFieldEditorViewModelTest
             loadImageBitmap: _ => null,
             deleteImageAsync: _ => Task.CompletedTask);
         if (scan is not null) ctx.ScanBarcodeAsync = scan;
+        if (cameraScan is not null) ctx.ScanBarcodeFromCameraAsync = cameraScan;
+        if (cameraAvailableAsync is not null) ctx.IsCameraScanAvailableAsync = cameraAvailableAsync;
         return ctx;
     }
 
@@ -46,28 +52,127 @@ public class BarcodeFieldEditorViewModelTest
     }
 
     [Test]
-    public async Task Scan_SetsCodeAndSymbologyFromResult()
+    public async Task ScanFromFile_SetsCodeAndSymbologyFromResult()
     {
         var value = new BarcodeFieldValue();
         var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(), value,
             MakeContext(scan: () => Task.FromResult<BarcodeReadResult?>(
                 new BarcodeReadResult("9780262033848", BarcodeSymbology.Ean13))));
 
-        await sut.ScanCommand.ExecuteAsync(null);
+        await sut.ScanFromFileCommand.ExecuteAsync(null);
 
         Assert.That(sut.Code, Is.EqualTo("9780262033848"));
         Assert.That(((BarcodeFieldValue)sut.GetCurrentValue()).Symbology, Is.EqualTo(BarcodeSymbology.Ean13));
     }
 
     [Test]
-    public async Task Scan_WhenNoCodeFound_LeavesExistingCodeUntouched()
+    public async Task ScanFromFile_WhenNoCodeFound_LeavesExistingCodeUntouched()
     {
         var value = new BarcodeFieldValue { Code = "keep-me", Symbology = BarcodeSymbology.QrCode };
         var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(), value,
             MakeContext(scan: () => Task.FromResult<BarcodeReadResult?>(null)));
 
-        await sut.ScanCommand.ExecuteAsync(null);
+        await sut.ScanFromFileCommand.ExecuteAsync(null);
 
         Assert.That(sut.Code, Is.EqualTo("keep-me"));
+    }
+
+    [Test]
+    public async Task ScanFromCamera_SetsCodeAndSymbologyFromResult()
+    {
+        var value = new BarcodeFieldValue();
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(), value,
+            MakeContext(cameraScan: () => Task.FromResult<BarcodeReadResult?>(
+                new BarcodeReadResult("4006381333931", BarcodeSymbology.Ean13))));
+
+        await sut.ScanFromCameraCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Code, Is.EqualTo("4006381333931"));
+        Assert.That(((BarcodeFieldValue)sut.GetCurrentValue()).Symbology, Is.EqualTo(BarcodeSymbology.Ean13));
+    }
+
+    [Test]
+    public async Task ScanFromCamera_WhenCancelled_LeavesExistingCodeUntouched()
+    {
+        var value = new BarcodeFieldValue { Code = "keep-me", Symbology = BarcodeSymbology.QrCode };
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(), value,
+            MakeContext(cameraScan: () => Task.FromResult<BarcodeReadResult?>(null)));
+
+        await sut.ScanFromCameraCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Code, Is.EqualTo("keep-me"));
+    }
+
+    [Test]
+    public void CanScanFromCamera_IsFalseBeforeAvailabilityResolves()
+    {
+        var gate = new TaskCompletionSource<bool>();
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(),
+            new BarcodeFieldValue(), MakeContext(cameraAvailableAsync: () => gate.Task));
+
+        Assert.That(sut.CanScanFromCamera, Is.False);
+    }
+
+    [Test]
+    public async Task CanScanFromCamera_BecomesTrue_WhenContextResolvesAvailable()
+    {
+        var gate = new TaskCompletionSource<bool>();
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(),
+            new BarcodeFieldValue(), MakeContext(cameraAvailableAsync: () => gate.Task));
+
+        gate.SetResult(true);
+        await sut.CameraAvailabilityResolved;
+
+        Assert.That(sut.CanScanFromCamera, Is.True);
+    }
+
+    [Test]
+    public async Task CanScanFromCamera_StaysFalse_WhenContextResolvesUnavailable()
+    {
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(),
+            new BarcodeFieldValue(), MakeContext(cameraAvailableAsync: () => Task.FromResult(false)));
+
+        await sut.CameraAvailabilityResolved;
+
+        Assert.That(sut.CanScanFromCamera, Is.False);
+    }
+
+    [Test]
+    public async Task CanScanFromCamera_WhenProbeThrows_StaysFalse()
+    {
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(),
+            new BarcodeFieldValue(),
+            MakeContext(cameraAvailableAsync: () => throw new InvalidOperationException("probe failed")));
+
+        await sut.CameraAvailabilityResolved;
+
+        Assert.That(sut.CanScanFromCamera, Is.False);
+    }
+
+    [Test]
+    public async Task CameraTooltip_WhenCameraUnavailable_ShowsNoCameraMessage()
+    {
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(),
+            new BarcodeFieldValue(), MakeContext(cameraAvailableAsync: () => Task.FromResult(false)));
+
+        await sut.CameraAvailabilityResolved;
+
+        Assert.That(sut.CameraTooltip, Is.EqualTo(LocalizationService.Instance["Barcode_NoCameraAvailable"]));
+    }
+
+    [Test]
+    public async Task CameraTooltip_WhenCameraAvailable_IsNull()
+    {
+        var gate = new TaskCompletionSource<bool>();
+        var sut = new BarcodeFieldEditorViewModel(new BarcodeFieldDefinition(),
+            new BarcodeFieldValue(), MakeContext(cameraAvailableAsync: () => gate.Task));
+        var raised = new List<string>();
+        sut.PropertyChanged += (_, e) => { if (e.PropertyName is not null) raised.Add(e.PropertyName); };
+
+        gate.SetResult(true);
+        await sut.CameraAvailabilityResolved;
+
+        Assert.That(sut.CameraTooltip, Is.Null);
+        Assert.That(raised, Does.Contain(nameof(BarcodeFieldEditorViewModel.CameraTooltip)));
     }
 }

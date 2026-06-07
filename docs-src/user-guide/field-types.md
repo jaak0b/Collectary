@@ -53,6 +53,21 @@ kind of information you're storing.
 
 - **Barcode / QR** — scan a code with a camera or from a photo, or type it. Reads EAN-13, UPC, ISBN,
   QR, Data Matrix, PDF417, and more.
+
+  The **Scan…** button opens a little menu with two ways in:
+
+  - **From file…** — pick a photo of the code you already have and Collectary reads it.
+  - **From camera…** — opens a live camera view right inside the app. Point it at the code and the
+    moment it reads one it fills the field in and steps back automatically — no shutter button to
+    press. If you have more than one camera (say a front and a back one), use **Switch camera** to
+    flip between them. Tap **Cancel** to back out without scanning.
+
+  The camera option needs a working camera, so it lights up on phones and on desktops with a webcam.
+  Where there's no camera — the web version, or a desktop without one — the option is still there but
+  greyed out, so you always know it exists. On Android the camera permission is asked the first time you
+  pick **From camera** — not at startup — so the app never prompts for the camera unless you use it; if
+  you decline, it tells you and steps back. If the camera is already busy in another app, Collectary
+  tells you and steps back so nothing hangs. You can type or paste a code by hand at any time.
 - **QR Code** — turns text (a shelf code, a box number, a link) into a QR you can print.
 
 ## Files and media
@@ -69,7 +84,10 @@ kind of information you're storing.
   **Settings → Audio** — both default to your system's default device. A small **gear** button on the
   control is a shortcut straight to those settings; it saves the item first so you don't lose edits.
   Clips are saved with the item and travel with it through sync and backups. Recording works on the desktop and Android apps; in the
-  browser the field tells you recording isn't available there.
+  browser the field tells you recording isn't available there. On Android the microphone permission is
+  asked the first time you press **Record** — not at startup — so the app never prompts for the mic
+  unless you actually use this field; if you decline, the field says microphone access is needed and
+  records nothing.
 
 ## Structure
 

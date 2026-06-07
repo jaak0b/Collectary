@@ -739,6 +739,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#csv-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      CSV files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-cant-be-imported" class="md-nav__link">
     <span class="md-ellipsis">
       What can't be imported
@@ -1121,6 +1130,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#csv-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      CSV files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-cant-be-imported" class="md-nav__link">
     <span class="md-ellipsis">
       What can't be imported
@@ -1151,7 +1169,8 @@
 <p>Already have a collection in a spreadsheet? You don't need to retype it. Collectary can read an
 Excel workbook (<code>.xlsx</code>) and turn its rows into items — either adding them to a collection you
 already have, or building a brand-new collection from the sheet.</p>
-<p>Excel is the first of several planned importers; CSV and others will follow and reuse the same flow.</p>
+<p>Collectary can also import <strong>CSV files</strong> — see <a href="#csv-files">CSV files</a> at the end. Both importers share
+the exact same steps; only the file you pick differs.</p>
 <h2 id="starting-an-import">Starting an import<a class="headerlink" href="#starting-an-import" title="Permanent link">&para;</a></h2>
 <ol>
 <li>On the home screen, open the <strong>＋ New Collection</strong> menu and choose <strong>Import from Excel</strong>.</li>
@@ -1200,6 +1219,22 @@ Excel already stores as real numbers or dates are understood automatically, what
   left blank and the rest of the row still comes in.</li>
 </ul>
 <p>Click <strong>Done</strong> to jump straight to the collection and see your imported items.</p>
+<h2 id="csv-files">CSV files<a class="headerlink" href="#csv-files" title="Permanent link">&para;</a></h2>
+<p>A CSV (comma-separated values) file is plain text — one row per line, fields separated by a delimiter.
+It's what you get from "Save As → CSV" in Excel, Numbers, Google Sheets, and countless other tools.</p>
+<p>To import one, open the <strong>＋ New Collection</strong> menu and choose <strong>Import from CSV</strong>, then pick your <code>.csv</code>
+file. From there the steps are identical to the Excel import above: preview, choose a target, map the
+columns, done.</p>
+<p>A few CSV-specific notes:</p>
+<ul>
+<li><strong>Delimiter is detected automatically.</strong> Comma, semicolon, and tab files all work. This matters for
+  files exported on a German-language computer, where Excel uses a semicolon (<code>;</code>) as the separator and
+  a comma inside numbers (<code>1.234,56</code>).</li>
+<li><strong>Quoted fields are understood</strong>, including values that contain the delimiter or span multiple lines
+  (e.g. <code>"Dune, the novel"</code>), and doubled quotes (<code>""</code>) inside a quoted value.</li>
+<li>A CSV has <strong>no built-in number or date formatting</strong>, so the <strong>Source number &amp; date format</strong> picker on
+  the preview step is your friend — set it to match the machine the file came from.</li>
+</ul>
 <h2 id="what-cant-be-imported">What can't be imported<a class="headerlink" href="#what-cant-be-imported" title="Permanent link">&para;</a></h2>
 <p>Anything that isn't plain text in a cell: images, file attachments, audio, links to other items, and
 nested lists. These fields stay in your collection — they're just not filled in by the import, and you

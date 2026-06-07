@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Ports;
+using Collectary.Presentation.Localization;
 
 namespace Collectary.Presentation.ViewModels;
 
@@ -15,6 +17,13 @@ public partial class BarcodeFieldEditorViewModel : FieldEditorViewModelBase
     [ObservableProperty]
     public partial string? Code { get; set; }
 
+    [ObservableProperty]
+    public partial bool CanScanFromCamera { get; set; }
+
+    public string? CameraTooltip => CanScanFromCamera ? null : LocalizationService.Instance["Barcode_NoCameraAvailable"];
+
+    partial void OnCanScanFromCameraChanged(bool value) => OnPropertyChanged(nameof(CameraTooltip));
+
     public BarcodeFieldEditorViewModel(
         BarcodeFieldDefinition definition,
         BarcodeFieldValue value,
@@ -24,16 +33,35 @@ public partial class BarcodeFieldEditorViewModel : FieldEditorViewModelBase
         _value = value;
         _context = context;
         Code = value.Code;
+        CameraAvailabilityResolved = ResolveCameraAvailabilityAsync();
     }
 
     public override FieldDefinition Definition => _definition;
 
     public override void Randomize(Services.ISampleData data) => Code = data.Digits(13);
 
-    [RelayCommand]
-    private async Task ScanAsync()
+    public Task CameraAvailabilityResolved { get; }
+
+    private async Task ResolveCameraAvailabilityAsync()
     {
-        var result = await _context.ScanBarcodeAsync();
+        try
+        {
+            CanScanFromCamera = await _context.IsCameraScanAvailableAsync();
+        }
+        catch (Exception ex)
+        {
+            Services.AppLogger.Log.Error(ex, "Probing camera availability failed");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ScanFromFileAsync() => ApplyResult(await _context.ScanBarcodeAsync());
+
+    [RelayCommand]
+    private async Task ScanFromCameraAsync() => ApplyResult(await _context.ScanBarcodeFromCameraAsync());
+
+    private void ApplyResult(BarcodeReadResult? result)
+    {
         if (result is null) return;
         Code = result.Code;
         _value.Symbology = result.Symbology;

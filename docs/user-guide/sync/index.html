@@ -679,6 +679,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#editing-the-same-collection-on-two-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Editing the same collection on two devices
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#where-sync-works" class="md-nav__link">
     <span class="md-ellipsis">
       Where sync works
@@ -1085,6 +1094,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#editing-the-same-collection-on-two-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Editing the same collection on two devices
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#where-sync-works" class="md-nav__link">
     <span class="md-ellipsis">
       Where sync works
@@ -1162,6 +1180,18 @@ sync. Collectary can't know which version you want, so it asks:</p>
 <p>When you delete something, Collectary records a <strong>tombstone</strong> so the deletion propagates to other
 devices instead of the item reappearing on the next pull. Tombstones are kept for the retention
 period you configured, then cleaned up.</p>
+<p>A deletion only ever travels as a tombstone. If the shared folder is simply <em>missing</em> an item — say
+you pointed sync at a fresh or different folder, or restored your database from a backup — Collectary
+treats that as "nothing to pull here," <strong>not</strong> as a deletion, so your local collection is never wiped
+by an empty or unfamiliar folder. An image attached to a deleted item is likewise kept for as long as
+its tombstone lives, so undoing a deletion (or a device that hasn't caught up yet) still finds the
+picture intact.</p>
+<h2 id="editing-the-same-collection-on-two-devices">Editing the same collection on two devices<a class="headerlink" href="#editing-the-same-collection-on-two-devices" title="Permanent link">&para;</a></h2>
+<p>Renaming a collection, reordering its fields, or tweaking it on one device never disturbs the items
+and values you entered on another — those edits are merged field by field rather than replacing the
+whole collection, so a label change on your phone can't erase the data on your laptop. Only when the
+<em>same</em> record was changed on both sides since the last sync do you get a <a href="#resolving-conflicts">conflict</a>
+to resolve.</p>
 <h2 id="where-sync-works">Where sync works<a class="headerlink" href="#where-sync-works" title="Permanent link">&para;</a></h2>
 <p>Sync runs on the <strong>desktop</strong> app (shared folder, OneDrive, or Google Drive) and on <strong>Android</strong>
 (shared folder or OneDrive). The in-browser <a href="../../demo/">demo</a> has no persistent filesystem, so sync
