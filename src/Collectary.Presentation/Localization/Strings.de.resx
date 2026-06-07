@@ -58,6 +58,13 @@
   <data name="FieldType_Tags" xml:space="preserve"><value>Stichwörter</value></data>
   <data name="FieldType_Barcode" xml:space="preserve"><value>Barcode / QR</value></data>
   <data name="Barcode_Scan" xml:space="preserve"><value>Scannen…</value></data>
+  <data name="Barcode_ScanFromFile" xml:space="preserve"><value>Aus Datei…</value></data>
+  <data name="Barcode_ScanFromCamera" xml:space="preserve"><value>Mit Kamera…</value></data>
+  <data name="Barcode_NoCameraAvailable" xml:space="preserve"><value>Keine Kamera verfügbar</value></data>
+  <data name="Barcode_CameraScanner" xml:space="preserve"><value>Kamera-Scanner</value></data>
+  <data name="Barcode_CameraPermissionDenied" xml:space="preserve"><value>Kamerazugriff wird zum Scannen benötigt.</value></data>
+  <data name="Barcode_CameraStartFailed" xml:space="preserve"><value>Die Kamera konnte nicht gestartet werden.</value></data>
+  <data name="Barcode_SwitchCamera" xml:space="preserve"><value>Kamera wechseln</value></data>
   <data name="Barcode_Placeholder" xml:space="preserve"><value>Code scannen oder eingeben</value></data>
   <data name="Time_Watermark" xml:space="preserve"><value>HH:mm</value></data>
   <data name="Duration_Watermark" xml:space="preserve"><value>2h 30m</value></data>
