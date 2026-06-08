@@ -11,6 +11,8 @@ public partial class SyncViewModel : ViewModelBase
 {
     private readonly ISyncService _sync;
     private readonly ISyncStatus _status;
+    private readonly IUiDispatcher _ui;
+    private readonly IBackgroundRunner _background;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -39,10 +41,12 @@ public partial class SyncViewModel : ViewModelBase
         ? LocalizationService.Instance["Sync_Never"]
         : string.Format(LocalizationService.Instance["Sync_LastAt"], LastSyncedAt.Value.ToLocalTime());
 
-    public SyncViewModel(ISyncService sync, ISyncStatus status)
+    public SyncViewModel(ISyncService sync, ISyncStatus status, IUiDispatcher ui, IBackgroundRunner background)
     {
         _sync = sync;
         _status = status;
+        _ui = ui;
+        _background = background;
         Conflicts.CollectionChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(HasConflicts));
@@ -68,25 +72,33 @@ public partial class SyncViewModel : ViewModelBase
     {
         if (IsSyncing || !_status.IsConfigured) return;
 
-        IsSyncing = true;
-        ErrorMessage = null;
+        _ui.Post(() =>
+        {
+            IsSyncing = true;
+            ErrorMessage = null;
+        });
         try
         {
-            var result = await _sync.SyncAsync();
-            RefreshConflicts(result.Conflicts);
-            if (result.Conflicts.Count == 0) LastSyncedAt = DateTime.UtcNow;
-            Synced?.Invoke();
+            var result = await _background.RunAsync(() => _sync.SyncAsync()).ConfigureAwait(false);
+            _ui.Post(() =>
+            {
+                RefreshConflicts(result.Conflicts);
+                if (result.Conflicts.Count == 0) LastSyncedAt = DateTime.UtcNow;
+                Synced?.Invoke();
+            });
         }
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Sync failed");
-            ErrorMessage = LocalizationService.Instance["Sync_Error"];
+            _ui.Post(() => ErrorMessage = LocalizationService.Instance["Sync_Error"]);
         }
         finally
         {
-            IsSyncing = false;
+            _ui.Post(() => IsSyncing = false);
         }
     }
+
+    public void ReportError() => _ui.Post(() => ErrorMessage = LocalizationService.Instance["Sync_Error"]);
 
     private void RefreshConflicts(IReadOnlyList<SyncConflict> conflicts)
     {

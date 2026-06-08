@@ -165,6 +165,12 @@ public class UiModule : Module
 
     private void RegisterNavigation(ContainerBuilder builder)
     {
+        builder.RegisterType<Services.AvaloniaUiDispatcher>()
+            .As<Collectary.Presentation.Services.IUiDispatcher>()
+            .SingleInstance();
+        builder.RegisterType<Services.TaskBackgroundRunner>()
+            .As<Collectary.Presentation.Services.IBackgroundRunner>()
+            .SingleInstance();
         builder.RegisterType<Services.DispatcherSyncScheduler>()
             .As<Collectary.Presentation.Services.ISyncScheduler>();
         builder.RegisterType<MainWindowViewModel>().AsSelf().SingleInstance();

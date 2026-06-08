@@ -57,6 +57,10 @@ public class MainWindowViewModelTest
         var builder = new ContainerBuilder();
         builder.RegisterInstance(A.Fake<ISyncService>()).As<ISyncService>();
         builder.RegisterInstance(A.Fake<ISyncStatus>()).As<ISyncStatus>();
+        builder.RegisterInstance(new Infrastructure.InlineUiDispatcher())
+            .As<Collectary.Presentation.Services.IUiDispatcher>();
+        builder.RegisterInstance(new Infrastructure.InlineBackgroundRunner())
+            .As<Collectary.Presentation.Services.IBackgroundRunner>();
         builder.RegisterInstance(_presetUseCase).As<IPresetUseCase>();
         builder.RegisterInstance(_sharedFieldUseCase).As<ISharedFieldUseCase>();
         builder.RegisterInstance(_profileService).As<IProfileService>();

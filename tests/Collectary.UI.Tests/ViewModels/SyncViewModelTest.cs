@@ -1,5 +1,7 @@
 using Collectary.Core.Ports;
+using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
+using Collectary.UI.Tests.Infrastructure;
 using FakeItEasy;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -19,7 +21,26 @@ public class SyncViewModelTest
         A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, Array.Empty<SyncConflict>()));
     }
 
-    private SyncViewModel Make() => new(_sync, _status);
+    private SyncViewModel Make(IUiDispatcher? ui = null) => new(_sync, _status, ui ?? new InlineUiDispatcher(), new InlineBackgroundRunner());
+
+    [Test]
+    public async Task SyncNow_MarshalsUiStateThroughTheDispatcher()
+    {
+        var ui = new RecordingUiDispatcher();
+        var vm = Make(ui);
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ui.PostCount, Is.GreaterThan(0), "UI-state writes must go through the dispatcher");
+            Assert.That(vm.LastSyncedAt, Is.Null, "state must not be applied until the dispatcher runs the posted action");
+        });
+
+        ui.Drain();
+
+        Assert.That(vm.LastSyncedAt, Is.Not.Null, "draining the dispatcher applies the queued UI updates");
+    }
 
     [Test]
     public void Close_RaisesCloseRequested()

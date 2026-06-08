@@ -120,7 +120,7 @@ public class OverlayDialogServiceTest
     {
         var sync = A.Fake<ISyncService>();
         var status = A.Fake<ISyncStatus>();
-        var vm = new SyncViewModel(sync, status);
+        var vm = new SyncViewModel(sync, status, new Infrastructure.InlineUiDispatcher(), new Infrastructure.InlineBackgroundRunner());
 
         var task = _sut.ShowSyncConflictsAsync(vm);
         Assert.That(_sut.ActiveDialog, Is.SameAs(vm));

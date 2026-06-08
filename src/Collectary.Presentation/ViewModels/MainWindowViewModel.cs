@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using Autofac;
 using Avalonia;
 using Avalonia.Controls;
@@ -231,7 +232,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Autofac.ResolutionExtensions.ResolveOptional<ISyncBackend>(_scope)?.Invalidate();
         Sync.Refresh();
         ConfigureAutoSyncTimer(AppPreferences.Load());
-        if (Sync.IsConfigured) _ = SyncThenReloadAsync();
+        if (Sync.IsConfigured) _ = SyncThenReloadAsync(CancellationToken.None);
     }
 
     public ObservableCollection<BreadcrumbNode> Breadcrumbs { get; } = new();
@@ -352,8 +353,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _dialogService = dialogService;
         _syncScheduler = syncScheduler;
         DialogHost = dialogService as IDialogHost;
-        Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>());
+        Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>(), scope.Resolve<IUiDispatcher>(), scope.Resolve<IBackgroundRunner>());
         Sync.Synced += OnSynced;
+        _syncScheduler.TickFailed += OnSyncTickFailed;
         Breadcrumbs.CollectionChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(HasBreadcrumbs));
@@ -484,7 +486,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private async Task RestoreThenSyncAsync()
     {
         await RestoreCloudSessionsAsync();
-        await SyncThenReloadAsync();
+        await SyncThenReloadAsync(CancellationToken.None);
     }
 
     private async Task RestoreCloudSessionsAsync()
@@ -515,7 +517,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             SyncThenReloadAsync);
     }
 
-    private async Task SyncThenReloadAsync() => await Sync.SyncNowCommand.ExecuteAsync(null);
+    private async Task SyncThenReloadAsync(CancellationToken cancellationToken) => await Sync.SyncNowCommand.ExecuteAsync(null);
+
+    private void OnSyncTickFailed(Exception ex)
+    {
+        AppLogger.Log.Error(ex, "Auto-sync tick failed");
+        Sync.ReportError();
+    }
 
     private async void OnSynced()
     {
@@ -533,6 +541,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         if (_trackedEditor is not null)
             _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
+        _syncScheduler.TickFailed -= OnSyncTickFailed;
         _syncScheduler.Dispose();
         Sync.Synced -= OnSynced;
     }
