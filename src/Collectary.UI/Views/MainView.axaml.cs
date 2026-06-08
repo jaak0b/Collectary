@@ -11,6 +11,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Collectary.UI.Controls;
 using Collectary.UI.Views.Helpers;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
 
@@ -26,6 +27,7 @@ public partial class MainView : UserControl
     private Button? _overflowButton;
     private Flyout? _overflowFlyout;
     private TextBlock? _overflowSeparator;
+    private Flyout? _syncFlyout;
 
     public MainView()
     {
@@ -45,6 +47,9 @@ public partial class MainView : UserControl
         _vm.BreadcrumbItems.CollectionChanged += OnBreadcrumbItemsChanged;
         BreadcrumbBar.CollapsedChanged += OnBreadcrumbCollapsedChanged;
         SidebarSplitter.AddHandler(PointerReleasedEvent, OnSplitterReleased, RoutingStrategies.Bubble, handledEventsToo: true);
+        _syncFlyout = new Flyout { Placement = PlacementMode.BottomEdgeAlignedRight };
+        SyncStatusButton.Flyout = _syncFlyout;
+        SyncStatusButton.Click += OnSyncButtonClick;
         ApplySidebarState();
         RebuildBreadcrumbs();
     }
@@ -58,7 +63,60 @@ public partial class MainView : UserControl
         }
         BreadcrumbBar.CollapsedChanged -= OnBreadcrumbCollapsedChanged;
         SidebarSplitter.RemoveHandler(PointerReleasedEvent, OnSplitterReleased);
+        SyncStatusButton.Click -= OnSyncButtonClick;
     }
+
+    private void OnSyncButtonClick(object? sender, RoutedEventArgs e)
+    {
+        if (_vm is null || _syncFlyout is null) return;
+        var sync = _vm.Sync;
+
+        var panel = new StackPanel { Spacing = 8, MinWidth = 200, Margin = new Thickness(4) };
+        panel.Children.Add(new TextBlock
+        {
+            Text = sync.LastSyncText,
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = ThemeBrush("TextSecondaryBrush")
+        });
+
+        if (sync.HasError && !string.IsNullOrEmpty(sync.ErrorMessage))
+            panel.Children.Add(new TextBlock
+            {
+                Text = sync.ErrorMessage,
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = ThemeBrush("DangerBrush")
+            });
+
+        var syncNow = new Button
+        {
+            Content = LocalizationService.Instance["Sync_Now"],
+            Command = sync.SyncNowCommand,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Center
+        };
+        syncNow.Click += (_, _) => _syncFlyout.Hide();
+        panel.Children.Add(syncNow);
+
+        if (sync.HasConflicts)
+        {
+            var resolve = new Button
+            {
+                Content = LocalizationService.Instance["Sync_ResolveConflicts"],
+                Command = _vm.ResolveConflictsCommand,
+                Background = ThemeBrush("DangerBrush"),
+                Foreground = ThemeBrush("DangerForegroundBrush"),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                HorizontalContentAlignment = HorizontalAlignment.Center
+            };
+            resolve.Click += (_, _) => _syncFlyout.Hide();
+            panel.Children.Add(resolve);
+        }
+
+        _syncFlyout.Content = panel;
+    }
+
+    private IBrush? ThemeBrush(string key) =>
+        this.TryFindResource(key, out var value) && value is IBrush brush ? brush : null;
 
     private void OnBreadcrumbItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildBreadcrumbs();
 

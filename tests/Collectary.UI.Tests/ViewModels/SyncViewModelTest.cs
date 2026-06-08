@@ -176,6 +176,68 @@ public class SyncViewModelTest
     }
 
     [Test]
+    public void NeedsAttention_WhenClean_IsFalse()
+    {
+        Assert.That(Make().NeedsAttention, Is.False);
+    }
+
+    [Test]
+    public async Task NeedsAttention_WithConflicts_IsTrue()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
+        {
+            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
+        }));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.NeedsAttention, Is.True);
+    }
+
+    [Test]
+    public async Task NeedsAttention_WhenSyncThrows_IsTrue()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.NeedsAttention, Is.True);
+    }
+
+    [Test]
+    public async Task NeedsAttention_WhenConflictsAppear_RaisesPropertyChanged()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
+        {
+            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
+        }));
+        var vm = Make();
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
+        Assert.That(changed, Does.Contain(nameof(vm.HasConflicts)));
+    }
+
+    [Test]
+    public async Task NeedsAttention_WhenErrorAppears_RaisesPropertyChanged()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
+        var vm = Make();
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
+        Assert.That(changed, Does.Contain(nameof(vm.HasError)));
+    }
+
+    [Test]
     public async Task ConflictKeepMine_ResolvesKeepLocalAndResyncs()
     {
         var conflict = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "Mine", "Theirs", 2, 2);

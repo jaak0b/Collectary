@@ -33,6 +33,8 @@ public partial class SyncViewModel : ViewModelBase
 
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
+    public bool NeedsAttention => HasConflicts || HasError;
+
     public string LastSyncText => LastSyncedAt is null
         ? LocalizationService.Instance["Sync_Never"]
         : string.Format(LocalizationService.Instance["Sync_LastAt"], LastSyncedAt.Value.ToLocalTime());
@@ -41,12 +43,20 @@ public partial class SyncViewModel : ViewModelBase
     {
         _sync = sync;
         _status = status;
-        Conflicts.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasConflicts));
+        Conflicts.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasConflicts));
+            OnPropertyChanged(nameof(NeedsAttention));
+        };
     }
 
     partial void OnLastSyncedAtChanged(DateTime? value) => OnPropertyChanged(nameof(LastSyncText));
 
-    partial void OnErrorMessageChanged(string? value) => OnPropertyChanged(nameof(HasError));
+    partial void OnErrorMessageChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(NeedsAttention));
+    }
 
     public void Refresh() => OnPropertyChanged(nameof(IsConfigured));
 
