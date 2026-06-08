@@ -552,6 +552,50 @@ public class MainWindowViewModelTest
         Assert.That(editor.DrillBreadcrumbs, Is.Empty);
     }
 
+    private async Task<MainWindowViewModel> EnteredAppWithProfileAsync(User profile)
+    {
+        A.CallTo(() => _profileService.GetProfilesAsync()).Returns(new List<User> { profile });
+        A.CallTo(() => _profileService.CurrentProfile).Returns(profile);
+        AppPreferences.Update(p => p with { LastProfileId = profile.Id });
+        var sut = CreateSut();
+        await sut.StartAsync();
+        sut.NavigateToSettingsCommand.Execute(null);
+        return sut;
+    }
+
+    [Test]
+    public async Task DeleteProfile_OnConfirm_DeletesProfileAndReturnsToPicker()
+    {
+        var profile = new User { Username = "alice", DisplayName = "Alice" };
+        A.CallTo(() => _profileService.CountOwnedCollectionsAsync()).Returns(2);
+        A.CallTo(() => _dialogService.ConfirmAsync(A<string>._, A<string>._, A<string>._)).Returns(true);
+        var sut = await EnteredAppWithProfileAsync(profile);
+        var settings = (SettingsViewModel)sut.ContentViewModel!;
+
+        await settings.DeleteProfileCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _profileService.DeleteCurrentProfileAsync()).MustHaveHappenedOnceExactly();
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.IsAuthenticated, Is.False);
+            Assert.That(sut.ProfilePicker, Is.Not.Null);
+        });
+    }
+
+    [Test]
+    public async Task DeleteProfile_OnCancel_DoesNotDeleteAndStaysSignedIn()
+    {
+        var profile = new User { Username = "alice", DisplayName = "Alice" };
+        A.CallTo(() => _dialogService.ConfirmAsync(A<string>._, A<string>._, A<string>._)).Returns(false);
+        var sut = await EnteredAppWithProfileAsync(profile);
+        var settings = (SettingsViewModel)sut.ContentViewModel!;
+
+        await settings.DeleteProfileCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _profileService.DeleteCurrentProfileAsync()).MustNotHaveHappened();
+        Assert.That(sut.IsAuthenticated, Is.True);
+    }
+
     [Test]
     public async Task SwitchProfile_SignsOutAndShowsPicker()
     {

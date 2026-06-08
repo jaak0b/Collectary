@@ -96,6 +96,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync,
             switchProfile: () => SwitchProfileCommand.Execute(null),
+            deleteProfile: DeleteCurrentProfileAsync,
             confirmDiscardCustomizations: () => _dialogService.ConfirmAsync(
                 LocalizationService.Instance["Theme_DiscardCustomBody"],
                 LocalizationService.Instance["Theme_DiscardCustomConfirm"],
@@ -423,6 +424,23 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Breadcrumbs.Clear();
         ContentViewModel = null;
         await ShowProfilePickerAsync();
+    }
+
+    private async Task DeleteCurrentProfileAsync()
+    {
+        var profiles = _scope.Resolve<IProfileService>();
+        var loc = LocalizationService.Instance;
+        var name = profiles.CurrentProfile?.DisplayName ?? "";
+        var ownedCount = await profiles.CountOwnedCollectionsAsync();
+        var message = ownedCount > 0
+            ? string.Format(loc["Profile_DeleteBodyWithCollections"], name, ownedCount)
+            : string.Format(loc["Profile_DeleteBody"], name);
+
+        if (!await _dialogService.ConfirmAsync(message, loc["Delete"], loc["Profile_DeleteTitle"]))
+            return;
+
+        await profiles.DeleteCurrentProfileAsync();
+        await SwitchProfile();
     }
 
     public async Task InitializeAsync()

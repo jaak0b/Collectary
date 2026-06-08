@@ -308,6 +308,10 @@
   <data name="Profile_Create" xml:space="preserve"><value>Erstellen</value></data>
   <data name="Profile_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
   <data name="Profile_Switch" xml:space="preserve"><value>Profil wechseln</value></data>
+  <data name="Profile_Delete" xml:space="preserve"><value>Dieses Profil löschen</value></data>
+  <data name="Profile_DeleteTitle" xml:space="preserve"><value>Profil löschen</value></data>
+  <data name="Profile_DeleteBody" xml:space="preserve"><value>„{0}" löschen? Dies kann nicht rückgängig gemacht werden.</value></data>
+  <data name="Profile_DeleteBodyWithCollections" xml:space="preserve"><value>„{0}" löschen? Dadurch werden auch die {1} Sammlung(en), die Ihnen gehören, und ihr gesamter Inhalt endgültig gelöscht. Dies kann nicht rückgängig gemacht werden.</value></data>
   <data name="Profile_NameRequired" xml:space="preserve"><value>Bitte geben Sie einen Profilnamen ein.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Sammlung teilen</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Mit einem Profil teilen</value></data>

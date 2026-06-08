@@ -27,6 +27,21 @@ under **Account** in [Settings](settings.md).
 Collectary opens straight into the last profile you used, skipping the picker. Use **Switch profile**
 to choose a different one. If the remembered profile was removed, you'll see the picker again.
 
+## Deleting a profile
+
+Under **Account** in [Settings](settings.md), **Delete this profile** removes the profile you're
+currently signed in as. Because a profile owns its collections, deleting it **also deletes every
+collection that profile owns and everything in them** — the confirmation tells you how many will go, so
+read it before confirming. There's no undo. Afterwards you land back on the profile screen.
+
+If you only want to step away, use **Switch profile** instead — that leaves the profile and its
+collections untouched.
+
+When [sync](sync.md) is set up, a deletion travels to every device sharing the folder, so the profile
+and its collections disappear everywhere on the next sync — just like a collection you delete or a
+share you revoke. Collections **shared with** the deleted profile (owned by someone else) are not
+touched.
+
 ## Profiles and collections
 
 - Every collection has an **owner** — the profile that created it.

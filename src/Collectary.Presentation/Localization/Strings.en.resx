@@ -308,6 +308,10 @@
   <data name="Profile_Create" xml:space="preserve"><value>Create</value></data>
   <data name="Profile_Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Profile_Switch" xml:space="preserve"><value>Switch profile</value></data>
+  <data name="Profile_Delete" xml:space="preserve"><value>Delete this profile</value></data>
+  <data name="Profile_DeleteTitle" xml:space="preserve"><value>Delete profile</value></data>
+  <data name="Profile_DeleteBody" xml:space="preserve"><value>Delete "{0}"? This cannot be undone.</value></data>
+  <data name="Profile_DeleteBodyWithCollections" xml:space="preserve"><value>Delete "{0}"? This also permanently deletes the {1} collection(s) you own and everything in them. This cannot be undone.</value></data>
   <data name="Profile_NameRequired" xml:space="preserve"><value>Please enter a profile name.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Share collection</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Share with a profile</value></data>

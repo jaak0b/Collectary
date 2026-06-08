@@ -10,6 +10,7 @@ namespace Collectary.Core.Tests.UseCases;
 public class ProfileServiceTest
 {
     private IUserRepository _users = null!;
+    private IPresetUseCase _presets = null!;
     private UserSession _session = null!;
     private ProfileService _sut = null!;
 
@@ -17,8 +18,16 @@ public class ProfileServiceTest
     public void SetUp()
     {
         _users = A.Fake<IUserRepository>();
+        _presets = A.Fake<IPresetUseCase>();
         _session = new UserSession();
-        _sut = new ProfileService(_users, _session);
+        _sut = new ProfileService(_users, _session, _presets);
+    }
+
+    private User SignIn(string username = "me")
+    {
+        var user = new User { Username = username, DisplayName = username };
+        _session.SetCurrentUser(user);
+        return user;
     }
 
     [Test]
@@ -113,6 +122,60 @@ public class ProfileServiceTest
             Assert.That(_session.CurrentUser, Is.SameAs(user));
             Assert.That(_sut.CurrentProfile, Is.SameAs(user));
         });
+    }
+
+    [Test]
+    public async Task CountOwnedCollectionsAsync_CountsOnlyCurrentProfilesPresets()
+    {
+        var me = SignIn();
+        A.CallTo(() => _presets.GetAllPresetsAsync()).Returns(new List<Preset>
+        {
+            new() { OwnerId = me.Id },
+            new() { OwnerId = me.Id },
+            new() { OwnerId = Guid.NewGuid() },
+        });
+
+        Assert.That(await _sut.CountOwnedCollectionsAsync(), Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task DeleteCurrentProfileAsync_DeletesEveryOwnedCollectionThenTheProfile()
+    {
+        var me = SignIn();
+        var mine1 = new Preset { Id = Guid.NewGuid(), OwnerId = me.Id };
+        var mine2 = new Preset { Id = Guid.NewGuid(), OwnerId = me.Id };
+        var theirs = new Preset { Id = Guid.NewGuid(), OwnerId = Guid.NewGuid() };
+        A.CallTo(() => _presets.GetAllPresetsAsync()).Returns(new List<Preset> { mine1, mine2, theirs });
+
+        await _sut.DeleteCurrentProfileAsync();
+
+        A.CallTo(() => _presets.DeletePresetAsync(mine1.Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _presets.DeletePresetAsync(mine2.Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _presets.DeletePresetAsync(theirs.Id)).MustNotHaveHappened();
+        A.CallTo(() => _users.DeleteAsync(me.Id)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task DeleteCurrentProfileAsync_DeletesChildCollectionsBeforeTheirParents()
+    {
+        var me = SignIn();
+        var parent = new Preset { Id = Guid.NewGuid(), OwnerId = me.Id };
+        var child = new Preset { Id = Guid.NewGuid(), OwnerId = me.Id, ParentPresetId = parent.Id };
+        A.CallTo(() => _presets.GetAllPresetsAsync()).Returns(new List<Preset> { parent, child });
+
+        await _sut.DeleteCurrentProfileAsync();
+
+        A.CallTo(() => _presets.DeletePresetAsync(child.Id)).MustHaveHappened()
+            .Then(A.CallTo(() => _presets.DeletePresetAsync(parent.Id)).MustHaveHappened());
+    }
+
+    [Test]
+    public async Task DeleteCurrentProfileAsync_WhenNoCurrentProfile_DoesNothing()
+    {
+        await _sut.DeleteCurrentProfileAsync();
+
+        A.CallTo(() => _users.DeleteAsync(A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _presets.DeletePresetAsync(A<Guid>._)).MustNotHaveHappened();
     }
 
     [Test]

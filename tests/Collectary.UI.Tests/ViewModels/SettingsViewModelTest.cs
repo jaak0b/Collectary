@@ -46,6 +46,25 @@ public class SettingsViewModelTest
     }
 
     [Test]
+    public async Task DeleteProfileCommand_InvokesTheCallback()
+    {
+        var invoked = false;
+        var sut = new SettingsViewModel(() => { }, deleteProfile: () => { invoked = true; return Task.CompletedTask; });
+
+        await sut.DeleteProfileCommand.ExecuteAsync(null);
+
+        Assert.That(invoked, Is.True);
+    }
+
+    [Test]
+    public void DeleteProfileCommand_WithNoCallback_DoesNotThrow()
+    {
+        var sut = new SettingsViewModel(() => { });
+
+        Assert.That(async () => await sut.DeleteProfileCommand.ExecuteAsync(null), Throws.Nothing);
+    }
+
+    [Test]
     public void Constructor_DefaultsToEnglishWhenCodeUnknown()
     {
         LocalizationService.Instance.Apply("en");
