@@ -16,4 +16,7 @@ public class FieldLabelLayoutResolver
             _ => false
         };
     }
+
+    public bool ResolveLabelAbove(FieldLabelLayout? presetValue, FieldLabelLayout globalDefault, int columnCount, bool isNarrow) =>
+        isNarrow || ResolveLabelAbove(presetValue, globalDefault, columnCount);
 }

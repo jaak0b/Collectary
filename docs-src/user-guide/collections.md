@@ -60,6 +60,10 @@ The editor also controls the item editor's layout:
 - **Label position** — where each field's label sits: *Beside* (left of the input, compact),
   *Above* (stacked, cleaner with multiple columns), *Adaptive* (beside for one column, above for
   more), or *Inherit* to follow the app-wide default in [Settings](settings.md#appearance).
+  *Beside* is mobile-safe: as the editor gets narrow the labels move above their inputs so they stay
+  full-width, and slide back beside when there's room. A multi-column *beside* layout also drops to a
+  single column when the window isn't wide enough to give each column room for a label and its input
+  side by side, so inputs never get squeezed into overlap.
 
 ### Reusing fields across collections
 

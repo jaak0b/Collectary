@@ -36,6 +36,12 @@ The app-wide default for where field labels sit in the item editor: **beside**, 
 **adaptive** (beside for single-column collections, above once a collection uses more). Any
 collection can override this; collections left on *Inherit* follow this setting.
 
+Whichever you pick, *beside* never crowds the input on a small screen. As the editor gets narrow —
+on a phone, or when you shrink the window — the labels move above their inputs so they stay
+full-width and the form reads as a clean single column instead of a crushed side-by-side squeeze.
+Widen it again and the labels slide back beside their inputs. So you can leave it on *beside* and
+still get a comfortable editor everywhere.
+
 ## Audio
 
 When the app can record and play sound (the desktop and Android apps), an **Audio** section lets you

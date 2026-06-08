@@ -850,6 +850,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         };
 
         context.GlobalFieldLabelLayout = AppPreferences.Load().FieldLabelLayout;
+        context.IsNarrow = IsNarrow;
 
         var rootEditor = new ItemEditorViewModel(
             itemUseCase,

@@ -26,11 +26,32 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
 
     public int UngroupedColumnCount => _preset.ColumnCount;
 
+    public double FieldMinColumnWidth => _context.FieldMinColumnWidth;
+
     public ObservableCollection<FieldEditorViewModelBase> UngroupedEditors { get; private set; } = new();
 
     public ObservableCollection<ViewModelBase> LayoutRegions { get; private set; } = new();
 
-    public bool IsNarrow { set => _context.IsNarrow = value; }
+    public bool IsNarrow
+    {
+        set
+        {
+            if (_context.IsNarrow == value) return;
+            _context.IsNarrow = value;
+            ApplyLabelLayout();
+        }
+    }
+
+    private readonly FieldLabelLayoutResolver _labelLayout = new();
+
+    private void ApplyLabelLayout()
+    {
+        var above = _labelLayout.ResolveLabelAbove(
+            _preset.FieldLabelLayout, _context.GlobalFieldLabelLayout, _preset.ColumnCount, _context.IsNarrow);
+        _context.LabelAbove = above;
+        foreach (var editor in FieldEditors)
+            editor.LabelAbove = above;
+    }
 
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
@@ -62,25 +83,21 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
         if (existing is not null)
             DisplayName = existing.DisplayName;
 
-        context.LabelAbove = new FieldLabelLayoutResolver()
-            .ResolveLabelAbove(preset.FieldLabelLayout, context.GlobalFieldLabelLayout, preset.ColumnCount);
-
         foreach (var definition in effectiveFields.Fields)
         {
             if (definition is DisplayNameFieldDefinition dn)
             {
-                FieldEditors.Add(new DisplayNameFieldEditorViewModel(dn, existing?.DisplayName ?? "") { LabelAbove = context.LabelAbove });
+                FieldEditors.Add(new DisplayNameFieldEditorViewModel(dn, existing?.DisplayName ?? ""));
                 continue;
             }
 
             var existingValue = existing?.Values.FirstOrDefault(v => v.FieldDefinitionId == definition.Id);
             var editor = context.EditorRegistry.Create(definition, existingValue, context);
             if (editor is not null)
-            {
-                editor.LabelAbove = context.LabelAbove;
                 FieldEditors.Add(editor);
-            }
         }
+
+        ApplyLabelLayout();
 
         var layout = new FieldGroupLayout(
             FieldEditors, effectiveFields.Groups, effectiveFields.GroupByFieldId, context);

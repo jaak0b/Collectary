@@ -10,7 +10,7 @@
         <ItemsControl ItemsSource="{Binding UngroupedEditors}" Grid.IsSharedSizeScope="True">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <controls:FieldGridPanel ColumnCount="{Binding $parent[controls:GroupedFieldsView].UngroupedColumnCount}" MinColumnWidth="200"/>
+                    <controls:FieldGridPanel ColumnCount="{Binding $parent[controls:GroupedFieldsView].UngroupedColumnCount}" MinColumnWidth="{Binding $parent[controls:GroupedFieldsView].FieldMinColumnWidth}"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

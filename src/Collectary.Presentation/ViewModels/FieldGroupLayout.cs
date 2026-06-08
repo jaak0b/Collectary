@@ -22,7 +22,7 @@ public class FieldGroupLayout
     {
         _context = context;
         _groupsByParent = groups.ToLookup(g => g.ParentGroupId);
-        _groupVmById = groups.ToDictionary(g => g.Id, g => new FieldGroupViewModel(g));
+        _groupVmById = groups.ToDictionary(g => g.Id, g => new FieldGroupViewModel(g, context));
 
         foreach (var editor in editors)
         {

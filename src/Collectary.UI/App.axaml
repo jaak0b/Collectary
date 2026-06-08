@@ -17,7 +17,7 @@
                     <ItemsControl ItemsSource="{Binding Editors}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <controls:FieldGridPanel ColumnCount="{Binding ColumnCount}" MinColumnWidth="200"/>
+                                <controls:FieldGridPanel ColumnCount="{Binding ColumnCount}" MinColumnWidth="{Binding Context.FieldMinColumnWidth}"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -46,7 +46,7 @@
                                 <ItemsControl ItemsSource="{Binding Editors}" Grid.IsSharedSizeScope="True">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <controls:FieldGridPanel ColumnCount="{Binding ColumnCount}" MinColumnWidth="200"/>
+                                            <controls:FieldGridPanel ColumnCount="{Binding ColumnCount}" MinColumnWidth="{Binding Context.FieldMinColumnWidth}"/>
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>

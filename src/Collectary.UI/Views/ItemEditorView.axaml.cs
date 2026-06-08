@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Collectary.UI.Controls;
 using Collectary.Presentation.ViewModels;
 
@@ -14,7 +15,11 @@ public partial class ItemEditorView : UserControl
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
-        if (DataContext is ItemEditorViewModel vm)
-            vm.IsNarrow = e.NewSize.Width is > 0 and < ResponsiveSplitLayout.NarrowThreshold;
+        var narrow = e.NewSize.Width is > 0 and < ResponsiveSplitLayout.NarrowThreshold;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (DataContext is ItemEditorViewModel vm)
+                vm.IsNarrow = narrow;
+        });
     }
 }

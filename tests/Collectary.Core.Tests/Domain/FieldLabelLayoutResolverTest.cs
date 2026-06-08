@@ -39,6 +39,18 @@ public class FieldLabelLayoutResolverTest
     [Test]
     public void PresetValue_OverridesGlobalDefault() =>
         Assert.That(_resolver.ResolveLabelAbove(FieldLabelLayout.Beside, FieldLabelLayout.Above, 3), Is.False);
+
+    [Test]
+    public void Narrow_ForcesAbove_EvenWhenBeside() =>
+        Assert.That(_resolver.ResolveLabelAbove(FieldLabelLayout.Beside, FieldLabelLayout.Beside, 1, isNarrow: true), Is.True);
+
+    [Test]
+    public void NotNarrow_KeepsBaseDecision() =>
+        Assert.That(_resolver.ResolveLabelAbove(FieldLabelLayout.Beside, FieldLabelLayout.Beside, 1, isNarrow: false), Is.False);
+
+    [Test]
+    public void Narrow_DoesNotUnstack_WhenBaseIsAbove() =>
+        Assert.That(_resolver.ResolveLabelAbove(FieldLabelLayout.Above, FieldLabelLayout.Above, 1, isNarrow: false), Is.True);
 }
 
 [TestFixture]

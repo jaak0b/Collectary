@@ -24,6 +24,14 @@ public partial class ItemEditingContext : ObservableObject
 
     /// <summary>Resolved label placement for every editor built within this editing session.</summary>
     public bool LabelAbove { get; set; }
+
+    /// <summary>
+    /// Minimum width a field column needs before the grid keeps more than one. Beside-labelled fields
+    /// place the label and input side by side, so they need more room than stacked ones; demanding it
+    /// makes a beside layout fall back to a single full-width column on narrow/medium widths instead of
+    /// squeezing inputs until they overflow their column.
+    /// </summary>
+    public double FieldMinColumnWidth => LabelAbove ? 200 : 360;
     public Func<Task> SaveAsync { get; set; } = () => Task.CompletedTask;
 
     /// <summary>Acquires a still image from the camera/file and decodes a barcode from it. Default: no scanner available.</summary>

@@ -334,6 +334,85 @@ public class ItemEditorViewModelTest
     }
 
     [Test]
+    public void Constructor_NarrowContext_ForcesLabelAbove_EvenWhenBeside()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Beside;
+        ctx.IsNarrow = true;
+
+        CreateSut(preset: new Preset { ColumnCount = 1 }, fields: [def], context: ctx);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ctx.LabelAbove, Is.True);
+            Assert.That(editor.LabelAbove, Is.True);
+        });
+    }
+
+    [Test]
+    public void Constructor_NotNarrowContext_Beside_KeepsLabelBeside()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Beside;
+        ctx.IsNarrow = false;
+
+        CreateSut(preset: new Preset { ColumnCount = 1 }, fields: [def], context: ctx);
+
+        Assert.That(editor.LabelAbove, Is.False);
+    }
+
+    [Test]
+    public void IsNarrow_SetTrue_FlipsBesideLabelsAbove()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Beside;
+        ctx.IsNarrow = false;
+        var sut = CreateSut(preset: new Preset { ColumnCount = 1 }, fields: [def], context: ctx);
+        Assume.That(editor.LabelAbove, Is.False);
+
+        sut.IsNarrow = true;
+
+        Assert.That(editor.LabelAbove, Is.True);
+    }
+
+    [Test]
+    public void IsNarrow_SetBackToFalse_RestoresBesideLabels()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ctx = MakeContext();
+        ctx.GlobalFieldLabelLayout = FieldLabelLayout.Beside;
+        ctx.IsNarrow = true;
+        var sut = CreateSut(preset: new Preset { ColumnCount = 1 }, fields: [def], context: ctx);
+        Assume.That(editor.LabelAbove, Is.True);
+
+        sut.IsNarrow = false;
+
+        Assert.That(editor.LabelAbove, Is.False);
+    }
+
+    [Test]
+    public void FieldMinColumnWidth_Beside_IsWiderThanAbove_SoBesideColumnsCollapseSooner()
+    {
+        var besideCtx = MakeContext();
+        besideCtx.GlobalFieldLabelLayout = FieldLabelLayout.Beside;
+        besideCtx.IsNarrow = false;
+        var beside = CreateSut(preset: new Preset { ColumnCount = 2 }, context: besideCtx);
+
+        var aboveCtx = MakeContext();
+        aboveCtx.GlobalFieldLabelLayout = FieldLabelLayout.Above;
+        var above = CreateSut(preset: new Preset { ColumnCount = 2 }, context: aboveCtx);
+
+        Assert.That(beside.FieldMinColumnWidth, Is.GreaterThan(above.FieldMinColumnWidth));
+    }
+
+    [Test]
     public void CancelCommand_InvokesOnCancelled()
     {
         var invoked = false;

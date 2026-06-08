@@ -27,6 +27,8 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
 
     public int UngroupedColumnCount => _ungroupedColumnCount;
 
+    public double FieldMinColumnWidth => _context.FieldMinColumnWidth;
+
     public ObservableCollection<FieldEditorViewModelBase> UngroupedEditors { get; } = new();
 
     public ObservableCollection<ViewModelBase> LayoutRegions { get; } = new();
