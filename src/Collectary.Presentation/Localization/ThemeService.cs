@@ -94,12 +94,19 @@ public class ThemeService
         ReapplyOverrides();
     }
 
-    private ResourceInclude? FindExistingPalette(IList<Avalonia.Controls.IResourceProvider> merged)
+    private Avalonia.Controls.IResourceProvider? FindExistingPalette(IList<Avalonia.Controls.IResourceProvider> merged)
     {
         var palettePrefix = $"{AssemblyRoot}/Themes/Colors.";
-        return merged.OfType<ResourceInclude>()
+        var bySource = merged.OfType<ResourceInclude>()
             .FirstOrDefault(r => r.Source is { } s && s.OriginalString.StartsWith(palettePrefix, StringComparison.Ordinal));
+        return bySource ?? merged.FirstOrDefault(IsBasePalette);
     }
+
+    private bool IsBasePalette(Avalonia.Controls.IResourceProvider provider) =>
+        !ReferenceEquals(provider, _accentOverride)
+        && !ReferenceEquals(provider, _customOverride)
+        && !ReferenceEquals(provider, _systemAccentOverride)
+        && provider.TryGetResource("BackgroundColor", null, out _);
 
     public void ApplySkin(string id)
     {

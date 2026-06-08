@@ -164,6 +164,35 @@ public class ThemeServiceTest
     }
 
     [Test]
+    public void ApplyColorTheme_WhenExistingPaletteIsSourcelessDictionary_ReplacesItSoNewPaletteWins()
+    {
+        var app = Application.Current!;
+        var merged = app.Resources.MergedDictionaries;
+        var snapshot = merged.ToList();
+        try
+        {
+            merged.Clear();
+            var inlinedLight = new Avalonia.Controls.ResourceDictionary
+            {
+                ["BackgroundColor"] = Color.Parse("#FFFFFF"),
+                ["SurfaceColor"] = Color.Parse("#FAFAFA"),
+            };
+            merged.Add(inlinedLight);
+
+            ThemeService.Instance.ApplyColorTheme("Dark");
+
+            Assert.That(Resource<Color>("BackgroundColor"), Is.EqualTo(Color.Parse("#121212")),
+                "a source-less inlined palette (how compiled XAML <ResourceInclude> entries materialise) must be replaced in place, not shadowed by a duplicate inserted at index 0");
+        }
+        finally
+        {
+            merged.Clear();
+            foreach (var d in snapshot) merged.Add(d);
+            ThemeService.Instance.ApplyColorTheme("Light");
+        }
+    }
+
+    [Test]
     public void ApplyColorTheme_SwapsPaletteAndVariant()
     {
         ThemeService.Instance.ApplyColorTheme("Dark");
