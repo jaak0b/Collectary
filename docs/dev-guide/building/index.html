@@ -14,7 +14,7 @@
         <link rel="prev" href="../architecture/">
       
       
-        <link rel="next" href="../dependency-injection/">
+        <link rel="next" href="../cloud-setup/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -705,6 +705,8 @@
       
         
       
+        
+      
     
     
       
@@ -833,6 +835,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cloud-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloud credentials
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gotchas" class="md-nav__link">
     <span class="md-ellipsis">
       Gotchas
@@ -887,6 +898,27 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cloud-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cloud Sync Setup
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1091,6 +1123,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cloud-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloud credentials
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gotchas" class="md-nav__link">
     <span class="md-ellipsis">
       Gotchas
@@ -1186,6 +1227,81 @@
 <span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">Coverage</span>  <span class="c"># coverage gate (&gt;=95%)</span>
 <span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">Mutate</span>    <span class="c"># mutation testing</span>
 </code></pre></div>
+<p>There are also NUKE targets that wrap the day-to-day run/deploy flow and validate cloud credentials
+up front:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">CheckCredentials</span>  <span class="c"># fail fast if any cloud credential env var is missing</span>
+<span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">SetCredentials</span>    <span class="c"># persist credentials for the current user (see below)</span>
+<span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">RunDesktop</span>        <span class="c"># build + run the Windows desktop head</span>
+<span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">DeployAndroid</span>     <span class="c"># build + install the Android head onto a connected device</span>
+<span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">BuildApk</span>          <span class="c"># publish a signed Android APK</span>
+</code></pre></div>
+<p><code>RunDesktop</code>, <code>DeployAndroid</code>, and <code>BuildApk</code> all depend on <code>CheckCredentials</code>, so they refuse to
+run with placeholder cloud credentials rather than producing a build that silently can't sign in.</p>
+<p>The build project (<code>build/_build.csproj</code>) is in <code>Collectary.slnx</code> so you can edit it with full
+IntelliSense, but it's flagged not-to-build for the solution's configurations — a normal
+<code>dotnet build Collectary.slnx</code> (and the <code>Compile</code>/<code>Test</code>/<code>Coverage</code> targets) won't compile the
+orchestrator. You still run it through <code>.\build.ps1</code>.</p>
+<h2 id="cloud-credentials">Cloud credentials<a class="headerlink" href="#cloud-credentials" title="Permanent link">&para;</a></h2>
+<p>OneDrive and Google Drive sign-in need real OAuth identifiers. They are <strong>not</strong> committed (the source
+ships placeholders), and they are read from environment variables:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>COLLECTARY_ONEDRIVE_CLIENT_ID</code></td>
+<td>OneDrive (all platforms)</td>
+</tr>
+<tr>
+<td><code>COLLECTARY_ANDROID_SIGNATURE_HASH</code></td>
+<td>OneDrive redirect on Android</td>
+</tr>
+<tr>
+<td><code>COLLECTARY_GOOGLE_CLIENT_ID</code></td>
+<td>Google Drive (Windows desktop)</td>
+</tr>
+<tr>
+<td><code>COLLECTARY_GOOGLE_CLIENT_SECRET</code></td>
+<td>Google Drive (Windows desktop)</td>
+</tr>
+</tbody>
+</table>
+<p><code>CheckCredentials</code> reports each one as <code>ok</code> or <code>MISSING</code> and throws if any is absent. It looks at the
+process, user, and machine scopes, so a value persisted by <code>SetCredentials</code> is found right away — and
+it copies what it finds into the running build so the targets that depend on it (<code>RunDesktop</code>,
+<code>DeployAndroid</code>) and the processes they launch inherit it, no shell restart required.</p>
+<p><code>SetCredentials</code> is interactive. Run it in a terminal and it prompts for each credential in turn:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">build</span><span class="p">.</span><span class="n">ps1</span> <span class="p">-</span><span class="n">-target</span> <span class="n">SetCredentials</span>
+</code></pre></div>
+<ul>
+<li>Input is <strong>masked</strong> (shown as <code>*</code>) so the value never appears on screen or in shell history.</li>
+<li>If you enter nothing — e.g. a paste didn't land — it shows an error and re-asks the same key
+  before moving on, so you can't accidentally store a blank.</li>
+<li>Each value is persisted as a <strong>per-user</strong> environment variable (Windows <code>HKCU\Environment</code>) —
+  permanent across reboots, scoped to your account, never machine-wide.</li>
+</ul>
+<p>The NUKE targets pick the values up immediately (see <code>CheckCredentials</code> above). Other
+already-running processes — a separate IDE, or the desktop <code>.exe</code> launched by hand — only see them
+after you restart them, because Windows hands each process its environment at launch.</p>
+<div class="admonition warning">
+<p class="admonition-title">Set them in the build environment, not just a run configuration</p>
+<p>These must be visible to the <strong>build process</strong>. A Rider <em>run</em> configuration's environment
+variables are injected only into that run — they are invisible to the build and are never
+delivered to an Android device. Set them as system/user environment variables (or in Rider's
+build environment) so both the desktop run <strong>and</strong> the Android build can see them.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Android reads these at build time, desktop at runtime</p>
+<p>The desktop head reads the variables from the developer's machine at runtime. The Android app
+runs on the phone, which has no access to your PC's environment, so the Android head needs the
+values baked in at build time (client id + the <code>BrowserTabActivity</code> signature hash in
+<code>AndroidManifest.xml</code>). See <a href="../sync-architecture/">Sync architecture</a> for the Android sign-in
+setup.</p>
+</div>
 <p>EF Core migrations run automatically on desktop startup. To add one:</p>
 <div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">ef</span> <span class="n">migrations</span> <span class="n">add</span> <span class="p">&lt;</span><span class="n">Name</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-project</span> <span class="n">src</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">Infrastructure</span>
 </code></pre></div>
@@ -1282,13 +1398,13 @@ WASM app into <code>docs/app/</code>, and commits <code>docs/</code> back to the
         
         
           
-          <a href="../dependency-injection/" class="md-footer__link md-footer__link--next" aria-label="Next: Dependency Injection &amp;amp; Navigation">
+          <a href="../cloud-setup/" class="md-footer__link md-footer__link--next" aria-label="Next: Cloud Sync Setup">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Dependency Injection &amp; Navigation
+                Cloud Sync Setup
               </div>
             </div>
             <div class="md-footer__button md-icon">
