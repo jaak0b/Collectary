@@ -7,7 +7,7 @@
              x:Class="Collectary.UI.Controls.GroupDetailEditor"
              x:DataType="vm:FieldGroupRowViewModel">
 
-    <ScrollViewer>
+    <ScrollViewer Padding="0,0,14,0">
         <StackPanel Spacing="12">
 
             <StackPanel Orientation="Horizontal" Spacing="8">
