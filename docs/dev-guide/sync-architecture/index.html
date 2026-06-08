@@ -958,6 +958,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="What syncs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-profiles-and-shares-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why profiles and shares sync
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-sync-kind" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding a sync kind
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1156,6 +1180,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="What syncs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-profiles-and-shares-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why profiles and shares sync
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-sync-kind" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding a sync kind
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1313,7 +1361,37 @@ in terms of Core <strong>ports</strong>, with concrete adapters in Infrastructur
 </tbody>
 </table>
 <h2 id="what-syncs">What syncs<a class="headerlink" href="#what-syncs" title="Permanent link">&para;</a></h2>
-<p>Presets (collections), items, and shared fields, plus the image <strong>blobs</strong> they reference.</p>
+<p>Presets (collections), items, shared fields, <strong>user profiles</strong>, and <strong>collection shares</strong> — plus the
+image <strong>blobs</strong> they reference.</p>
+<h3 id="why-profiles-and-shares-sync">Why profiles and shares sync<a class="headerlink" href="#why-profiles-and-shares-sync" title="Permanent link">&para;</a></h3>
+<p>Collection visibility is owner-gated: a preset is only shown to the profile that owns it (or a profile
+it has been shared with). Each install mints its own random profile ids, so if only presets and items
+synced, another device would receive collections owned by a profile it has never heard of — the data
+would import correctly but stay invisible behind the owner filter.</p>
+<p>Syncing the <code>User</code> (profile) and <code>CollectionShare</code> records too closes that gap. After two installs sync
+the same folder, each one's profiles appear in the other's profile picker; switch to a synced-in
+profile to see its collections, and a shared collection shows up for the share target without switching
+at all. Profiles carry <strong>no secrets</strong> — passwords and email were removed from the model — so replicating
+them to a shared folder is safe.</p>
+<p>Because shares are syncable, <strong>revoking</strong> a share is a soft-delete (a tombstone), not a hard delete —
+otherwise the revoked share would simply re-download from a peer on the next sync and silently restore
+access. Re-granting a previously-revoked share revives the same tombstoned row in place, so the
+<code>(preset, user)</code> uniqueness still holds. The same applies to a profile.</p>
+<p>Profiles are reconciled <strong>before</strong> presets and items, so an owner always exists locally before the
+collections that reference it arrive. Usernames have a unique, case-insensitive index; when an incoming
+profile's username collides with a <em>different</em> local profile, the import keeps the incoming id and
+display name but uniquifies the stored username, so ownership references still resolve and both profiles
+coexist. Two installs that each happen to have an "Alice" profile therefore stay two distinct profiles —
+identities are never merged.</p>
+<h2 id="adding-a-sync-kind">Adding a sync kind<a class="headerlink" href="#adding-a-sync-kind" title="Permanent link">&para;</a></h2>
+<p>The kinds are <strong>table-driven</strong>, not switch-driven — there is no per-kind <code>switch</code> to keep in sync. The
+single source of truth for orchestration is <code>SyncKindCatalog.Describe(...)</code>, which yields one <code>SyncKind</code>
+descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply), in
+dependency order (owners first). Both <code>SyncService</code> and <code>BackupService</code> loop over that catalog, so a new
+kind is backed up, restored, and synced from one place. The persistence side mirrors this with a single
+<code>EfSyncStore</code> ops map (<code>kind → find/delete/purge</code>, built from a generic <code>OpsFor&lt;T&gt;()</code>). The conflict
+dialog resolves its label by convention (<code>Sync_Kind{kind}</code>). Completeness-guard tests fail if a new
+<code>SyncEntityKind</code> value is added without its catalog and ops-map rows.</p>
 <h2 id="a-sync-run">A sync run<a class="headerlink" href="#a-sync-run" title="Permanent link">&para;</a></h2>
 <p><code>SyncService.SyncAsync()</code>:</p>
 <ol>
@@ -1325,8 +1403,9 @@ in terms of Core <strong>ports</strong>, with concrete adapters in Infrastructur
 </ol>
 <h2 id="the-file-system-backend">The file-system backend<a class="headerlink" href="#the-file-system-backend" title="Permanent link">&para;</a></h2>
 <p><code>FileSystemSyncBackend</code> stores each entity as a per-revision JSON file (e.g.
-<code>{id}.{revision}.json</code>) in kind-specific subdirectories (<code>presets/</code>, <code>items/</code>, <code>sharedfields/</code>),
-and images under an <code>images/</code> directory. The root directory is configurable via app preferences —
+<code>{id}.{revision}.json</code>) in kind-specific subdirectories (<code>presets/</code>, <code>items/</code>, <code>sharedfields/</code>,
+<code>users/</code>, <code>shares/</code>), and images under an <code>images/</code> directory. The backend and serializer are
+kind-agnostic, so adding a new syncable kind needs no backend change. The root directory is configurable via app preferences —
 point multiple devices at the same shared folder (a cloud-drive folder, network share, etc.).</p>
 <h2 id="conflicts">Conflicts<a class="headerlink" href="#conflicts" title="Permanent link">&para;</a></h2>
 <p>A conflict arises when an entity was modified <strong>both</strong> locally and remotely since the last common
