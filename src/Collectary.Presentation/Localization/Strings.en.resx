@@ -136,7 +136,6 @@
   <data name="CollectionSettings" xml:space="preserve"><value>Collection Settings</value></data>
   <data name="NoPresetsYet" xml:space="preserve"><value>No presets yet. Create one to get started!</value></data>
   <data name="NoItemsYet" xml:space="preserve"><value>No items yet. Add one!</value></data>
-  <data name="SaveAndGoBack" xml:space="preserve"><value>Save and go back</value></data>
   <data name="MyCollections" xml:space="preserve"><value>My Collections</value></data>
   <data name="NoCollectionsYet" xml:space="preserve"><value>No collections yet. Create one below.</value></data>
   <data name="NewCollection" xml:space="preserve"><value>＋ New Collection</value></data>

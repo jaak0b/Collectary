@@ -68,15 +68,6 @@ public abstract partial class FieldListEditorViewModel : ViewModelBase
     public bool IsMasterPanelVisible => !IsNarrow || SelectedNode == null;
     public bool IsDetailPanelVisible => !IsNarrow || SelectedNode != null;
 
-    [RelayCommand]
-    private void MobileNavigateBack()
-    {
-        if (Levels.Count > 1)
-            NavigateToLevel(Levels[^2]);
-        else
-            SelectedNode = null;
-    }
-
     [ObservableProperty]
     public partial bool CurrentLevelSupportsGroups { get; set; }
 

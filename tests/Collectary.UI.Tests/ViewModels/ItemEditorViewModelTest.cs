@@ -210,24 +210,24 @@ public class ItemEditorViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackCommand_WhenPersistSucceeds_InvokesOnSaved()
+    public async Task BackCommand_WhenPersistSucceeds_InvokesOnSaved()
     {
         var invoked = false;
         var sut = CreateSut(onSaved: () => { invoked = true; });
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(invoked, Is.True);
     }
 
     [Test]
-    public async Task SaveAndGoBackCommand_WhenPersistFails_DoesNotInvokeOnSaved()
+    public async Task BackCommand_WhenPersistFails_DoesNotInvokeOnSaved()
     {
         A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).Throws<InvalidOperationException>();
         var invoked = false;
         var sut = CreateSut(onSaved: () => { invoked = true; });
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(invoked, Is.False);
     }

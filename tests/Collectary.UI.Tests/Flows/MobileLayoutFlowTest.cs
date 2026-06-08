@@ -22,7 +22,7 @@ public class MobileLayoutFlowTest : FlowTestBase
     }
 
     [Test]
-    public async Task NarrowMode_MobileBack_ShowsListHidesDetail()
+    public async Task NarrowMode_Back_ClosesDetailShowsList()
     {
         var vm = MakePresetEditorVm();
         await vm.LoadAsync();
@@ -30,7 +30,7 @@ public class MobileLayoutFlowTest : FlowTestBase
         vm.AddField<TextFieldDefinition>();
         vm.SelectedNode = vm.CurrentRows[0];
 
-        vm.MobileNavigateBackCommand.Execute(null);
+        await vm.BackCommand.ExecuteAsync(null);
 
         Assert.That(vm.IsMasterPanelVisible, Is.True);
         Assert.That(vm.IsDetailPanelVisible, Is.False);
@@ -63,7 +63,7 @@ public class MobileLayoutFlowTest : FlowTestBase
     }
 
     [Test]
-    public async Task NarrowMode_DrillIntoListField_ThenMobileBack_ReturnsToPreviousLevel()
+    public async Task NarrowMode_DrillIntoListField_ThenBack_ReturnsToPreviousLevel()
     {
         var vm = MakePresetEditorVm();
         await vm.LoadAsync();
@@ -74,14 +74,38 @@ public class MobileLayoutFlowTest : FlowTestBase
         vm.DrillIntoCommand.Execute(listRow);
         Assert.That(vm.Levels.Count, Is.EqualTo(2));
 
-        vm.MobileNavigateBackCommand.Execute(null);
+        await vm.BackCommand.ExecuteAsync(null);
 
         Assert.That(vm.Levels.Count, Is.EqualTo(1));
         Assert.That(vm.IsMasterPanelVisible, Is.True);
     }
 
     [Test]
-    public async Task NarrowMode_SavePreset_WorksAfterMobileNavigation()
+    public async Task NarrowMode_BackFromSubFieldDetail_ReturnsToSubListNotRoot()
+    {
+        var vm = MakePresetEditorVm();
+        await vm.LoadAsync();
+        vm.IsNarrow = true;
+        vm.AddField<ListFieldDefinition>();
+        var listRow = vm.CurrentRows.OfType<FieldDefinitionRowViewModel>().First(r => r.IsList);
+        vm.DrillIntoCommand.Execute(listRow);
+        vm.AddField<TextFieldDefinition>();
+        vm.SelectedNode = vm.CurrentRows[0];
+
+        await vm.BackCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Levels.Count, Is.EqualTo(2));
+        Assert.That(vm.IsMasterPanelVisible, Is.True);
+        Assert.That(vm.IsDetailPanelVisible, Is.False);
+
+        await vm.BackCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Levels.Count, Is.EqualTo(1));
+        Assert.That(vm.IsMasterPanelVisible, Is.True);
+    }
+
+    [Test]
+    public async Task NarrowMode_BackSavesPreset()
     {
         var vm = MakePresetEditorVm();
         await vm.LoadAsync();
@@ -89,9 +113,8 @@ public class MobileLayoutFlowTest : FlowTestBase
         vm.IsNarrow = true;
         vm.AddField<TextFieldDefinition>();
         vm.SelectedNode = vm.CurrentRows[0];
-        vm.MobileNavigateBackCommand.Execute(null);
 
-        await vm.SaveAndGoBackCommand.ExecuteAsync(null);
+        await vm.BackCommand.ExecuteAsync(null);
 
         var presets = await PresetUseCase.GetAllPresetsAsync();
         Assert.That(presets, Has.Count.EqualTo(1));

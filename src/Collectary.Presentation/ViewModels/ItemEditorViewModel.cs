@@ -129,7 +129,7 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
     }
 
     [RelayCommand]
-    private async Task SaveAndGoBackAsync()
+    private async Task BackAsync()
     {
         ErrorMessage = null;
         try { await PersistAsync(); _onSaved(); }
@@ -164,7 +164,7 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
 
     public async Task<bool> HandleSystemBackAsync()
     {
-        await SaveAndGoBackCommand.ExecuteAsync(null);
+        await BackCommand.ExecuteAsync(null);
         return true;
     }
 }

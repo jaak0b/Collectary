@@ -22,7 +22,7 @@ public class PresetTemplateSeedFlowTest : FlowTestBase
         var seed = Template(templateKey).Build();
         var editor = MakePresetEditorVm(seed: seed);
         await editor.LoadAsync();
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
         return (await PresetRepo.GetAllAsync()).Single();
     }
 
@@ -111,7 +111,7 @@ public class PresetTemplateSeedFlowTest : FlowTestBase
         var seed = Template("books").Build();
         var editor = MakePresetEditorVm(seed: seed);
         await editor.LoadAsync();
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync()).Single();
         Assert.That(saved.Name, Is.EqualTo("Bücher"));
@@ -144,7 +144,7 @@ public class PresetTemplateSeedFlowTest : FlowTestBase
     }
 
     [Test]
-    public async Task SaveCommand_ThenSaveAndGoBack_UpdatesNotCreates()
+    public async Task SaveCommand_ThenBack_UpdatesNotCreates()
     {
         var onSavedCount = 0;
         var seed = Template("coins").Build();
@@ -153,23 +153,23 @@ public class PresetTemplateSeedFlowTest : FlowTestBase
 
         await editor.SaveCommand.ExecuteAsync(null);
         editor.Name = "My Coins";
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
 
         var all = await PresetRepo.GetAllAsync();
-        Assert.That(all, Has.Count.EqualTo(1), "SaveAndGoBack must not create a second preset");
-        Assert.That(onSavedCount, Is.EqualTo(1), "SaveAndGoBack must have succeeded and fired onSaved");
+        Assert.That(all, Has.Count.EqualTo(1), "Back must not create a second preset");
+        Assert.That(onSavedCount, Is.EqualTo(1), "Back must have succeeded and fired onSaved");
         Assert.That(all[0].Name, Is.EqualTo("My Coins"), "The rename from the second save must have persisted");
     }
 
     [Test]
-    public async Task SaveCommand_ThenSaveAndGoBack_FieldsIntact()
+    public async Task SaveCommand_ThenBack_FieldsIntact()
     {
         var seed = Template("coins").Build();
         var editor = MakePresetEditorVm(seed: seed);
         await editor.LoadAsync();
 
         await editor.SaveCommand.ExecuteAsync(null);
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync()).Single();
         Assert.That(saved.Fields.OfType<SingleChoiceFieldDefinition>().Any(f => f.Label == "Grade"), Is.True);

@@ -65,6 +65,28 @@ public class PresetEditorViewTest
             "Header must be hidden while drilled into a group");
     }
 
+    private static Button FindBack(PresetEditorView view) =>
+        view.GetLogicalDescendants().OfType<Button>()
+            .First(b => b.Name == "BackButton");
+
+    [Test]
+    public void BackButton_IsAlwaysVisibleAndBoundToBackCommand()
+    {
+        var vm = CreateViewModel();
+        var view = new PresetEditorView { DataContext = vm };
+        var window = new Window { Content = view, Width = 1000, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var back = FindBack(view);
+        Assert.That(back.IsVisible, Is.True, "Back sits in the footer and is always available (wide)");
+        Assert.That(back.Command, Is.SameAs(vm.BackCommand));
+
+        vm.IsNarrow = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.That(FindBack(view).IsVisible, Is.True, "Back stays available on a narrow screen too");
+    }
+
     [Test]
     public void CollectionSettingsHeader_VisibleAgainAfterNavigatingBackToRoot()
     {

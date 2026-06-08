@@ -37,12 +37,12 @@ public class PresetEditorViewModelTest
             seed: seed);
 
     [Test]
-    public async Task SaveAndGoBackAsync_CallsCreateForNewPreset()
+    public async Task BackAsync_CallsCreateForNewPreset()
     {
         var sut = CreateSut();
         sut.Name = "My Collection";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _presetUseCase.CreatePresetAsync(
             A<Preset>.That.Matches(p => p.Name == "My Collection")))
@@ -50,17 +50,83 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_CallsUpdateForExistingPreset()
+    public async Task BackAsync_CallsUpdateForExistingPreset()
     {
         var existing = new Preset { Name = "Old Name" };
         var sut = CreateSut(existing: existing);
         sut.Name = "New Name";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _presetUseCase.UpdatePresetAsync(
             A<Preset>.That.Matches(p => p.Name == "New Name")))
             .MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task Back_WhenNarrowAndFieldSelected_ClosesDetailWithoutLeaving()
+    {
+        var exited = false;
+        var sut = CreateSut(onSaved: () => exited = true);
+        sut.Name = "P";
+        sut.IsNarrow = true;
+        sut.AddField<TextFieldDefinition>();
+        sut.SelectedNode = sut.CurrentRows[0];
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.SelectedNode, Is.Null);
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
+        Assert.That(exited, Is.False);
+    }
+
+    [Test]
+    public async Task Back_WhenNarrowAndFieldSelected_StillPersists()
+    {
+        var sut = CreateSut();
+        sut.Name = "P";
+        sut.IsNarrow = true;
+        sut.AddField<TextFieldDefinition>();
+        sut.SelectedNode = sut.CurrentRows[0];
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task Back_WhenNarrowAndNestedWithDetail_ClosesDetailKeepingLevel()
+    {
+        var sut = CreateSut();
+        sut.Name = "P";
+        sut.IsNarrow = true;
+        sut.AddField<ListFieldDefinition>();
+        var listRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First(r => r.IsList);
+        sut.DrillIntoCommand.Execute(listRow);
+        sut.AddField<TextFieldDefinition>();
+        sut.SelectedNode = sut.CurrentRows[0];
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.SelectedNode, Is.Null);
+        Assert.That(sut.Levels.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Back_WhenWideAndFieldSelectedInSubLevel_PopsLevelInsteadOfDeselecting()
+    {
+        var sut = CreateSut();
+        sut.Name = "P";
+        sut.IsNarrow = false;
+        sut.AddField<ListFieldDefinition>();
+        var listRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().First(r => r.IsList);
+        sut.DrillIntoCommand.Execute(listRow);
+        sut.AddField<TextFieldDefinition>();
+        sut.SelectedNode = sut.CurrentRows[0];
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -83,19 +149,19 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_InvokesOnSavedCallbackAfterSuccess()
+    public async Task BackAsync_InvokesOnSavedCallbackAfterSuccess()
     {
         var onSavedInvoked = false;
         var sut = CreateSut(onSaved: () => { onSavedInvoked = true; });
         sut.Name = "Test";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(onSavedInvoked, Is.True);
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
+    public async Task BackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
     {
         var exited = false;
         var sut = CreateSut(onSaved: () => exited = true);
@@ -104,14 +170,14 @@ public class PresetEditorViewModelTest
         var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
         sut.DrillIntoCommand.Execute(group);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(sut.Levels.Count, Is.EqualTo(1));
         Assert.That(exited, Is.False);
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_WhenNested_StillPersists()
+    public async Task BackAsync_WhenNested_StillPersists()
     {
         var sut = CreateSut();
         sut.Name = "P";
@@ -119,13 +185,13 @@ public class PresetEditorViewModelTest
         var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
         sut.DrillIntoCommand.Execute(group);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_WhenNestedAndPersistFails_StaysNested()
+    public async Task BackAsync_WhenNestedAndPersistFails_StaysNested()
     {
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).Throws<InvalidOperationException>();
         var sut = CreateSut();
@@ -134,7 +200,7 @@ public class PresetEditorViewModelTest
         var group = sut.CurrentRows.OfType<FieldGroupRowViewModel>().First();
         sut.DrillIntoCommand.Execute(group);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(sut.Levels.Count, Is.EqualTo(2));
     }
@@ -191,7 +257,7 @@ public class PresetEditorViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_DoesNotInvokeOnSavedWhenPersistFails()
+    public async Task BackAsync_DoesNotInvokeOnSavedWhenPersistFails()
     {
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
             .Throws<InvalidOperationException>();
@@ -200,20 +266,20 @@ public class PresetEditorViewModelTest
         var sut = CreateSut(onSaved: () => { onSavedInvoked = true; });
         sut.Name = "Test";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(onSavedInvoked, Is.False);
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_WhenPersistFails_ShowsDialog()
+    public async Task BackAsync_WhenPersistFails_ShowsDialog()
     {
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
             .Throws<InvalidOperationException>();
 
         var sut = CreateSut();
         sut.Name = "Test";
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _dialogService.ShowMessageAsync(A<string>._, A<string>._))
             .MustHaveHappenedOnceExactly();
@@ -273,7 +339,7 @@ public class PresetEditorViewModelTest
         sut.Name = "Child";
         sut.SelectedParent = parent;
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _presetUseCase.CreatePresetAsync(
             A<Preset>.That.Matches(p => p.ParentPresetId == parent.Id)))
@@ -302,7 +368,7 @@ public class PresetEditorViewModelTest
         var sut = CreateSut();
         sut.SelectedFieldLabelLayout = sut.FieldLabelLayoutOptions.First(o => o.Value == FieldLabelLayout.Beside);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _presetUseCase.CreatePresetAsync(
             A<Preset>.That.Matches(p => p.FieldLabelLayout == FieldLabelLayout.Beside)))
@@ -331,7 +397,7 @@ public class PresetEditorViewModelTest
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
             .Invokes(call => captured = call.GetArgument<Preset>(0));
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(captured!.Groups, Has.Count.EqualTo(1));
     }
@@ -526,7 +592,7 @@ public class PresetEditorViewModelTest
         Preset? captured = null;
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).Invokes(c => captured = c.GetArgument<Preset>(0));
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(captured!.Fields.Count(f => f is DisplayNameFieldDefinition), Is.EqualTo(1));
     }
@@ -598,7 +664,7 @@ public class PresetEditorViewModelTest
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
             .Invokes(call => captured = call.GetArgument<Preset>(0));
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(captured, Is.Not.Null);
         Assert.That(captured!.SharedFieldRefs, Has.Count.EqualTo(1));
@@ -672,7 +738,7 @@ public class PresetEditorViewModelTest
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._))
             .Invokes(call => captured = call.GetArgument<Preset>(0));
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(captured!.ColumnCount, Is.EqualTo(5),
             "Setting a group's ColumnCount must not change the preset's ColumnCount");
@@ -737,7 +803,7 @@ public class PresetEditorViewModelTest
         };
         var sut = CreateSut(seed: seed);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _presetUseCase.CreatePresetAsync(A<Preset>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _presetUseCase.UpdatePresetAsync(A<Preset>._)).MustNotHaveHappened();

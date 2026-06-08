@@ -16,7 +16,7 @@ public partial class ListDetailViewModel : ViewModelBase, ISystemBackHandler
     public IRelayCommand<ListEntryRowViewModel> DeleteEntryCommand => List.DeleteEntryCommand;
     public IRelayCommand AddEntryCommand => List.AddEntryCommand;
     public IAsyncRelayCommand SaveCommand => List.SaveCommand;
-    public IAsyncRelayCommand SaveAndGoBackCommand => List.SaveAndGoBackCommand;
+    public IAsyncRelayCommand BackCommand => List.BackCommand;
     public IRelayCommand GoBackCommand => List.GoBackCommand;
 
     public ListDetailViewModel(ListFieldEditorViewModel list, ItemEditingContext context)
@@ -26,7 +26,7 @@ public partial class ListDetailViewModel : ViewModelBase, ISystemBackHandler
 
     public async Task<bool> HandleSystemBackAsync()
     {
-        await SaveAndGoBackCommand.ExecuteAsync(null);
+        await BackCommand.ExecuteAsync(null);
         return true;
     }
 }

@@ -398,45 +398,6 @@ public class FieldListEditorViewModelTest
     }
 
     [Test]
-    public async Task MobileNavigateBackCommand_WhenNodeSelected_ClearsSelection()
-    {
-        await _sut.AddFieldAsync<TextFieldDefinition>();
-        _sut.IsNarrow = true;
-        _sut.SelectedNode = _sut.CurrentRows[0];
-
-        _sut.MobileNavigateBackCommand.Execute(null);
-
-        Assert.That(_sut.SelectedNode, Is.Null);
-    }
-
-    [Test]
-    public async Task MobileNavigateBackCommand_WhenDrilledLevel_PopsToPreviousLevel()
-    {
-        await _sut.AddFieldAsync<ListFieldDefinition>();
-        _sut.IsNarrow = true;
-        _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
-        Assert.That(_sut.Levels.Count, Is.EqualTo(2));
-
-        _sut.MobileNavigateBackCommand.Execute(null);
-
-        Assert.That(_sut.Levels.Count, Is.EqualTo(1));
-    }
-
-    [Test]
-    public async Task MobileNavigateBackCommand_WhenDrilledLevel_PrefersPoppingOverClearingSelection()
-    {
-        await _sut.AddFieldAsync<ListFieldDefinition>();
-        _sut.IsNarrow = true;
-        _sut.DrillIntoCommand.Execute(_sut.CurrentRows[0]);
-        await _sut.AddFieldAsync<TextFieldDefinition>();
-        _sut.SelectedNode = _sut.CurrentRows[0];
-
-        _sut.MobileNavigateBackCommand.Execute(null);
-
-        Assert.That(_sut.Levels.Count, Is.EqualTo(1));
-    }
-
-    [Test]
     public void IsMasterPanelVisible_RaisesPropertyChanged_WhenIsNarrowChanges()
     {
         var raised = new List<string>();

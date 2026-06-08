@@ -15,7 +15,7 @@ public class EdgeCaseFlowTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = string.Empty;
 
-        Assert.DoesNotThrowAsync(async () => await sut.SaveAndGoBackCommand.ExecuteAsync(null));
+        Assert.DoesNotThrowAsync(async () => await sut.BackCommand.ExecuteAsync(null));
     }
 
     [Test]
@@ -95,7 +95,7 @@ public class EdgeCaseFlowTest : FlowTestBase
         await sut.AddFieldAsync<TextFieldDefinition>();
         sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last().Label = "ChapterName";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var listDef = saved.Fields.OfType<ListFieldDefinition>().First();
@@ -137,14 +137,14 @@ public class EdgeCaseFlowTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var editor = MakePresetEditorVm(existing: saved);
         await editor.LoadAsync();
         await editor.AddFieldAsync<TextFieldDefinition>();
         editor.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName).Label = "NewField";
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
 
         var reloaded = (await PresetRepo.GetAllAsync())[0];
         Assert.That(reloaded.Fields.Any(f => f.Label == "NewField"), Is.True);
@@ -159,7 +159,7 @@ public class EdgeCaseFlowTest : FlowTestBase
         await sut.AddFieldAsync<TextFieldDefinition>();
         var fieldRow = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName);
         fieldRow.Label = "ToRemove";
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var editor = MakePresetEditorVm(existing: saved);
@@ -167,7 +167,7 @@ public class EdgeCaseFlowTest : FlowTestBase
         var toRemove = editor.CurrentRows.OfType<FieldDefinitionRowViewModel>()
             .First(f => f.Label == "ToRemove");
         await editor.RemoveFieldCommand.ExecuteAsync(toRemove);
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
 
         var reloaded = (await PresetRepo.GetAllAsync())[0];
         Assert.That(reloaded.Fields.Any(f => f.Label == "ToRemove"), Is.False);

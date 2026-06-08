@@ -35,7 +35,7 @@ Every feature and bug fix needs all three:
   Never a catch-all fixture name.
 - **Method name:** `MethodName_State_Expected`.
 - CommunityToolkit relay commands are exercised via the generated `Command` property — e.g.
-  `SaveAndGoBackAsync` → `SaveAndGoBackCommand`.
+  `BackAsync` → `BackCommand`.
 
 ## Coverage & mutation gates
 

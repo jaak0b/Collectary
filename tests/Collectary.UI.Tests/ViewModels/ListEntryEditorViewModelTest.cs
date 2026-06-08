@@ -134,13 +134,13 @@ public class ListEntryEditorViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackCommand_SavesThenGoesBack()
+    public async Task BackCommand_SavesThenGoesBack()
     {
         var order = new List<string>();
         var sut = new ListEntryEditorViewModel(new ListFieldDefinition(), new ListEntry(), 1,
             MakeContext(goBack: () => order.Add("back"), save: () => { order.Add("save"); return Task.CompletedTask; }));
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(order, Is.EqualTo(new[] { "save", "back" }));
     }

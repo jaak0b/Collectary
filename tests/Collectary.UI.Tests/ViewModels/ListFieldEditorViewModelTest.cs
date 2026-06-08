@@ -107,14 +107,14 @@ public class ListFieldEditorViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBack_SavesThenGoesBack()
+    public async Task Back_SavesThenGoesBack()
     {
         var order = new List<string>();
         var ctx = MakeContext(save: () => { order.Add("save"); return Task.CompletedTask; },
                               goBack: () => order.Add("back"));
         var sut = new ListFieldEditorViewModel(ListFieldEditorTestHarness.DefinitionWith(), new ListFieldValue(), ctx);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(order, Is.EqualTo(new[] { "save", "back" }));
     }

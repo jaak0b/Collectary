@@ -35,14 +35,19 @@
                 <Button Command="{Binding AddEntryCommand}"
                         Content="{Binding [AddEntry], Source={x:Static loc:LocalizationService.Instance}}"
                         Padding="12,6"/>
+                <Button x:Name="BackButton"
+                        Command="{Binding BackCommand}"
+                        Background="{DynamicResource PrimaryBrush}"
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        Padding="16,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="←" FontSize="16"/>
+                        <TextBlock Text="{Binding [Back], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    </StackPanel>
+                </Button>
                 <Button Command="{Binding SaveCommand}"
                         Content="{Binding [Save], Source={x:Static loc:LocalizationService.Instance}}"
                         Padding="12,6"/>
-                <Button Command="{Binding SaveAndGoBackCommand}"
-                        Content="{Binding [SaveAndGoBack], Source={x:Static loc:LocalizationService.Instance}}"
-                        Background="{DynamicResource PrimaryBrush}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}"
-                        Padding="16,6"/>
                 <Button Command="{Binding GoBackCommand}"
                         Content="{Binding [Cancel], Source={x:Static loc:LocalizationService.Instance}}"
                         Padding="12,6"/>

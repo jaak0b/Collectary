@@ -36,8 +36,21 @@ on a phone, say — the earliest steps fold away into a small **…** menu that 
 Collections*. Your starting point and the step you're currently on always stay visible; tap the **…**
 to reach anything in between. It never spills over the profile name on the right.
 
-**Save and go back** saves and steps up one level, back to the parent group or list. From the top
-level it saves and returns you to your collections.
+Every editor — collection settings, the shared field library, the item editor, and the list editors —
+shares the same three buttons along the bottom: **← Back**, **Save**, and **Cancel**.
+
+- **← Back** retraces your steps one at a time and saves as it goes, exactly like your phone's back
+  button. On a narrow screen it first closes the field settings you have open and returns you to the
+  list you were just in; tap it again and you step up out of a drilled-in sub-list to its parent; tap it
+  once more at the top and it leaves the editor. It never skips straight to the top — each tap goes back
+  exactly one step, and your work is saved on the way.
+- **Save** writes everything but keeps you exactly where you are, so you can keep editing.
+- **Cancel** leaves without Back's save — at the top of a collection or item editor it drops the changes
+  you made since your last save; inside a list it simply returns you to the item without saving.
+
+On a narrow screen — a phone, or the desktop window pulled in tight — the editor only shows one pane at
+a time: the field list on its own, swapping to a single field's settings when you tap one. The buttons
+stay along the bottom the whole time, easy to reach with your thumb.
 
 ### Layout
 

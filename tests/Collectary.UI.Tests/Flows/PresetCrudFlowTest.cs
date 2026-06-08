@@ -17,7 +17,7 @@ public class PresetCrudFlowTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = "My Library";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var home = new HomeViewModel(PresetUseCase, ItemUseCase, A.Fake<IDialogService>());
         await home.LoadAsync();
@@ -31,13 +31,13 @@ public class PresetCrudFlowTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "Original";
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var editor = MakePresetEditorVm(existing: saved);
         await editor.LoadAsync();
         editor.Name = "Updated";
-        await editor.SaveAndGoBackCommand.ExecuteAsync(null);
+        await editor.BackCommand.ExecuteAsync(null);
 
         var reloaded = (await PresetRepo.GetAllAsync())[0];
         Assert.That(reloaded.Name, Is.EqualTo("Updated"));
@@ -82,7 +82,7 @@ public class PresetCrudFlowTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = "Child";
         sut.SelectedParent = parent;
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var all = await PresetRepo.GetAllAsync();
         var child = all.First(p => p.Name == "Child");
@@ -111,7 +111,7 @@ public class PresetCrudFlowTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         Assert.That(saved.ColumnCount, Is.EqualTo(1));
@@ -124,7 +124,7 @@ public class PresetCrudFlowTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = "P";
         sut.ColumnCount = 3;
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         Assert.That(saved.ColumnCount, Is.EqualTo(3));
@@ -136,7 +136,7 @@ public class PresetCrudFlowTest : FlowTestBase
         var sut = MakePresetEditorVm();
         await sut.LoadAsync();
         sut.Name = "P";
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         Assert.That(saved.Fields.Any(f => f is DisplayNameFieldDefinition), Is.True,

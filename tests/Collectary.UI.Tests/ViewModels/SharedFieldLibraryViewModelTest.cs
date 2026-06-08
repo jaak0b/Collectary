@@ -83,16 +83,51 @@ public class SharedFieldLibraryViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_InvokesOnDoneAfterSave()
+    public async Task BackAsync_InvokesOnDoneAfterSave()
     {
         A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField>());
         var invoked = false;
         var sut = CreateSut(onDone: () => { invoked = true; });
         await sut.LoadAsync();
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(invoked, Is.True);
+    }
+
+    [Test]
+    public async Task Back_WhenNarrowAndFieldSelected_ClosesDetailWithoutInvokingOnDone()
+    {
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField>());
+        var done = false;
+        var sut = CreateSut(onDone: () => done = true);
+        await sut.LoadAsync();
+        sut.IsNarrow = true;
+        await sut.AddFieldAsync<TextFieldDefinition>();
+        sut.SelectedNode = sut.CurrentRows[0];
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.SelectedNode, Is.Null);
+        Assert.That(done, Is.False);
+    }
+
+    [Test]
+    public async Task Back_WhenWideAndNestedFieldSelected_PopsLevelInsteadOfDeselecting()
+    {
+        var listSf = new SharedField { Name = "L", Definition = new ListFieldDefinition { Label = "L" } };
+        listSf.Definition.SharedFieldId = listSf.Id;
+        A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { listSf });
+        var sut = CreateSut();
+        await sut.LoadAsync();
+        sut.IsNarrow = false;
+        sut.DrillIntoCommand.Execute(sut.CurrentRows[0]);
+        await sut.AddFieldAsync<TextFieldDefinition>();
+        sut.SelectedNode = sut.CurrentRows[0];
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.That(sut.Levels.Count, Is.EqualTo(1));
     }
 
     [Test]
@@ -113,7 +148,7 @@ public class SharedFieldLibraryViewModelTest
     }
 
     [Test]
-    public async Task SaveAndGoBackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
+    public async Task BackAsync_WhenNested_NavigatesUpOneLevelWithoutExiting()
     {
         var listSf = new SharedField
         {
@@ -127,7 +162,7 @@ public class SharedFieldLibraryViewModelTest
         await sut.LoadAsync();
         sut.DrillIntoCommand.Execute(sut.CurrentRows[0]);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         Assert.That(sut.Levels.Count, Is.EqualTo(1));
         Assert.That(exited, Is.False);
@@ -217,7 +252,7 @@ public class SharedFieldLibraryViewModelTest
         A.CallTo(() => _useCase.GetAllAsync()).Returns(new List<SharedField> { sf1, sf2 });
         await _sut.LoadAsync();
 
-        await _sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await _sut.BackCommand.ExecuteAsync(null);
 
         A.CallTo(() => _useCase.UpdateAsync(A<SharedField>._)).MustHaveHappened(2, Times.Exactly);
     }

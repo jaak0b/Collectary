@@ -136,7 +136,6 @@
   <data name="CollectionSettings" xml:space="preserve"><value>Sammlungseinstellungen</value></data>
   <data name="NoPresetsYet" xml:space="preserve"><value>Noch keine Vorlagen. Erstelle eine zum Starten!</value></data>
   <data name="NoItemsYet" xml:space="preserve"><value>Noch keine Einträge. Füge einen hinzu!</value></data>
-  <data name="SaveAndGoBack" xml:space="preserve"><value>Speichern und zurück</value></data>
   <data name="MyCollections" xml:space="preserve"><value>Meine Sammlungen</value></data>
   <data name="NoCollectionsYet" xml:space="preserve"><value>Noch keine Sammlungen. Erstelle eine unten.</value></data>
   <data name="NewCollection" xml:space="preserve"><value>＋ Neue Sammlung</value></data>

@@ -90,7 +90,7 @@ public partial class ListFieldEditorViewModel : FieldEditorViewModelBase
     }
 
     [RelayCommand]
-    private async Task SaveAndGoBack()
+    private async Task Back()
     {
         try { await _context.SaveAsync(); }
         catch (Exception ex)

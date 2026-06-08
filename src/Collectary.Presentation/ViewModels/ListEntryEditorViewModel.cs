@@ -77,14 +77,14 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
     private async Task Save() => await _context.SaveAsync();
 
     [RelayCommand]
-    private async Task SaveAndGoBack() { await _context.SaveAsync(); _context.GoBack(); }
+    private async Task Back() { await _context.SaveAsync(); _context.GoBack(); }
 
     [RelayCommand]
     private void GoBack() => _context.GoBack();
 
     public async Task<bool> HandleSystemBackAsync()
     {
-        await SaveAndGoBackCommand.ExecuteAsync(null);
+        await BackCommand.ExecuteAsync(null);
         return true;
     }
 }

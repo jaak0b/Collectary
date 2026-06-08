@@ -86,7 +86,7 @@ public class SharedFieldFlowTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = "Books";
         sut.AddSharedFieldCommand.Execute(new SharedFieldRowViewModel(sf));
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         Assert.That(saved.SharedFieldRefs, Has.Count.EqualTo(1));
@@ -110,7 +110,7 @@ public class SharedFieldFlowTest : FlowTestBase
         var row = new SharedFieldRowViewModel(sf);
         sut.AddSharedFieldCommand.Execute(row);
         sut.AddSharedFieldCommand.Execute(row);
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         Assert.That(saved.SharedFieldRefs, Has.Count.EqualTo(1));
@@ -131,7 +131,7 @@ public class SharedFieldFlowTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = "P";
         sut.AddSharedFieldCommand.Execute(new SharedFieldRowViewModel(sf));
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         Assert.That(saved.Fields.Any(f => f.SharedFieldId == sf.Id), Is.False,

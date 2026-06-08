@@ -250,9 +250,10 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel, ISystemBa
     }
 
     [RelayCommand]
-    private async Task SaveAndGoBackAsync()
+    private async Task BackAsync()
     {
         if (!await PersistAsync()) return;
+        if (IsNarrow && SelectedNode is not null) { SelectedNode = null; return; }
         if (NavigateUpOneLevel()) return;
         _onSaved();
     }
@@ -262,7 +263,7 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel, ISystemBa
 
     public async Task<bool> HandleSystemBackAsync()
     {
-        await SaveAndGoBackCommand.ExecuteAsync(null);
+        await BackCommand.ExecuteAsync(null);
         return true;
     }
 }

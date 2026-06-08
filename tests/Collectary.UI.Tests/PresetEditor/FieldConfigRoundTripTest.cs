@@ -16,7 +16,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         await sut.LoadAsync();
         sut.Name = "P";
         await configure(sut);
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var reloaded = MakePresetEditorVm(existing: saved);
@@ -163,7 +163,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         var sub = sut.CurrentRows.OfType<FieldDefinitionRowViewModel>().Last(f => !f.IsDisplayName);
         sub.Label = "Title";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var listDef = saved.Fields.OfType<ListFieldDefinition>().First(f => f.Label == "Chapters");
@@ -187,7 +187,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         r.AddChoiceCommand.Execute(null);
         r.ChoiceItems[2].Value = "Science";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var def = saved.Fields.OfType<SingleChoiceFieldDefinition>().First(f => f.Label == "Genre");
@@ -212,7 +212,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         r.AddChoiceCommand.Execute(null);
         r.ChoiceItems[1].Value = "Beta";
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var def = saved.Fields.OfType<MultiChoiceFieldDefinition>().First(f => f.Label == "Tags");
@@ -239,7 +239,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
 
         r.RemoveChoiceCommand.Execute(r.ChoiceItems[1]);
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var def = saved.Fields.OfType<SingleChoiceFieldDefinition>().First(f => f.Label == "Status");
@@ -266,7 +266,7 @@ public class FieldConfigRoundTripTest : FlowTestBase
         fieldRow.Label = "Notes";
         fieldRow.ColumnSpan = 2;
 
-        await sut.SaveAndGoBackCommand.ExecuteAsync(null);
+        await sut.BackCommand.ExecuteAsync(null);
 
         var saved = (await PresetRepo.GetAllAsync())[0];
         var savedGroup = saved.Groups.First(g => g.Name == "Specs");

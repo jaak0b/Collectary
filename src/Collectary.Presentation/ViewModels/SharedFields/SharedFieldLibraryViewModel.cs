@@ -145,9 +145,10 @@ public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel, ISy
     }
 
     [RelayCommand]
-    private async Task SaveAndGoBackAsync()
+    private async Task BackAsync()
     {
         await SaveAsync();
+        if (IsNarrow && SelectedNode is not null) { SelectedNode = null; return; }
         if (NavigateUpOneLevel()) return;
         _onDone();
     }
@@ -157,7 +158,7 @@ public partial class SharedFieldLibraryViewModel : FieldListEditorViewModel, ISy
 
     public async Task<bool> HandleSystemBackAsync()
     {
-        await SaveAndGoBackCommand.ExecuteAsync(null);
+        await BackCommand.ExecuteAsync(null);
         return true;
     }
 }
