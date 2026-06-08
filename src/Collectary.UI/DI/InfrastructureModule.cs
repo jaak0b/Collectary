@@ -50,6 +50,7 @@ public class InfrastructureModule : Module
                .SingleInstance();
 
         builder.RegisterType<Services.PreferencesSyncStatus>().As<ISyncStatus>().SingleInstance();
+        builder.RegisterType<Services.PreferencesDeviceIdentity>().As<IDeviceIdentity>().SingleInstance();
         builder.RegisterType<SyncSerializer>().As<ISyncSerializer>().SingleInstance();
         builder.RegisterType<EfSyncStore>().As<ISyncStore>().SingleInstance();
         builder.Register(_ => new FileSystemSyncBackend(() => AppPreferences.Load().SyncLocation))
