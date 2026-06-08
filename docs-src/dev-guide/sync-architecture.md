@@ -15,7 +15,44 @@ in terms of Core **ports**, with concrete adapters in Infrastructure.
 
 ## What syncs
 
-Presets (collections), items, and shared fields, plus the image **blobs** they reference.
+Presets (collections), items, shared fields, **user profiles**, and **collection shares** — plus the
+image **blobs** they reference.
+
+### Why profiles and shares sync
+
+Collection visibility is owner-gated: a preset is only shown to the profile that owns it (or a profile
+it has been shared with). Each install mints its own random profile ids, so if only presets and items
+synced, another device would receive collections owned by a profile it has never heard of — the data
+would import correctly but stay invisible behind the owner filter.
+
+Syncing the `User` (profile) and `CollectionShare` records too closes that gap. After two installs sync
+the same folder, each one's profiles appear in the other's profile picker; switch to a synced-in
+profile to see its collections, and a shared collection shows up for the share target without switching
+at all. Profiles carry **no secrets** — passwords and email were removed from the model — so replicating
+them to a shared folder is safe.
+
+Because shares are syncable, **revoking** a share is a soft-delete (a tombstone), not a hard delete —
+otherwise the revoked share would simply re-download from a peer on the next sync and silently restore
+access. Re-granting a previously-revoked share revives the same tombstoned row in place, so the
+`(preset, user)` uniqueness still holds. The same applies to a profile.
+
+Profiles are reconciled **before** presets and items, so an owner always exists locally before the
+collections that reference it arrive. Usernames have a unique, case-insensitive index; when an incoming
+profile's username collides with a *different* local profile, the import keeps the incoming id and
+display name but uniquifies the stored username, so ownership references still resolve and both profiles
+coexist. Two installs that each happen to have an "Alice" profile therefore stay two distinct profiles —
+identities are never merged.
+
+## Adding a sync kind
+
+The kinds are **table-driven**, not switch-driven — there is no per-kind `switch` to keep in sync. The
+single source of truth for orchestration is `SyncKindCatalog.Describe(...)`, which yields one `SyncKind`
+descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply), in
+dependency order (owners first). Both `SyncService` and `BackupService` loop over that catalog, so a new
+kind is backed up, restored, and synced from one place. The persistence side mirrors this with a single
+`EfSyncStore` ops map (`kind → find/delete/purge`, built from a generic `OpsFor<T>()`). The conflict
+dialog resolves its label by convention (`Sync_Kind{kind}`). Completeness-guard tests fail if a new
+`SyncEntityKind` value is added without its catalog and ops-map rows.
 
 ## A sync run
 
@@ -30,8 +67,9 @@ Presets (collections), items, and shared fields, plus the image **blobs** they r
 ## The file-system backend
 
 `FileSystemSyncBackend` stores each entity as a per-revision JSON file (e.g.
-`{id}.{revision}.json`) in kind-specific subdirectories (`presets/`, `items/`, `sharedfields/`),
-and images under an `images/` directory. The root directory is configurable via app preferences —
+`{id}.{revision}.json`) in kind-specific subdirectories (`presets/`, `items/`, `sharedfields/`,
+`users/`, `shares/`), and images under an `images/` directory. The backend and serializer are
+kind-agnostic, so adding a new syncable kind needs no backend change. The root directory is configurable via app preferences —
 point multiple devices at the same shared folder (a cloud-drive folder, network share, etc.).
 
 ## Conflicts

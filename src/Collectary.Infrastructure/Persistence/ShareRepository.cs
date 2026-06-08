@@ -13,16 +13,22 @@ public class ShareRepository : IShareRepository
     public async Task AddOrUpdateAsync(CollectionShare share)
     {
         using var db = _dbFactory();
-        var existing = await db.CollectionShares
+        var existing = await db.CollectionShares.IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.PresetId == share.PresetId && s.SharedWithUserId == share.SharedWithUserId);
         if (existing is null)
         {
+            share.UpdatedAt = DateTime.UtcNow;
+            ((ISyncable)share).StampModified(share.GrantedByUserId);
             db.CollectionShares.Add(share);
         }
         else
         {
             existing.Permission = share.Permission;
             existing.GrantedByUserId = share.GrantedByUserId;
+            existing.IsDeleted = false;
+            existing.DeletedAt = null;
+            existing.UpdatedAt = DateTime.UtcNow;
+            ((ISyncable)existing).StampModified(share.GrantedByUserId);
         }
 
         await db.SaveChangesAsync();
@@ -31,11 +37,11 @@ public class ShareRepository : IShareRepository
     public async Task RemoveAsync(Guid presetId, Guid sharedWithUserId)
     {
         using var db = _dbFactory();
-        var existing = await db.CollectionShares
+        var existing = await db.CollectionShares.IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.PresetId == presetId && s.SharedWithUserId == sharedWithUserId);
-        if (existing is not null)
+        if (existing is not null && !existing.IsDeleted)
         {
-            db.CollectionShares.Remove(existing);
+            ((ISyncable)existing).StampDeleted(existing.GrantedByUserId);
             await db.SaveChangesAsync();
         }
     }
@@ -43,8 +49,10 @@ public class ShareRepository : IShareRepository
     public async Task RemoveAllForPresetAsync(Guid presetId)
     {
         using var db = _dbFactory();
-        var all = await db.CollectionShares.Where(s => s.PresetId == presetId).ToListAsync();
-        db.CollectionShares.RemoveRange(all);
+        var live = await db.CollectionShares.IgnoreQueryFilters()
+            .Where(s => s.PresetId == presetId && !s.IsDeleted).ToListAsync();
+        foreach (var share in live)
+            ((ISyncable)share).StampDeleted(share.GrantedByUserId);
         await db.SaveChangesAsync();
     }
 

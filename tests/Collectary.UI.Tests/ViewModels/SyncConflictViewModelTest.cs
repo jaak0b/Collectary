@@ -22,14 +22,27 @@ public class SyncConflictViewModelTest
         });
     }
 
-    [TestCase(SyncEntityKind.Preset, "Sync_KindCollection")]
+    [TestCase(SyncEntityKind.Preset, "Sync_KindPreset")]
     [TestCase(SyncEntityKind.Item, "Sync_KindItem")]
     [TestCase(SyncEntityKind.SharedField, "Sync_KindSharedField")]
+    [TestCase(SyncEntityKind.User, "Sync_KindUser")]
+    [TestCase(SyncEntityKind.Share, "Sync_KindShare")]
     public void KindText_IsLocalizedPerKind(SyncEntityKind kind, string key)
     {
         var vm = new SyncConflictViewModel(Conflict(kind), (_, _) => Task.CompletedTask);
 
         Assert.That(vm.KindText, Is.EqualTo(LocalizationService.Instance[key]));
+    }
+
+    [Test]
+    public void KindText_IsDistinctForEveryKind_SoUserAndShareAreNotMislabeled()
+    {
+        var labels = Enum.GetValues<SyncEntityKind>()
+            .Select(k => new SyncConflictViewModel(Conflict(k), (_, _) => Task.CompletedTask).KindText)
+            .ToList();
+
+        Assert.That(labels, Is.Unique,
+            "each kind must render its own label — User/Share must not fall through to the shared-field label");
     }
 
     [Test]

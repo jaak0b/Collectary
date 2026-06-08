@@ -337,9 +337,11 @@
   <data name="Sync_ConflictsHint" xml:space="preserve"><value>These items changed in two places. Pick which version to keep.</value></data>
   <data name="Sync_KeepMine" xml:space="preserve"><value>Keep mine</value></data>
   <data name="Sync_KeepTheirs" xml:space="preserve"><value>Keep theirs</value></data>
-  <data name="Sync_KindCollection" xml:space="preserve"><value>Collection</value></data>
+  <data name="Sync_KindPreset" xml:space="preserve"><value>Collection</value></data>
   <data name="Sync_KindItem" xml:space="preserve"><value>Item</value></data>
   <data name="Sync_KindSharedField" xml:space="preserve"><value>Shared field</value></data>
+  <data name="Sync_KindUser" xml:space="preserve"><value>Profile</value></data>
+  <data name="Sync_KindShare" xml:space="preserve"><value>Share</value></data>
   <data name="Sync_Mine" xml:space="preserve"><value>Mine</value></data>
   <data name="Sync_Theirs" xml:space="preserve"><value>Theirs</value></data>
   <data name="Sync_ResolveConflicts" xml:space="preserve"><value>Resolve conflicts</value></data>

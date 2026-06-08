@@ -17,12 +17,7 @@ public partial class SyncConflictViewModel : ViewModelBase
 
     public SyncConflict Conflict => _conflict;
 
-    public string KindText => LocalizationService.Instance[_conflict.Kind switch
-    {
-        SyncEntityKind.Preset => "Sync_KindCollection",
-        SyncEntityKind.Item => "Sync_KindItem",
-        _ => "Sync_KindSharedField",
-    }];
+    public string KindText => LocalizationService.Instance[$"Sync_Kind{_conflict.Kind}"];
 
     public string LocalLabel => _conflict.LocalLabel;
     public string RemoteLabel => _conflict.RemoteLabel;

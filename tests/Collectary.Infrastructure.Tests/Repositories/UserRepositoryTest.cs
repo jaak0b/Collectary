@@ -64,4 +64,20 @@ public class UserRepositoryTest : DbIntegrationTestBase
 
         Assert.That(all.Select(u => u.Username), Is.EquivalentTo(new[] { "a", "b" }));
     }
+
+    [Test]
+    public async Task AddAsync_StampsTheProfileDirtySoItSyncs()
+    {
+        var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
+        var user = new User { Username = "alice", DisplayName = "Alice" };
+
+        await _sut.AddAsync(user);
+
+        var stored = (await store.GetAllUsersAsync()).Single(u => u.Id == user.Id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored.IsDirty, Is.True, "a new profile must be dirty so the next sync pushes it to the folder");
+            Assert.That(stored.Revision, Is.EqualTo(1));
+        });
+    }
 }

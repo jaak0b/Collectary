@@ -24,6 +24,8 @@ public class BackupServiceTest
         A.CallTo(() => _store.GetAllPresetsAsync()).Returns(Array.Empty<Preset>());
         A.CallTo(() => _store.GetAllItemsAsync()).Returns(Array.Empty<Item>());
         A.CallTo(() => _store.GetAllSharedFieldsAsync()).Returns(Array.Empty<SharedField>());
+        A.CallTo(() => _store.GetAllUsersAsync()).Returns(Array.Empty<User>());
+        A.CallTo(() => _store.GetAllSharesAsync()).Returns(Array.Empty<CollectionShare>());
         A.CallTo(() => _store.GetReferencedImageKeysAsync()).Returns(Array.Empty<string>());
         _sut = new BackupService(_store, _serializer, _imageStore);
     }
@@ -87,6 +89,52 @@ public class BackupServiceTest
     {
         using var writer = new StreamWriter(archive.CreateEntry(name).Open());
         writer.Write(content);
+    }
+
+    [Test]
+    public async Task ExportAsync_IncludesProfilesAndShares()
+    {
+        var user = new User { Id = Guid.NewGuid(), Username = "alice", DisplayName = "Alice", Revision = 1 };
+        var share = new CollectionShare { Id = Guid.NewGuid(), PresetId = Guid.NewGuid(), SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Revision = 1 };
+        A.CallTo(() => _store.GetAllUsersAsync()).Returns(new[] { user });
+        A.CallTo(() => _store.GetAllSharesAsync()).Returns(new[] { share });
+        A.CallTo(() => _serializer.Serialize(user)).Returns("USER");
+        A.CallTo(() => _serializer.Serialize(share)).Returns("SHARE");
+
+        using var output = new MemoryStream();
+        await _sut.ExportAsync(output);
+
+        using var archive = OpenRead(output);
+        Assert.Multiple(() =>
+        {
+            Assert.That(ReadEntry(archive, $"users/{user.Id:N}.json"), Is.EqualTo("USER"),
+                "a backup must include user profiles or restoring it loses them");
+            Assert.That(ReadEntry(archive, $"shares/{share.Id:N}.json"), Is.EqualTo("SHARE"),
+                "a backup must include collection shares or restoring it loses access grants");
+        });
+    }
+
+    [Test]
+    public async Task ImportAsync_AppliesProfilesAndShares()
+    {
+        var user = new User { Id = Guid.NewGuid(), Username = "alice", DisplayName = "Alice", Revision = 1 };
+        var share = new CollectionShare { Id = Guid.NewGuid(), PresetId = Guid.NewGuid(), SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Revision = 1 };
+        A.CallTo(() => _serializer.Deserialize<User>("U")).Returns(user);
+        A.CallTo(() => _serializer.Deserialize<CollectionShare>("S")).Returns(share);
+        using var zip = BuildZip(a =>
+        {
+            AddText(a, $"users/{user.Id:N}.json", "U");
+            AddText(a, $"shares/{share.Id:N}.json", "S");
+        });
+
+        var result = await _sut.ImportAsync(zip);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Applied, Is.EqualTo(2));
+        });
+        A.CallTo(() => _store.ApplyUserAsync(A<User>.That.Matches(u => u.Id == user.Id && !u.IsDirty))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _store.ApplyShareAsync(A<CollectionShare>.That.Matches(s => s.Id == share.Id && !s.IsDirty))).MustHaveHappenedOnceExactly();
     }
 
     [Test]

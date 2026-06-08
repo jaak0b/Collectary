@@ -33,6 +33,8 @@ public class UserRepository : IUserRepository
     public async Task AddAsync(User user)
     {
         using var db = _dbFactory();
+        user.UpdatedAt = DateTime.UtcNow;
+        ((ISyncable)user).StampModified(user.Id);
         db.Users.Add(user);
         await db.SaveChangesAsync();
     }

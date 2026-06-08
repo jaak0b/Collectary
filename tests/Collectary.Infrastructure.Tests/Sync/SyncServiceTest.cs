@@ -31,10 +31,158 @@ public class SyncServiceTest : FileSystemTestBase
     private Preset DirtyPreset(string name) =>
         new() { Name = name, Revision = 1, BaseRevision = 0, IsDirty = true };
 
+    private Item DirtyItem(string name) =>
+        new() { PresetId = Guid.NewGuid(), DisplayName = name, Revision = 1, BaseRevision = 0, IsDirty = true };
+
+    [Test]
+    public async Task SyncAsync_WhenOneItemFailsToApply_SkipsItAndStillImportsTheRest()
+    {
+        var good = DirtyItem("Good");
+        var bad = DirtyItem("Bad");
+        _storeA.Items[good.Id] = good;
+        _storeA.Items[bad.Id] = bad;
+        await _clientA.SyncAsync();
+
+        _storeB.ThrowOnItem = i => i.Id == bad.Id;
+
+        SyncResult result = null!;
+        Assert.That(async () => result = await _clientB.SyncAsync(), Throws.Nothing,
+            "one bad item must not abort the whole sync");
+        Assert.Multiple(() =>
+        {
+            Assert.That(_storeB.Items.ContainsKey(good.Id), Is.True, "the good item must still import");
+            Assert.That(_storeB.Items.ContainsKey(bad.Id), Is.False, "the failing item is skipped");
+            Assert.That(result.Skipped, Is.GreaterThanOrEqualTo(1), "the skipped item is reported");
+        });
+    }
+
     [Test]
     public void SharedFieldKind_UsesSharedFieldsWireString()
     {
         Assert.That(SyncService.SharedFieldKind, Is.EqualTo("sharedfields"));
+    }
+
+    private User DirtyUser(string username) =>
+        new() { Username = username, DisplayName = username, Revision = 1, BaseRevision = 0, IsDirty = true };
+
+    private CollectionShare DirtyShare(Guid presetId, Guid sharedWith) =>
+        new() { PresetId = presetId, SharedWithUserId = sharedWith, GrantedByUserId = Guid.NewGuid(), Revision = 1, BaseRevision = 0, IsDirty = true };
+
+    [Test]
+    public async Task SyncAsync_ReplicatesUsersAndSharesToAnotherClient()
+    {
+        var owner = DirtyUser("alice");
+        var share = DirtyShare(Guid.NewGuid(), Guid.NewGuid());
+        _storeA.Users[owner.Id] = owner;
+        _storeA.Shares[share.Id] = share;
+        await _clientA.SyncAsync();
+
+        await _clientB.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_storeB.Users.ContainsKey(owner.Id), Is.True, "the profile must replicate to the other install");
+            Assert.That(_storeB.Users[owner.Id].Username, Is.EqualTo("alice"));
+            Assert.That(_storeB.Shares.ContainsKey(share.Id), Is.True, "the share record must replicate too");
+            Assert.That(_storeB.Shares[share.Id].PresetId, Is.EqualTo(share.PresetId));
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_ReconcilesUsersBeforePresets()
+    {
+        var owner = DirtyUser("alice");
+        var preset = DirtyPreset("Trains");
+        preset.OwnerId = owner.Id;
+        _storeA.Users[owner.Id] = owner;
+        _storeA.Presets[preset.Id] = preset;
+        await _clientA.SyncAsync();
+
+        var order = new List<SyncEntityKind>();
+        _storeB.OnApply = kind => order.Add(kind);
+        await _clientB.SyncAsync();
+
+        Assert.That(order, Does.Contain(SyncEntityKind.User), "the owner profile must be reconciled");
+        Assert.That(order.IndexOf(SyncEntityKind.User), Is.LessThan(order.IndexOf(SyncEntityKind.Preset)),
+            "owners must be applied before the presets that reference them");
+    }
+
+    [Test]
+    public async Task ResolveAsync_KeepRemote_ForUser_OverwritesLocal()
+    {
+        var userId = Guid.NewGuid();
+        var remote = new User { Id = userId, Username = "alice-remote", DisplayName = "Remote", Revision = 2 };
+        await _backend.WriteAsync(SyncService.UserKind, userId, _serializer.Serialize(remote), 2);
+        _storeA.Users[userId] = new User { Id = userId, Username = "alice-local", DisplayName = "Local", Revision = 2, IsDirty = true };
+        var conflict = new SyncConflict(SyncEntityKind.User, userId, "Local", "Remote", 2, 2);
+
+        await _clientA.ResolveAsync(conflict, keepLocal: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_storeA.Users[userId].Username, Is.EqualTo("alice-remote"));
+            Assert.That(_storeA.Users[userId].IsDirty, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task ResolveAsync_KeepRemote_ForShare_OverwritesLocal()
+    {
+        var shareId = Guid.NewGuid();
+        var presetId = Guid.NewGuid();
+        var remote = new CollectionShare { Id = shareId, PresetId = presetId, SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Permission = SharePermission.Edit, Revision = 2 };
+        await _backend.WriteAsync(SyncService.ShareKind, shareId, _serializer.Serialize(remote), 2);
+        _storeA.Shares[shareId] = new CollectionShare { Id = shareId, PresetId = presetId, SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Permission = SharePermission.Read, Revision = 2, IsDirty = true };
+        var conflict = new SyncConflict(SyncEntityKind.Share, shareId, "Local", "Remote", 2, 2);
+
+        await _clientA.ResolveAsync(conflict, keepLocal: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(_storeA.Shares[shareId].Permission, Is.EqualTo(SharePermission.Edit));
+            Assert.That(_storeA.Shares[shareId].IsDirty, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task SyncAsync_PropagatesShareTombstone()
+    {
+        var share = DirtyShare(Guid.NewGuid(), Guid.NewGuid());
+        _storeA.Shares[share.Id] = share;
+        await _clientA.SyncAsync();
+        await _clientB.SyncAsync();
+
+        var a = _storeA.Shares[share.Id];
+        a.IsDeleted = true; a.DeletedAt = DateTime.UtcNow; a.Revision = 2; a.IsDirty = true;
+        await _clientA.SyncAsync();
+
+        await _clientB.SyncAsync();
+
+        Assert.That(_storeB.Shares[share.Id].IsDeleted, Is.True,
+            "revoking a share must propagate as a tombstone so the other install loses access too");
+    }
+
+    [Test]
+    public async Task ResolveAsync_KeepRemote_WhenBackendHasNoDocument_IsANoOp()
+    {
+        var id = Guid.NewGuid();
+        _storeA.Presets[id] = new Preset { Id = id, Name = "Local", Revision = 2, IsDirty = true };
+        var conflict = new SyncConflict(SyncEntityKind.Preset, id, "Local", "Remote", 2, 2);
+
+        await _clientA.ResolveAsync(conflict, keepLocal: false);
+
+        Assert.That(_storeA.Presets[id].Name, Is.EqualTo("Local"),
+            "with no remote document to read, keep-remote must do nothing rather than wipe the local copy");
+    }
+
+    [Test]
+    public void UserKind_AndShareKind_UseStableWireStrings()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(SyncService.UserKind, Is.EqualTo("users"));
+            Assert.That(SyncService.ShareKind, Is.EqualTo("shares"));
+        });
     }
 
     [Test]
@@ -424,8 +572,8 @@ public class SyncServiceTest : FileSystemTestBase
 
         await client.SyncAsync();
 
-        Assert.That(fake.ListFilesCalls - listsBefore, Is.EqualTo(3),
-            "one listing per kind (shared fields, presets, items); the 5 pulled presets must add no per-read listing");
+        Assert.That(fake.ListFilesCalls - listsBefore, Is.EqualTo(5),
+            "one listing per kind (users, shared fields, presets, items, shares); the 5 pulled presets must add no per-read listing");
     }
 
     [Test]
@@ -586,6 +734,11 @@ internal sealed class InMemorySyncStore : ISyncStore
     public Dictionary<Guid, Preset> Presets { get; } = new();
     public Dictionary<Guid, Item> Items { get; } = new();
     public Dictionary<Guid, SharedField> SharedFields { get; } = new();
+    public Dictionary<Guid, User> Users { get; } = new();
+    public Dictionary<Guid, CollectionShare> Shares { get; } = new();
+
+    public Func<Item, bool>? ThrowOnItem { get; set; }
+    public Action<SyncEntityKind>? OnApply { get; set; }
 
     public Task<IReadOnlyList<Preset>> GetAllPresetsAsync() =>
         Task.FromResult<IReadOnlyList<Preset>>(Presets.Values.ToList());
@@ -596,20 +749,45 @@ internal sealed class InMemorySyncStore : ISyncStore
     public Task<IReadOnlyList<SharedField>> GetAllSharedFieldsAsync() =>
         Task.FromResult<IReadOnlyList<SharedField>>(SharedFields.Values.ToList());
 
+    public Task<IReadOnlyList<User>> GetAllUsersAsync() =>
+        Task.FromResult<IReadOnlyList<User>>(Users.Values.ToList());
+
+    public Task<IReadOnlyList<CollectionShare>> GetAllSharesAsync() =>
+        Task.FromResult<IReadOnlyList<CollectionShare>>(Shares.Values.ToList());
+
+    public Task ApplyUserAsync(User user)
+    {
+        OnApply?.Invoke(SyncEntityKind.User);
+        Users[user.Id] = user;
+        return Task.CompletedTask;
+    }
+
+    public Task ApplyShareAsync(CollectionShare share)
+    {
+        OnApply?.Invoke(SyncEntityKind.Share);
+        Shares[share.Id] = share;
+        return Task.CompletedTask;
+    }
+
     public Task ApplyPresetAsync(Preset preset)
     {
+        OnApply?.Invoke(SyncEntityKind.Preset);
         Presets[preset.Id] = preset;
         return Task.CompletedTask;
     }
 
     public Task ApplyItemAsync(Item item)
     {
+        if (ThrowOnItem?.Invoke(item) == true)
+            throw new InvalidOperationException("simulated apply failure");
+        OnApply?.Invoke(SyncEntityKind.Item);
         Items[item.Id] = item;
         return Task.CompletedTask;
     }
 
     public Task ApplySharedFieldAsync(SharedField sharedField)
     {
+        OnApply?.Invoke(SyncEntityKind.SharedField);
         SharedFields[sharedField.Id] = sharedField;
         return Task.CompletedTask;
     }
@@ -620,6 +798,8 @@ internal sealed class InMemorySyncStore : ISyncStore
         {
             SyncEntityKind.Preset => Presets.GetValueOrDefault(id),
             SyncEntityKind.Item => Items.GetValueOrDefault(id),
+            SyncEntityKind.User => Users.GetValueOrDefault(id),
+            SyncEntityKind.Share => Shares.GetValueOrDefault(id),
             _ => SharedFields.GetValueOrDefault(id),
         };
         if (target is null) return Task.CompletedTask;
@@ -639,6 +819,8 @@ internal sealed class InMemorySyncStore : ISyncStore
         PurgeKind(Presets, SyncEntityKind.Preset, cutoff, purged);
         PurgeKind(Items, SyncEntityKind.Item, cutoff, purged);
         PurgeKind(SharedFields, SyncEntityKind.SharedField, cutoff, purged);
+        PurgeKind(Users, SyncEntityKind.User, cutoff, purged);
+        PurgeKind(Shares, SyncEntityKind.Share, cutoff, purged);
         return Task.FromResult<IReadOnlyList<PurgedTombstone>>(purged);
     }
 
@@ -670,6 +852,8 @@ internal sealed class InMemorySyncStore : ISyncStore
             case SyncEntityKind.Preset: Presets.Remove(id); break;
             case SyncEntityKind.Item: Items.Remove(id); break;
             case SyncEntityKind.SharedField: SharedFields.Remove(id); break;
+            case SyncEntityKind.User: Users.Remove(id); break;
+            case SyncEntityKind.Share: Shares.Remove(id); break;
             default: throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind");
         }
         return Task.CompletedTask;

@@ -2,6 +2,7 @@ using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Logging;
 using Collectary.Core.Ports;
+using Collectary.Core.UseCases;
 using Microsoft.EntityFrameworkCore;
 
 namespace Collectary.Infrastructure.Persistence;
@@ -11,13 +12,38 @@ public class EfSyncStore : ISyncStore
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IFieldDefinitionMerger _merger;
     private readonly IAppLogger _logger;
+    private readonly UsernameUniquifier _uniquifier = new();
+    private readonly IReadOnlyDictionary<SyncEntityKind, EntityOps> _ops;
 
     public EfSyncStore(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null)
     {
         _dbFactory = dbFactory;
         _merger = merger;
         _logger = logger ?? new NullAppLogger();
+        _ops = new Dictionary<SyncEntityKind, EntityOps>
+        {
+            [SyncEntityKind.Preset] = OpsFor<Preset>(),
+            [SyncEntityKind.Item] = OpsFor<Item>(),
+            [SyncEntityKind.SharedField] = OpsFor<SharedField>(),
+            [SyncEntityKind.User] = OpsFor<User>(),
+            [SyncEntityKind.Share] = OpsFor<CollectionShare>(),
+        };
     }
+
+    private sealed record EntityOps(
+        Func<InventoryDbContext, Guid, Task<ISyncable?>> Find,
+        Func<InventoryDbContext, Guid, Task> Delete,
+        Func<InventoryDbContext, DateTime, Task<IReadOnlyList<Guid>>> Purge);
+
+    private EntityOps OpsFor<T>() where T : DomainObject, ISyncable => new(
+        async (db, id) => await db.Set<T>().IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
+        async (db, id) => db.Set<T>().RemoveRange(await db.Set<T>().IgnoreQueryFilters().Where(e => e.Id == id).ToListAsync()),
+        (db, cutoff) => PurgeKindAsync(db.Set<T>(), cutoff));
+
+    private EntityOps OpsFor(SyncEntityKind kind) =>
+        _ops.TryGetValue(kind, out var ops)
+            ? ops
+            : throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind");
 
     public async Task<IReadOnlyList<Preset>> GetAllPresetsAsync()
     {
@@ -35,6 +61,69 @@ public class EfSyncStore : ISyncStore
     {
         using var db = _dbFactory();
         return await WithSharedFieldDetails(db.SharedFields.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<User>> GetAllUsersAsync()
+    {
+        using var db = _dbFactory();
+        return await db.Users.IgnoreQueryFilters().AsNoTracking().ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<CollectionShare>> GetAllSharesAsync()
+    {
+        using var db = _dbFactory();
+        return await db.CollectionShares.IgnoreQueryFilters().AsNoTracking().ToListAsync();
+    }
+
+    public async Task ApplyUserAsync(User user)
+    {
+        using var db = _dbFactory();
+        var tracked = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == user.Id);
+
+        if (tracked is null)
+        {
+            user.Username = await UniqueUsernameAsync(db, user.Username, user.Id);
+            db.Users.Add(user);
+        }
+        else
+        {
+            tracked.Username = await UniqueUsernameAsync(db, user.Username, user.Id);
+            tracked.DisplayName = user.DisplayName;
+            CopySyncMetadata(user, tracked);
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    public async Task ApplyShareAsync(CollectionShare share)
+    {
+        using var db = _dbFactory();
+        var tracked = await db.CollectionShares.IgnoreQueryFilters().FirstOrDefaultAsync(s => s.Id == share.Id);
+
+        if (tracked is null)
+        {
+            db.CollectionShares.Add(share);
+        }
+        else
+        {
+            tracked.PresetId = share.PresetId;
+            tracked.SharedWithUserId = share.SharedWithUserId;
+            tracked.GrantedByUserId = share.GrantedByUserId;
+            tracked.Permission = share.Permission;
+            CopySyncMetadata(share, tracked);
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    private async Task<string> UniqueUsernameAsync(InventoryDbContext db, string username, Guid selfId)
+    {
+        var reserved = (await db.Users.IgnoreQueryFilters()
+                .Where(u => u.Id != selfId)
+                .Select(u => u.Username)
+                .ToListAsync())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return await _uniquifier.MakeUniqueAsync(username, candidate => Task.FromResult(reserved.Contains(candidate)));
     }
 
     public async Task ApplyPresetAsync(Preset preset)
@@ -108,14 +197,9 @@ public class EfSyncStore : ISyncStore
 
     public async Task MarkSyncedAsync(SyncEntityKind kind, Guid id, long baseRevision, bool dirty, long? revision = null)
     {
+        var ops = OpsFor(kind);
         using var db = _dbFactory();
-        ISyncable? tracked = kind switch
-        {
-            SyncEntityKind.Preset => await db.Presets.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id),
-            SyncEntityKind.Item => await db.Items.IgnoreQueryFilters().FirstOrDefaultAsync(i => i.Id == id),
-            SyncEntityKind.SharedField => await db.SharedFields.IgnoreQueryFilters().FirstOrDefaultAsync(sf => sf.Id == id),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind"),
-        };
+        var tracked = await ops.Find(db, id);
         if (tracked is null)
         {
             _logger.Warning("MarkSynced skipped: {Kind} {Id} is no longer present locally", kind, id);
@@ -132,19 +216,14 @@ public class EfSyncStore : ISyncStore
     public async Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff)
     {
         using var db = _dbFactory();
-
-        var presetIds = await PurgeKindAsync(db.Presets, cutoff);
-        var itemIds = await PurgeKindAsync(db.Items, cutoff);
-        var sharedIds = await PurgeKindAsync(db.SharedFields, cutoff);
-
         var purged = new List<PurgedTombstone>();
-        purged.AddRange(presetIds.Select(id => new PurgedTombstone(SyncEntityKind.Preset, id)));
-        purged.AddRange(itemIds.Select(id => new PurgedTombstone(SyncEntityKind.Item, id)));
-        purged.AddRange(sharedIds.Select(id => new PurgedTombstone(SyncEntityKind.SharedField, id)));
+        foreach (var (kind, ops) in _ops)
+            foreach (var id in await ops.Purge(db, cutoff))
+                purged.Add(new PurgedTombstone(kind, id));
         return purged;
     }
 
-    private static async Task<IReadOnlyList<Guid>> PurgeKindAsync<T>(DbSet<T> set, DateTime cutoff)
+    private async Task<IReadOnlyList<Guid>> PurgeKindAsync<T>(DbSet<T> set, DateTime cutoff)
         where T : DomainObject, ISyncable
     {
         var expired = set.IgnoreQueryFilters()
@@ -156,21 +235,9 @@ public class EfSyncStore : ISyncStore
 
     public async Task DeleteLocallyAsync(SyncEntityKind kind, Guid id)
     {
+        var ops = OpsFor(kind);
         using var db = _dbFactory();
-        switch (kind)
-        {
-            case SyncEntityKind.Preset:
-                db.Presets.RemoveRange(await db.Presets.IgnoreQueryFilters().Where(p => p.Id == id).ToListAsync());
-                break;
-            case SyncEntityKind.Item:
-                db.Items.RemoveRange(await db.Items.IgnoreQueryFilters().Where(i => i.Id == id).ToListAsync());
-                break;
-            case SyncEntityKind.SharedField:
-                db.SharedFields.RemoveRange(await db.SharedFields.IgnoreQueryFilters().Where(s => s.Id == id).ToListAsync());
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind");
-        }
+        await ops.Delete(db, id);
         await db.SaveChangesAsync();
     }
 

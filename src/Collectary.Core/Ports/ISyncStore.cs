@@ -7,9 +7,13 @@ public interface ISyncStore
     Task<IReadOnlyList<Preset>> GetAllPresetsAsync();
     Task<IReadOnlyList<Item>> GetAllItemsAsync();
     Task<IReadOnlyList<SharedField>> GetAllSharedFieldsAsync();
+    Task<IReadOnlyList<User>> GetAllUsersAsync();
+    Task<IReadOnlyList<CollectionShare>> GetAllSharesAsync();
     Task ApplyPresetAsync(Preset preset);
     Task ApplyItemAsync(Item item);
     Task ApplySharedFieldAsync(SharedField sharedField);
+    Task ApplyUserAsync(User user);
+    Task ApplyShareAsync(CollectionShare share);
     Task MarkSyncedAsync(SyncEntityKind kind, Guid id, long baseRevision, bool dirty, long? revision = null);
     Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff);
     Task<IReadOnlyList<string>> GetReferencedImageKeysAsync();

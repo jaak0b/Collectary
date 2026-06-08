@@ -190,6 +190,17 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
+    public void EverySyncEntityKind_HasAnOpsMapEntry()
+    {
+        Assert.Multiple(() =>
+        {
+            foreach (var kind in Enum.GetValues<SyncEntityKind>())
+                Assert.That(async () => await _sut.MarkSyncedAsync(kind, Guid.NewGuid(), 1, dirty: false),
+                    Throws.Nothing, $"{kind} must have an ops-map entry (adding an enum value without one must fail here)");
+        });
+    }
+
+    [Test]
     public async Task MarkSyncedAsync_WhenLocalRevisionAdvancedPastPush_KeepsDirty()
     {
         var id = Guid.NewGuid();
@@ -370,5 +381,178 @@ public class EfSyncStoreTest : DbIntegrationTestBase
         await _sut.PurgeTombstonesAsync(DateTime.UtcNow.AddDays(-30));
 
         Assert.That((await _sut.GetAllPresetsAsync()).Any(p => p.Id == id), Is.True);
+    }
+
+    [Test]
+    public async Task ApplyUserAsync_InsertsAndGetAllReturnsIt()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = id, Username = "alice", DisplayName = "Alice", Revision = 1, BaseRevision = 1 });
+
+        var all = await _sut.GetAllUsersAsync();
+
+        var stored = all.Single(u => u.Id == id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored.Username, Is.EqualTo("alice"));
+            Assert.That(stored.DisplayName, Is.EqualTo("Alice"));
+            Assert.That(stored.Revision, Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task ApplyUserAsync_UpdatesInPlaceWithoutDuplicating()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = id, Username = "alice", DisplayName = "Alice", Revision = 1 });
+        await _sut.ApplyUserAsync(new User { Id = id, Username = "alice", DisplayName = "Alice Cooper", Revision = 2, BaseRevision = 2 });
+
+        var all = await _sut.GetAllUsersAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(all.Count(u => u.Id == id), Is.EqualTo(1));
+            Assert.That(all.Single(u => u.Id == id).DisplayName, Is.EqualTo("Alice Cooper"));
+            Assert.That(all.Single(u => u.Id == id).Revision, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public async Task ApplyUserAsync_WhenUsernameCollidesWithDifferentUser_UniquifiesAndKeepsBoth()
+    {
+        var localId = Guid.NewGuid();
+        var incomingId = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = localId, Username = "alice", DisplayName = "Local Alice", Revision = 1 });
+
+        await _sut.ApplyUserAsync(new User { Id = incomingId, Username = "Alice", DisplayName = "Remote Alice", Revision = 1 });
+
+        var all = await _sut.GetAllUsersAsync();
+        var local = all.Single(u => u.Id == localId);
+        var incoming = all.Single(u => u.Id == incomingId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(all.Count(u => u.Id == localId || u.Id == incomingId), Is.EqualTo(2), "both profiles must coexist");
+            Assert.That(local.Username, Is.EqualTo("alice"), "the local username is untouched");
+            Assert.That(incoming.Username, Is.Not.EqualTo("alice").IgnoreCase, "the colliding incoming username is uniquified");
+            Assert.That(incoming.DisplayName, Is.EqualTo("Remote Alice"), "the incoming display name is preserved");
+            Assert.That(incoming.Id, Is.EqualTo(incomingId), "the incoming id is preserved so ownership references still resolve");
+        });
+    }
+
+    [Test]
+    public async Task ApplyUserAsync_WhenUniquifiedNameAlsoCollides_KeepsIncrementingTheCounter()
+    {
+        var incomingId = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = Guid.NewGuid(), Username = "alice", DisplayName = "A", Revision = 1 });
+        await _sut.ApplyUserAsync(new User { Id = Guid.NewGuid(), Username = "alice-2", DisplayName = "B", Revision = 1 });
+
+        await _sut.ApplyUserAsync(new User { Id = incomingId, Username = "alice", DisplayName = "Incoming", Revision = 1 });
+
+        var stored = (await _sut.GetAllUsersAsync()).Single(u => u.Id == incomingId);
+        Assert.That(stored.Username, Is.EqualTo("alice-3"),
+            "when both 'alice' and 'alice-2' are taken, the counter advances until the username is unique");
+    }
+
+    [Test]
+    public async Task ApplyShareAsync_InsertsAndGetAllReturnsIt()
+    {
+        var id = Guid.NewGuid();
+        var presetId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        await _sut.ApplyShareAsync(new CollectionShare
+        {
+            Id = id, PresetId = presetId, SharedWithUserId = userId, GrantedByUserId = Guid.NewGuid(),
+            Permission = SharePermission.Edit, Revision = 1, BaseRevision = 1,
+        });
+
+        var all = await _sut.GetAllSharesAsync();
+
+        var stored = all.Single(s => s.Id == id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored.PresetId, Is.EqualTo(presetId));
+            Assert.That(stored.SharedWithUserId, Is.EqualTo(userId));
+            Assert.That(stored.Permission, Is.EqualTo(SharePermission.Edit));
+        });
+    }
+
+    [Test]
+    public async Task ApplyShareAsync_UpdatesInPlaceWithoutDuplicating()
+    {
+        var id = Guid.NewGuid();
+        var presetId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        await _sut.ApplyShareAsync(new CollectionShare { Id = id, PresetId = presetId, SharedWithUserId = userId, GrantedByUserId = Guid.NewGuid(), Permission = SharePermission.Read, Revision = 1 });
+        await _sut.ApplyShareAsync(new CollectionShare { Id = id, PresetId = presetId, SharedWithUserId = userId, GrantedByUserId = Guid.NewGuid(), Permission = SharePermission.Edit, Revision = 2, BaseRevision = 2 });
+
+        var all = await _sut.GetAllSharesAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(all.Count(s => s.Id == id), Is.EqualTo(1));
+            Assert.That(all.Single(s => s.Id == id).Permission, Is.EqualTo(SharePermission.Edit));
+            Assert.That(all.Single(s => s.Id == id).Revision, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public async Task MarkSyncedAsync_ForUserAndShare_UpdatesBaseRevisionAndDirty()
+    {
+        var userId = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = userId, Username = "alice", DisplayName = "Alice", Revision = 3, IsDirty = true });
+        var shareId = Guid.NewGuid();
+        await _sut.ApplyShareAsync(new CollectionShare { Id = shareId, PresetId = Guid.NewGuid(), SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Revision = 3, IsDirty = true });
+
+        await _sut.MarkSyncedAsync(SyncEntityKind.User, userId, 3, dirty: false);
+        await _sut.MarkSyncedAsync(SyncEntityKind.Share, shareId, 3, dirty: false);
+
+        var user = (await _sut.GetAllUsersAsync()).Single(u => u.Id == userId);
+        var share = (await _sut.GetAllSharesAsync()).Single(s => s.Id == shareId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(user.BaseRevision, Is.EqualTo(3));
+            Assert.That(user.IsDirty, Is.False);
+            Assert.That(share.BaseRevision, Is.EqualTo(3));
+            Assert.That(share.IsDirty, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task DeleteLocallyAsync_RemovesUserAndShare()
+    {
+        var userId = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = userId, Username = "gone", DisplayName = "Gone", Revision = 1 });
+        var shareId = Guid.NewGuid();
+        await _sut.ApplyShareAsync(new CollectionShare { Id = shareId, PresetId = Guid.NewGuid(), SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Revision = 1 });
+
+        await _sut.DeleteLocallyAsync(SyncEntityKind.User, userId);
+        await _sut.DeleteLocallyAsync(SyncEntityKind.Share, shareId);
+
+        var users = await _sut.GetAllUsersAsync();
+        var shares = await _sut.GetAllSharesAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(users.Any(u => u.Id == userId), Is.False);
+            Assert.That(shares.Any(s => s.Id == shareId), Is.False);
+        });
+    }
+
+    [Test]
+    public async Task PurgeTombstonesAsync_RemovesOldSyncedUserAndShareTombstone()
+    {
+        var userId = Guid.NewGuid();
+        await _sut.ApplyUserAsync(new User { Id = userId, Username = "old", DisplayName = "Old", Revision = 2, BaseRevision = 2, IsDirty = false, IsDeleted = true, DeletedAt = DateTime.UtcNow.AddDays(-40) });
+        var shareId = Guid.NewGuid();
+        await _sut.ApplyShareAsync(new CollectionShare { Id = shareId, PresetId = Guid.NewGuid(), SharedWithUserId = Guid.NewGuid(), GrantedByUserId = Guid.NewGuid(), Revision = 2, BaseRevision = 2, IsDirty = false, IsDeleted = true, DeletedAt = DateTime.UtcNow.AddDays(-40) });
+
+        await _sut.PurgeTombstonesAsync(DateTime.UtcNow.AddDays(-30));
+
+        var users = await _sut.GetAllUsersAsync();
+        var shares = await _sut.GetAllSharesAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(users.Any(u => u.Id == userId), Is.False);
+            Assert.That(shares.Any(s => s.Id == shareId), Is.False);
+        });
     }
 }

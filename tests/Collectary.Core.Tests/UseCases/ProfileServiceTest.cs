@@ -67,6 +67,31 @@ public class ProfileServiceTest
         Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateProfileAsync("   "));
 
     [Test]
+    public async Task CreateProfileAsync_NormalizesWhitespaceAndConnectorsToDashes()
+    {
+        A.CallTo(() => _users.GetByUsernameAsync(A<string>._)).Returns((User?)null);
+
+        var spaced = (await _sut.CreateProfileAsync("Alice Smith")).Username;
+        var connectored = (await _sut.CreateProfileAsync("Bob_Jones")).Username;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(spaced, Is.EqualTo("alice-smith"), "whitespace becomes a dash in the username slug");
+            Assert.That(connectored, Is.EqualTo("bob-jones"), "underscores become dashes in the username slug");
+        });
+    }
+
+    [Test]
+    public async Task CreateProfileAsync_WhenNameHasNoAlphanumerics_FallsBackToProfile()
+    {
+        A.CallTo(() => _users.GetByUsernameAsync(A<string>._)).Returns((User?)null);
+
+        var user = await _sut.CreateProfileAsync("!!!");
+
+        Assert.That(user.Username, Is.EqualTo("profile"), "a name that slugs to empty falls back to 'profile'");
+    }
+
+    [Test]
     public async Task CreateProfileAsync_DoesNotChangeSession()
     {
         A.CallTo(() => _users.GetByUsernameAsync(A<string>._)).Returns((User?)null);

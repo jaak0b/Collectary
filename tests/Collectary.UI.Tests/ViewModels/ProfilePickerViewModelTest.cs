@@ -51,6 +51,25 @@ public class ProfilePickerViewModelTest
     }
 
     [Test]
+    public async Task LoadAsync_SurfacesSyncedInForeignProfile_AndSelectingItPreservesItsId()
+    {
+        var foreignId = Guid.NewGuid();
+        var foreign = new User { Id = foreignId, Username = "remote-alice", DisplayName = "Remote Alice" };
+        A.CallTo(() => _profiles.GetProfilesAsync()).Returns(new List<User> { foreign });
+        var vm = Make();
+
+        await vm.LoadAsync();
+        var tile = vm.Profiles.Single();
+        await vm.SelectProfileCommand.ExecuteAsync(tile);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(tile.Name, Is.EqualTo("Remote Alice"), "a profile synced in from another install must appear in the picker");
+            Assert.That(_selected!.Id, Is.EqualTo(foreignId), "selecting it must preserve the original id so its collections resolve");
+        });
+    }
+
+    [Test]
     public void BeginAddCommand_EntersAddingState()
     {
         var vm = Make();

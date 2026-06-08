@@ -39,6 +39,7 @@ public class InventoryDbContext : DbContext
             e.ToTable("Users");
             e.HasKey(u => u.Id);
             e.HasIndex(u => u.Username).IsUnique();
+            e.HasQueryFilter(u => !u.IsDeleted);
         });
 
         modelBuilder.Entity<CollectionShare>(e =>
@@ -46,6 +47,7 @@ public class InventoryDbContext : DbContext
             e.ToTable("CollectionShares");
             e.HasKey(s => s.Id);
             e.HasIndex(s => new { s.PresetId, s.SharedWithUserId }).IsUnique();
+            e.HasQueryFilter(s => !s.IsDeleted);
         });
     }
 

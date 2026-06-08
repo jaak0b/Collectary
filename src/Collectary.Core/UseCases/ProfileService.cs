@@ -9,6 +9,7 @@ public class ProfileService : IProfileService
 {
     private readonly IUserRepository _users;
     private readonly UserSession _session;
+    private readonly UsernameUniquifier _uniquifier = new();
 
     public ProfileService(IUserRepository users, UserSession session)
     {
@@ -26,7 +27,8 @@ public class ProfileService : IProfileService
             throw new ArgumentException("Profile name is required.", nameof(name));
 
         var displayName = name.Trim();
-        var username = await UniqueUsernameAsync(Slug(displayName));
+        var username = await _uniquifier.MakeUniqueAsync(Slug(displayName),
+            async candidate => await _users.GetByUsernameAsync(candidate) is not null);
 
         var profile = new User { Username = username, DisplayName = displayName };
         await _users.AddAsync(profile);
@@ -36,19 +38,6 @@ public class ProfileService : IProfileService
     public void SelectProfile(User profile) => _session.SetCurrentUser(profile);
 
     public void SignOut() => _session.Clear();
-
-    private async Task<string> UniqueUsernameAsync(string baseName)
-    {
-        var candidate = baseName;
-        var suffix = 1;
-        while (await _users.GetByUsernameAsync(candidate) is not null)
-        {
-            suffix++;
-            candidate = $"{baseName}-{suffix}";
-        }
-
-        return candidate;
-    }
 
     private string Slug(string displayName)
     {

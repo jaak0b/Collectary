@@ -11,14 +11,12 @@ public class BackupService : IBackupService
     private const int FormatVersion = 1;
     private const string ManifestEntry = "manifest.json";
     private const string ManifestContent = "{\"formatVersion\":1}";
-    private const string PresetDir = "presets/";
-    private const string ItemDir = "items/";
-    private const string SharedFieldDir = "sharedfields/";
     private const string BlobDir = "blobs/";
 
     private readonly ISyncStore _store;
     private readonly ISyncSerializer _serializer;
     private readonly IImageStore _imageStore;
+    private readonly SyncKindCatalog _catalog = new();
 
     public BackupService(ISyncStore store, ISyncSerializer serializer, IImageStore imageStore)
     {
@@ -33,12 +31,9 @@ public class BackupService : IBackupService
 
         await WriteEntryAsync(archive, ManifestEntry, ManifestContent);
 
-        foreach (var field in await _store.GetAllSharedFieldsAsync())
-            await WriteEntryAsync(archive, SharedFieldDir + EntryName(field.Id), _serializer.Serialize(field));
-        foreach (var preset in await _store.GetAllPresetsAsync())
-            await WriteEntryAsync(archive, PresetDir + EntryName(preset.Id), _serializer.Serialize(preset));
-        foreach (var item in await _store.GetAllItemsAsync())
-            await WriteEntryAsync(archive, ItemDir + EntryName(item.Id), _serializer.Serialize(item));
+        foreach (var kind in _catalog.Describe(_store, _serializer))
+            foreach (var entity in await kind.GetLocal())
+                await WriteEntryAsync(archive, $"{kind.WireString}/{EntryName(((DomainObject)entity).Id)}", kind.Serialize(entity));
 
         foreach (var key in await _store.GetReferencedImageKeysAsync())
             if (_imageStore.Exists(key))
@@ -51,15 +46,9 @@ public class BackupService : IBackupService
         await EnsureSupportedFormatAsync(archive);
         var conflicts = new List<SyncConflict>();
 
-        var applied = await MergeAsync(
-            archive, SharedFieldDir, SyncEntityKind.SharedField, await _store.GetAllSharedFieldsAsync(),
-            s => s.Name, s => _store.ApplySharedFieldAsync(s), conflicts);
-        applied += await MergeAsync(
-            archive, PresetDir, SyncEntityKind.Preset, await _store.GetAllPresetsAsync(),
-            p => p.Name, p => _store.ApplyPresetAsync(p), conflicts);
-        applied += await MergeAsync(
-            archive, ItemDir, SyncEntityKind.Item, await _store.GetAllItemsAsync(),
-            i => i.DisplayName, i => _store.ApplyItemAsync(i), conflicts);
+        var applied = 0;
+        foreach (var kind in _catalog.Describe(_store, _serializer))
+            applied += await MergeAsync(archive, kind, conflicts);
 
         await ImportBlobsAsync(archive);
 
@@ -78,36 +67,29 @@ public class BackupService : IBackupService
             throw new NotSupportedException($"Backup format version {value} is not supported.");
     }
 
-    private async Task<int> MergeAsync<T>(
-        ZipArchive archive,
-        string dir,
-        SyncEntityKind kind,
-        IReadOnlyList<T> locals,
-        Func<T, string> label,
-        Func<T, Task> apply,
-        List<SyncConflict> conflicts)
-        where T : DomainObject, ISyncable
+    private async Task<int> MergeAsync(ZipArchive archive, SyncKind kind, List<SyncConflict> conflicts)
     {
-        var localById = locals.ToDictionary(l => l.Id);
+        var localById = (await kind.GetLocal()).ToDictionary(l => ((DomainObject)l).Id);
         var applied = 0;
 
-        foreach (var entry in EntriesIn(archive, dir))
+        foreach (var entry in EntriesIn(archive, $"{kind.WireString}/"))
         {
-            var remote = _serializer.Deserialize<T>(await ReadEntryAsync(entry));
+            var remote = kind.Deserialize(await ReadEntryAsync(entry));
             if (remote is null) continue;
 
-            if (localById.TryGetValue(remote.Id, out var local))
+            var remoteId = ((DomainObject)remote).Id;
+            if (localById.TryGetValue(remoteId, out var local))
             {
                 if (remote.Revision <= local.Revision) continue;
                 if (local.IsDirty)
                 {
-                    conflicts.Add(new SyncConflict(kind, remote.Id, label(local), label(remote), local.Revision, remote.Revision));
+                    conflicts.Add(new SyncConflict(kind.Kind, remoteId, kind.Label(local), kind.Label(remote), local.Revision, remote.Revision));
                     continue;
                 }
             }
 
             remote.MarkPulled();
-            await apply(remote);
+            await kind.Apply(remote);
             applied++;
         }
 
