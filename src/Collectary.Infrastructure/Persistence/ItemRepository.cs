@@ -164,11 +164,7 @@ public class ItemRepository : IItemRepository
         var item = await db.Items.FindAsync(id);
         if (item is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            SoftDelete(item);
-        else
-            db.Items.Remove(item);
-
+        HardDelete(db, item);
         await db.SaveChangesAsync();
     }
 
@@ -176,18 +172,13 @@ public class ItemRepository : IItemRepository
     {
         using var db = _dbFactory();
         var items = await db.Items.Where(i => i.PresetId == presetId).ToListAsync();
-        if (_syncStatus?.IsConfigured == true)
-        {
-            foreach (var item in items) SoftDelete(item);
-        }
-        else
-        {
-            db.Items.RemoveRange(items);
-        }
-
+        foreach (var item in items) HardDelete(db, item);
         await db.SaveChangesAsync();
     }
 
-    private void SoftDelete(Item item) =>
-        ((ISyncable)item).StampDeleted(_currentUser?.AuthenticatedId);
+    private void HardDelete(InventoryDbContext db, Item item)
+    {
+        db.Items.Remove(item);
+        db.Tombstones.Add(new Tombstone { Id = item.Id });
+    }
 }

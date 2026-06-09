@@ -16,6 +16,8 @@ public class InventoryDbContext : DbContext
     public DbSet<FieldGroup> FieldGroups => Set<FieldGroup>();
     public DbSet<User> Users => Set<User>();
     public DbSet<CollectionShare> CollectionShares => Set<CollectionShare>();
+    public DbSet<Tombstone> Tombstones => Set<Tombstone>();
+    public DbSet<SyncState> SyncStates => Set<SyncState>();
 
     public InventoryDbContext(DbContextOptions<InventoryDbContext> options) : base(options) { }
 
@@ -29,7 +31,25 @@ public class InventoryDbContext : DbContext
         ConfigureFieldValues(modelBuilder);
         ConfigureFieldGroups(modelBuilder);
         ConfigureAccounts(modelBuilder);
+        ConfigureSyncState(modelBuilder);
         ConfigureClientGeneratedKeys(modelBuilder);
+    }
+
+    private static void ConfigureSyncState(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Tombstone>(e =>
+        {
+            e.ToTable("Tombstones");
+            e.HasKey(t => t.Id);
+            e.Property(t => t.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<SyncState>(e =>
+        {
+            e.ToTable("SyncState");
+            e.HasKey(s => s.Id);
+            e.Property(s => s.Id).ValueGeneratedNever();
+        });
     }
 
     private static void ConfigureAccounts(ModelBuilder modelBuilder)

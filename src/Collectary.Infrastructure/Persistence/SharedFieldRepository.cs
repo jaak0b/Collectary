@@ -98,10 +98,8 @@ public class SharedFieldRepository : ISharedFieldRepository
         var field = await db.SharedFields.FindAsync(id);
         if (field is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            ((ISyncable)field).StampDeleted(_currentUser?.AuthenticatedId);
-        else
-            db.SharedFields.Remove(field);
+        db.SharedFields.Remove(field);
+        db.Tombstones.Add(new Tombstone { Id = id });
 
         await db.SaveChangesAsync();
     }

@@ -14,9 +14,13 @@ public interface ISyncStore
     Task ApplySharedFieldAsync(SharedField sharedField);
     Task ApplyUserAsync(User user);
     Task ApplyShareAsync(CollectionShare share);
-    Task MarkSyncedAsync(SyncEntityKind kind, Guid id, long baseRevision, bool dirty, long? revision = null);
-    Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff);
+
+    Task<IReadOnlyList<Guid>> GetTombstoneIdsAsync();
+    Task ApplyDeletionsAsync(IReadOnlyCollection<Guid> ids);
+    Task StampPushedAsync(SyncEntityKind kind, Guid id, long lamport, Guid deviceId);
+    Task<long> GetMaxObservedLamportAsync();
+    Task SetMaxObservedLamportAsync(long value);
+
     Task<IReadOnlyList<string>> GetReferencedImageKeysAsync();
-    Task<IReadOnlyList<string>> GetLiveReferencedImageKeysAsync();
     Task DeleteLocallyAsync(SyncEntityKind kind, Guid id);
 }

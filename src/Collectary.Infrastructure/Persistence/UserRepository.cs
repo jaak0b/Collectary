@@ -52,10 +52,8 @@ public class UserRepository : IUserRepository
         var user = await db.Users.FindAsync(id);
         if (user is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            ((ISyncable)user).StampDeleted(_currentUser?.AuthenticatedId);
-        else
-            db.Users.Remove(user);
+        db.Users.Remove(user);
+        db.Tombstones.Add(new Tombstone { Id = id });
 
         await db.SaveChangesAsync();
     }

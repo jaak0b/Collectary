@@ -15,4 +15,6 @@ public class CollectionShare : DomainObject, ISyncable
     public long BaseRevision { get; set; }
     public bool IsDirty { get; set; }
     public Guid? LastModifiedByUserId { get; set; }
+    public long Lamport { get; set; }
+    public Guid LastModifiedByDeviceId { get; set; }
 }

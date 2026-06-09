@@ -160,10 +160,8 @@ public class PresetRepository : IPresetRepository
         var preset = await db.Presets.FindAsync(id);
         if (preset is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            ((ISyncable)preset).StampDeleted(_currentUser?.AuthenticatedId);
-        else
-            db.Presets.Remove(preset);
+        db.Presets.Remove(preset);
+        db.Tombstones.Add(new Tombstone { Id = id });
 
         await db.SaveChangesAsync();
     }
