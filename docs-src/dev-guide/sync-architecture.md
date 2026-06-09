@@ -7,10 +7,11 @@ in terms of Core **ports**, with concrete adapters in Infrastructure.
 
 | Port (Core) | Role | Adapter (Infrastructure) |
 |---|---|---|
-| `ISyncService` | Orchestrates a sync: reconciles local + remote, returns a result, resolves conflicts. | `SyncService` |
-| `ISyncBackend` | The remote store abstraction — list/read/write/delete for entities, plus blob (image) operations. | `FileSystemSyncBackend` |
-| `ISyncStore` | The local store — loads entities, reconciles revisions/timestamps, handles merges and tombstones. | `EfSyncStore` |
+| `ISyncService` | Orchestrates a sync: writes this device's snapshot, reads the others, merges them deterministically. | `SyncService` |
+| `ISyncBackend` | The remote store abstraction — list/read/write/delete for documents, plus blob (image) operations. | `FileSystemSyncBackend` |
+| `ISyncStore` | The local store — loads entities, applies merged winners, records/applies tombstones, holds the Lamport high-water. | `EfSyncStore` |
 | `ISyncSerializer` | JSON (de)serialization, including polymorphic `FieldDefinition` handling. | uses a polymorphic field resolver |
+| `IDeviceIdentity` | A stable per-install device id (a GUID, persisted in preferences). | `PreferencesDeviceIdentity` |
 | `ISyncStatus` | Tracks sync-related state/preferences. | backed by app preferences |
 
 ## What syncs
@@ -31,10 +32,12 @@ profile to see its collections, and a shared collection shows up for the share t
 at all. Profiles carry **no secrets** — passwords and email were removed from the model — so replicating
 them to a shared folder is safe.
 
-Because shares are syncable, **revoking** a share is a soft-delete (a tombstone), not a hard delete —
-otherwise the revoked share would simply re-download from a peer on the next sync and silently restore
-access. Re-granting a previously-revoked share revives the same tombstoned row in place, so the
-`(preset, user)` uniqueness still holds. The same applies to a profile.
+Because shares are syncable, **revoking** a share is a hard delete that records a **tombstone** (a
+permanent marker holding just the id), not a silent row removal — otherwise the revoked share would
+re-download from a peer on the next sync and restore access. The tombstone makes the deletion *win*
+on every device (see [Deletions](#deletions--tombstones)). Re-granting afterwards simply inserts a
+fresh share row; the old row is gone, so the `(preset, user)` uniqueness still holds. The same applies
+to a profile.
 
 Profiles are reconciled **before** presets and items, so an owner always exists locally before the
 collections that reference it arrive. Usernames have a unique, case-insensitive index; when an incoming
@@ -50,39 +53,62 @@ single source of truth for orchestration is `SyncKindCatalog.Describe(...)`, whi
 descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply), in
 dependency order (owners first). Both `SyncService` and `BackupService` loop over that catalog, so a new
 kind is backed up, restored, and synced from one place. The persistence side mirrors this with a single
-`EfSyncStore` ops map (`kind → find/delete/purge`, built from a generic `OpsFor<T>()`). The conflict
-dialog resolves its label by convention (`Sync_Kind{kind}`). Completeness-guard tests fail if a new
-`SyncEntityKind` value is added without its catalog and ops-map rows.
+`EfSyncStore` ops map (`kind → find/delete`, built from a generic `OpsFor<T>()`). Completeness-guard
+tests fail if a new `SyncEntityKind` value is added without its catalog and ops-map rows.
+
+## Versioning: a Lamport clock + device id
+
+Every syncable entity carries a **version** that is a pair: a `Lamport` number plus the
+`LastModifiedByDeviceId` (a GUID) of whoever last wrote it. The Lamport number is a *logical* clock —
+each device keeps one running high-water mark (`SyncState.MaxObservedLamport`) and a new edit takes
+`max(seen) + 1`, so an edit made *after* seeing another device's edit always gets a strictly higher
+number. Wall-clock time is never used for ordering (device clocks can't be trusted).
+
+To compare two versions of the same entity, compare the `Lamport` first; on an exact tie, the higher
+`DeviceId` wins. Because device ids are unique this is a **total order** — two devices can never mint
+the same version with different content, and every device computes the same winner. This is what makes
+the merge deterministic and convergent (re-syncing in any order, with any delay, reaches the same
+state — no oscillation).
 
 ## A sync run
 
-`SyncService.SyncAsync()`:
+`SyncService.SyncAsync()` (per-device snapshot files, merged on read):
 
-1. Lists local and remote state.
-2. **Pushes** locally-changed (dirty) entities to the backend and **pulls** remotely-changed ones.
-3. Reconciles using **revision numbers** and timestamps. Each syncable entity carries
-   `Revision`, `BaseRevision`, `IsDirty`, `IsDeleted`/`DeletedAt`.
-4. Returns a `SyncResult` reporting how many records were pushed and pulled, plus any conflicts.
+1. Loads this device's live entities; stamps any **dirty** ones with a fresh Lamport number and this
+   device id, then writes them all into **one file this device owns** — `device-{deviceId}.sync.json` —
+   alongside a flat list of tombstone ids.
+2. Reads **every other** `device-*.sync.json` in the folder (each in its own try/catch — a corrupt or
+   half-written file is skipped, never aborting the run).
+3. Folds them: the union of all tombstone ids is hard-deleted locally (**delete-wins**); every other
+   id resolves to the highest `(Lamport, DeviceId)` winner, which is applied only if it is newer than
+   the local copy. There is no shared mutable object — each device only ever writes its *own* file — so
+   a concurrent write can never be lost.
+4. Returns a `SyncResult` reporting how many records were pushed and pulled. **There are no conflicts**
+   — the merge is automatic and deterministic.
 
 ## The file-system backend
 
-`FileSystemSyncBackend` stores each entity as a per-revision JSON file (e.g.
-`{id}.{revision}.json`) in kind-specific subdirectories (`presets/`, `items/`, `sharedfields/`,
-`users/`, `shares/`), and images under an `images/` directory. The backend and serializer are
-kind-agnostic, so adding a new syncable kind needs no backend change. The root directory is configurable via app preferences —
-point multiple devices at the same shared folder (a cloud-drive folder, network share, etc.).
+`FileSystemSyncBackend` stores each document as a JSON file in a kind-specific subdirectory; sync uses
+a single `devices/` directory holding one `device-{deviceId}.sync.json` per install, plus images under
+`images/`. The backend and serializer are kind-agnostic. The root directory is configurable via app
+preferences — point multiple devices at the same shared folder (a cloud-drive folder, network share,
+etc.).
 
-## Conflicts
+## Automatic merge (no conflict dialog)
 
-A conflict arises when an entity was modified **both** locally and remotely since the last common
-revision. `SyncService` surfaces these and the user resolves each by keeping local or taking
-remote (`ResolveAsync(conflict, keepLocal)`); the resolution is written out on the next sync.
+When two devices edit the **same** entity without seeing each other, the higher `(Lamport, DeviceId)`
+wins automatically — there is no "keep mine / keep theirs" prompt. The losing edit is not destroyed;
+it still lives in its origin device's file and is recoverable. (`ISyncService.ResolveAsync` remains on
+the port for backward compatibility but is a no-op, since the engine never raises a conflict.)
 
 ## Deletions & tombstones
 
-Deletions are tracked as **tombstones** so they propagate instead of resurrecting on the next pull.
-`EfSyncStore` retains tombstones for a configurable number of days
-(`TombstoneRetentionDays`, default 30) and then prunes them.
+Deleting an object **hard-deletes its row immediately** — the user's data leaves the disk at once — and
+records a tiny `Tombstone` (just the deleted id) in the same transaction. Each device file carries its
+tombstone ids; the merge treats **delete as the winner** (any id with a tombstone anywhere is removed
+locally, regardless of version), so a deletion can never be resurrected by a stale live copy returning
+from an offline device. Because ids (GUIDs) are never reused, tombstones are kept permanently — there
+is no time-based retention to guess at.
 
 ## Polymorphic serialization
 
