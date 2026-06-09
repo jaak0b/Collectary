@@ -59,7 +59,6 @@ public class InventoryDbContext : DbContext
             e.ToTable("Users");
             e.HasKey(u => u.Id);
             e.HasIndex(u => u.Username).IsUnique();
-            e.HasQueryFilter(u => !u.IsDeleted);
         });
 
         modelBuilder.Entity<CollectionShare>(e =>
@@ -67,7 +66,6 @@ public class InventoryDbContext : DbContext
             e.ToTable("CollectionShares");
             e.HasKey(s => s.Id);
             e.HasIndex(s => new { s.PresetId, s.SharedWithUserId }).IsUnique();
-            e.HasQueryFilter(s => !s.IsDeleted);
         });
     }
 
@@ -101,7 +99,6 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("SharedFields");
             e.HasKey(sf => sf.Id);
-            e.HasQueryFilter(sf => !sf.IsDeleted);
             e.HasOne(sf => sf.Definition)
              .WithOne()
              .HasForeignKey<FieldDefinition>(f => f.SharedFieldId)
@@ -136,7 +133,6 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("Presets");
             e.HasKey(p => p.Id);
-            e.HasQueryFilter(p => !p.IsDeleted);
             e.HasMany(p => p.Fields)
              .WithOne()
              .HasForeignKey(f => f.PresetId)
@@ -165,7 +161,6 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("Items");
             e.HasKey(i => i.Id);
-            e.HasQueryFilter(i => !i.IsDeleted);
             e.HasMany(i => i.Values)
              .WithOne()
              .HasForeignKey(v => v.ItemId)

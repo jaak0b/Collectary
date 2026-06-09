@@ -399,25 +399,6 @@ public class SyncEndToEndTest
         });
     }
 
-    [Test]
-    public async Task Image_AfterTombstonePurged_IsGarbageCollected()
-    {
-        var (_, itemId, key) = await SeedItemWithImageAsync(_a, new byte[] { 7 });
-        await _a.Sync.SyncAsync();
-        Assume.That(_a.Images.Exists(key), Is.True, "precondition: image pushed to remote");
-
-        var tomb = (await _a.Store.GetAllItemsAsync()).Single(i => i.Id == itemId);
-        tomb.IsDeleted = true;
-        tomb.DeletedAt = DateTime.UtcNow.AddDays(-60);
-        tomb.IsDirty = true;
-        tomb.Revision = 2;
-        await _a.Store.ApplyItemAsync(tomb);
-
-        await _a.Sync.SyncAsync();
-        await _a.Sync.SyncAsync();
-
-        Assert.That(_a.Images.Exists(key), Is.False, "once the tombstone is purged, its image is finally garbage-collected");
-    }
 
     [Test]
     public async Task RepeatedSync_IsStableWithNoChurn()

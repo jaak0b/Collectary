@@ -8,8 +8,6 @@ public class Item : DomainObject, ISyncable
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
     public long Revision { get; set; }
     public long BaseRevision { get; set; }
     public bool IsDirty { get; set; }

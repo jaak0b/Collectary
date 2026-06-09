@@ -25,8 +25,6 @@ public class ShareRepository : IShareRepository
         {
             existing.Permission = share.Permission;
             existing.GrantedByUserId = share.GrantedByUserId;
-            existing.IsDeleted = false;
-            existing.DeletedAt = null;
             existing.UpdatedAt = DateTime.UtcNow;
             ((ISyncable)existing).StampModified(share.GrantedByUserId);
         }
