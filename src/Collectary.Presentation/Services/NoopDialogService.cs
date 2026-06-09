@@ -11,8 +11,6 @@ public sealed class NoopDialogService : IDialogService
 
     public Task ShowMessageAsync(string message, string title = "") => Task.CompletedTask;
 
-    public Task ShowSyncConflictsAsync(SyncViewModel viewModel) => Task.CompletedTask;
-
     public Task<CloudFolder?> ShowCloudFolderPickerAsync(CloudFolderPickerViewModel viewModel) =>
         Task.FromResult<CloudFolder?>(null);
 }

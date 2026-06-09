@@ -40,7 +40,7 @@ public class SyncService : ISyncService
         if (!_backend.IsAvailable)
         {
             _logger.Warning("Sync skipped: the configured sync backend is not available");
-            return new SyncResult(0, 0, Array.Empty<SyncConflict>());
+            return new SyncResult(0, 0);
         }
 
         _logger.Information("Sync starting");
@@ -100,10 +100,8 @@ public class SyncService : ISyncService
         await SyncImagesAsync();
 
         _logger.Information("Sync complete: pushed={Pushed} pulled={Pulled}", pushed, pulled);
-        return new SyncResult(pushed, pulled, Array.Empty<SyncConflict>());
+        return new SyncResult(pushed, pulled);
     }
-
-    public Task ResolveAsync(SyncConflict conflict, bool keepLocal) => Task.CompletedTask;
 
     private async Task<(int pushed, long clock)> StampDirtyAsync<T>(
         SyncEntityKind kind, IReadOnlyList<T> locals, Guid deviceId, long clock, int pushed)

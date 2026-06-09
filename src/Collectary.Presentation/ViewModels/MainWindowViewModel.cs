@@ -71,9 +71,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public IDialogHost? DialogHost { get; }
 
     [RelayCommand]
-    private async Task ResolveConflicts() => await _dialogService.ShowSyncConflictsAsync(Sync);
-
-    [RelayCommand]
     private void ToggleSidebar()
     {
         IsSidebarOpen = !IsSidebarOpen;

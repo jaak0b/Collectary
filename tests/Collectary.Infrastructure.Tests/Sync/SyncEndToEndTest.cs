@@ -294,8 +294,8 @@ public class SyncEndToEndTest
         b!.Name = "B-edit";
         await _b.Presets.UpdateAsync(b);
 
-        var r1 = await _a.Sync.SyncAsync();
-        var r2 = await _b.Sync.SyncAsync();
+        await _a.Sync.SyncAsync();
+        await _b.Sync.SyncAsync();
         await _a.Sync.SyncAsync();
         await _b.Sync.SyncAsync();
 
@@ -303,10 +303,8 @@ public class SyncEndToEndTest
         var bName = (await _b.Presets.GetByIdAsync(preset.Id))!.Name;
         Assert.Multiple(() =>
         {
-            Assert.That(aName, Is.EqualTo(bName), "both devices deterministically converge to the same winner");
+            Assert.That(aName, Is.EqualTo(bName), "both devices deterministically converge to the same winner with no conflict prompt");
             Assert.That(aName, Is.AnyOf("A-edit", "B-edit"));
-            Assert.That(r1.Conflicts, Is.Empty, "the rebuilt engine auto-merges and never raises a conflict");
-            Assert.That(r2.Conflicts, Is.Empty);
         });
     }
 
@@ -432,8 +430,7 @@ public class SyncEndToEndTest
         Assert.Multiple(() =>
         {
             Assert.That(second.Pushed, Is.EqualTo(0));
-            Assert.That(second.Pulled, Is.EqualTo(0));
-            Assert.That(second.HasConflicts, Is.False);
+            Assert.That(second.Pulled, Is.EqualTo(0), "a no-op second sync transfers nothing");
         });
     }
 }

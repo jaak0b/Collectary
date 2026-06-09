@@ -97,21 +97,6 @@ public partial class MainView : UserControl
         syncNow.Click += (_, _) => _syncFlyout.Hide();
         panel.Children.Add(syncNow);
 
-        if (sync.HasConflicts)
-        {
-            var resolve = new Button
-            {
-                Content = LocalizationService.Instance["Sync_ResolveConflicts"],
-                Command = _vm.ResolveConflictsCommand,
-                Background = ThemeBrush("DangerBrush"),
-                Foreground = ThemeBrush("DangerForegroundBrush"),
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                HorizontalContentAlignment = HorizontalAlignment.Center
-            };
-            resolve.Click += (_, _) => _syncFlyout.Hide();
-            panel.Children.Add(resolve);
-        }
-
         _syncFlyout.Content = panel;
     }
 

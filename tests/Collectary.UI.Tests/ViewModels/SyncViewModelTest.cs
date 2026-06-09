@@ -18,7 +18,7 @@ public class SyncViewModelTest
         _sync = A.Fake<ISyncService>();
         _status = A.Fake<ISyncStatus>();
         A.CallTo(() => _status.IsConfigured).Returns(true);
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, Array.Empty<SyncConflict>()));
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0));
     }
 
     private SyncViewModel Make(IUiDispatcher? ui = null) => new(_sync, _status, ui ?? new InlineUiDispatcher(), new InlineBackgroundRunner());
@@ -75,39 +75,6 @@ public class SyncViewModelTest
 
         Assert.That(vm.LastSyncedAt, Is.Null);
         A.CallTo(() => _sync.SyncAsync()).MustNotHaveHappened();
-    }
-
-    [Test]
-    public async Task SyncNow_WithConflicts_PopulatesConflicts()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.That(vm.HasConflicts, Is.True);
-        Assert.That(vm.Conflicts, Has.Count.EqualTo(1));
-    }
-
-    [Test]
-    public async Task SyncNow_WithUnresolvedConflicts_DoesNotStampLastSynced()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.HasConflicts, Is.True);
-            Assert.That(vm.LastSyncedAt, Is.Null, "must not claim a successful sync while conflicts remain");
-        });
     }
 
     [Test]
@@ -177,43 +144,9 @@ public class SyncViewModelTest
     }
 
     [Test]
-    public async Task ConflictResolution_WithMultipleConflicts_KeepsOthersAndDefersResync()
-    {
-        var c1 = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "M1", "T1", 2, 2);
-        var c2 = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "M2", "T2", 2, 2);
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[] { c1, c2 }));
-        var vm = Make();
-        await vm.SyncNowCommand.ExecuteAsync(null);
-        var secondVm = vm.Conflicts[1];
-
-        await vm.Conflicts[0].KeepMineCommand.ExecuteAsync(null);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.Conflicts, Has.Count.EqualTo(1), "resolving one conflict must not tear down the others");
-            Assert.That(vm.Conflicts.Single(), Is.SameAs(secondVm), "the still-unresolved conflict instance must be preserved");
-        });
-        A.CallTo(() => _sync.SyncAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Test]
     public void NeedsAttention_WhenClean_IsFalse()
     {
         Assert.That(Make().NeedsAttention, Is.False);
-    }
-
-    [Test]
-    public async Task NeedsAttention_WithConflicts_IsTrue()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.That(vm.NeedsAttention, Is.True);
     }
 
     [Test]
@@ -228,23 +161,6 @@ public class SyncViewModelTest
     }
 
     [Test]
-    public async Task NeedsAttention_WhenConflictsAppear_RaisesPropertyChanged()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-        var changed = new List<string?>();
-        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
-        Assert.That(changed, Does.Contain(nameof(vm.HasConflicts)));
-    }
-
-    [Test]
     public async Task NeedsAttention_WhenErrorAppears_RaisesPropertyChanged()
     {
         A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
@@ -254,22 +170,10 @@ public class SyncViewModelTest
 
         await vm.SyncNowCommand.ExecuteAsync(null);
 
-        Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
-        Assert.That(changed, Does.Contain(nameof(vm.HasError)));
-    }
-
-    [Test]
-    public async Task ConflictKeepMine_ResolvesKeepLocalAndResyncs()
-    {
-        var conflict = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "Mine", "Theirs", 2, 2);
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[] { conflict })).Once()
-            .Then.Returns(new SyncResult(1, 0, Array.Empty<SyncConflict>()));
-        var vm = Make();
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        await vm.Conflicts.Single().KeepMineCommand.ExecuteAsync(null);
-
-        A.CallTo(() => _sync.ResolveAsync(conflict, true)).MustHaveHappenedOnceExactly();
-        Assert.That(vm.HasConflicts, Is.False);
+        Assert.Multiple(() =>
+        {
+            Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
+            Assert.That(changed, Does.Contain(nameof(vm.HasError)));
+        });
     }
 }
