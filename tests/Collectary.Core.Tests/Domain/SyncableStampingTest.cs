@@ -47,20 +47,17 @@ public class SyncableStampingTest
     }
 
     [Test]
-    public void StampDeleted_SetsTombstoneFields()
+    public void StampLamport_SetsLamportAndDevice()
     {
-        var user = Guid.NewGuid();
-        ISyncable preset = new Preset { Revision = 2 };
+        var device = Guid.NewGuid();
+        ISyncable item = new Item();
 
-        preset.StampDeleted(user);
+        item.StampLamport(7, device);
 
         Assert.Multiple(() =>
         {
-            Assert.That(preset.IsDeleted, Is.True);
-            Assert.That(preset.DeletedAt, Is.Not.Null);
-            Assert.That(preset.IsDirty, Is.True);
-            Assert.That(preset.Revision, Is.EqualTo(3));
-            Assert.That(preset.LastModifiedByUserId, Is.EqualTo(user));
+            Assert.That(item.Lamport, Is.EqualTo(7));
+            Assert.That(item.LastModifiedByDeviceId, Is.EqualTo(device));
         });
     }
 }

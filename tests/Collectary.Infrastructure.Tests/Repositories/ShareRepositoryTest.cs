@@ -120,32 +120,32 @@ public class ShareRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task RemoveAsync_SoftDeletesAndLeavesADirtyTombstoneSoTheRevocationSyncs()
+    public async Task RemoveAsync_HardDeletesAndRecordsTombstone()
     {
         var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
         var presetId = Guid.NewGuid();
         var userId = Guid.NewGuid();
         await _sut.AddOrUpdateAsync(Make(presetId, userId));
+        var id = (await store.GetAllSharesAsync()).Single(s => s.PresetId == presetId && s.SharedWithUserId == userId).Id;
 
         await _sut.RemoveAsync(presetId, userId);
 
-        var tombstone = (await store.GetAllSharesAsync()).Single(s => s.PresetId == presetId && s.SharedWithUserId == userId);
+        var rows = (await store.GetAllSharesAsync()).Where(s => s.PresetId == presetId && s.SharedWithUserId == userId).ToList();
+        var tombstones = await store.GetTombstoneIdsAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(tombstone.IsDeleted, Is.True, "a revoked share must become a tombstone, not a hard delete, so the revocation propagates");
-            Assert.That(tombstone.IsDirty, Is.True, "the tombstone must be dirty so the next sync pushes the revocation");
-            Assert.That(tombstone.DeletedAt, Is.Not.Null);
+            Assert.That(rows, Is.Empty, "a revoked share is hard-deleted");
+            Assert.That(tombstones, Does.Contain(id), "a tombstone records the revocation so it syncs");
         });
     }
 
     [Test]
-    public async Task AddOrUpdateAsync_AfterRevoke_RevivesTheSameRowWithoutDuplicateOrCollision()
+    public async Task AddOrUpdateAsync_AfterRevoke_RegrantsAccessWithoutCollision()
     {
         var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
         var presetId = Guid.NewGuid();
         var userId = Guid.NewGuid();
         await _sut.AddOrUpdateAsync(Make(presetId, userId, SharePermission.Read));
-        var originalId = (await store.GetAllSharesAsync()).Single(s => s.PresetId == presetId && s.SharedWithUserId == userId).Id;
         await _sut.RemoveAsync(presetId, userId);
 
         await _sut.AddOrUpdateAsync(Make(presetId, userId, SharePermission.Edit));
@@ -153,31 +153,31 @@ public class ShareRepositoryTest : DbIntegrationTestBase
         var rows = (await store.GetAllSharesAsync()).Where(s => s.PresetId == presetId && s.SharedWithUserId == userId).ToList();
         Assert.Multiple(() =>
         {
-            Assert.That(rows, Has.Count.EqualTo(1), "re-granting must revive the tombstone, not insert a second row that violates the unique index");
-            Assert.That(rows[0].Id, Is.EqualTo(originalId), "the revived row keeps the original id");
-            Assert.That(rows[0].IsDeleted, Is.False, "re-granting clears the tombstone");
+            Assert.That(rows, Has.Count.EqualTo(1), "re-granting leaves exactly one live row, not a duplicate that violates the unique index");
             Assert.That(rows[0].Permission, Is.EqualTo(SharePermission.Edit));
         });
-        Assert.That(await _sut.GetAsync(presetId, userId), Is.Not.Null, "the revived share grants access again");
+        Assert.That(await _sut.GetAsync(presetId, userId), Is.Not.Null, "the re-granted share grants access again");
     }
 
     [Test]
-    public async Task RemoveAllForPresetAsync_SoftDeletesEveryShareAsADirtyTombstone()
+    public async Task RemoveAllForPresetAsync_HardDeletesEveryShareAndRecordsTombstones()
     {
         var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
         var presetId = Guid.NewGuid();
         await _sut.AddOrUpdateAsync(Make(presetId, Guid.NewGuid()));
         await _sut.AddOrUpdateAsync(Make(presetId, Guid.NewGuid()));
+        var ids = (await store.GetAllSharesAsync()).Where(s => s.PresetId == presetId).Select(s => s.Id).ToList();
 
         await _sut.RemoveAllForPresetAsync(presetId);
 
-        var tombstones = (await store.GetAllSharesAsync()).Where(s => s.PresetId == presetId).ToList();
+        var rows = (await store.GetAllSharesAsync()).Where(s => s.PresetId == presetId).ToList();
+        var tombstones = await store.GetTombstoneIdsAsync();
         var stillGranted = await _sut.GetByPresetAsync(presetId);
         Assert.Multiple(() =>
         {
             Assert.That(stillGranted, Is.Empty, "revoked shares no longer grant access");
-            Assert.That(tombstones, Has.Count.EqualTo(2), "the rows survive as tombstones so the revocation syncs");
-            Assert.That(tombstones.All(t => t.IsDeleted && t.IsDirty), Is.True);
+            Assert.That(rows, Is.Empty, "every share row is hard-deleted");
+            Assert.That(ids.All(tombstones.Contains), Is.True, "each revocation is recorded as a tombstone so it syncs");
         });
     }
 }

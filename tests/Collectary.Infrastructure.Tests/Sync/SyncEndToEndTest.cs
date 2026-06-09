@@ -79,7 +79,8 @@ public class SyncEndToEndTest
             PresetUseCase = new PresetUseCase(presets, items, new AllowAllAuthorization()),
             Store = store,
             Images = images,
-            Sync = new SyncService(new FileSystemSyncBackend(_folder), store, new SyncSerializer(), status, images),
+            Sync = new SyncService(new FileSystemSyncBackend(_folder), store, new SyncSerializer(),
+                new FixedDeviceIdentity(Guid.NewGuid()), status, images),
         };
     }
 
@@ -203,7 +204,7 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task PresetDelete_PropagatesAsTombstone()
+    public async Task PresetDelete_RemovesRowOnPeer()
     {
         var preset = MakePreset("Doomed");
         await _a.Presets.AddAsync(preset);
@@ -213,11 +214,11 @@ public class SyncEndToEndTest
         await SyncBothAsync();
 
         var visible = await _b.Presets.GetByIdAsync(preset.Id);
-        var tombstone = (await _b.Store.GetAllPresetsAsync()).Single(p => p.Id == preset.Id);
+        var rows = (await _b.Store.GetAllPresetsAsync()).Where(p => p.Id == preset.Id).ToList();
         Assert.Multiple(() =>
         {
             Assert.That(visible, Is.Null);
-            Assert.That(tombstone.IsDeleted, Is.True);
+            Assert.That(rows, Is.Empty, "a hard-deleted preset leaves no row on the peer");
         });
     }
 
@@ -249,11 +250,11 @@ public class SyncEndToEndTest
         await SyncBothAsync();
 
         var visible = (await _b.SharedFields.GetAllAsync()).Any(x => x.Id == sf.Id);
-        var tombstone = (await _b.Store.GetAllSharedFieldsAsync()).Single(x => x.Id == sf.Id);
+        var rows = (await _b.Store.GetAllSharedFieldsAsync()).Where(x => x.Id == sf.Id).ToList();
         Assert.Multiple(() =>
         {
-            Assert.That(visible, Is.False, "deleted system field must disappear on the peer");
-            Assert.That(tombstone.IsDeleted, Is.True);
+            Assert.That(visible, Is.False, "deleted shared field must disappear on the peer");
+            Assert.That(rows, Is.Empty, "a hard-deleted shared field leaves no row on the peer");
         });
     }
 
@@ -278,7 +279,8 @@ public class SyncEndToEndTest
         });
     }
 
-    private async Task<(Guid id, SyncConflict conflict)> CreateConflictAsync()
+    [Test]
+    public async Task SameEntityEditedOnBoth_AutoMergesToOneWinner_NoConflicts()
     {
         var preset = MakePreset("Orig");
         await _a.Presets.AddAsync(preset);
@@ -287,60 +289,24 @@ public class SyncEndToEndTest
         var a = await _a.Presets.GetByIdAsync(preset.Id);
         a!.Name = "A-edit";
         await _a.Presets.UpdateAsync(a);
-        await _a.Sync.SyncAsync();
 
         var b = await _b.Presets.GetByIdAsync(preset.Id);
         b!.Name = "B-edit";
         await _b.Presets.UpdateAsync(b);
-        var result = await _b.Sync.SyncAsync();
 
-        return (preset.Id, result.Conflicts.Single());
-    }
-
-    [Test]
-    public async Task Conflict_DetectedWhenBothEditSamePreset()
-    {
-        var (id, conflict) = await CreateConflictAsync();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(conflict.Id, Is.EqualTo(id));
-            Assert.That(conflict.LocalLabel, Is.EqualTo("B-edit"));
-            Assert.That(conflict.RemoteLabel, Is.EqualTo("A-edit"));
-        });
-    }
-
-    [Test]
-    public async Task Conflict_ResolveKeepLocal_PropagatesWinnerToOtherDevice()
-    {
-        var (id, conflict) = await CreateConflictAsync();
-
-        await _b.Sync.ResolveAsync(conflict, keepLocal: true);
-        await _b.Sync.SyncAsync();
+        var r1 = await _a.Sync.SyncAsync();
+        var r2 = await _b.Sync.SyncAsync();
         await _a.Sync.SyncAsync();
+        await _b.Sync.SyncAsync();
 
-        var bName = (await _b.Presets.GetByIdAsync(id))!.Name;
-        var aName = (await _a.Presets.GetByIdAsync(id))!.Name;
+        var aName = (await _a.Presets.GetByIdAsync(preset.Id))!.Name;
+        var bName = (await _b.Presets.GetByIdAsync(preset.Id))!.Name;
         Assert.Multiple(() =>
         {
-            Assert.That(bName, Is.EqualTo("B-edit"));
-            Assert.That(aName, Is.EqualTo("B-edit"));
-        });
-    }
-
-    [Test]
-    public async Task Conflict_ResolveKeepRemote_TakesOtherDevicesVersion()
-    {
-        var (id, conflict) = await CreateConflictAsync();
-
-        await _b.Sync.ResolveAsync(conflict, keepLocal: false);
-        var after = await _b.Sync.SyncAsync();
-
-        var bName = (await _b.Presets.GetByIdAsync(id))!.Name;
-        Assert.Multiple(() =>
-        {
-            Assert.That(bName, Is.EqualTo("A-edit"));
-            Assert.That(after.HasConflicts, Is.False);
+            Assert.That(aName, Is.EqualTo(bName), "both devices deterministically converge to the same winner");
+            Assert.That(aName, Is.AnyOf("A-edit", "B-edit"));
+            Assert.That(r1.Conflicts, Is.Empty, "the rebuilt engine auto-merges and never raises a conflict");
+            Assert.That(r2.Conflicts, Is.Empty);
         });
     }
 
@@ -419,7 +385,7 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task Image_OfSoftDeletedItem_IsRetainedWhileTombstoneLives()
+    public async Task Image_OfDeletedItem_IsGarbageCollectedOnBothDevices()
     {
         var (_, itemId, key) = await SeedItemWithImageAsync(_a, new byte[] { 9, 9, 9 });
         await SyncBothAsync();
@@ -430,8 +396,8 @@ public class SyncEndToEndTest
 
         Assert.Multiple(() =>
         {
-            Assert.That(_a.Images.Exists(key), Is.True, "a soft-deleted item's image must survive while its tombstone is retained");
-            Assert.That(_b.Images.Exists(key), Is.True, "the peer must also retain the image while the tombstone is retained");
+            Assert.That(_a.Images.Exists(key), Is.False, "a hard-deleted item's image is no longer referenced and is cleaned up");
+            Assert.That(_b.Images.Exists(key), Is.False, "the peer drops the orphaned image once the deletion propagates");
         });
     }
 

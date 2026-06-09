@@ -23,5 +23,3 @@ public record SyncResult(int Pushed, int Pulled, IReadOnlyList<SyncConflict> Con
 
     public bool HadProblems => Conflicts.Count > 0 || Skipped > 0;
 }
-
-public record PurgedTombstone(SyncEntityKind Kind, Guid Id);

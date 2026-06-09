@@ -157,7 +157,7 @@ public class SharedFieldRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task DeleteAsync_WhenSyncConfigured_SoftDeletesAsTombstone()
+    public async Task DeleteAsync_WhenSyncConfigured_HardDeletesAndRecordsTombstone()
     {
         var sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger(), null, new ConfiguredSyncStatus());
         var field = MakeField("Rating");
@@ -165,15 +165,12 @@ public class SharedFieldRepositoryTest : DbIntegrationTestBase
 
         await sut.DeleteAsync(field.Id);
 
-        Assert.That(await sut.GetByIdAsync(field.Id), Is.Null, "Tombstoned field must be hidden from normal reads");
+        Assert.That(await sut.GetByIdAsync(field.Id), Is.Null, "the deleted field is hidden from normal reads");
         using var db = DbFactory();
-        var tombstone = db.SharedFields.IgnoreQueryFilters().Single(sf => sf.Id == field.Id);
         Assert.Multiple(() =>
         {
-            Assert.That(tombstone.IsDeleted, Is.True);
-            Assert.That(tombstone.IsDirty, Is.True);
-            Assert.That(tombstone.DeletedAt, Is.Not.Null);
-            Assert.That(tombstone.Revision, Is.GreaterThan(0));
+            Assert.That(db.SharedFields.Any(sf => sf.Id == field.Id), Is.False, "the row is hard-deleted");
+            Assert.That(db.Tombstones.Any(t => t.Id == field.Id), Is.True, "a tombstone records the deletion so it syncs");
         });
     }
 

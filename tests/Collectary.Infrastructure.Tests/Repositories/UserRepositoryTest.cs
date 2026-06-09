@@ -67,7 +67,7 @@ public class UserRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task DeleteAsync_WhenSyncConfigured_SoftDeletesAsADirtyTombstoneHiddenFromQueries()
+    public async Task DeleteAsync_HardDeletesRowAndRecordsTombstone()
     {
         var sut = new UserRepository(DbFactory, new ConfiguredSyncStatus());
         var user = new User { Username = "gone", DisplayName = "Gone" };
@@ -77,12 +77,13 @@ public class UserRepositoryTest : DbIntegrationTestBase
 
         var visible = await sut.GetByIdAsync(user.Id);
         var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
-        var tombstone = (await store.GetAllUsersAsync()).Single(u => u.Id == user.Id);
+        var rows = (await store.GetAllUsersAsync()).Where(u => u.Id == user.Id).ToList();
+        var tombstones = await store.GetTombstoneIdsAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(visible, Is.Null, "a soft-deleted profile is hidden from normal queries");
-            Assert.That(tombstone.IsDeleted, Is.True, "the row survives as a tombstone");
-            Assert.That(tombstone.IsDirty, Is.True, "the tombstone must be dirty so the deletion propagates on the next sync");
+            Assert.That(visible, Is.Null);
+            Assert.That(rows, Is.Empty, "the profile row is hard-deleted, leaving no data on disk");
+            Assert.That(tombstones, Does.Contain(user.Id), "a tombstone records the deletion so it syncs");
         });
     }
 

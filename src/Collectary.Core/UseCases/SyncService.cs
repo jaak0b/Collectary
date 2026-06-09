@@ -12,28 +12,27 @@ public class SyncService : ISyncService
     public const string UserKind = "users";
     public const string ShareKind = "shares";
     public const string ImageKind = "images";
-
-    private const int DefaultTombstoneRetentionDays = 30;
+    public const string DevicesKind = "devices";
 
     private readonly ISyncBackend _backend;
     private readonly ISyncStore _store;
     private readonly ISyncSerializer _serializer;
-    private readonly ISyncStatus? _syncStatus;
+    private readonly IDeviceIdentity _device;
     private readonly IImageStore? _imageStore;
     private readonly IAppLogger _logger;
-    private readonly IReadOnlyList<SyncKind> _kinds;
-    private readonly IReadOnlyDictionary<SyncEntityKind, SyncKind> _kindsByKind;
+    private readonly LamportClock _clock = new();
+    private readonly SyncMergeEngine _merge;
 
-    public SyncService(ISyncBackend backend, ISyncStore store, ISyncSerializer serializer, ISyncStatus? syncStatus = null, IImageStore? imageStore = null, IAppLogger? logger = null)
+    public SyncService(ISyncBackend backend, ISyncStore store, ISyncSerializer serializer, IDeviceIdentity device,
+        ISyncStatus? syncStatus = null, IImageStore? imageStore = null, IAppLogger? logger = null)
     {
         _backend = backend;
         _store = store;
         _serializer = serializer;
-        _syncStatus = syncStatus;
+        _device = device;
         _imageStore = imageStore;
         _logger = logger ?? new NullAppLogger();
-        _kinds = new SyncKindCatalog().Describe(_store, _serializer);
-        _kindsByKind = _kinds.ToDictionary(k => k.Kind);
+        _merge = new SyncMergeEngine(_clock);
     }
 
     public async Task<SyncResult> SyncAsync()
@@ -45,124 +44,141 @@ public class SyncService : ISyncService
         }
 
         _logger.Information("Sync starting");
-        var conflicts = new List<SyncConflict>();
+        var myId = _device.DeviceId;
+        var clock = await _store.GetMaxObservedLamportAsync();
 
-        var reconciled = new List<(int pushed, int pulled, int skipped)>(_kinds.Count);
-        foreach (var kind in _kinds)
-            reconciled.Add(await ReconcileAsync(kind, conflicts));
-
-        var reconcileComplete = conflicts.Count == 0 && reconciled.All(r => r.skipped == 0);
-        await SyncImagesAsync(reconcileComplete);
-
-        var retentionDays = Math.Max(1, _syncStatus?.TombstoneRetentionDays ?? DefaultTombstoneRetentionDays);
-        var purged = await _store.PurgeTombstonesAsync(DateTime.UtcNow.AddDays(-retentionDays));
-        foreach (var tombstone in purged)
-            await _backend.DeleteAsync(KindString(tombstone.Kind), tombstone.Id);
-
-        var result = new SyncResult(
-            reconciled.Sum(r => r.pushed),
-            reconciled.Sum(r => r.pulled),
-            conflicts,
-            reconciled.Sum(r => r.skipped));
-
-        _logger.Information("Sync complete: pushed={Pushed} pulled={Pulled} skipped={Skipped} conflicts={Conflicts}",
-            result.Pushed, result.Pulled, result.Skipped, result.Conflicts.Count);
-        return result;
-    }
-
-    public async Task ResolveAsync(SyncConflict conflict, bool keepLocal)
-    {
-        if (keepLocal)
-        {
-            var nextRevision = Math.Max(conflict.LocalRevision, conflict.RemoteRevision) + 1;
-            await _store.MarkSyncedAsync(conflict.Kind, conflict.Id, conflict.RemoteRevision, dirty: true,
-                revision: nextRevision);
-            return;
-        }
-
-        var kind = KindFor(conflict.Kind);
-        var content = await _backend.ReadAsync(kind.WireString, conflict.Id);
-        if (content is null) return;
-
-        var entity = kind.Deserialize(content);
-        entity.MarkPulled();
-        await kind.Apply(entity);
-    }
-
-    private async Task<(int pushed, int pulled, int skipped)> ReconcileAsync(SyncKind kind, List<SyncConflict> conflicts)
-    {
-        var locals = await kind.GetLocal();
-        var remoteEntries = await _backend.ListAsync(kind.WireString);
-        var remoteRevById = remoteEntries.ToDictionary(e => e.Id, e => e.Revision);
-        var localById = locals.ToDictionary(l => ((DomainObject)l).Id);
+        var users = await _store.GetAllUsersAsync();
+        var sharedFields = await _store.GetAllSharedFieldsAsync();
+        var presets = await _store.GetAllPresetsAsync();
+        var items = await _store.GetAllItemsAsync();
+        var shares = await _store.GetAllSharesAsync();
+        var localTombstones = await _store.GetTombstoneIdsAsync();
 
         var pushed = 0;
+        (pushed, clock) = await StampDirtyAsync(SyncEntityKind.User, users, myId, clock, pushed);
+        (pushed, clock) = await StampDirtyAsync(SyncEntityKind.SharedField, sharedFields, myId, clock, pushed);
+        (pushed, clock) = await StampDirtyAsync(SyncEntityKind.Preset, presets, myId, clock, pushed);
+        (pushed, clock) = await StampDirtyAsync(SyncEntityKind.Item, items, myId, clock, pushed);
+        (pushed, clock) = await StampDirtyAsync(SyncEntityKind.Share, shares, myId, clock, pushed);
+
+        var mySnapshot = new DeviceSnapshot
+        {
+            DeviceId = myId,
+            Users = users.ToList(),
+            SharedFields = sharedFields.ToList(),
+            Presets = presets.ToList(),
+            Items = items.ToList(),
+            Shares = shares.ToList(),
+            Tombstones = localTombstones.ToList(),
+        };
+        await _backend.WriteAsync(DevicesKind, myId, _serializer.Serialize(mySnapshot), 0);
+
+        var remoteSnapshots = await ReadRemoteSnapshotsAsync(myId);
+
+        var deletedIds = new HashSet<Guid>(localTombstones);
+        foreach (var snapshot in remoteSnapshots)
+            deletedIds.UnionWith(snapshot.Tombstones);
+        await _store.ApplyDeletionsAsync(deletedIds.ToList());
+
         var pulled = 0;
-        var skipped = 0;
+        var observed = clock;
 
-        foreach (var id in remoteRevById.Keys.Union(localById.Keys))
+        foreach (var (kindPulled, kindObserved) in new[]
         {
-            localById.TryGetValue(id, out var local);
-            var hasRemote = remoteRevById.TryGetValue(id, out var remoteRevision);
-
-            var localChanged = local is not null && local.IsDirty;
-            var remoteChanged = hasRemote && (local is null || remoteRevision > local.BaseRevision);
-
-            if (localChanged && remoteChanged)
-            {
-                var remote = await ReadRemoteAsync(kind, id, remoteRevision);
-                conflicts.Add(remote is not null
-                    ? new SyncConflict(kind.Kind, id, kind.Label(local!), kind.Label(remote), local!.Revision, remoteRevision)
-                    : new SyncConflict(kind.Kind, id, kind.Label(local!), kind.Label(local!), local!.Revision, remoteRevision));
-            }
-            else if (localChanged)
-            {
-                await _backend.WriteAsync(kind.WireString, id, kind.Serialize(local!), local!.Revision);
-                await _store.MarkSyncedAsync(kind.Kind, id, local!.Revision, dirty: false);
-                pushed++;
-            }
-            else if (remoteChanged)
-            {
-                var remote = await ReadRemoteAsync(kind, id, remoteRevision);
-                if (remote is null) { skipped++; continue; }
-                if (local is null && remote.IsDeleted) continue;
-                remote.MarkPulled();
-                try
-                {
-                    await kind.Apply(remote);
-                    pulled++;
-                }
-                catch (Exception ex)
-                {
-                    // One entity that won't apply (e.g. a value referencing a field definition this
-                    // database doesn't have) must not abort the whole sync; skip it and carry on.
-                    _logger.Error(ex, "Skipping {Kind} {Id} that failed to apply locally during sync", kind.WireString, id);
-                    skipped++;
-                }
-            }
+            await MergeKindAsync(remoteSnapshots.SelectMany(s => s.Users), users, deletedIds, _store.ApplyUserAsync),
+            await MergeKindAsync(remoteSnapshots.SelectMany(s => s.SharedFields), sharedFields, deletedIds, _store.ApplySharedFieldAsync),
+            await MergeKindAsync(remoteSnapshots.SelectMany(s => s.Presets), presets, deletedIds, _store.ApplyPresetAsync),
+            await MergeKindAsync(remoteSnapshots.SelectMany(s => s.Items), items, deletedIds, _store.ApplyItemAsync),
+            await MergeKindAsync(remoteSnapshots.SelectMany(s => s.Shares), shares, deletedIds, _store.ApplyShareAsync),
+        })
+        {
+            pulled += kindPulled;
+            observed = Math.Max(observed, kindObserved);
         }
 
-        return (pushed, pulled, skipped);
+        await _store.SetMaxObservedLamportAsync(observed);
+        await SyncImagesAsync();
+
+        _logger.Information("Sync complete: pushed={Pushed} pulled={Pulled}", pushed, pulled);
+        return new SyncResult(pushed, pulled, Array.Empty<SyncConflict>());
     }
 
-    private async Task<ISyncable?> ReadRemoteAsync(SyncKind kind, Guid id, long revision)
+    public Task ResolveAsync(SyncConflict conflict, bool keepLocal) => Task.CompletedTask;
+
+    private async Task<(int pushed, long clock)> StampDirtyAsync<T>(
+        SyncEntityKind kind, IReadOnlyList<T> locals, Guid deviceId, long clock, int pushed)
+        where T : DomainObject, ISyncable
     {
-        var content = await _backend.ReadAtRevisionAsync(kind.WireString, id, revision);
-        if (content is null) return null;
-        try
+        foreach (var entity in locals.Where(e => e.IsDirty))
         {
-            return kind.Deserialize(content);
+            clock = _clock.Next(clock, entity.Lamport);
+            entity.Lamport = clock;
+            entity.LastModifiedByDeviceId = deviceId;
+            await _store.StampPushedAsync(kind, entity.Id, clock, deviceId);
+            pushed++;
         }
-        catch (Exception ex)
-        {
-            // A document this build can't deserialize (e.g. an unknown field type from a newer client)
-            // is skipped so a single bad document can't abort sync of every other entity.
-            _logger.Error(ex, "Skipping un-deserializable {Kind} document {Id} during sync", kind.WireString, id);
-            return null;
-        }
+
+        return (pushed, clock);
     }
 
-    private async Task SyncImagesAsync(bool reconcileComplete)
+    private async Task<IReadOnlyList<DeviceSnapshot>> ReadRemoteSnapshotsAsync(Guid myId)
+    {
+        var entries = await _backend.ListAsync(DevicesKind);
+        var snapshots = new List<DeviceSnapshot>();
+        foreach (var entry in entries.Where(e => e.Id != myId))
+        {
+            var content = await _backend.ReadAsync(DevicesKind, entry.Id);
+            if (content is null) continue;
+            try
+            {
+                snapshots.Add(_serializer.Deserialize<DeviceSnapshot>(content));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Skipping unreadable device snapshot {DeviceId} during sync", entry.Id);
+            }
+        }
+
+        return snapshots;
+    }
+
+    private async Task<(int pulled, long observed)> MergeKindAsync<T>(
+        IEnumerable<T> remoteCandidates, IReadOnlyList<T> locals, ISet<Guid> deletedIds, Func<T, Task> apply)
+        where T : DomainObject, ISyncable
+    {
+        var candidates = remoteCandidates
+            .Select(e => new MergeCandidate<T>(e.Id, new SyncVersion(e.Lamport, e.LastModifiedByDeviceId), e))
+            .ToList();
+        long observed = 0;
+        foreach (var candidate in candidates)
+            observed = Math.Max(observed, candidate.Version.Lamport);
+
+        var winners = _merge.ResolveWinners(candidates, deletedIds);
+        var localVersions = locals.ToDictionary(l => l.Id, l => new SyncVersion(l.Lamport, l.LastModifiedByDeviceId));
+
+        var pulled = 0;
+        foreach (var winner in winners)
+        {
+            if (localVersions.TryGetValue(winner.Id, out var local) && _clock.Compare(winner.Version, local) <= 0)
+                continue;
+
+            ((ISyncable)winner.Payload).MarkPulled();
+            try
+            {
+                await apply(winner.Payload);
+                pulled++;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Skipping {Kind} {Id} that failed to apply locally during sync",
+                    typeof(T).Name, winner.Id);
+            }
+        }
+
+        return (pulled, observed);
+    }
+
+    private async Task SyncImagesAsync()
     {
         if (_imageStore is null) return;
 
@@ -190,24 +206,9 @@ public class SyncService : ISyncService
                 using var stream = new MemoryStream(bytes);
                 await _imageStore.ImportAsync(key, stream);
             }
-            else if (!localSet.Contains(key))
-            {
-                _logger.Warning("Referenced image {Key} is missing from both the local and remote stores", key);
-            }
         }
 
         foreach (var key in localSet.Where(k => !referenced.Contains(k)))
             await _imageStore.DeleteAsync(key);
-
-        if (reconcileComplete)
-            foreach (var key in remoteSet.Where(k => !referenced.Contains(k)))
-                await _backend.DeleteBlobAsync(ImageKind, key);
     }
-
-    private SyncKind KindFor(SyncEntityKind kind) =>
-        _kindsByKind.TryGetValue(kind, out var k)
-            ? k
-            : throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sync entity kind");
-
-    private string KindString(SyncEntityKind kind) => KindFor(kind).WireString;
 }
