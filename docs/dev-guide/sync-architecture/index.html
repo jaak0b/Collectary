@@ -985,6 +985,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#versioning-a-lamport-clock-device-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning: a Lamport clock + device id
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#a-sync-run" class="md-nav__link">
     <span class="md-ellipsis">
       A sync run
@@ -1003,9 +1012,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conflicts" class="md-nav__link">
+  <a href="#automatic-merge-no-conflict-dialog" class="md-nav__link">
     <span class="md-ellipsis">
-      Conflicts
+      Automatic merge (no conflict dialog)
     </span>
   </a>
   
@@ -1207,6 +1216,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#versioning-a-lamport-clock-device-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning: a Lamport clock + device id
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#a-sync-run" class="md-nav__link">
     <span class="md-ellipsis">
       A sync run
@@ -1225,9 +1243,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conflicts" class="md-nav__link">
+  <a href="#automatic-merge-no-conflict-dialog" class="md-nav__link">
     <span class="md-ellipsis">
-      Conflicts
+      Automatic merge (no conflict dialog)
     </span>
   </a>
   
@@ -1335,23 +1353,28 @@ in terms of Core <strong>ports</strong>, with concrete adapters in Infrastructur
 <tbody>
 <tr>
 <td><code>ISyncService</code></td>
-<td>Orchestrates a sync: reconciles local + remote, returns a result, resolves conflicts.</td>
+<td>Orchestrates a sync: writes this device's snapshot, reads the others, merges them deterministically.</td>
 <td><code>SyncService</code></td>
 </tr>
 <tr>
 <td><code>ISyncBackend</code></td>
-<td>The remote store abstraction — list/read/write/delete for entities, plus blob (image) operations.</td>
+<td>The remote store abstraction — list/read/write/delete for documents, plus blob (image) operations.</td>
 <td><code>FileSystemSyncBackend</code></td>
 </tr>
 <tr>
 <td><code>ISyncStore</code></td>
-<td>The local store — loads entities, reconciles revisions/timestamps, handles merges and tombstones.</td>
+<td>The local store — loads entities, applies merged winners, records/applies tombstones, holds the Lamport high-water.</td>
 <td><code>EfSyncStore</code></td>
 </tr>
 <tr>
 <td><code>ISyncSerializer</code></td>
 <td>JSON (de)serialization, including polymorphic <code>FieldDefinition</code> handling.</td>
 <td>uses a polymorphic field resolver</td>
+</tr>
+<tr>
+<td><code>IDeviceIdentity</code></td>
+<td>A stable per-install device id (a GUID, persisted in preferences).</td>
+<td><code>PreferencesDeviceIdentity</code></td>
 </tr>
 <tr>
 <td><code>ISyncStatus</code></td>
@@ -1373,10 +1396,12 @@ the same folder, each one's profiles appear in the other's profile picker; switc
 profile to see its collections, and a shared collection shows up for the share target without switching
 at all. Profiles carry <strong>no secrets</strong> — passwords and email were removed from the model — so replicating
 them to a shared folder is safe.</p>
-<p>Because shares are syncable, <strong>revoking</strong> a share is a soft-delete (a tombstone), not a hard delete —
-otherwise the revoked share would simply re-download from a peer on the next sync and silently restore
-access. Re-granting a previously-revoked share revives the same tombstoned row in place, so the
-<code>(preset, user)</code> uniqueness still holds. The same applies to a profile.</p>
+<p>Because shares are syncable, <strong>revoking</strong> a share is a hard delete that records a <strong>tombstone</strong> (a
+permanent marker holding just the id), not a silent row removal — otherwise the revoked share would
+re-download from a peer on the next sync and restore access. The tombstone makes the deletion <em>win</em>
+on every device (see <a href="#deletions--tombstones">Deletions</a>). Re-granting afterwards simply inserts a
+fresh share row; the old row is gone, so the <code>(preset, user)</code> uniqueness still holds. The same applies
+to a profile.</p>
 <p>Profiles are reconciled <strong>before</strong> presets and items, so an owner always exists locally before the
 collections that reference it arrive. Usernames have a unique, case-insensitive index; when an incoming
 profile's username collides with a <em>different</em> local profile, the import keeps the incoming id and
@@ -1389,32 +1414,52 @@ single source of truth for orchestration is <code>SyncKindCatalog.Describe(...)<
 descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply), in
 dependency order (owners first). Both <code>SyncService</code> and <code>BackupService</code> loop over that catalog, so a new
 kind is backed up, restored, and synced from one place. The persistence side mirrors this with a single
-<code>EfSyncStore</code> ops map (<code>kind → find/delete/purge</code>, built from a generic <code>OpsFor&lt;T&gt;()</code>). The conflict
-dialog resolves its label by convention (<code>Sync_Kind{kind}</code>). Completeness-guard tests fail if a new
-<code>SyncEntityKind</code> value is added without its catalog and ops-map rows.</p>
+<code>EfSyncStore</code> ops map (<code>kind → find/delete</code>, built from a generic <code>OpsFor&lt;T&gt;()</code>). Completeness-guard
+tests fail if a new <code>SyncEntityKind</code> value is added without its catalog and ops-map rows.</p>
+<h2 id="versioning-a-lamport-clock-device-id">Versioning: a Lamport clock + device id<a class="headerlink" href="#versioning-a-lamport-clock-device-id" title="Permanent link">&para;</a></h2>
+<p>Every syncable entity carries a <strong>version</strong> that is a pair: a <code>Lamport</code> number plus the
+<code>LastModifiedByDeviceId</code> (a GUID) of whoever last wrote it. The Lamport number is a <em>logical</em> clock —
+each device keeps one running high-water mark (<code>SyncState.MaxObservedLamport</code>) and a new edit takes
+<code>max(seen) + 1</code>, so an edit made <em>after</em> seeing another device's edit always gets a strictly higher
+number. Wall-clock time is never used for ordering (device clocks can't be trusted).</p>
+<p>To compare two versions of the same entity, compare the <code>Lamport</code> first; on an exact tie, the higher
+<code>DeviceId</code> wins. Because device ids are unique this is a <strong>total order</strong> — two devices can never mint
+the same version with different content, and every device computes the same winner. This is what makes
+the merge deterministic and convergent (re-syncing in any order, with any delay, reaches the same
+state — no oscillation).</p>
 <h2 id="a-sync-run">A sync run<a class="headerlink" href="#a-sync-run" title="Permanent link">&para;</a></h2>
-<p><code>SyncService.SyncAsync()</code>:</p>
+<p><code>SyncService.SyncAsync()</code> (per-device snapshot files, merged on read):</p>
 <ol>
-<li>Lists local and remote state.</li>
-<li><strong>Pushes</strong> locally-changed (dirty) entities to the backend and <strong>pulls</strong> remotely-changed ones.</li>
-<li>Reconciles using <strong>revision numbers</strong> and timestamps. Each syncable entity carries
-   <code>Revision</code>, <code>BaseRevision</code>, <code>IsDirty</code>, <code>IsDeleted</code>/<code>DeletedAt</code>.</li>
-<li>Returns a <code>SyncResult</code> reporting how many records were pushed and pulled, plus any conflicts.</li>
+<li>Loads this device's live entities; stamps any <strong>dirty</strong> ones with a fresh Lamport number and this
+   device id, then writes them all into <strong>one file this device owns</strong> — <code>device-{deviceId}.sync.json</code> —
+   alongside a flat list of tombstone ids.</li>
+<li>Reads <strong>every other</strong> <code>device-*.sync.json</code> in the folder (each in its own try/catch — a corrupt or
+   half-written file is skipped, never aborting the run).</li>
+<li>Folds them: the union of all tombstone ids is hard-deleted locally (<strong>delete-wins</strong>); every other
+   id resolves to the highest <code>(Lamport, DeviceId)</code> winner, which is applied only if it is newer than
+   the local copy. There is no shared mutable object — each device only ever writes its <em>own</em> file — so
+   a concurrent write can never be lost.</li>
+<li>Returns a <code>SyncResult</code> reporting how many records were pushed and pulled. <strong>There are no conflicts</strong>
+   — the merge is automatic and deterministic.</li>
 </ol>
 <h2 id="the-file-system-backend">The file-system backend<a class="headerlink" href="#the-file-system-backend" title="Permanent link">&para;</a></h2>
-<p><code>FileSystemSyncBackend</code> stores each entity as a per-revision JSON file (e.g.
-<code>{id}.{revision}.json</code>) in kind-specific subdirectories (<code>presets/</code>, <code>items/</code>, <code>sharedfields/</code>,
-<code>users/</code>, <code>shares/</code>), and images under an <code>images/</code> directory. The backend and serializer are
-kind-agnostic, so adding a new syncable kind needs no backend change. The root directory is configurable via app preferences —
-point multiple devices at the same shared folder (a cloud-drive folder, network share, etc.).</p>
-<h2 id="conflicts">Conflicts<a class="headerlink" href="#conflicts" title="Permanent link">&para;</a></h2>
-<p>A conflict arises when an entity was modified <strong>both</strong> locally and remotely since the last common
-revision. <code>SyncService</code> surfaces these and the user resolves each by keeping local or taking
-remote (<code>ResolveAsync(conflict, keepLocal)</code>); the resolution is written out on the next sync.</p>
+<p><code>FileSystemSyncBackend</code> stores each document as a JSON file in a kind-specific subdirectory; sync uses
+a single <code>devices/</code> directory holding one <code>device-{deviceId}.sync.json</code> per install, plus images under
+<code>images/</code>. The backend and serializer are kind-agnostic. The root directory is configurable via app
+preferences — point multiple devices at the same shared folder (a cloud-drive folder, network share,
+etc.).</p>
+<h2 id="automatic-merge-no-conflict-dialog">Automatic merge (no conflict dialog)<a class="headerlink" href="#automatic-merge-no-conflict-dialog" title="Permanent link">&para;</a></h2>
+<p>When two devices edit the <strong>same</strong> entity without seeing each other, the higher <code>(Lamport, DeviceId)</code>
+wins automatically — there is no "keep mine / keep theirs" prompt. The losing edit is not destroyed;
+it still lives in its origin device's file and is recoverable. (<code>ISyncService.ResolveAsync</code> remains on
+the port for backward compatibility but is a no-op, since the engine never raises a conflict.)</p>
 <h2 id="deletions-tombstones">Deletions &amp; tombstones<a class="headerlink" href="#deletions-tombstones" title="Permanent link">&para;</a></h2>
-<p>Deletions are tracked as <strong>tombstones</strong> so they propagate instead of resurrecting on the next pull.
-<code>EfSyncStore</code> retains tombstones for a configurable number of days
-(<code>TombstoneRetentionDays</code>, default 30) and then prunes them.</p>
+<p>Deleting an object <strong>hard-deletes its row immediately</strong> — the user's data leaves the disk at once — and
+records a tiny <code>Tombstone</code> (just the deleted id) in the same transaction. Each device file carries its
+tombstone ids; the merge treats <strong>delete as the winner</strong> (any id with a tombstone anywhere is removed
+locally, regardless of version), so a deletion can never be resurrected by a stale live copy returning
+from an offline device. Because ids (GUIDs) are never reused, tombstones are kept permanently — there
+is no time-based retention to guess at.</p>
 <h2 id="polymorphic-serialization">Polymorphic serialization<a class="headerlink" href="#polymorphic-serialization" title="Permanent link">&para;</a></h2>
 <p>Because a collection's fields are a polymorphic <code>FieldDefinition</code> hierarchy, the serializer uses a
 polymorphic resolver so every field type round-trips through JSON correctly. A newly
