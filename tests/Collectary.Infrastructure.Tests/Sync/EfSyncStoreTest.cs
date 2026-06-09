@@ -114,11 +114,18 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     public async Task ApplyUserAsync_InsertsThenUpdatesInPlace()
     {
         var id = Guid.NewGuid();
+        var device = Guid.NewGuid();
         await _sut.ApplyUserAsync(new User { Id = id, Username = "alice", DisplayName = "Alice", Revision = 1 });
-        await _sut.ApplyUserAsync(new User { Id = id, Username = "alice", DisplayName = "Alice B", Revision = 2 });
+        await _sut.ApplyUserAsync(new User { Id = id, Username = "alice", DisplayName = "Alice B", Revision = 2, Lamport = 9, LastModifiedByDeviceId = device });
 
-        var all = await _sut.GetAllUsersAsync();
-        Assert.That(all.Where(u => u.Id == id).Select(u => u.DisplayName), Is.EqualTo(new[] { "Alice B" }));
+        var stored = (await _sut.GetAllUsersAsync()).Single(u => u.Id == id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored.DisplayName, Is.EqualTo("Alice B"));
+            Assert.That(stored.Revision, Is.EqualTo(2), "the upsert copies sync metadata onto the tracked row");
+            Assert.That(stored.Lamport, Is.EqualTo(9));
+            Assert.That(stored.LastModifiedByDeviceId, Is.EqualTo(device));
+        });
     }
 
     [Test]
@@ -142,11 +149,18 @@ public class EfSyncStoreTest : DbIntegrationTestBase
         var presetId = Guid.NewGuid();
         var userId = Guid.NewGuid();
         var grantedBy = Guid.NewGuid();
+        var device = Guid.NewGuid();
         await _sut.ApplyShareAsync(new CollectionShare { Id = id, PresetId = presetId, SharedWithUserId = userId, GrantedByUserId = grantedBy, Permission = SharePermission.Read, Revision = 1 });
-        await _sut.ApplyShareAsync(new CollectionShare { Id = id, PresetId = presetId, SharedWithUserId = userId, GrantedByUserId = grantedBy, Permission = SharePermission.Edit, Revision = 2 });
+        await _sut.ApplyShareAsync(new CollectionShare { Id = id, PresetId = presetId, SharedWithUserId = userId, GrantedByUserId = grantedBy, Permission = SharePermission.Edit, Revision = 2, Lamport = 9, LastModifiedByDeviceId = device });
 
-        var all = await _sut.GetAllSharesAsync();
-        Assert.That(all.Where(s => s.Id == id).Select(s => s.Permission), Is.EqualTo(new[] { SharePermission.Edit }));
+        var stored = (await _sut.GetAllSharesAsync()).Single(s => s.Id == id);
+        Assert.Multiple(() =>
+        {
+            Assert.That(stored.Permission, Is.EqualTo(SharePermission.Edit));
+            Assert.That(stored.Revision, Is.EqualTo(2), "the upsert copies sync metadata onto the tracked row");
+            Assert.That(stored.Lamport, Is.EqualTo(9));
+            Assert.That(stored.LastModifiedByDeviceId, Is.EqualTo(device));
+        });
     }
 
     [Test]
