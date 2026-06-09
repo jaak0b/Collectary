@@ -11,14 +11,12 @@ public class ItemRepository : IItemRepository
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IAppLogger _logger;
     private readonly ICurrentUser? _currentUser;
-    private readonly ISyncStatus? _syncStatus;
 
-    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null, ISyncStatus? syncStatus = null)
+    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null)
     {
         _dbFactory = dbFactory;
         _logger = logger ?? new NullAppLogger();
         _currentUser = currentUser;
-        _syncStatus = syncStatus;
     }
 
     private IQueryable<Item> WithDetails(IQueryable<Item> query) =>

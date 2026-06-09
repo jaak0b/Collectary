@@ -61,10 +61,9 @@ public class SyncEndToEndTest
 
         Func<InventoryDbContext> factory = () => new InventoryDbContext(options);
         var merger = new FieldDefinitionMerger();
-        var status = new AlwaysConfiguredSyncStatus();
-        var presets = new PresetRepository(factory, merger, null, null, status);
-        var items = new ItemRepository(factory, null, null, status);
-        var sharedFields = new SharedFieldRepository(factory, merger, null, status);
+        var presets = new PresetRepository(factory, merger);
+        var items = new ItemRepository(factory);
+        var sharedFields = new SharedFieldRepository(factory, merger);
         var store = new EfSyncStore(factory, merger);
 
         var imageDir = Path.Combine(Path.GetTempPath(), $"collectary-img-{Guid.NewGuid():N}");
@@ -80,7 +79,7 @@ public class SyncEndToEndTest
             Store = store,
             Images = images,
             Sync = new SyncService(new FileSystemSyncBackend(_folder), store, new SyncSerializer(),
-                new FixedDeviceIdentity(Guid.NewGuid()), status, images),
+                new FixedDeviceIdentity(Guid.NewGuid()), images),
         };
     }
 
@@ -414,12 +413,6 @@ public class SyncEndToEndTest
             Assert.That(second.Pulled, Is.EqualTo(0), "a no-op second sync transfers nothing");
         });
     }
-}
-
-internal sealed class AlwaysConfiguredSyncStatus : ISyncStatus
-{
-    public bool IsConfigured => true;
-    public int TombstoneRetentionDays => 30;
 }
 
 internal sealed class AllowAllAuthorization : ICollectionAuthorization

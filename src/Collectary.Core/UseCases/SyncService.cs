@@ -24,7 +24,7 @@ public class SyncService : ISyncService
     private readonly SyncMergeEngine _merge;
 
     public SyncService(ISyncBackend backend, ISyncStore store, ISyncSerializer serializer, IDeviceIdentity device,
-        ISyncStatus? syncStatus = null, IImageStore? imageStore = null, IAppLogger? logger = null)
+        IImageStore? imageStore = null, IAppLogger? logger = null)
     {
         _backend = backend;
         _store = store;
@@ -110,8 +110,7 @@ public class SyncService : ISyncService
         foreach (var entity in locals.Where(e => e.IsDirty))
         {
             clock = _clock.Next(clock, entity.Lamport);
-            entity.Lamport = clock;
-            entity.LastModifiedByDeviceId = deviceId;
+            entity.StampLamport(clock, deviceId);
             await _store.StampPushedAsync(kind, entity.Id, clock, deviceId);
             pushed++;
         }

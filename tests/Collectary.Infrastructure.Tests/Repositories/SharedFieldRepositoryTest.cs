@@ -157,9 +157,9 @@ public class SharedFieldRepositoryTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task DeleteAsync_WhenSyncConfigured_HardDeletesAndRecordsTombstone()
+    public async Task DeleteAsync_HardDeletesAndRecordsTombstone()
     {
-        var sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger(), null, new ConfiguredSyncStatus());
+        var sut = new SharedFieldRepository(DbFactory, new FieldDefinitionMerger());
         var field = MakeField("Rating");
         await sut.AddAsync(field);
 
@@ -272,10 +272,4 @@ public class SharedFieldRepositoryTest : DbIntegrationTestBase
         Assert.That(db.SharedFields.Count(), Is.EqualTo(0), "System field removed");
         Assert.That(db.FieldDefinitions.Count(), Is.EqualTo(0), "Its definition must cascade-delete");
     }
-}
-
-file sealed class ConfiguredSyncStatus : ISyncStatus
-{
-    public bool IsConfigured => true;
-    public int TombstoneRetentionDays => 30;
 }

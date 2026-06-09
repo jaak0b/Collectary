@@ -19,6 +19,4 @@ public class PreferencesSyncStatus : ISyncStatus
             };
         }
     }
-
-    public int TombstoneRetentionDays => AppPreferences.Load().TombstoneRetentionDays;
 }

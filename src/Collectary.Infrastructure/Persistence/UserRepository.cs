@@ -7,15 +7,8 @@ namespace Collectary.Infrastructure.Persistence;
 public class UserRepository : IUserRepository
 {
     private readonly Func<InventoryDbContext> _dbFactory;
-    private readonly ISyncStatus? _syncStatus;
-    private readonly ICurrentUser? _currentUser;
 
-    public UserRepository(Func<InventoryDbContext> dbFactory, ISyncStatus? syncStatus = null, ICurrentUser? currentUser = null)
-    {
-        _dbFactory = dbFactory;
-        _syncStatus = syncStatus;
-        _currentUser = currentUser;
-    }
+    public UserRepository(Func<InventoryDbContext> dbFactory) => _dbFactory = dbFactory;
 
     public async Task<IReadOnlyList<User>> GetAllAsync()
     {

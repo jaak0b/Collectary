@@ -14,7 +14,6 @@ public record AppPreferencesData(
     string? SyncLocation = null,
     bool AutoSyncEnabled = false,
     int AutoSyncIntervalMinutes = 5,
-    int TombstoneRetentionDays = 30,
     CloudProvider SyncProvider = CloudProvider.Folder,
     string? OneDriveRootFolderId = null,
     string? OneDriveRootFolderName = null,

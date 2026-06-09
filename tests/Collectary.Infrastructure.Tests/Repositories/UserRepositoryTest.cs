@@ -69,7 +69,7 @@ public class UserRepositoryTest : DbIntegrationTestBase
     [Test]
     public async Task DeleteAsync_HardDeletesRowAndRecordsTombstone()
     {
-        var sut = new UserRepository(DbFactory, new ConfiguredSyncStatus());
+        var sut = new UserRepository(DbFactory);
         var user = new User { Username = "gone", DisplayName = "Gone" };
         await sut.AddAsync(user);
 
@@ -85,26 +85,6 @@ public class UserRepositoryTest : DbIntegrationTestBase
             Assert.That(rows, Is.Empty, "the profile row is hard-deleted, leaving no data on disk");
             Assert.That(tombstones, Does.Contain(user.Id), "a tombstone records the deletion so it syncs");
         });
-    }
-
-    [Test]
-    public async Task DeleteAsync_WhenSyncNotConfigured_HardDeletes()
-    {
-        var sut = new UserRepository(DbFactory);
-        var user = new User { Username = "gone", DisplayName = "Gone" };
-        await sut.AddAsync(user);
-
-        await sut.DeleteAsync(user.Id);
-
-        var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
-        Assert.That((await store.GetAllUsersAsync()).Any(u => u.Id == user.Id), Is.False,
-            "with no sync configured there is nothing to propagate, so the row is removed outright");
-    }
-
-    private sealed class ConfiguredSyncStatus : ISyncStatus
-    {
-        public bool IsConfigured => true;
-        public int TombstoneRetentionDays => 30;
     }
 
     [Test]
