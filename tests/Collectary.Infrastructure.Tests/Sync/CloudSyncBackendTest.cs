@@ -20,7 +20,7 @@ public class CloudSyncBackendTest
     public async Task WriteAsync_ThenReadAsync_RoundTrips()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("presets", id, "{\"hello\":1}", 1);
+        await _sut.WriteAsync("presets", id, "{\"hello\":1}");
 
         Assert.That(await _sut.ReadAsync("presets", id), Is.EqualTo("{\"hello\":1}"));
     }
@@ -30,128 +30,77 @@ public class CloudSyncBackendTest
         Assert.That(await _sut.ReadAsync("presets", Guid.NewGuid()), Is.Null);
 
     [Test]
-    public async Task ListAsync_ReturnsAllDocumentsOfKind()
-    {
-        var a = Guid.NewGuid();
-        var b = Guid.NewGuid();
-        await _sut.WriteAsync("items", a, "A", 1);
-        await _sut.WriteAsync("items", b, "B", 1);
-        await _sut.WriteAsync("presets", Guid.NewGuid(), "X", 1);
-
-        var items = await _sut.ListAsync("items");
-
-        Assert.That(items.Select(d => d.Id), Is.EquivalentTo(new[] { a, b }));
-    }
-
-    [Test]
-    public async Task ListAsync_ReturnsRevisionFromFilename()
+    public async Task ReadAsync_DownloadsDirectlyWithoutListingTheFolder()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("items", id, "A", 7);
-
-        var entry = (await _sut.ListAsync("items")).Single();
-
-        Assert.That(entry.Revision, Is.EqualTo(7));
-    }
-
-    [Test]
-    public async Task WriteAsync_NewRevision_ReplacesOldFileWithoutDuplicating()
-    {
-        var id = Guid.NewGuid();
-        await _sut.WriteAsync("items", id, "old", 1);
-        await _sut.WriteAsync("items", id, "new", 2);
-
-        var entries = await _sut.ListAsync("items");
-        Assert.Multiple(() =>
-        {
-            Assert.That(entries, Has.Count.EqualTo(1));
-            Assert.That(entries.Single().Revision, Is.EqualTo(2));
-            Assert.That(_sut.ReadAsync("items", id).Result, Is.EqualTo("new"));
-        });
-    }
-
-    [Test]
-    public async Task ReadAsync_WithMultipleRevisionsPresent_ReturnsHighest()
-    {
-        var id = Guid.NewGuid();
-        await _sut.ListAsync("items"); // provisions the kind folder
-        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
-        var naming = new SyncFileNaming();
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 1), System.Text.Encoding.UTF8.GetBytes("rev1"), CancellationToken.None);
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 2), System.Text.Encoding.UTF8.GetBytes("rev2"), CancellationToken.None);
-
-        Assert.That(await _sut.ReadAsync("items", id), Is.EqualTo("rev2"),
-            "a lingering lower revision must never shadow the newest one");
-    }
-
-    [Test]
-    public async Task ListAsync_WithMultipleRevisionsPresent_CollapsesToHighest()
-    {
-        var id = Guid.NewGuid();
-        await _sut.ListAsync("items");
-        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
-        var naming = new SyncFileNaming();
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 1), System.Text.Encoding.UTF8.GetBytes("rev1"), CancellationToken.None);
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 2), System.Text.Encoding.UTF8.GetBytes("rev2"), CancellationToken.None);
-
-        var entries = await _sut.ListAsync("items");
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(entries, Has.Count.EqualTo(1), "two revisions of one id must collapse to a single entry");
-            Assert.That(entries.Single().Revision, Is.EqualTo(2));
-        });
-    }
-
-    [Test]
-    public async Task ReadAtRevisionAsync_ReadsDirectlyWithoutListingTheFolder()
-    {
-        var id = Guid.NewGuid();
-        await _sut.WriteAsync("items", id, "hi", 3);
+        await _sut.WriteAsync("items", id, "hi");
         var listsBefore = _fileStore.ListFilesCalls;
 
-        var content = await _sut.ReadAtRevisionAsync("items", id, 3);
+        var content = await _sut.ReadAsync("items", id);
 
         Assert.Multiple(() =>
         {
             Assert.That(content, Is.EqualTo("hi"));
             Assert.That(_fileStore.ListFilesCalls - listsBefore, Is.EqualTo(0),
-                "a revision-addressed read must download the document directly, not re-list the folder");
+                "a read addresses the flat document name directly, it never re-lists the folder");
         });
     }
 
     [Test]
-    public async Task ReadAtRevisionAsync_WhenExactRevisionMissing_FallsBackToHighest()
+    public async Task ListAsync_ReturnsAllDocumentsOfKind()
     {
-        var id = Guid.NewGuid();
-        await _sut.ListAsync("items");
-        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
-        var naming = new SyncFileNaming();
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 1), System.Text.Encoding.UTF8.GetBytes("rev1"), CancellationToken.None);
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 2), System.Text.Encoding.UTF8.GetBytes("rev2"), CancellationToken.None);
+        var a = Guid.NewGuid();
+        var b = Guid.NewGuid();
+        await _sut.WriteAsync("items", a, "A");
+        await _sut.WriteAsync("items", b, "B");
+        await _sut.WriteAsync("presets", Guid.NewGuid(), "X");
 
-        Assert.That(await _sut.ReadAtRevisionAsync("items", id, 9), Is.EqualTo("rev2"),
-            "a superseded exact revision must fall back to the highest available revision");
+        var items = await _sut.ListAsync("items");
+
+        Assert.That(items, Is.EquivalentTo(new[] { a, b }));
     }
 
     [Test]
-    public async Task ReadAtRevisionAsync_WhenAbsentEntirely_ReturnsNull() =>
-        Assert.That(await _sut.ReadAtRevisionAsync("items", Guid.NewGuid(), 1), Is.Null);
+    public async Task WriteAsync_UploadsTheFlatIdFileName()
+    {
+        var id = Guid.NewGuid();
+        await _sut.WriteAsync("items", id, "A");
+
+        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
+        Assert.That(await _fileStore.DownloadAsync(folder.Id, $"{id:N}.json", CancellationToken.None), Is.Not.Null,
+            "the document layout is one flat {id}.json file per document");
+    }
 
     [Test]
-    public async Task WriteAsync_DoesNotDeleteAHigherConcurrentRevision()
+    public async Task WriteAsync_RemovesStaleFilesOfTheSameId()
     {
         var id = Guid.NewGuid();
         await _sut.ListAsync("items");
         var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
-        var naming = new SyncFileNaming();
-        // a concurrent writer has already landed revision 3
-        await _fileStore.UploadAsync(folder.Id, naming.DocumentName(id, 3), System.Text.Encoding.UTF8.GetBytes("rev3"), CancellationToken.None);
+        await _fileStore.UploadAsync(folder.Id, $"{id:N}.5.json", System.Text.Encoding.UTF8.GetBytes("leftover"), CancellationToken.None);
 
-        await _sut.WriteAsync("items", id, "rev2", 2);
+        await _sut.WriteAsync("items", id, "fresh");
 
-        Assert.That(await _sut.ReadAsync("items", id), Is.EqualTo("rev3"),
-            "an in-flight older write must not prune a newer concurrent revision");
+        var remaining = (await _fileStore.ListFilesAsync(folder.Id, CancellationToken.None)).Select(f => f.Name).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.That(remaining, Is.EqualTo(new[] { $"{id:N}.json" }),
+                "a write must leave exactly one file for the id, removing stale leftovers");
+            Assert.That(_sut.ReadAsync("items", id).Result, Is.EqualTo("fresh"));
+        });
+    }
+
+    [Test]
+    public async Task ListAsync_IgnoresFilesThatAreNotFlatIdDocuments()
+    {
+        var id = Guid.NewGuid();
+        await _sut.ListAsync("items");
+        var folder = (await _fileStore.ListFoldersAsync("root", CancellationToken.None)).Single(f => f.Name == "items");
+        await _fileStore.UploadAsync(folder.Id, $"{id:N}.5.json", System.Text.Encoding.UTF8.GetBytes("legacy"), CancellationToken.None);
+        await _fileStore.UploadAsync(folder.Id, "notes.json", System.Text.Encoding.UTF8.GetBytes("junk"), CancellationToken.None);
+
+        Assert.That(await _sut.ListAsync("items"), Is.Empty,
+            "only flat {id}.json documents are part of the sync layout");
     }
 
     [Test]
@@ -159,13 +108,13 @@ public class CloudSyncBackendTest
     {
         var a = Guid.NewGuid();
         var b = Guid.NewGuid();
-        await _sut.WriteAsync("items", a, "A1", 1);
-        await _sut.WriteAsync("items", b, "B5", 5);   // a different id at a higher revision
-        await _sut.WriteAsync("items", a, "A2", 2);    // rewriting A must not read or prune B
+        await _sut.WriteAsync("items", a, "A1");
+        await _sut.WriteAsync("items", b, "B5");
+        await _sut.WriteAsync("items", a, "A2");
 
         Assert.Multiple(() =>
         {
-            Assert.That(_sut.ReadAsync("items", a).Result, Is.EqualTo("A2"), "a read must never pick another id's revision");
+            Assert.That(_sut.ReadAsync("items", a).Result, Is.EqualTo("A2"), "a read must never pick another id's document");
             Assert.That(_sut.ReadAsync("items", b).Result, Is.EqualTo("B5"), "another id's document must survive a write");
         });
     }
@@ -175,20 +124,20 @@ public class CloudSyncBackendTest
         Assert.That(await _sut.ListAsync("presets"), Is.Empty);
 
     [Test]
-    public async Task WriteAsync_SameRevision_Overwrites()
+    public async Task WriteAsync_Overwrites()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("presets", id, "first", 1);
-        await _sut.WriteAsync("presets", id, "second", 1);
+        await _sut.WriteAsync("presets", id, "first");
+        await _sut.WriteAsync("presets", id, "second");
 
         Assert.That(await _sut.ReadAsync("presets", id), Is.EqualTo("second"));
     }
 
     [Test]
-    public async Task DeleteAsync_RemovesAllRevisionsOfId()
+    public async Task DeleteAsync_RemovesAllFilesOfId()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("presets", id, "x", 1);
+        await _sut.WriteAsync("presets", id, "x");
 
         await _sut.DeleteAsync("presets", id);
 
@@ -259,9 +208,9 @@ public class CloudSyncBackendTest
     public async Task Invalidate_ForcesKindFolderReresolution()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("items", id, "a", 1);
+        await _sut.WriteAsync("items", id, "a");
         _sut.Invalidate();
-        await _sut.WriteAsync("items", id, "b", 2);
+        await _sut.WriteAsync("items", id, "b");
 
         Assert.Multiple(() =>
         {
@@ -276,14 +225,14 @@ public class CloudSyncBackendTest
     public async Task KindFolder_WhenRootFolderChanges_ResolvesUnderTheNewRoot()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("items", id, "first", 1);
+        await _sut.WriteAsync("items", id, "first");
 
         _fileStore.RootFolderId = "root2";
-        await _sut.WriteAsync("items", id, "second", 2);
+        await _sut.WriteAsync("items", id, "second");
 
         var newFolder = (await _fileStore.ListFoldersAsync("root2", CancellationToken.None)).SingleOrDefault(f => f.Name == "items");
         Assert.That(newFolder, Is.Not.Null, "a kind folder must be re-resolved under the newly chosen root, not served from the stale cache");
-        Assert.That(await _fileStore.DownloadAsync(newFolder!.Id, $"{id:N}.2.json", CancellationToken.None), Is.Not.Null,
+        Assert.That(await _fileStore.DownloadAsync(newFolder!.Id, $"{id:N}.json", CancellationToken.None), Is.Not.Null,
             "documents must be written under the new root after the sync folder changed");
     }
 
@@ -291,7 +240,7 @@ public class CloudSyncBackendTest
     public async Task KindFolder_ResolvedOncePerKind_AndCached()
     {
         var id = Guid.NewGuid();
-        await _sut.WriteAsync("items", id, "a", 1);
+        await _sut.WriteAsync("items", id, "a");
         await _sut.ListAsync("items");
         await _sut.ReadAsync("items", id);
 

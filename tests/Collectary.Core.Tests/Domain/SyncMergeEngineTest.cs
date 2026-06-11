@@ -5,7 +5,7 @@ namespace Collectary.Core.Tests.Domain;
 [TestFixture]
 public class SyncMergeEngineTest
 {
-    private readonly SyncMergeEngine _engine = new(new LamportClock());
+    private readonly SyncMergeEngine _engine = new();
 
     private static MergeCandidate<string> Candidate(Guid id, long lamport, Guid device, string payload)
         => new(id, new SyncVersion(lamport, device), payload);
@@ -60,7 +60,7 @@ public class SyncMergeEngineTest
             Candidate(id, 5, hi, "hi"),
         }, new HashSet<Guid>())[0].Version;
 
-        var expected = new LamportClock().Compare(new SyncVersion(5, lo), new SyncVersion(5, hi)) > 0
+        var expected = new SyncVersion(5, lo).CompareTo(new SyncVersion(5, hi)) > 0
             ? lo
             : hi;
         Assert.That(winnerVersion.DeviceId, Is.EqualTo(expected));

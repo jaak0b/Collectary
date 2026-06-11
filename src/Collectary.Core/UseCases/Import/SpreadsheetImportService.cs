@@ -23,7 +23,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
         return await ImportRowsAsync(presetId, effective.Fields, grid, mappings, culture);
     }
 
-    public async Task<(Preset Preset, ImportSummary Summary)> ImportNewAsync(string presetName, ShapedGrid grid, IReadOnlyList<NewFieldColumn> columns, CultureInfo culture)
+    public async Task<ImportNewResult> ImportNewAsync(string presetName, ShapedGrid grid, IReadOnlyList<NewFieldColumn> columns, CultureInfo culture)
     {
         var preset = new Preset { Name = presetName };
         var title = new DisplayNameFieldDefinition { PresetId = preset.Id, DisplayOrder = 0 };
@@ -46,7 +46,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
 
         await _presets.CreatePresetAsync(preset);
         var summary = await ImportRowsAsync(preset.Id, preset.Fields, grid, mappings, culture);
-        return (preset, summary);
+        return new ImportNewResult(preset, summary);
     }
 
     private async Task<ImportSummary> ImportRowsAsync(

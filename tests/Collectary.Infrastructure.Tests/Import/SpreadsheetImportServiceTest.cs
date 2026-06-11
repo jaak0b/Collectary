@@ -50,10 +50,11 @@ public class SpreadsheetImportServiceTest : DbIntegrationTestBase
             new NewFieldColumn(1, new DecimalFieldDefinition { Label = "Price" }, false)
         };
 
-        var (preset, summary) = await _sut.ImportNewAsync("Books", grid, columns, new CultureInfo("de-DE"));
+        var result = await _sut.ImportNewAsync("Books", grid, columns, new CultureInfo("de-DE"));
+        var summary = result.Summary;
 
         Assert.That(summary.Imported, Is.EqualTo(1));
-        var items = await _itemRepo.GetByPresetAsync(preset.Id);
+        var items = await _itemRepo.GetByPresetAsync(result.Preset.Id);
         Assert.That(items, Has.Count.EqualTo(1));
         Assert.That(items[0].DisplayName, Is.EqualTo("Dune"));
         var value = (DecimalFieldValue)items[0].Values.Single();

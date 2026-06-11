@@ -70,4 +70,34 @@ public class PreferencesSyncStatusTest
         AppPreferences.Save(new AppPreferencesData(SyncProvider: CloudProvider.GoogleDrive, GoogleDriveRootFolderId: "g-1"));
         Assert.That(_sut.IsConfigured, Is.True);
     }
+
+    [Test]
+    public void LocationLabel_Folder_IsThePath()
+    {
+        AppPreferences.Save(new AppPreferencesData(SyncProvider: CloudProvider.Folder, SyncLocation: @"C:\my\sync"));
+        Assert.That(_sut.LocationLabel, Is.EqualTo(@"C:\my\sync"));
+    }
+
+    [Test]
+    public void LocationLabel_FolderWithoutLocation_FallsBackToProviderName()
+    {
+        AppPreferences.Save(new AppPreferencesData(SyncProvider: CloudProvider.Folder, SyncLocation: null));
+        Assert.That(_sut.LocationLabel, Is.Not.Empty);
+    }
+
+    [Test]
+    public void LocationLabel_OneDrive_NamesProviderAndFolder()
+    {
+        AppPreferences.Save(new AppPreferencesData(
+            SyncProvider: CloudProvider.OneDrive, OneDriveRootFolderId: "f1", OneDriveRootFolderName: "Collectary"));
+        Assert.That(_sut.LocationLabel, Does.Contain("Collectary"));
+    }
+
+    [Test]
+    public void LocationLabel_GoogleDriveWithoutName_FallsBackToProviderName()
+    {
+        AppPreferences.Save(new AppPreferencesData(
+            SyncProvider: CloudProvider.GoogleDrive, GoogleDriveRootFolderId: "g1", GoogleDriveRootFolderName: null));
+        Assert.That(_sut.LocationLabel, Is.Not.Empty);
+    }
 }

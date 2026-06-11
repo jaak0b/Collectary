@@ -22,7 +22,7 @@ public class EfSyncStore : ISyncStore
         _logger = logger ?? new NullAppLogger();
         _ops = new Dictionary<SyncEntityKind, EntityOps>
         {
-            [SyncEntityKind.Preset] = OpsFor<Preset>(),
+            [SyncEntityKind.Preset] = OpsFor<Preset>(ReparentOrphanedChildrenAsync),
             [SyncEntityKind.Item] = OpsFor<Item>(),
             [SyncEntityKind.SharedField] = OpsFor<SharedField>(),
             [SyncEntityKind.User] = OpsFor<User>(),
@@ -31,12 +31,30 @@ public class EfSyncStore : ISyncStore
     }
 
     private sealed record EntityOps(
-        Func<InventoryDbContext, Guid, Task<ISyncable?>> Find,
-        Func<InventoryDbContext, Guid, Task> Delete);
+        Func<InventoryDbContext, Guid, Task> Delete,
+        Func<InventoryDbContext, IReadOnlyCollection<Guid>, Task<IReadOnlyList<ISyncable>>> FindMany,
+        Func<InventoryDbContext, ISet<Guid>, Task> DeleteMany,
+        Func<InventoryDbContext, Task<bool>> AnyDirty,
+        Func<InventoryDbContext, ISet<Guid>, Task>? PreDelete = null);
 
-    private EntityOps OpsFor<T>() where T : DomainObject, ISyncable => new(
-        async (db, id) => await db.Set<T>().FirstOrDefaultAsync(e => e.Id == id),
-        async (db, id) => db.Set<T>().RemoveRange(await db.Set<T>().Where(e => e.Id == id).ToListAsync()));
+    private EntityOps OpsFor<T>(Func<InventoryDbContext, ISet<Guid>, Task>? preDelete = null)
+        where T : DomainObject, ISyncable => new(
+        Delete: async (db, id) => db.Set<T>().RemoveRange(await db.Set<T>().Where(e => e.Id == id).ToListAsync()),
+        FindMany: async (db, ids) =>
+            (await db.Set<T>().Where(e => ids.Contains(e.Id)).ToListAsync()).Cast<ISyncable>().ToList(),
+        DeleteMany: async (db, ids) =>
+            db.Set<T>().RemoveRange(await db.Set<T>().Where(e => ids.Contains(e.Id)).ToListAsync()),
+        AnyDirty: db => db.Set<T>().AnyAsync(e => e.IsDirty),
+        PreDelete: preDelete);
+
+    private async Task ReparentOrphanedChildrenAsync(InventoryDbContext db, ISet<Guid> idSet)
+    {
+        var orphanedChildren = await db.Presets
+            .Where(p => p.ParentPresetId != null && idSet.Contains(p.ParentPresetId.Value) && !idSet.Contains(p.Id))
+            .ToListAsync();
+        foreach (var child in orphanedChildren)
+            child.ParentPresetId = null;
+    }
 
     private EntityOps OpsFor(SyncEntityKind kind) =>
         _ops.TryGetValue(kind, out var ops)
@@ -205,11 +223,12 @@ public class EfSyncStore : ISyncStore
         using var db = _dbFactory();
         var idSet = ids.ToHashSet();
 
-        db.Items.RemoveRange(await db.Items.Where(i => idSet.Contains(i.Id)).ToListAsync());
-        db.Presets.RemoveRange(await db.Presets.Where(p => idSet.Contains(p.Id)).ToListAsync());
-        db.SharedFields.RemoveRange(await db.SharedFields.Where(s => idSet.Contains(s.Id)).ToListAsync());
-        db.Users.RemoveRange(await db.Users.Where(u => idSet.Contains(u.Id)).ToListAsync());
-        db.CollectionShares.RemoveRange(await db.CollectionShares.Where(s => idSet.Contains(s.Id)).ToListAsync());
+        foreach (var ops in _ops.Values)
+            if (ops.PreDelete is not null)
+                await ops.PreDelete(db, idSet);
+
+        foreach (var ops in _ops.Values)
+            await ops.DeleteMany(db, idSet);
 
         var already = (await db.Tombstones.Where(t => idSet.Contains(t.Id)).Select(t => t.Id).ToListAsync()).ToHashSet();
         foreach (var id in idSet)
@@ -219,22 +238,38 @@ public class EfSyncStore : ISyncStore
         await db.SaveChangesAsync();
     }
 
-    public async Task StampPushedAsync(SyncEntityKind kind, Guid id, long lamport, Guid deviceId)
+    public async Task StampPushedAsync(IReadOnlyCollection<PushStamp> stamps)
     {
-        var ops = OpsFor(kind);
+        if (stamps.Count == 0) return;
         using var db = _dbFactory();
-        var tracked = await ops.Find(db, id);
-        if (tracked is null)
+        foreach (var group in stamps.GroupBy(s => s.Kind))
         {
-            _logger.Warning("StampPushed skipped: {Kind} {Id} is no longer present locally", kind, id);
-            return;
+            var ids = group.Select(s => s.Id).ToList();
+            var tracked = (await OpsFor(group.Key).FindMany(db, ids)).ToDictionary(e => e.Id);
+            foreach (var stamp in group)
+            {
+                if (!tracked.TryGetValue(stamp.Id, out var entity))
+                {
+                    _logger.Warning("StampPushed skipped: {Kind} {Id} is no longer present locally", stamp.Kind, stamp.Id);
+                    continue;
+                }
+
+                entity.Lamport = stamp.Lamport;
+                entity.LastModifiedByDeviceId = stamp.DeviceId;
+                entity.BaseRevision = entity.Revision;
+                entity.IsDirty = false;
+            }
         }
 
-        tracked.Lamport = lamport;
-        tracked.LastModifiedByDeviceId = deviceId;
-        tracked.BaseRevision = tracked.Revision;
-        tracked.IsDirty = false;
         await db.SaveChangesAsync();
+    }
+
+    public async Task<bool> HasDirtyEntitiesAsync()
+    {
+        using var db = _dbFactory();
+        foreach (var ops in _ops.Values)
+            if (await ops.AnyDirty(db)) return true;
+        return false;
     }
 
     public async Task<long> GetMaxObservedLamportAsync()
@@ -254,6 +289,24 @@ public class EfSyncStore : ISyncStore
             state.MaxObservedLamport = value;
         else
             return;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<string?> GetSyncFingerprintAsync()
+    {
+        using var db = _dbFactory();
+        var state = await db.SyncStates.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1);
+        return state?.SyncFingerprint;
+    }
+
+    public async Task SetSyncFingerprintAsync(string fingerprint)
+    {
+        using var db = _dbFactory();
+        var state = await db.SyncStates.FirstOrDefaultAsync(s => s.Id == 1);
+        if (state is null)
+            db.SyncStates.Add(new SyncState { Id = 1, SyncFingerprint = fingerprint });
+        else
+            state.SyncFingerprint = fingerprint;
         await db.SaveChangesAsync();
     }
 

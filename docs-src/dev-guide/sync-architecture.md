@@ -50,11 +50,20 @@ identities are never merged.
 
 The kinds are **table-driven**, not switch-driven — there is no per-kind `switch` to keep in sync. The
 single source of truth for orchestration is `SyncKindCatalog.Describe(...)`, which yields one `SyncKind`
-descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply), in
-dependency order (owners first). Both `SyncService` and `BackupService` loop over that catalog, so a new
-kind is backed up, restored, and synced from one place. The persistence side mirrors this with a single
-`EfSyncStore` ops map (`kind → find/delete`, built from a generic `OpsFor<T>()`). Completeness-guard
-tests fail if a new `SyncEntityKind` value is added without its catalog and ops-map rows.
+descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply, and how to
+read/write its slot in a snapshot), in dependency order (owners first). Each descriptor is built by a
+generic `For<T>(...)` factory, so the cast/serialize/deserialize boilerplate is written once rather than
+copy-pasted per kind. Both `SyncService` and `BackupService` loop over that catalog, so a new kind is
+backed up, restored, and synced from one place.
+
+The persistence side mirrors this with a single `EfSyncStore` ops map
+(`kind → find / findMany / deleteMany / anyDirty`, built from a generic `OpsFor<T>()`, plus an optional
+per-kind **pre-delete** hook). **Hard-deletion, batched push-stamping, and the "is anything dirty?"
+probe all loop that one ops map** — none of them re-enumerates the kinds — so adding a sync kind touches
+exactly three places: its `SyncKindCatalog` row, its `EfSyncStore` ops-map row, and its list on
+`DeviceSnapshot`. A kind-specific quirk stays local to its registration: the `Preset` self-FK re-parent
+(below) rides along as that kind's pre-delete hook, not as a special case inside the shared delete loop.
+Completeness-guard tests fail if a new `SyncEntityKind` value is added without its catalog and ops-map rows.
 
 ## Versioning: a Lamport clock + device id
 
@@ -74,32 +83,99 @@ state — no oscillation).
 
 `SyncService.SyncAsync()` (per-device snapshot files, merged on read):
 
-1. Loads this device's live entities; stamps any **dirty** ones with a fresh Lamport number and this
-   device id, then writes them all into **one file this device owns** — `device-{deviceId}.sync.json` —
-   alongside a flat list of tombstone ids.
-2. Reads **every other** `device-*.sync.json` in the folder (each in its own try/catch — a corrupt or
-   half-written file is skipped, never aborting the run).
-3. Folds them: the union of all tombstone ids is hard-deleted locally (**delete-wins**); every other
-   id resolves to the highest `(Lamport, DeviceId)` winner, which is applied only if it is newer than
-   the local copy. There is no shared mutable object — each device only ever writes its *own* file — so
-   a concurrent write can never be lost.
-4. Returns a `SyncResult` reporting how many records were pushed and pulled. **There are no conflicts**
-   — the merge is automatic and deterministic.
+1. Reads **every other** device file in the folder (in parallel) and computes a small
+   **fingerprint** from each peer file's `sha256:` header (the content hash already in the file — no
+   re-hash, no deserialize) plus this device's tombstone count. If our own file is present in the
+   listing, nothing local is dirty, and that fingerprint matches the one we stored after the last
+   successful sync, the run **returns immediately** — it never deserializes the peers, loads the local
+   entity graph, or rewrites its file. So an idle auto-sync tick on a large collection costs reading a
+   couple of small device files and comparing a hash, not re-materializing and re-serializing the whole
+   dataset. (Downloading the peer files is cheap; loading the full local graph and rewriting the
+   multi-MB snapshot is the expensive part this skips. A peer that *changed* bumps its header hash; a
+   local edit sets a dirty flag; a deletion changes the tombstone count — any of which forces the full
+   path. The fingerprint is only re-stored when no peer file was unreadable, so a corrupt peer keeps the
+   full path running and stays visible. The same applies to a peer that is *listed* but whose file cannot
+   be read at all — it counts toward `UnreadableDevices`, blocks both the fast-path and the fingerprint
+   store, and so keeps being reported every run instead of silently vanishing from the merge.)
+2. When something did change, it deserializes the peer files (each in its own try/catch — a corrupt or
+   half-written file is skipped and counted, never aborting the run), loads this device's live entities,
+   and stamps any **dirty** ones with a fresh Lamport number and this device id (all stamps persisted in
+   **one** batched store call), then unions every tombstone id it learns.
+3. Applies the union of tombstone ids — hard-deleting locally (**delete-wins**) — **before** writing its
+   own file. Only then does it write **the one file this device owns** (`devices/{deviceId}.json`),
+   containing its still-live entities and **re-emitting the full learned tombstone set**. Writing after
+   the delete means a device never re-advertises an entity it has just tombstoned, and the re-emission
+   keeps a deletion propagating even after its originating device's file is gone.
+4. Folds the remotes: every non-deleted id resolves to the highest `(Lamport, DeviceId)` winner, applied
+   only if it is newer than the local copy. There is no shared mutable object — each device only ever
+   writes its *own* file — so a concurrent write can never be lost.
+5. Returns a `SyncResult` that makes **every** partial outcome visible instead of letting any of them
+   masquerade as a clean success:
+   - `Pushed` / `Pulled` — records sent and applied.
+   - `Skipped` — incoming records that could not be applied locally (e.g. a transient constraint
+     violation); logged and retried next run.
+   - `UnreadableDevices` — peer snapshots skipped because their file could not be read, their checksum
+     failed, or they would not deserialize, so the user learns a device could not be merged rather than
+     seeing "all good".
+   - `ImagesFailed` — referenced images that could not transfer this run; image transfer is isolated
+     per blob, so one bad image is counted and retried while the rest still sync.
+   - `BackendUnavailable` — the configured location was not reachable, so **nothing** synced; the UI
+     shows a distinct "not reachable" notice and does **not** update the last-synced time (an
+     unavailable backend must never look like a successful empty sync).
+
+   When any of these is non-zero the UI raises a single non-blocking notice listing what needs
+   attention, instead of silently reporting success. **There are no conflicts** — the merge is automatic
+   and deterministic.
+
+### Integrity & self-recovery
+
+Each device file is written with a `sha256:<hex>` header line over its JSON body. On read, the body is
+re-hashed and compared; a mismatch — or a **missing** header, since every file we write carries one, so
+its absence means foreign or truncated content — marks that one file unreadable, so it is skipped (and
+counted in `UnreadableDevices`) while the rest still merge. The check is strict on purpose: unverified
+content is never trusted just because it parses. The local database is the source of truth and is never
+bulk-cleared by sync, so a device whose own file is lost or corrupt simply regenerates it from its
+database on the next run — the fingerprint fast-path checks that our own id is still in the folder
+listing, so a vanished own file always forces a full run that rewrites it.
+
+### Known scaling limits
+
+The fingerprint fast-path makes an *idle* tick cheap, but a tick that *does* change still reloads the
+full local entity graph and rewrites the device's **entire** snapshot file — even for a one-item edit,
+because each device file holds that device's complete known state. For very large collections (tens to
+hundreds of thousands of entries) that per-change rewrite is the real ceiling; splitting the snapshot
+into per-kind or per-chunk shards (so a small edit writes a small file) is tracked as future work and
+must preserve the no-shared-write-race, deterministic-merge, and transitive-propagation guarantees.
+
+### Deleting a parent collection
+
+A collection (`Preset`) may have sub-collections pointing at it via `ParentPresetId`, and that foreign key
+is `Restrict` so the **interactive** "delete collection" guard still blocks deleting a parent that has
+children. The **sync** delete path, however, must not abort when a parent's tombstone arrives before a
+peer's still-live child. This is handled as the `Preset` kind's **pre-delete hook**: before the shared
+delete loop removes any rows, the hook re-parents any surviving child of a to-be-deleted parent to the
+root (`ParentPresetId = null`). So delete-wins propagates without the `Restrict` FK aborting the whole
+run, the fix-up lives next to the `Preset` registration rather than as a special case in the generic
+deletion code, and the interactive guard is left untouched.
 
 ## The file-system backend
 
-`FileSystemSyncBackend` stores each document as a JSON file in a kind-specific subdirectory; sync uses
-a single `devices/` directory holding one `device-{deviceId}.sync.json` per install, plus images under
-`images/`. The backend and serializer are kind-agnostic. The root directory is configurable via app
-preferences — point multiple devices at the same shared folder (a cloud-drive folder, network share,
-etc.).
+`FileSystemSyncBackend` stores each document as one flat `{id}.json` file in a kind-specific
+subdirectory; sync uses a single `devices/` directory holding one file per install (named by its
+device id), plus images under `images/`. There is no per-file revision scheme — each device only ever
+rewrites its *own* file, a write goes to a temp file and is moved into place atomically, and the
+`sha256:` header catches a torn read on the other side, so one flat name per document is all the
+layout needs. (An earlier `{id}.{revision}.json` scheme was removed as a clean break; old-format
+files are ignored by readers and swept away by the owning device's next write.) The backend and
+serializer are kind-agnostic. The root directory is configurable via app preferences — point multiple
+devices at the same shared folder (a cloud-drive folder, network share, etc.).
 
 ## Automatic merge (no conflict dialog)
 
 When two devices edit the **same** entity without seeing each other, the higher `(Lamport, DeviceId)`
 wins automatically — there is no "keep mine / keep theirs" prompt. The losing edit is not destroyed;
-it still lives in its origin device's file and is recoverable. (`ISyncService.ResolveAsync` remains on
-the port for backward compatibility but is a no-op, since the engine never raises a conflict.)
+it still lives in its origin device's file and is recoverable. There is no conflict-resolution call on
+the port — `ISyncService` exposes only `SyncAsync()`, because the engine never raises a conflict.
 
 ## Deletions & tombstones
 
@@ -125,7 +201,7 @@ extra ports:
 | Port (Core) | Role |
 |---|---|
 | `ICloudAuthClient` | Per-provider OAuth — sign in/out, hand back an access token, expose the account label. |
-| `ICloudFileStore` | Per-provider file/folder CRUD; `CloudSyncBackend` adapts it to the `{id}.{revision}.json` layout. |
+| `ICloudFileStore` | Per-provider file/folder CRUD; `CloudSyncBackend` adapts it to the flat `{id}.json` layout. |
 | `ICloudRootProvider` | The starting folder for the folder picker. |
 
 `RoutingSyncBackend` picks the active provider at runtime from app preferences, so the rest of the

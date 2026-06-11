@@ -15,39 +15,30 @@ public class FileSystemSyncBackend : ISyncBackend
 
     public bool IsAvailable => !string.IsNullOrWhiteSpace(Root);
 
-    public Task<IReadOnlyList<SyncEntry>> ListAsync(string kind)
+    public Task<IReadOnlyList<Guid>> ListAsync(string kind)
     {
         var dir = KindDir(kind);
-        if (!Directory.Exists(dir)) return Task.FromResult<IReadOnlyList<SyncEntry>>(Array.Empty<SyncEntry>());
+        if (!Directory.Exists(dir)) return Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
 
-        var highest = new Dictionary<Guid, long>();
+        var ids = new HashSet<Guid>();
         foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
-            if (_naming.TryParseDocument(Path.GetFileName(file), out var id, out var revision)
-                && (!highest.TryGetValue(id, out var current) || revision > current))
-                highest[id] = revision;
+            if (_naming.TryParseId(Path.GetFileName(file), out var id))
+                ids.Add(id);
 
-        IReadOnlyList<SyncEntry> entries = highest.Select(kv => new SyncEntry(kv.Key, kv.Value)).ToList();
-        return Task.FromResult(entries);
+        return Task.FromResult<IReadOnlyList<Guid>>(ids.ToList());
     }
 
     public async Task<string?> ReadAsync(string kind, Guid id)
     {
-        var file = FindFile(kind, id);
-        return file is not null ? await File.ReadAllTextAsync(file) : null;
+        var path = Path.Combine(KindDir(kind), _naming.DocumentName(id));
+        return File.Exists(path) ? await File.ReadAllTextAsync(path) : null;
     }
 
-    public async Task<string?> ReadAtRevisionAsync(string kind, Guid id, long revision)
-    {
-        var path = Path.Combine(KindDir(kind), _naming.DocumentName(id, revision));
-        if (File.Exists(path)) return await File.ReadAllTextAsync(path);
-        return await ReadAsync(kind, id);
-    }
-
-    public async Task WriteAsync(string kind, Guid id, string content, long revision)
+    public async Task WriteAsync(string kind, Guid id, string content)
     {
         var dir = KindDir(kind);
         Directory.CreateDirectory(dir);
-        var target = Path.Combine(dir, _naming.DocumentName(id, revision));
+        var target = Path.Combine(dir, _naming.DocumentName(id));
 
         var temp = target + ".tmp";
         await File.WriteAllTextAsync(temp, content);
@@ -67,23 +58,6 @@ public class FileSystemSyncBackend : ISyncBackend
                 if (_naming.BelongsTo(Path.GetFileName(file), id))
                     File.Delete(file);
         return Task.CompletedTask;
-    }
-
-    private string? FindFile(string kind, Guid id)
-    {
-        var dir = KindDir(kind);
-        if (!Directory.Exists(dir)) return null;
-
-        string? best = null;
-        var bestRevision = -1L;
-        foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
-            if (_naming.TryParseDocument(Path.GetFileName(file), out var fileId, out var revision)
-                && fileId == id && revision > bestRevision)
-            {
-                best = file;
-                bestRevision = revision;
-            }
-        return best;
     }
 
     public Task<IReadOnlyList<string>> ListBlobKeysAsync(string kind)

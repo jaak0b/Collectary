@@ -9,7 +9,9 @@ namespace Collectary.Core.UseCases.Import;
 
 public sealed class FieldTypeInference : IFieldTypeInference
 {
-    private readonly IReadOnlyList<(ITextImportable Probe, Type Type)> _candidates;
+    private sealed record InferenceCandidate(ITextImportable Probe, Type Type);
+
+    private readonly IReadOnlyList<InferenceCandidate> _candidates;
 
     public FieldTypeInference()
     {
@@ -18,8 +20,8 @@ public sealed class FieldTypeInference : IFieldTypeInference
             .Where(t => t.GetCustomAttribute<FieldCatalogAttribute>() is not null)
             .Select(t => (Instance: Activator.CreateInstance(t) as FieldDefinition, Type: t))
             .Where(x => x.Instance is ITextImportable importable && importable.ImportInferenceOrder != int.MaxValue)
-            .Select(x => ((ITextImportable)x.Instance!, x.Type))
-            .OrderBy(x => x.Item1.ImportInferenceOrder)
+            .Select(x => new InferenceCandidate((ITextImportable)x.Instance!, x.Type))
+            .OrderBy(x => x.Probe.ImportInferenceOrder)
             .ToList();
     }
 
@@ -32,9 +34,9 @@ public sealed class FieldTypeInference : IFieldTypeInference
 
         if (samples.Count == 0) return new TextFieldDefinition();
 
-        foreach (var (probe, type) in _candidates)
-            if (samples.All(cell => probe.TryImportFromText(cell.Text!, cell.EffectiveCulture(culture), out _)))
-                return (FieldDefinition)Activator.CreateInstance(type)!;
+        foreach (var candidate in _candidates)
+            if (samples.All(cell => candidate.Probe.TryImportFromText(cell.Text!, cell.EffectiveCulture(culture), out _)))
+                return (FieldDefinition)Activator.CreateInstance(candidate.Type)!;
 
         return new TextFieldDefinition();
     }

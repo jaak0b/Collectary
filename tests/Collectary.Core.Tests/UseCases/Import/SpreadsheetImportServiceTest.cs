@@ -133,7 +133,9 @@ public class SpreadsheetImportServiceTest
             new NewFieldColumn(2, new IntegerFieldDefinition { Label = "Year" }, false)
         };
 
-        var (preset, summary) = await _sut.ImportNewAsync("Books", grid, columns, CultureInfo.InvariantCulture);
+        var result = await _sut.ImportNewAsync("Books", grid, columns, CultureInfo.InvariantCulture);
+        var preset = result.Preset;
+        var summary = result.Summary;
 
         Assert.That(captured, Is.SameAs(preset));
         Assert.That(preset.Name, Is.EqualTo("Books"));

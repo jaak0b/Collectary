@@ -19,7 +19,7 @@ You can also trigger a sync manually at any time.
 
 ## What a sync does
 
-Each device writes **one file of its own** to the shared folder (`device-<id>.sync.json`) holding the
+Each device writes **one file of its own** to the shared folder (named by its device id) holding the
 data it knows about, then reads the other devices' files and merges them in. Because a device only ever
 writes *its own* file, two devices syncing at once can never overwrite each other's changes.
 

@@ -50,7 +50,7 @@ public class GoogleDriveSyncBackendContractTest
              .OnJson(HttpMethod.Post, "drive/v3/files", """{"id":"items-folder"}""")
              .OnJson(HttpMethod.Put, "upload.test", """{"id":"doc","name":"doc.json"}""");
 
-        await Build().WriteAsync("items", Guid.NewGuid(), "{\"x\":1}", 1);
+        await Build().WriteAsync("items", Guid.NewGuid(), "{\"x\":1}");
 
         Assert.Multiple(() =>
         {

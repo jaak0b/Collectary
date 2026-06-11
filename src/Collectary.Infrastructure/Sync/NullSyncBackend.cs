@@ -11,12 +11,12 @@ public class NullSyncBackend : ISyncBackend
 {
     public bool IsAvailable => false;
 
-    public Task<IReadOnlyList<SyncEntry>> ListAsync(string kind) =>
-        Task.FromResult<IReadOnlyList<SyncEntry>>(Array.Empty<SyncEntry>());
+    public Task<IReadOnlyList<Guid>> ListAsync(string kind) =>
+        Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
 
     public Task<string?> ReadAsync(string kind, Guid id) => Task.FromResult<string?>(null);
 
-    public Task WriteAsync(string kind, Guid id, string content, long revision) => Task.CompletedTask;
+    public Task WriteAsync(string kind, Guid id, string content) => Task.CompletedTask;
 
     public Task DeleteAsync(string kind, Guid id) => Task.CompletedTask;
 

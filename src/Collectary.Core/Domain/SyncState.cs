@@ -4,4 +4,5 @@ public class SyncState
 {
     public int Id { get; set; } = 1;
     public long MaxObservedLamport { get; set; }
+    public string? SyncFingerprint { get; set; }
 }

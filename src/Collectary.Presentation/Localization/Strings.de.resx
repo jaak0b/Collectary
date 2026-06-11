@@ -336,6 +336,12 @@
   <data name="Sync_Now" xml:space="preserve"><value>Jetzt synchronisieren</value></data>
   <data name="Sync_Syncing" xml:space="preserve"><value>Synchronisiere…</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Synchronisierung fehlgeschlagen. Prüfe den Sync-Speicherort.</value></data>
+  <data name="Sync_Partial" xml:space="preserve"><value>Synchronisierung mit Problemen abgeschlossen: {0}. Sie werden beim nächsten Sync erneut versucht.</value></data>
+  <data name="Sync_PartialItems" xml:space="preserve"><value>{0} Element(e) konnten nicht angewendet werden</value></data>
+  <data name="Sync_PartialDevices" xml:space="preserve"><value>{0} Gerätedatei(en) waren unlesbar</value></data>
+  <data name="Sync_PartialImages" xml:space="preserve"><value>{0} Bild(er) konnten nicht übertragen werden</value></data>
+  <data name="Sync_PartialSeparator" xml:space="preserve"><value> und </value></data>
+  <data name="Sync_Unavailable" xml:space="preserve"><value>Der Sync-Speicherort ({0}) ist gerade nicht erreichbar. Deine Änderungen werden synchronisiert, sobald er wieder verfügbar ist.</value></data>
   <data name="Settings_Sync" xml:space="preserve"><value>Synchronisierung</value></data>
   <data name="Sync_Location" xml:space="preserve"><value>Sync-Speicherort</value></data>
   <data name="Sync_ChooseFolder" xml:space="preserve"><value>Ordner wählen…</value></data>

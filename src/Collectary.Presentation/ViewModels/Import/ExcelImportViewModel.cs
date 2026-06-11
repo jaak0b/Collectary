@@ -338,9 +338,9 @@ public partial class ExcelImportViewModel : ViewModelBase
                     await WarnAsync("Import_NoColumnsMapped");
                     return;
                 }
-                var (preset, summary) = await _importService.ImportNewAsync(NewCollectionName, _shaped, columns, SourceCulture);
-                _importedPreset = preset;
-                Summary = summary;
+                var result = await _importService.ImportNewAsync(NewCollectionName, _shaped, columns, SourceCulture);
+                _importedPreset = result.Preset;
+                Summary = result.Summary;
             }
             else
             {

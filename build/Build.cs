@@ -162,9 +162,26 @@ class Build : NukeBuild
                     .ToArray();
                 if (relative.Length == 0) continue;
 
-                var patterns = string.Join(" ", relative.Select(f => $"--mutate **/{System.IO.Path.GetFileName(f)}"));
-                DotNet($"stryker -p \"{RootDirectory / "src" / project / $"{project}.csproj"}\" {patterns}",
-                    workingDirectory: RootDirectory);
+                var csproj = RootDirectory / "src" / project / $"{project}.csproj";
+                var patterns = string.Join(" ", relative.Select(f => $"--mutate \"**/{System.IO.Path.GetFileName(f)}\""));
+                var arguments = $"stryker -p \"{csproj}\" {patterns}";
+
+                var dotnet = ToolPathResolver.GetPathExecutable("dotnet");
+                var process = ProcessTasks.StartProcess(dotnet, arguments, RootDirectory);
+                process.WaitForExit();
+
+                var text = string.Join("\n", process.Output.Select(o => o.Text));
+                if (text.Contains("unable to calculate a mutation score", StringComparison.OrdinalIgnoreCase) ||
+                    !text.Contains("final mutation score", StringComparison.OrdinalIgnoreCase))
+                {
+                    Assert.Fail(
+                        $"Mutate: Stryker tested no mutants for {project} ({relative.Length} changed file(s): "
+                        + $"{string.Join(", ", relative.Select(System.IO.Path.GetFileName))}). "
+                        + "The changed files were Excluded instead of mutated — the mutation gate did not actually run. "
+                        + "Check the --mutate glob arguments reaching Stryker.");
+                }
+
+                process.AssertZeroExitCode();
             }
         });
 

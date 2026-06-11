@@ -11,7 +11,7 @@ namespace Collectary.Infrastructure.Tests.Cloud;
 /// <summary>
 /// End-to-end: <see cref="CloudSyncBackend"/> over a real <see cref="OneDriveCloudFileStore"/>
 /// (Graph SDK) backed by a stubbed transport. Proves the layers compose and the
-/// {id}.{rev}.json document layout survives a round-trip through Graph.
+/// {id}.json document layout survives a round-trip through Graph.
 /// </summary>
 [TestFixture]
 public class OneDriveSyncBackendContractTest
@@ -43,7 +43,7 @@ public class OneDriveSyncBackendContractTest
              .OnJson(HttpMethod.Post, "/children", """{"id":"items-folder","name":"items","folder":{}}""")
              .OnJson(HttpMethod.Put, "/content", """{"id":"doc","name":"doc.json"}""");
 
-        await Build().WriteAsync("items", Guid.NewGuid(), "{\"x\":1}", 1);
+        await Build().WriteAsync("items", Guid.NewGuid(), "{\"x\":1}");
 
         Assert.Multiple(() =>
         {
@@ -58,16 +58,12 @@ public class OneDriveSyncBackendContractTest
         var id = Guid.NewGuid();
         var childrenJson =
             "{\"value\":[{\"id\":\"items-folder\",\"name\":\"items\",\"folder\":{}},"
-            + "{\"id\":\"doc1\",\"name\":\"" + $"{id:N}.7.json" + "\",\"size\":5}]}";
+            + "{\"id\":\"doc1\",\"name\":\"" + $"{id:N}.json" + "\",\"size\":5}]}";
         _stub.OnJson(HttpMethod.Get, "me/drive", DriveJson)
              .OnJson(HttpMethod.Get, "/children", childrenJson);
 
         var entries = await Build().ListAsync("items");
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(entries.Select(e => e.Id), Is.EquivalentTo(new[] { id }));
-            Assert.That(entries.Single().Revision, Is.EqualTo(7));
-        });
+        Assert.That(entries, Is.EquivalentTo(new[] { id }));
     }
 }

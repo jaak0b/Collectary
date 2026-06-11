@@ -2,26 +2,18 @@ namespace Collectary.Infrastructure.Sync;
 
 /// <summary>
 /// Single source of truth for the sync document layout shared by every <c>ISyncBackend</c>:
-/// JSON documents are named <c>{id:N}.{revision}.json</c>; blob keys are validated to be a plain
+/// JSON documents are named <c>{id:N}.json</c>; blob keys are validated to be a plain
 /// file name (no path separators or traversal).
 /// </summary>
 public class SyncFileNaming
 {
-    public string DocumentName(Guid id, long revision) => $"{id:N}.{revision}.json";
+    public string DocumentName(Guid id) => $"{id:N}.json";
 
-    public bool TryParseDocument(string fileName, out Guid id, out long revision)
+    public bool TryParseId(string fileName, out Guid id)
     {
         id = Guid.Empty;
-        revision = 0;
-
-        var name = fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
-            ? fileName[..^".json".Length]
-            : fileName;
-
-        var dot = name.LastIndexOf('.');
-        if (dot <= 0) return false;
-
-        return Guid.TryParse(name[..dot], out id) && long.TryParse(name[(dot + 1)..], out revision);
+        if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)) return false;
+        return Guid.TryParse(fileName[..^".json".Length], out id);
     }
 
     public bool BelongsTo(string fileName, Guid id) =>

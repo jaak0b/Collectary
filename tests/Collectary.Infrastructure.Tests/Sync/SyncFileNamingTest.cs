@@ -11,61 +11,53 @@ public class SyncFileNamingTest
     public void SetUp() => _sut = new SyncFileNaming();
 
     [Test]
-    public void DocumentName_FormatsIdAndRevision()
+    public void DocumentName_IsTheFlatIdName()
     {
         var id = Guid.Parse("00000000-0000-0000-0000-0000000000ab");
 
-        Assert.That(_sut.DocumentName(id, 5), Is.EqualTo("000000000000000000000000000000ab.5.json"));
+        Assert.That(_sut.DocumentName(id), Is.EqualTo("000000000000000000000000000000ab.json"));
     }
 
     [Test]
-    public void TryParseDocument_ValidName_ParsesIdAndRevision()
+    public void TryParseId_FlatName_ParsesTheId()
     {
         var id = Guid.NewGuid();
 
-        var ok = _sut.TryParseDocument(_sut.DocumentName(id, 42), out var parsedId, out var revision);
+        var ok = _sut.TryParseId(_sut.DocumentName(id), out var parsedId);
 
         Assert.Multiple(() =>
         {
             Assert.That(ok, Is.True);
             Assert.That(parsedId, Is.EqualTo(id));
-            Assert.That(revision, Is.EqualTo(42));
-        });
-    }
-
-    [Test]
-    public void TryParseDocument_WithoutJsonExtension_StillParses()
-    {
-        var id = Guid.NewGuid();
-
-        var ok = _sut.TryParseDocument($"{id:N}.3", out var parsedId, out var revision);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(ok, Is.True);
-            Assert.That(parsedId, Is.EqualTo(id));
-            Assert.That(revision, Is.EqualTo(3));
         });
     }
 
     [TestCase("noseparator.json")]
     [TestCase(".5.json")]
-    [TestCase("not-a-guid.5.json")]
-    [TestCase("00000000000000000000000000000000.notanumber.json")]
-    public void TryParseDocument_MalformedName_ReturnsFalse(string name) =>
-        Assert.That(_sut.TryParseDocument(name, out _, out _), Is.False);
+    [TestCase("not-a-guid.json")]
+    [TestCase("00000000000000000000000000000000.5.json")]
+    public void TryParseId_MalformedOrLegacyName_ReturnsFalse(string name) =>
+        Assert.That(_sut.TryParseId(name, out _), Is.False);
 
     [Test]
     public void BelongsTo_SameId_True()
     {
         var id = Guid.NewGuid();
 
-        Assert.That(_sut.BelongsTo(_sut.DocumentName(id, 9), id), Is.True);
+        Assert.That(_sut.BelongsTo(_sut.DocumentName(id), id), Is.True);
+    }
+
+    [Test]
+    public void BelongsTo_LegacyRevisionName_True()
+    {
+        var id = Guid.NewGuid();
+
+        Assert.That(_sut.BelongsTo($"{id:N}.5.json", id), Is.True);
     }
 
     [Test]
     public void BelongsTo_DifferentId_False() =>
-        Assert.That(_sut.BelongsTo(_sut.DocumentName(Guid.NewGuid(), 1), Guid.NewGuid()), Is.False);
+        Assert.That(_sut.BelongsTo(_sut.DocumentName(Guid.NewGuid()), Guid.NewGuid()), Is.False);
 
     [Test]
     public void BelongsTo_NonJsonFile_False()

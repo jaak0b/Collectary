@@ -199,6 +199,31 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task ApplyDeletionsAsync_DeletingParentPreset_OrphansUntombstonedChildInsteadOfAborting()
+    {
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        await _sut.ApplyPresetAsync(MakePreset(parentId, "Parent"));
+        var child = MakePreset(childId, "Child");
+        child.ParentPresetId = parentId;
+        await _sut.ApplyPresetAsync(child);
+
+        await _sut.ApplyDeletionsAsync(new[] { parentId });
+
+        var all = await _sut.GetAllPresetsAsync();
+        var survivingChild = all.SingleOrDefault(p => p.Id == childId);
+        using var db = DbFactory();
+        Assert.Multiple(() =>
+        {
+            Assert.That(all.Any(p => p.Id == parentId), Is.False, "the tombstoned parent is hard-deleted");
+            Assert.That(survivingChild, Is.Not.Null, "a child that was never tombstoned must survive the parent's deletion");
+            Assert.That(survivingChild!.ParentPresetId, Is.Null,
+                "the surviving child is re-parented to the root rather than left with a dangling foreign key");
+            Assert.That(db.Tombstones.Any(t => t.Id == parentId), Is.True);
+        });
+    }
+
+    [Test]
     public async Task ApplyDeletionsAsync_IsIdempotent_DoesNotDuplicateTombstones()
     {
         var id = Guid.NewGuid();
@@ -219,7 +244,7 @@ public class EfSyncStoreTest : DbIntegrationTestBase
         await _sut.ApplyPresetAsync(preset);
         var device = Guid.NewGuid();
 
-        await _sut.StampPushedAsync(SyncEntityKind.Preset, id, 42, device);
+        await _sut.StampPushedAsync(new[] { new PushStamp(SyncEntityKind.Preset, id, 42, device) });
 
         var stored = (await _sut.GetAllPresetsAsync()).Single(p => p.Id == id);
         Assert.Multiple(() =>
@@ -231,12 +256,41 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task StampPushedAsync_StampsEveryEntityInOneBatchAcrossKinds()
+    {
+        var presetId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var preset = MakePreset(presetId, "P");
+        preset.IsDirty = true;
+        await _sut.ApplyPresetAsync(preset);
+        var user = new User { Id = userId, Username = "u", IsDirty = true };
+        await _sut.ApplyUserAsync(user);
+        var device = Guid.NewGuid();
+
+        await _sut.StampPushedAsync(new[]
+        {
+            new PushStamp(SyncEntityKind.Preset, presetId, 7, device),
+            new PushStamp(SyncEntityKind.User, userId, 9, device),
+        });
+
+        var storedPreset = (await _sut.GetAllPresetsAsync()).Single(p => p.Id == presetId);
+        var storedUser = (await _sut.GetAllUsersAsync()).Single(u => u.Id == userId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(storedPreset.Lamport, Is.EqualTo(7));
+            Assert.That(storedPreset.IsDirty, Is.False);
+            Assert.That(storedUser.Lamport, Is.EqualTo(9));
+            Assert.That(storedUser.IsDirty, Is.False);
+        });
+    }
+
+    [Test]
     public async Task StampPushedAsync_WhenEntityMissing_LogsWarningAndDoesNotThrow()
     {
         var logger = new RecordingLogger();
         var sut = new EfSyncStore(DbFactory, new FieldDefinitionMerger(), logger);
 
-        await sut.StampPushedAsync(SyncEntityKind.Item, Guid.NewGuid(), 1, Guid.NewGuid());
+        await sut.StampPushedAsync(new[] { new PushStamp(SyncEntityKind.Item, Guid.NewGuid(), 1, Guid.NewGuid()) });
 
         Assert.That(logger.Warnings, Is.EqualTo(1));
     }
@@ -247,7 +301,7 @@ public class EfSyncStoreTest : DbIntegrationTestBase
         Assert.Multiple(() =>
         {
             foreach (var kind in Enum.GetValues<SyncEntityKind>())
-                Assert.That(async () => await _sut.StampPushedAsync(kind, Guid.NewGuid(), 1, Guid.NewGuid()),
+                Assert.That(async () => await _sut.StampPushedAsync(new[] { new PushStamp(kind, Guid.NewGuid(), 1, Guid.NewGuid()) }),
                     Throws.Nothing, $"{kind} must have an ops-map entry");
         });
     }
@@ -255,8 +309,73 @@ public class EfSyncStoreTest : DbIntegrationTestBase
     [Test]
     public void StampPushedAsync_WithUnknownKind_Throws()
     {
-        Assert.That(async () => await _sut.StampPushedAsync((SyncEntityKind)999, Guid.NewGuid(), 1, Guid.NewGuid()),
+        Assert.That(async () => await _sut.StampPushedAsync(new[] { new PushStamp((SyncEntityKind)999, Guid.NewGuid(), 1, Guid.NewGuid()) }),
             Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
+    [Test]
+    public async Task HasDirtyEntitiesAsync_IsTrueOnlyWhenSomethingIsPendingPush()
+    {
+        Assert.That(await _sut.HasDirtyEntitiesAsync(), Is.False, "a clean store has nothing to push");
+
+        var preset = MakePreset(Guid.NewGuid(), "P");
+        preset.IsDirty = true;
+        await _sut.ApplyPresetAsync(preset);
+
+        Assert.That(await _sut.HasDirtyEntitiesAsync(), Is.True, "a dirty entity makes a push pending");
+    }
+
+    [Test]
+    public async Task HasDirtyEntitiesAsync_FindsDirtinessInAnyKind()
+    {
+        var user = new User { Id = Guid.NewGuid(), Username = "u", IsDirty = true };
+        await _sut.ApplyUserAsync(user);
+
+        Assert.That(await _sut.HasDirtyEntitiesAsync(), Is.True, "the probe scans every kind, not just presets");
+    }
+
+    [Test]
+    public async Task ApplyDeletionsAsync_RemovesRowsOfEveryKind()
+    {
+        var presetId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        await _sut.ApplyPresetAsync(MakePreset(presetId, "P"));
+        await _sut.ApplyUserAsync(new User { Id = userId, Username = "u", Revision = 1 });
+
+        await _sut.ApplyDeletionsAsync(new[] { presetId, userId });
+
+        var presetSurvives = (await _sut.GetAllPresetsAsync()).Any(p => p.Id == presetId);
+        var userSurvives = (await _sut.GetAllUsersAsync()).Any(u => u.Id == userId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(presetSurvives, Is.False, "preset is deleted via the ops map");
+            Assert.That(userSurvives, Is.False, "user is deleted via the ops map");
+        });
+    }
+
+    [Test]
+    public async Task SyncFingerprint_RoundTripsAndOverwrites()
+    {
+        Assert.That(await _sut.GetSyncFingerprintAsync(), Is.Null, "starts unset");
+
+        await _sut.SetSyncFingerprintAsync("abc|0");
+        Assert.That(await _sut.GetSyncFingerprintAsync(), Is.EqualTo("abc|0"));
+
+        await _sut.SetSyncFingerprintAsync("def|2");
+        Assert.That(await _sut.GetSyncFingerprintAsync(), Is.EqualTo("def|2"), "a later fingerprint overwrites the previous one");
+    }
+
+    [Test]
+    public async Task SyncFingerprint_AndLamportHighWater_CoexistOnTheSameRow()
+    {
+        await _sut.SetMaxObservedLamportAsync(7);
+        await _sut.SetSyncFingerprintAsync("fp|1");
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(await _sut.GetMaxObservedLamportAsync(), Is.EqualTo(7), "setting the fingerprint must not clobber the Lamport high-water");
+            Assert.That(await _sut.GetSyncFingerprintAsync(), Is.EqualTo("fp|1"));
+        });
     }
 
     [Test]

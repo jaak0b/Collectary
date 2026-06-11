@@ -1,13 +1,11 @@
 namespace Collectary.Core.Ports;
 
-public record SyncEntry(Guid Id, long Revision);
-
 public interface ISyncBackend
 {
     bool IsAvailable { get; }
-    Task<IReadOnlyList<SyncEntry>> ListAsync(string kind);
+    Task<IReadOnlyList<Guid>> ListAsync(string kind);
     Task<string?> ReadAsync(string kind, Guid id);
-    Task WriteAsync(string kind, Guid id, string content, long revision);
+    Task WriteAsync(string kind, Guid id, string content);
     Task DeleteAsync(string kind, Guid id);
 
     Task<IReadOnlyList<string>> ListBlobKeysAsync(string kind);
@@ -16,6 +14,4 @@ public interface ISyncBackend
     Task DeleteBlobAsync(string kind, string key);
 
     void Invalidate() { }
-
-    Task<string?> ReadAtRevisionAsync(string kind, Guid id, long revision) => ReadAsync(kind, id);
 }

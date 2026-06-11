@@ -2,6 +2,8 @@ namespace Collectary.Core.Domain;
 
 public interface ISyncable
 {
+    Guid Id { get; }
+
     long Revision { get; set; }
     long BaseRevision { get; set; }
     bool IsDirty { get; set; }

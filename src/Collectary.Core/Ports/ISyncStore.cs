@@ -17,9 +17,12 @@ public interface ISyncStore
 
     Task<IReadOnlyList<Guid>> GetTombstoneIdsAsync();
     Task ApplyDeletionsAsync(IReadOnlyCollection<Guid> ids);
-    Task StampPushedAsync(SyncEntityKind kind, Guid id, long lamport, Guid deviceId);
+    Task StampPushedAsync(IReadOnlyCollection<PushStamp> stamps);
+    Task<bool> HasDirtyEntitiesAsync();
     Task<long> GetMaxObservedLamportAsync();
     Task SetMaxObservedLamportAsync(long value);
+    Task<string?> GetSyncFingerprintAsync();
+    Task SetSyncFingerprintAsync(string fingerprint);
 
     Task<IReadOnlyList<string>> GetReferencedImageKeysAsync();
     Task DeleteLocallyAsync(SyncEntityKind kind, Guid id);

@@ -336,6 +336,12 @@
   <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
   <data name="Sync_Syncing" xml:space="preserve"><value>Syncing…</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Sync failed. Check the sync location.</value></data>
+  <data name="Sync_Partial" xml:space="preserve"><value>Sync finished with issues: {0}. They will be retried on the next sync.</value></data>
+  <data name="Sync_PartialItems" xml:space="preserve"><value>{0} item(s) could not be applied</value></data>
+  <data name="Sync_PartialDevices" xml:space="preserve"><value>{0} device file(s) were unreadable</value></data>
+  <data name="Sync_PartialImages" xml:space="preserve"><value>{0} image(s) could not be transferred</value></data>
+  <data name="Sync_PartialSeparator" xml:space="preserve"><value>, </value></data>
+  <data name="Sync_Unavailable" xml:space="preserve"><value>The sync location ({0}) is not reachable right now. Your changes will sync once it is available again.</value></data>
   <data name="Settings_Sync" xml:space="preserve"><value>Sync</value></data>
   <data name="Sync_Location" xml:space="preserve"><value>Sync location</value></data>
   <data name="Sync_ChooseFolder" xml:space="preserve"><value>Choose folder…</value></data>

@@ -47,6 +47,15 @@ public class SyncableStampingTest
     }
 
     [Test]
+    public void Id_ExposesUnderlyingDomainObjectId()
+    {
+        var id = Guid.NewGuid();
+        ISyncable item = new Item { Id = id };
+
+        Assert.That(item.Id, Is.EqualTo(id));
+    }
+
+    [Test]
     public void StampLamport_SetsLamportAndDevice()
     {
         var device = Guid.NewGuid();

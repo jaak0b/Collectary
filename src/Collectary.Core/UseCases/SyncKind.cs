@@ -10,4 +10,6 @@ public sealed record SyncKind(
     Func<ISyncable, string> Label,
     Func<ISyncable, string> Serialize,
     Func<string, ISyncable> Deserialize,
-    Func<ISyncable, Task> Apply);
+    Func<ISyncable, Task> Apply,
+    Func<DeviceSnapshot, IEnumerable<ISyncable>> FromSnapshot,
+    Action<DeviceSnapshot, IReadOnlyList<ISyncable>> IntoSnapshot);
