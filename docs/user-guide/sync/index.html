@@ -661,9 +661,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resolving-conflicts" class="md-nav__link">
+  <a href="#when-two-devices-change-the-same-thing" class="md-nav__link">
     <span class="md-ellipsis">
-      Resolving conflicts
+      When two devices change the same thing
     </span>
   </a>
   
@@ -673,15 +673,6 @@
   <a href="#deletions" class="md-nav__link">
     <span class="md-ellipsis">
       Deletions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#editing-the-same-collection-on-two-devices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Editing the same collection on two devices
     </span>
   </a>
   
@@ -1099,9 +1090,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resolving-conflicts" class="md-nav__link">
+  <a href="#when-two-devices-change-the-same-thing" class="md-nav__link">
     <span class="md-ellipsis">
-      Resolving conflicts
+      When two devices change the same thing
     </span>
   </a>
   
@@ -1111,15 +1102,6 @@
   <a href="#deletions" class="md-nav__link">
     <span class="md-ellipsis">
       Deletions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#editing-the-same-collection-on-two-devices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Editing the same collection on two devices
     </span>
   </a>
   
@@ -1186,35 +1168,25 @@ OneDrive, a network share, …).</p>
 </table>
 <p>You can also trigger a sync manually at any time.</p>
 <h2 id="what-a-sync-does">What a sync does<a class="headerlink" href="#what-a-sync-does" title="Permanent link">&para;</a></h2>
-<p>Each sync <strong>pushes</strong> your local changes to the shared folder and <strong>pulls</strong> changes made elsewhere,
-reconciling the two using revision numbers and timestamps. Entities are stored in the shared folder
-as per-revision JSON files (presets, items, shared fields) plus image blobs.</p>
-<p>After a sync you'll see how many records were pushed and pulled, and whether any conflicts need
-your attention.</p>
-<h2 id="resolving-conflicts">Resolving conflicts<a class="headerlink" href="#resolving-conflicts" title="Permanent link">&para;</a></h2>
-<p>A <strong>conflict</strong> happens when the same item was changed both locally and remotely since the last
-sync. Collectary can't know which version you want, so it asks:</p>
-<ul>
-<li><strong>Keep local</strong> — your version wins.</li>
-<li><strong>Take remote</strong> — the other device's version wins.</li>
-</ul>
-<p>Resolve each conflict and the chosen version is written everywhere on the next sync.</p>
+<p>Each device writes <strong>one file of its own</strong> to the shared folder (<code>device-&lt;id&gt;.sync.json</code>) holding the
+data it knows about, then reads the other devices' files and merges them in. Because a device only ever
+writes <em>its own</em> file, two devices syncing at once can never overwrite each other's changes.</p>
+<p>After a sync you'll see how many records were pushed and pulled. There's nothing to resolve by hand —
+the merge is automatic (see below).</p>
+<h2 id="when-two-devices-change-the-same-thing">When two devices change the same thing<a class="headerlink" href="#when-two-devices-change-the-same-thing" title="Permanent link">&para;</a></h2>
+<p>You no longer get a conflict prompt. If the same item is edited on two devices before they sync,
+Collectary keeps the <strong>most recent</strong> edit automatically and everywhere — both devices end up showing
+the same value, with no dialog to dismiss. (The other edit isn't destroyed; it stays in that device's
+file.) Editing <em>different</em> things — or different fields of the same item — keeps both, so a label change
+on your phone never erases the data on your laptop.</p>
 <h2 id="deletions">Deletions<a class="headerlink" href="#deletions" title="Permanent link">&para;</a></h2>
-<p>When you delete something, Collectary records a <strong>tombstone</strong> so the deletion propagates to other
-devices instead of the item reappearing on the next pull. Tombstones are kept for the retention
-period you configured, then cleaned up.</p>
-<p>A deletion only ever travels as a tombstone. If the shared folder is simply <em>missing</em> an item — say
-you pointed sync at a fresh or different folder, or restored your database from a backup — Collectary
-treats that as "nothing to pull here," <strong>not</strong> as a deletion, so your local collection is never wiped
-by an empty or unfamiliar folder. An image attached to a deleted item is likewise kept for as long as
-its tombstone lives, so undoing a deletion (or a device that hasn't caught up yet) still finds the
-picture intact.</p>
-<h2 id="editing-the-same-collection-on-two-devices">Editing the same collection on two devices<a class="headerlink" href="#editing-the-same-collection-on-two-devices" title="Permanent link">&para;</a></h2>
-<p>Renaming a collection, reordering its fields, or tweaking it on one device never disturbs the items
-and values you entered on another — those edits are merged field by field rather than replacing the
-whole collection, so a label change on your phone can't erase the data on your laptop. Only when the
-<em>same</em> record was changed on both sides since the last sync do you get a <a href="#resolving-conflicts">conflict</a>
-to resolve.</p>
+<p>When you delete something, the data is <strong>removed from disk right away</strong> and Collectary records a tiny
+deletion marker so the deletion travels to your other devices. A deletion always wins: once you've
+deleted an item it stays deleted everywhere, even if another device was offline and still had the old
+copy. (There's no undo — see the relevant page for the feature you're deleting.)</p>
+<p>If the shared folder is simply <em>missing</em> an item — say you pointed sync at a fresh or different folder,
+or restored your database from a backup — Collectary treats that as "nothing to pull here," <strong>not</strong> as
+a deletion, so your local collection is never wiped by an empty or unfamiliar folder.</p>
 <h2 id="where-sync-works">Where sync works<a class="headerlink" href="#where-sync-works" title="Permanent link">&para;</a></h2>
 <p>Sync runs on the <strong>desktop</strong> app (shared folder, OneDrive, or Google Drive) and on <strong>Android</strong>
 (shared folder or OneDrive). The in-browser <a href="../../demo/">demo</a> has no persistent filesystem, so sync
