@@ -49,7 +49,7 @@ public class ItemCrudFlowTest : FlowTestBase
         var detail = MakePresetDetailVm(_preset);
         await detail.LoadAsync();
 
-        Assert.That(detail.Query.QueryText, Is.EqualTo("preset = \"Books\""));
+        Assert.That(detail.Query.QueryText, Is.EqualTo("preset = Books"));
         Assert.That(detail.ItemRows, Has.Count.EqualTo(1));
         Assert.That(detail.ShowCollectionColumn, Is.False);
     }

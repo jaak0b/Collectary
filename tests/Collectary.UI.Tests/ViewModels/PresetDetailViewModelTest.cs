@@ -491,7 +491,21 @@ public class PresetDetailViewModelTest
         var chip = sut.BasicFilter.Chips.Single();
         Assert.That(chip.Label, Is.EqualTo("collection"));
         Assert.That(chip.ToRow()!.Values, Is.EqualTo(new[] { "Trains" }));
-        A.CallTo(() => _searchService.SearchAsync("preset = \"Trains\"")).MustHaveHappened();
+        A.CallTo(() => _searchService.SearchAsync("preset = Trains")).MustHaveHappened();
+    }
+
+    [Test]
+    public async Task LoadAsync_PresetNameContainingComma_StillOpensInBasicMode()
+    {
+        var preset = SeedSearchableCatalog(presetName: "Smith, John");
+
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        Assert.That(sut.IsBasicMode, Is.True);
+        var chip = sut.BasicFilter.Chips.Single();
+        Assert.That(chip.ToRow()!.Values, Is.EqualTo(new[] { "Smith, John" }));
+        A.CallTo(() => _searchService.SearchAsync("preset = \"Smith, John\"")).MustHaveHappened();
     }
 
     [Test]
@@ -504,7 +518,7 @@ public class PresetDetailViewModelTest
         await sut.LoadAsync();
 
         Assert.That(sut.IsBasicMode, Is.False);
-        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = \"Trains\""));
+        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = Trains"));
     }
 
     [Test]
@@ -514,7 +528,7 @@ public class PresetDetailViewModelTest
         await sut.LoadAsync();
 
         Assert.That(sut.IsBasicMode, Is.False);
-        A.CallTo(() => _searchService.SearchAsync("preset = \"Trains\"")).MustHaveHappened();
+        A.CallTo(() => _searchService.SearchAsync("preset = Trains")).MustHaveHappened();
     }
 
     [Test]
@@ -571,6 +585,34 @@ public class PresetDetailViewModelTest
             Assert.That(sut.Query.QueryText, Is.EqualTo("collection = Trains AND Status = open"));
             A.CallTo(() => _searchService.SearchAsync("collection = Trains AND Status = open"))
                 .MustHaveHappened();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+        }
+    }
+
+    [Test]
+    public void SwitchToAdvanced_CancelsThePendingBasicRun()
+    {
+        // The assembly-wide headless Avalonia SynchronizationContext never pumps, so the bar's
+        // timed debounce continuation would deadlock on it; the app's dispatcher context does pump.
+        var context = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(null);
+        try
+        {
+            var preset = SeedSearchableCatalog();
+            var sut = CreateSut(preset: preset);
+            sut.LoadAsync().GetAwaiter().GetResult();
+
+            sut.BasicFilter.SearchText = "loc";
+            sut.SwitchToAdvancedCommand.Execute(null);
+            sut.Query.QueryText = "Status = open OR Status = done";
+            sut.BasicFilter.PendingRun!.GetAwaiter().GetResult();
+
+            Assert.That(sut.Query.QueryText, Is.EqualTo("Status = open OR Status = done"));
+            A.CallTo(() => _searchService.SearchAsync(A<string>.That.Contains("name ~ loc")))
+                .MustNotHaveHappened();
         }
         finally
         {

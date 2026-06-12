@@ -65,6 +65,42 @@ public class QuerySuggestionEngineTest
     }
 
     [Test]
+    public void Suggest_FieldLabeledLikeAReservedWord_InsertsQuoted()
+    {
+        var reserved = new TextFieldDefinition { Label = "Order" };
+        _snapshot = new SearchCatalogSnapshot { Fields = [new SearchFieldGroup("Order", [reserved])] };
+
+        var suggestion = Suggest("Ord").Single(s => s.Text == "Order");
+
+        Assert.That(suggestion.InsertText, Is.EqualTo("\"Order\""));
+    }
+
+    [Test]
+    public void Suggest_ValueContainingABackslash_InsertsQuotedAndEscaped()
+    {
+        var status = new SingleChoiceFieldDefinition { Label = "Path" };
+        status.Choices.Add(new ChoiceOption { Value = @"a\b", DisplayOrder = 1 });
+        _snapshot = new SearchCatalogSnapshot { Fields = [new SearchFieldGroup("Path", [status])] };
+
+        var suggestion = Suggest("Path = ").Single(s => s.Text == @"a\b");
+
+        Assert.That(suggestion.InsertText, Is.EqualTo("\"a\\\\b\""));
+    }
+
+    [Test]
+    public void Suggest_PresetNamedLikeAReservedWord_InsertsQuoted()
+    {
+        _snapshot = new SearchCatalogSnapshot
+        {
+            Presets = [new SearchPresetEntry(Guid.NewGuid(), "Empty")],
+        };
+
+        var suggestion = Suggest("preset = ").Single(s => s.Text == "Empty");
+
+        Assert.That(suggestion.InsertText, Is.EqualTo("\"Empty\""));
+    }
+
+    [Test]
     public void Suggest_FieldWithSpaces_InsertsQuoted()
     {
         var spaced = Suggest("My").Single(s => s.Text == "My Field");

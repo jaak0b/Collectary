@@ -18,6 +18,7 @@ public partial class PresetDetailViewModel : ViewModelBase
     private readonly ISearchFieldCatalog _searchCatalog;
     private readonly IListCellBuilder _listCellBuilder;
     private readonly IDialogService _dialogService;
+    private readonly QueryTextWriter _queryWriter = new();
     private readonly Action<Preset, EffectiveFields, Item?> _navigateToItemEditor;
     private readonly Action _navigateBack;
 
@@ -93,7 +94,7 @@ public partial class PresetDetailViewModel : ViewModelBase
     }
 
     private string DefaultQueryFor(string presetName) =>
-        "preset = \"" + presetName.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+        "preset = " + _queryWriter.WriteValue(presetName);
 
     private async Task RunQueryTextAsync(string text)
     {
@@ -104,6 +105,7 @@ public partial class PresetDetailViewModel : ViewModelBase
     [RelayCommand]
     private void SwitchToAdvanced()
     {
+        BasicFilter.CancelPendingRun();
         Query.QueryText = BasicFilter.ToQueryText();
         IsBasicMode = false;
         AppPreferences.Update(p => p with { SearchBasicMode = false });

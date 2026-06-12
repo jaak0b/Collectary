@@ -23,6 +23,7 @@ public class QuerySuggestionEngine
     private readonly QueryLexer _lexer;
     private readonly PseudoFieldCatalog _pseudo;
     private readonly AsciiCaseFolding _folding = new();
+    private readonly QueryTextWriter _writer = new();
 
     public QuerySuggestionEngine(QueryLexer lexer, PseudoFieldCatalog pseudo)
     {
@@ -200,7 +201,7 @@ public class QuerySuggestionEngine
             .Where(g => g.Definitions.OfType<ISearchableFieldDefinition>().Any())
             .Select(g => g.Label);
         foreach (var label in searchableLabels.Concat(_pseudo.Labels))
-            yield return new Candidate(label, QuoteIfNeeded(label), QuerySuggestionKind.Field);
+            yield return new Candidate(label, _writer.WriteValue(label), QuerySuggestionKind.Field);
     }
 
     private IEnumerable<Candidate> OperatorCandidates(string? fieldLabel, SearchCatalogSnapshot snapshot)
@@ -222,7 +223,7 @@ public class QuerySuggestionEngine
         if (Matches(fieldLabel, "preset") || Matches(fieldLabel, "collection"))
         {
             foreach (var preset in snapshot.Presets)
-                yield return new Candidate(preset.Name, QuoteIfNeeded(preset.Name), QuerySuggestionKind.Value);
+                yield return new Candidate(preset.Name, _writer.WriteValue(preset.Name), QuerySuggestionKind.Value);
             yield break;
         }
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -232,7 +233,7 @@ public class QuerySuggestionEngine
             foreach (var value in searchable.ValueSuggestions())
             {
                 if (seen.Add(value))
-                    yield return new Candidate(value, QuoteIfNeeded(value), QuerySuggestionKind.Value);
+                    yield return new Candidate(value, _writer.WriteValue(value), QuerySuggestionKind.Value);
             }
         }
     }
@@ -253,14 +254,6 @@ public class QuerySuggestionEngine
         QueryOperatorKind.IsEmpty => "is empty",
         _ => "is not empty",
     };
-
-    private string QuoteIfNeeded(string value)
-    {
-        var needsQuoting = value.Length == 0
-            || value.Any(c => char.IsWhiteSpace(c) || c is '=' or '!' or '<' or '>' or '~' or '(' or ')' or ',' or '"');
-        if (!needsQuoting) return value;
-        return "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
-    }
 
     private bool IsWord(QueryToken token, string keyword) =>
         token.Kind == QueryTokenKind.Word
