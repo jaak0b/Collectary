@@ -17,6 +17,7 @@ public partial class ItemQueryViewModel : ViewModelBase
     private readonly QuerySuggestionEngine _suggestionEngine;
     private readonly Func<ItemSearchResult, Task> _onResults;
     private SearchCatalogSnapshot? _snapshot;
+    private int _runSequence;
 
     [ObservableProperty]
     public partial string QueryText { get; set; } = string.Empty;
@@ -66,9 +67,12 @@ public partial class ItemQueryViewModel : ViewModelBase
     private async Task RunAsync()
     {
         AreSuggestionsOpen = false;
+        var sequence = ++_runSequence;
         try
         {
             var result = await _searchService.SearchAsync(QueryText);
+            if (sequence != _runSequence)
+                return;
             if (result.Errors.Count > 0)
             {
                 QueryMessage = Describe(result.Errors[0]);

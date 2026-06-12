@@ -224,6 +224,8 @@ public partial class BasicFilterViewModel : ViewModelBase
             AddableFields.Add(label);
     }
 
+    public void CancelPendingRun() => _pendingCancellation?.Cancel();
+
     private void ScheduleRun()
     {
         if (_suppressRun) return;

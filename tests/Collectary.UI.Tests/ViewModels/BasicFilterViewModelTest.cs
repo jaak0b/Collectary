@@ -175,6 +175,30 @@ public class BasicFilterViewModelTest
     }
 
     [Test]
+    public void CancelPendingRun_DropsTheScheduledRun()
+    {
+        // The assembly-wide headless Avalonia SynchronizationContext never pumps, so the timed
+        // debounce continuation would deadlock on it; the app's real dispatcher context does pump.
+        var context = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(null);
+        try
+        {
+            _runs.Clear();
+            var vm = MakeLoadedVm(debounceMilliseconds: 80).GetAwaiter().GetResult();
+
+            vm.SearchText = "loco";
+            vm.CancelPendingRun();
+            vm.PendingRun!.GetAwaiter().GetResult();
+
+            Assert.That(_runs, Is.Empty);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+        }
+    }
+
+    [Test]
     public async Task RemoveChip_RunsAgainWithoutTheChip()
     {
         _vm.AddChipCommand.Execute("Status");

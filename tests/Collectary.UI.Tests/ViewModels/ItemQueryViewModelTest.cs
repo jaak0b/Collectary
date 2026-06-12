@@ -67,6 +67,44 @@ public class ItemQueryViewModelTest
     }
 
     [Test]
+    public async Task Run_WhenANewerRunFinishesFirst_DiscardsTheStaleResults()
+    {
+        var slow = new TaskCompletionSource<ItemSearchResult>();
+        var freshItems = new[] { new Item { DisplayName = "fresh" } };
+        A.CallTo(() => _searchService.SearchAsync("name ~ a")).Returns(slow.Task);
+        A.CallTo(() => _searchService.SearchAsync("name ~ ab"))
+            .Returns(new ItemSearchResult(freshItems, [], []));
+
+        _vm.QueryText = "name ~ a";
+        var staleRun = _vm.RunCommand.ExecuteAsync(null);
+        _vm.QueryText = "name ~ ab";
+        await _vm.RunCommand.ExecuteAsync(null);
+        slow.SetResult(new ItemSearchResult([new Item { DisplayName = "stale" }], [], []));
+        await staleRun;
+
+        Assert.That(_applied!.Items, Is.EqualTo(freshItems));
+    }
+
+    [Test]
+    public async Task Run_WhenAStaleRunErrors_KeepsTheNewerMessage()
+    {
+        var slow = new TaskCompletionSource<ItemSearchResult>();
+        A.CallTo(() => _searchService.SearchAsync("Ghost = 1")).Returns(slow.Task);
+        A.CallTo(() => _searchService.SearchAsync("name ~ ok"))
+            .Returns(new ItemSearchResult([], [], []));
+
+        _vm.QueryText = "Ghost = 1";
+        var staleRun = _vm.RunCommand.ExecuteAsync(null);
+        _vm.QueryText = "name ~ ok";
+        await _vm.RunCommand.ExecuteAsync(null);
+        slow.SetResult(new ItemSearchResult(
+            [], [new QueryError(QueryErrorCode.UnknownField, 0, 5, "Ghost")], []));
+        await staleRun;
+
+        Assert.That(_vm.QueryMessage, Is.Null);
+    }
+
+    [Test]
     public async Task Run_WithNotices_AppliesResultsAndShowsNotice()
     {
         A.CallTo(() => _searchService.SearchAsync(A<string>._))
