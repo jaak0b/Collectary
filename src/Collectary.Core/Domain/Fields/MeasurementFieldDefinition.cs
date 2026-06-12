@@ -34,7 +34,17 @@ public class MeasurementFieldDefinition : FieldDefinition<MeasurementFieldValue>
                 && parsed is MeasurementFieldValue measurement
                 ? measurement.Amount
                 : null;
-        });
+        },
+        operandConstraint: raw => UnitIn(raw) is { } unit
+            ? v => string.Equals(v.Unit.Trim(), unit, StringComparison.OrdinalIgnoreCase)
+            : null);
+
+    private string? UnitIn(string raw) =>
+        !decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out _)
+            && TryImportFromText(raw, CultureInfo.InvariantCulture, out var parsed)
+            && parsed is MeasurementFieldValue measurement
+            ? measurement.Unit
+            : null;
 
     public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
 

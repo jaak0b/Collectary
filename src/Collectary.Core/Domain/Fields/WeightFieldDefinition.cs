@@ -34,7 +34,17 @@ public class WeightFieldDefinition : FieldDefinition<WeightFieldValue>, IListDis
                 && parsed is WeightFieldValue weight
                 ? weight.Amount
                 : null;
-        });
+        },
+        operandConstraint: raw => UnitIn(raw) is { } unit
+            ? v => string.Equals(v.Unit.Trim(), unit, StringComparison.OrdinalIgnoreCase)
+            : null);
+
+    private string? UnitIn(string raw) =>
+        !decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out _)
+            && TryImportFromText(raw, CultureInfo.InvariantCulture, out var parsed)
+            && parsed is WeightFieldValue weight
+            ? weight.Unit
+            : null;
 
     public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
 

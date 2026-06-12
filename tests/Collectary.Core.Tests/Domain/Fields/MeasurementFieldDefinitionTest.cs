@@ -64,4 +64,28 @@ public class MeasurementFieldDefinitionTest
         Assert.That(search.SortKey(new Item(), new MeasurementFieldValue { Amount = 12m }), Is.EqualTo(12m));
         Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
+
+    [Test]
+    public void TryCreateMatcher_OperandWithUnit_MatchesOnlyValuesInThatUnit()
+    {
+        var def = new MeasurementFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["12 mm"], out var matcher, out _), Is.True);
+
+        var millimeters = new Item { Values = [new MeasurementFieldValue { FieldDefinitionId = def.Id, Amount = 12m, Unit = "mm" }] };
+        var centimeters = new Item { Values = [new MeasurementFieldValue { FieldDefinitionId = def.Id, Amount = 12m, Unit = "cm" }] };
+        Assert.That(matcher!.Matches(millimeters, [def.Id]), Is.True);
+        Assert.That(matcher.Matches(centimeters, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_GreaterWithUnit_RestrictsToTheUnit()
+    {
+        var def = new MeasurementFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["10 mm"], out var matcher, out _), Is.True);
+
+        var centimeters = new Item { Values = [new MeasurementFieldValue { FieldDefinitionId = def.Id, Amount = 12m, Unit = "cm" }] };
+        Assert.That(matcher!.Matches(centimeters, [def.Id]), Is.False);
+    }
 }

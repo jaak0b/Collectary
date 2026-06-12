@@ -31,6 +31,80 @@ public class ComparableFieldSearchTest
         return matcher!;
     }
 
+    private ComparableFieldSearch<WeightFieldValue, decimal> UnitGuardedSearch() => new(
+        v => v.Amount,
+        v => v.Amount,
+        raw => decimal.TryParse(raw.Split(' ')[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null,
+        operandConstraint: raw => raw.Split(' ') is [_, var unit]
+            ? v => string.Equals(v.Unit, unit, StringComparison.OrdinalIgnoreCase)
+            : null);
+
+    private static Item ItemWithWeight(decimal amount, string unit) => new()
+    {
+        Values = [new WeightFieldValue { FieldDefinitionId = DefinitionId, Amount = amount, Unit = unit }],
+    };
+
+    [Test]
+    public void OperandConstraint_PositiveOperators_RequireTheConstraint()
+    {
+        var search = UnitGuardedSearch();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["500 g"], out var equals, out _), Is.True);
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["1 kg"], out var greater, out _), Is.True);
+
+        Assert.That(equals!.Matches(ItemWithWeight(500, "g"), [DefinitionId]), Is.True);
+        Assert.That(equals.Matches(ItemWithWeight(500, "kg"), [DefinitionId]), Is.False);
+        Assert.That(greater!.Matches(ItemWithWeight(2, "kg"), [DefinitionId]), Is.True);
+        Assert.That(greater.Matches(ItemWithWeight(500, "g"), [DefinitionId]), Is.False);
+    }
+
+    [Test]
+    public void OperandConstraint_WithoutAConstrainedOperand_MatchesAcrossAllValues()
+    {
+        var search = UnitGuardedSearch();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["500"], out var matcher, out _), Is.True);
+
+        Assert.That(matcher!.Matches(ItemWithWeight(500, "g"), [DefinitionId]), Is.True);
+        Assert.That(matcher.Matches(ItemWithWeight(500, "kg"), [DefinitionId]), Is.True);
+    }
+
+    [Test]
+    public void OperandConstraint_NotEquals_MatchesOtherUnitsAndDropsTheServerFilter()
+    {
+        var search = UnitGuardedSearch();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.NotEquals, ["500 g"], out var matcher, out _), Is.True);
+
+        Assert.That(matcher!.Matches(ItemWithWeight(500, "kg"), [DefinitionId]), Is.True);
+        Assert.That(matcher.Matches(ItemWithWeight(500, "g"), [DefinitionId]), Is.False);
+        Assert.That(matcher.Matches(ItemWithWeight(400, "g"), [DefinitionId]), Is.True);
+        Assert.That(matcher.ServerFilter([DefinitionId]), Is.Null);
+    }
+
+    [Test]
+    public void OperandConstraint_In_GuardsEachOperandSeparately()
+    {
+        var search = UnitGuardedSearch();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.In, ["500 g", "3 kg"], out var matcher, out _), Is.True);
+
+        Assert.That(matcher!.Matches(ItemWithWeight(500, "g"), [DefinitionId]), Is.True);
+        Assert.That(matcher.Matches(ItemWithWeight(3, "kg"), [DefinitionId]), Is.True);
+        Assert.That(matcher.Matches(ItemWithWeight(500, "kg"), [DefinitionId]), Is.False);
+        Assert.That(matcher.Matches(ItemWithWeight(3, "g"), [DefinitionId]), Is.False);
+    }
+
+    [Test]
+    public void OperandConstraint_PositiveOperators_KeepTheAmountServerFilterAsASuperset()
+    {
+        var search = UnitGuardedSearch();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["500 g"], out var matcher, out _), Is.True);
+
+        var filter = matcher!.ServerFilter([DefinitionId]);
+        Assert.That(filter, Is.Not.Null);
+        Assert.That(filter!.Compile()(ItemWithWeight(500, "kg")), Is.True);
+        Assert.That(filter.Compile()(ItemWithWeight(400, "g")), Is.False);
+    }
+
     [Test]
     public void Operators_CoverOrderedComparisonsAndEmptiness()
     {

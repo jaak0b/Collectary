@@ -11,18 +11,23 @@ public class ComparableFieldSearch<TValue, TComparable>
     private readonly Expression<Func<TValue, TComparable?>> _column;
     private readonly Func<string, TComparable?> _parser;
     private readonly bool _ordered;
+    private readonly Func<string, Func<TValue, bool>?>? _operandConstraint;
 
     public ComparableFieldSearch(
         Func<TValue, TComparable?> getter,
         Expression<Func<TValue, TComparable?>> column,
         Func<string, TComparable?> parser,
-        bool ordered = true)
+        bool ordered = true,
+        Func<string, Func<TValue, bool>?>? operandConstraint = null)
     {
         _getter = getter;
         _column = column;
         _parser = parser;
         _ordered = ordered;
+        _operandConstraint = operandConstraint;
     }
+
+    private readonly record struct GuardedOperand(TComparable Value, Func<TValue, bool>? Guard);
 
     public IReadOnlyList<QueryOperatorKind> Operators
     {
@@ -65,7 +70,7 @@ public class ComparableFieldSearch<TValue, TComparable>
         }
         if (op == QueryOperatorKind.In)
         {
-            var values = new List<TComparable>();
+            var entries = new List<GuardedOperand>();
             foreach (var operand in operands)
             {
                 if (_parser(operand) is not { } parsed)
@@ -73,11 +78,12 @@ public class ComparableFieldSearch<TValue, TComparable>
                     error = QueryErrorCode.InvalidValue;
                     return false;
                 }
-                values.Add(parsed);
+                entries.Add(new GuardedOperand(parsed, _operandConstraint?.Invoke(operand)));
             }
             matcher = new TypedValueMatcher<TValue>(
-                v => _getter(v) is { } x && values.Any(val => x.CompareTo(val) == 0),
-                ServerIn(values));
+                v => _getter(v) is { } x
+                     && entries.Any(e => x.CompareTo(e.Value) == 0 && (e.Guard?.Invoke(v) ?? true)),
+                ServerIn(entries.Select(e => e.Value).ToList()));
             return true;
         }
         if (_parser(operands[0]) is not { } value)
@@ -85,9 +91,22 @@ public class ComparableFieldSearch<TValue, TComparable>
             error = QueryErrorCode.InvalidValue;
             return false;
         }
-        matcher = new TypedValueMatcher<TValue>(
-            MemoryPredicate(op, value),
-            ServerCompare(op, value));
+        var guard = _operandConstraint?.Invoke(operands[0]);
+        if (guard is null)
+        {
+            matcher = new TypedValueMatcher<TValue>(
+                MemoryPredicate(op, value),
+                ServerCompare(op, value));
+            return true;
+        }
+        var basePredicate = MemoryPredicate(op, value);
+        matcher = op == QueryOperatorKind.NotEquals
+            ? new TypedValueMatcher<TValue>(
+                v => _getter(v) is { } x && !(guard(v) && x.CompareTo(value) == 0),
+                null)
+            : new TypedValueMatcher<TValue>(
+                v => guard(v) && basePredicate(v),
+                ServerCompare(op, value));
         return true;
     }
 

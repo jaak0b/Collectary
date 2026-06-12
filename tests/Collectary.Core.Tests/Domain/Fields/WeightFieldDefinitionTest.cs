@@ -62,4 +62,41 @@ public class WeightFieldDefinitionTest
         Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["250 g"], out var withUnit, out _), Is.True);
         Assert.That(withUnit, Is.Not.Null);
     }
+
+    [Test]
+    public void TryCreateMatcher_OperandWithUnit_MatchesOnlyValuesInThatUnit()
+    {
+        var def = new WeightFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["500 g"], out var matcher, out _), Is.True);
+
+        var grams = new Item { Values = [new WeightFieldValue { FieldDefinitionId = def.Id, Amount = 500m, Unit = "g" }] };
+        var kilos = new Item { Values = [new WeightFieldValue { FieldDefinitionId = def.Id, Amount = 500m, Unit = "kg" }] };
+        Assert.That(matcher!.Matches(grams, [def.Id]), Is.True);
+        Assert.That(matcher.Matches(kilos, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_UnitComparison_IgnoresCase()
+    {
+        var def = new WeightFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["500 G"], out var matcher, out _), Is.True);
+
+        var grams = new Item { Values = [new WeightFieldValue { FieldDefinitionId = def.Id, Amount = 500m, Unit = "g" }] };
+        Assert.That(matcher!.Matches(grams, [def.Id]), Is.True);
+    }
+
+    [Test]
+    public void TryCreateMatcher_BareNumber_StillMatchesAcrossUnits()
+    {
+        var def = new WeightFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["500"], out var matcher, out _), Is.True);
+
+        var grams = new Item { Values = [new WeightFieldValue { FieldDefinitionId = def.Id, Amount = 500m, Unit = "g" }] };
+        var kilos = new Item { Values = [new WeightFieldValue { FieldDefinitionId = def.Id, Amount = 500m, Unit = "kg" }] };
+        Assert.That(matcher!.Matches(grams, [def.Id]), Is.True);
+        Assert.That(matcher.Matches(kilos, [def.Id]), Is.True);
+    }
 }
