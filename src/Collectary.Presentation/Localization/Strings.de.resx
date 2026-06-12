@@ -377,4 +377,91 @@
   <data name="Cloud_CreateFolder" xml:space="preserve"><value>Erstellen</value></data>
   <data name="Cloud_UseThisFolder" xml:space="preserve"><value>Diesen Ordner verwenden</value></data>
   <data name="Cloud_SyncFolder" xml:space="preserve"><value>Sync-Ordner:</value></data>
+  <data name="Search" xml:space="preserve">
+    <value>Suchen</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Suchen... z. B. Status = offen AND Preis &gt; 50 ORDER BY Name</value>
+  </data>
+  <data name="SearchFailed" xml:space="preserve">
+    <value>Die Suche konnte nicht ausgeführt werden. Bitte die Logs prüfen.</value>
+  </data>
+  <data name="SearchSyntaxError" xml:space="preserve">
+    <value>Die Abfrage hat ein Problem nahe Position {0}.</value>
+  </data>
+  <data name="SearchUnknownField" xml:space="preserve">
+    <value>Unbekanntes Feld „{0}“.</value>
+  </data>
+  <data name="SearchFieldNotSearchable" xml:space="preserve">
+    <value>„{0}“ kann nicht durchsucht werden.</value>
+  </data>
+  <data name="SearchOperatorNotSupported" xml:space="preserve">
+    <value>„{0}“ unterstützt diesen Vergleich nicht.</value>
+  </data>
+  <data name="SearchInvalidValue" xml:space="preserve">
+    <value>„{0}“ kann nicht mit diesem Wert verglichen werden.</value>
+  </data>
+  <data name="SearchNoticeSkipped" xml:space="preserve">
+    <value>Einige „{0}“-Felder konnten diesen Filter nicht anwenden und wurden übersprungen.</value>
+  </data>
+  <data name="SearchAllValues" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="SearchSelectedCount" xml:space="preserve">
+    <value>{0} ausgewählt</value>
+  </data>
+  <data name="SearchTooComplexForBasic" xml:space="preserve">
+    <value>Diese Abfrage ist zu komplex für die einfache Filterleiste. Nutze weiter die erweiterte Suche oder vereinfache sie zu einer reinen UND-Verknüpfung.</value>
+  </data>
+  <data name="SearchItemsPlaceholder" xml:space="preserve">
+    <value>Gegenstände durchsuchen</value>
+  </data>
+  <data name="SearchMore" xml:space="preserve">
+    <value>+ Mehr</value>
+  </data>
+  <data name="SearchFindValues" xml:space="preserve">
+    <value>Werte finden</value>
+  </data>
+  <data name="SearchFindFields" xml:space="preserve">
+    <value>Felder finden</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Leeren</value>
+  </data>
+  <data name="SearchRemoveFilter" xml:space="preserve">
+    <value>Filter entfernen</value>
+  </data>
+  <data name="SearchContainsLabel" xml:space="preserve">
+    <value>enthält</value>
+  </data>
+  <data name="SearchEqualsLabel" xml:space="preserve">
+    <value>ist gleich</value>
+  </data>
+  <data name="SearchSortBy" xml:space="preserve">
+    <value>Sortieren nach</value>
+  </data>
+  <data name="SearchSortNone" xml:space="preserve">
+    <value>Keine Sortierung</value>
+  </data>
+  <data name="SearchSortAscending" xml:space="preserve">
+    <value>A–Z</value>
+  </data>
+  <data name="SearchSortDescending" xml:space="preserve">
+    <value>Z–A</value>
+  </data>
+  <data name="SearchSwitchToBasic" xml:space="preserve">
+    <value>Einfach</value>
+  </data>
+  <data name="SearchSwitchToAdvanced" xml:space="preserve">
+    <value>Erweitert</value>
+  </data>
+  <data name="SearchValuePlaceholder" xml:space="preserve">
+    <value>Zum Filtern tippen</value>
+  </data>
+  <data name="PresetNameDuplicateWarning" xml:space="preserve">
+    <value>Eine Sammlung mit diesem Namen existiert bereits. Speichern ist trotzdem möglich, aber Suchen nach dem Namen treffen beide.</value>
+  </data>
+  <data name="CollectionColumn" xml:space="preserve">
+    <value>Sammlung</value>
+  </data>
 </root>

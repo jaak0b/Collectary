@@ -14,22 +14,46 @@ public class PresetDetailViewModelTest
 {
     private IItemUseCase _itemUseCase = null!;
     private IPresetUseCase _presetUseCase = null!;
+    private IItemSearchService _searchService = null!;
+    private ISearchFieldCatalog _searchCatalog = null!;
     private IListCellBuilder _listCellBuilder = null!;
     private IDialogService _dialogService = null!;
+
+    private string _originalPreferencesPath = null!;
+    private string _preferencesDir = null!;
 
     [SetUp]
     public void SetUp()
     {
+        _originalPreferencesPath = AppPreferences.FilePath;
+        _preferencesDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(_preferencesDir);
+        AppPreferences.FilePath = Path.Combine(_preferencesDir, "preferences.json");
+
         _itemUseCase = A.Fake<IItemUseCase>();
         _presetUseCase = A.Fake<IPresetUseCase>();
+        _searchService = A.Fake<IItemSearchService>();
+        _searchCatalog = A.Fake<ISearchFieldCatalog>();
         _listCellBuilder = A.Fake<IListCellBuilder>();
         _dialogService = A.Fake<IDialogService>();
 
         A.CallTo(() => _presetUseCase.GetEffectiveFieldsAsync(A<Guid>._)).Returns(new EffectiveFields());
-        A.CallTo(() => _itemUseCase.GetItemsForPresetAsync(A<Guid>._)).Returns(new List<Item>());
+        SetSearchResults();
+        A.CallTo(() => _searchCatalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot());
         A.CallTo(() => _listCellBuilder.Build(A<IReadOnlyList<FieldValue>>._, A<IReadOnlyList<FieldDefinition>>._))
             .Returns((IReadOnlyList<ListCellViewModelBase>)new List<ListCellViewModelBase>());
     }
+
+    [TearDown]
+    public void TearDown()
+    {
+        AppPreferences.FilePath = _originalPreferencesPath;
+        Directory.Delete(_preferencesDir, true);
+    }
+
+    private void SetSearchResults(params Item[] items) =>
+        A.CallTo(() => _searchService.SearchAsync(A<string>._))
+            .Returns(new ItemSearchResult(items, [], []));
 
     private PresetDetailViewModel CreateSut(
         Preset? preset = null,
@@ -39,22 +63,156 @@ public class PresetDetailViewModelTest
             preset ?? new Preset { Name = "Test" },
             _itemUseCase,
             _presetUseCase,
+            _searchService,
+            _searchCatalog,
             _listCellBuilder,
             _dialogService,
             navigateToItemEditor: navigateToEditor ?? ((_, _, _) => { }),
             navigateBack: navigateBack ?? (() => { }));
 
     [Test]
-    public async Task LoadAsync_PopulatesItemRowsFromUseCase()
+    public async Task LoadAsync_PopulatesItemRowsFromTheSearchService()
     {
         var preset = new Preset();
-        var items = new List<Item> { new() { DisplayName = "A" }, new() { DisplayName = "B" } };
-        A.CallTo(() => _itemUseCase.GetItemsForPresetAsync(preset.Id)).Returns(items);
+        SetSearchResults(
+            new Item { PresetId = preset.Id, DisplayName = "A" },
+            new Item { PresetId = preset.Id, DisplayName = "B" });
 
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
 
         Assert.That(sut.ItemRows.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task LoadAsync_PrefillsTheQueryWithAQuotedPresetClause()
+    {
+        var sut = CreateSut(preset: new Preset { Name = "My \"Books\"" });
+        await sut.LoadAsync();
+
+        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = \"My \\\"Books\\\"\""));
+        A.CallTo(() => _searchService.SearchAsync(sut.Query.QueryText)).MustHaveHappened();
+    }
+
+    [Test]
+    public async Task LoadAsync_ResultsFromAnotherPreset_ShowCollectionColumn()
+    {
+        var preset = new Preset { Name = "Books" };
+        var foreign = new SearchPresetEntry(Guid.NewGuid(), "Games");
+        A.CallTo(() => _searchCatalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot
+        {
+            Presets = [new SearchPresetEntry(preset.Id, preset.Name), foreign],
+        });
+        SetSearchResults(
+            new Item { PresetId = preset.Id, DisplayName = "Mine" },
+            new Item { PresetId = foreign.Id, DisplayName = "Theirs" });
+
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        Assert.That(sut.ShowCollectionColumn, Is.True);
+        Assert.That(sut.ItemRows.Select(r => r.CollectionName), Is.EqualTo(new[] { "Books", "Games" }));
+    }
+
+    [Test]
+    public async Task LoadAsync_ResultsOnlyFromOwnPreset_HideCollectionColumn()
+    {
+        var preset = new Preset { Name = "Books" };
+        SetSearchResults(new Item { PresetId = preset.Id, DisplayName = "Mine" });
+
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        Assert.That(sut.ShowCollectionColumn, Is.False);
+    }
+
+    [Test]
+    public async Task EditItemAsync_ForeignItem_NavigatesWithItsOwningPreset()
+    {
+        var preset = new Preset { Name = "Books" };
+        var foreignPreset = new Preset { Name = "Games" };
+        var foreignItem = new Item { PresetId = foreignPreset.Id, DisplayName = "Catan" };
+        A.CallTo(() => _presetUseCase.GetPresetAsync(foreignPreset.Id)).Returns(foreignPreset);
+        SetSearchResults(foreignItem);
+
+        Preset? capturedPreset = null;
+        var sut = CreateSut(preset: preset, navigateToEditor: (p, _, _) => capturedPreset = p);
+        await sut.LoadAsync();
+
+        await sut.EditItemCommand.ExecuteAsync(sut.ItemRows[0]);
+
+        Assert.That(capturedPreset, Is.SameAs(foreignPreset));
+    }
+
+    [Test]
+    public async Task EditItemAsync_OwnItem_DoesNotRefetchThePreset()
+    {
+        var preset = new Preset { Name = "Books" };
+        SetSearchResults(new Item { PresetId = preset.Id, DisplayName = "Mine" });
+
+        Preset? capturedPreset = null;
+        var sut = CreateSut(preset: preset, navigateToEditor: (p, _, _) => capturedPreset = p);
+        await sut.LoadAsync();
+
+        await sut.EditItemCommand.ExecuteAsync(sut.ItemRows[0]);
+
+        Assert.That(capturedPreset, Is.SameAs(preset));
+        A.CallTo(() => _presetUseCase.GetPresetAsync(A<Guid>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task EditItemAsync_ForeignItemWhosePresetIsGone_DoesNotNavigate()
+    {
+        var preset = new Preset { Name = "Books" };
+        SetSearchResults(new Item { PresetId = Guid.NewGuid(), DisplayName = "Orphan" });
+        A.CallTo(() => _presetUseCase.GetPresetAsync(A<Guid>._)).Returns((Preset?)null);
+
+        var navigated = false;
+        var sut = CreateSut(preset: preset, navigateToEditor: (_, _, _) => navigated = true);
+        await sut.LoadAsync();
+
+        await sut.EditItemCommand.ExecuteAsync(sut.ItemRows[0]);
+
+        Assert.That(navigated, Is.False);
+    }
+
+    [Test]
+    public async Task LoadAsync_ResultsOnlyFromAForeignPreset_ShowCollectionColumn()
+    {
+        var preset = new Preset { Name = "Books" };
+        var foreign = new SearchPresetEntry(Guid.NewGuid(), "Games");
+        A.CallTo(() => _searchCatalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot
+        {
+            Presets = [new SearchPresetEntry(preset.Id, preset.Name), foreign],
+        });
+        SetSearchResults(new Item { PresetId = foreign.Id, DisplayName = "Theirs" });
+
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        Assert.That(sut.ShowCollectionColumn, Is.True);
+        Assert.That(sut.ItemRows.Single().CollectionName, Is.EqualTo("Games"));
+    }
+
+    [Test]
+    public async Task LoadAsync_PresetNameWithBackslash_EscapesItInTheQuery()
+    {
+        var sut = CreateSut(preset: new Preset { Name = @"My\Stuff" });
+        await sut.LoadAsync();
+
+        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = \"My\\\\Stuff\""));
+    }
+
+    [Test]
+    public async Task LoadAsync_RaisesListColumnsChange()
+    {
+        var sut = CreateSut();
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        await sut.LoadAsync();
+
+        Assert.That(raised, Does.Contain(nameof(PresetDetailViewModel.ListColumns)));
     }
 
     [Test]
@@ -258,9 +416,8 @@ public class PresetDetailViewModelTest
     public async Task EditItemAsync_PassesExistingItemToNavigator()
     {
         var preset = new Preset();
-        var existingItem = new Item { DisplayName = "Existing" };
-        var items = new List<Item> { existingItem };
-        A.CallTo(() => _itemUseCase.GetItemsForPresetAsync(preset.Id)).Returns(items);
+        var existingItem = new Item { PresetId = preset.Id, DisplayName = "Existing" };
+        SetSearchResults(existingItem);
 
         Item? capturedItem = null;
         var sut = CreateSut(preset: preset, navigateToEditor: (_, _, i) => { capturedItem = i; });
@@ -276,8 +433,8 @@ public class PresetDetailViewModelTest
     public async Task DeleteItemAsync_WhenConfirmed_DeletesItemAndRemovesRow()
     {
         var preset = new Preset();
-        var item = new Item { DisplayName = "Delete Me" };
-        A.CallTo(() => _itemUseCase.GetItemsForPresetAsync(preset.Id)).Returns(new List<Item> { item });
+        var item = new Item { PresetId = preset.Id, DisplayName = "Delete Me" };
+        SetSearchResults(item);
         A.CallTo(() => _dialogService.ConfirmDeleteAsync(item.DisplayName)).Returns(true);
 
         var sut = CreateSut(preset: preset);
@@ -294,8 +451,8 @@ public class PresetDetailViewModelTest
     public async Task DeleteItemAsync_WhenCancelled_DoesNotDeleteOrRemoveRow()
     {
         var preset = new Preset();
-        var item = new Item { DisplayName = "Keep Me" };
-        A.CallTo(() => _itemUseCase.GetItemsForPresetAsync(preset.Id)).Returns(new List<Item> { item });
+        var item = new Item { PresetId = preset.Id, DisplayName = "Keep Me" };
+        SetSearchResults(item);
         A.CallTo(() => _dialogService.ConfirmDeleteAsync(A<string>._)).Returns(false);
 
         var sut = CreateSut(preset: preset);
@@ -306,5 +463,132 @@ public class PresetDetailViewModelTest
 
         A.CallTo(() => _itemUseCase.DeleteItemAsync(A<Guid>._)).MustNotHaveHappened();
         Assert.That(sut.ItemRows, Does.Contain(row));
+    }
+
+    private Preset SeedSearchableCatalog(string presetName = "Trains")
+    {
+        var preset = new Preset { Name = presetName };
+        var status = new SingleChoiceFieldDefinition { Label = "Status" };
+        status.Choices.Add(new ChoiceOption { Value = "open" });
+        status.Choices.Add(new ChoiceOption { Value = "done" });
+        A.CallTo(() => _searchCatalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot
+        {
+            Fields = [new SearchFieldGroup("Status", [status])],
+            Presets = [new SearchPresetEntry(preset.Id, preset.Name)],
+        });
+        return preset;
+    }
+
+    [Test]
+    public async Task LoadAsync_DefaultPreference_OpensInBasicModeWithACollectionChip()
+    {
+        var preset = SeedSearchableCatalog();
+
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        Assert.That(sut.IsBasicMode, Is.True);
+        var chip = sut.BasicFilter.Chips.Single();
+        Assert.That(chip.Label, Is.EqualTo("collection"));
+        Assert.That(chip.ToRow()!.Values, Is.EqualTo(new[] { "Trains" }));
+        A.CallTo(() => _searchService.SearchAsync("preset = \"Trains\"")).MustHaveHappened();
+    }
+
+    [Test]
+    public async Task LoadAsync_AdvancedPreference_OpensInAdvancedMode()
+    {
+        AppPreferences.Save(new AppPreferencesData(SearchBasicMode: false));
+        var preset = SeedSearchableCatalog();
+
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        Assert.That(sut.IsBasicMode, Is.False);
+        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = \"Trains\""));
+    }
+
+    [Test]
+    public async Task LoadAsync_WhenTheBarCannotRepresentTheDefaultQuery_FallsBackToAdvanced()
+    {
+        var sut = CreateSut(preset: new Preset { Name = "Trains" });
+        await sut.LoadAsync();
+
+        Assert.That(sut.IsBasicMode, Is.False);
+        A.CallTo(() => _searchService.SearchAsync("preset = \"Trains\"")).MustHaveHappened();
+    }
+
+    [Test]
+    public async Task SwitchToBasic_TooComplexQuery_StaysAdvancedAndShowsAMessage()
+    {
+        var preset = SeedSearchableCatalog();
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+        sut.SwitchToAdvancedCommand.Execute(null);
+        sut.Query.QueryText = "Status = open OR Status = done";
+
+        sut.SwitchToBasicCommand.Execute(null);
+
+        Assert.That(sut.IsBasicMode, Is.False);
+        Assert.That(sut.Query.QueryMessage, Is.Not.Null.And.Not.Empty);
+        Assert.That(AppPreferences.Load().SearchBasicMode, Is.False);
+    }
+
+    [Test]
+    public async Task SwitchToBasic_FlatQuery_PopulatesTheBarAndPersistsThePreference()
+    {
+        AppPreferences.Save(new AppPreferencesData(SearchBasicMode: false));
+        var preset = SeedSearchableCatalog();
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+        sut.Query.QueryText = "Status in (open, done) AND preset = \"Trains\"";
+
+        sut.SwitchToBasicCommand.Execute(null);
+
+        Assert.That(sut.IsBasicMode, Is.True);
+        Assert.That(sut.BasicFilter.Chips.Select(c => c.Label), Is.EqualTo(new[] { "Status", "collection" }));
+        Assert.That(sut.Query.QueryMessage, Is.Null.Or.Empty);
+        Assert.That(AppPreferences.Load().SearchBasicMode, Is.True);
+    }
+
+    [Test]
+    public void BasicChipChange_RunsTheSearchWithTheSerializedQuery()
+    {
+        // The assembly-wide headless Avalonia SynchronizationContext never pumps, so the bar's
+        // timed debounce continuation would deadlock on it; the app's dispatcher context does pump.
+        var context = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(null);
+        try
+        {
+            var preset = SeedSearchableCatalog();
+            var sut = CreateSut(preset: preset);
+            sut.LoadAsync().GetAwaiter().GetResult();
+            sut.BasicFilter.AddChipCommand.Execute("Status");
+            var chip = sut.BasicFilter.Chips.Single(c => c.Label == "Status");
+
+            chip.VisibleOptions.First(o => o.Value == "open").IsChecked = true;
+            sut.BasicFilter.PendingRun!.GetAwaiter().GetResult();
+
+            Assert.That(sut.Query.QueryText, Is.EqualTo("collection = Trains AND Status = open"));
+            A.CallTo(() => _searchService.SearchAsync("collection = Trains AND Status = open"))
+                .MustHaveHappened();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+        }
+    }
+
+    [Test]
+    public async Task SwitchToAdvanced_SerializesTheBarAndPersistsThePreference()
+    {
+        var preset = SeedSearchableCatalog();
+        var sut = CreateSut(preset: preset);
+        await sut.LoadAsync();
+
+        sut.SwitchToAdvancedCommand.Execute(null);
+
+        Assert.That(sut.IsBasicMode, Is.False);
+        Assert.That(sut.Query.QueryText, Is.EqualTo("collection = Trains"));
+        Assert.That(AppPreferences.Load().SearchBasicMode, Is.False);
     }
 }

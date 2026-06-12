@@ -9,6 +9,7 @@ public class ItemRowViewModel
 {
     public Item Item { get; }
     public string DisplayName => Item.DisplayName;
+    public string? CollectionName { get; init; }
     public IReadOnlyList<ListCellViewModelBase?> ListCells { get; }
     public bool HasListCells => ListCells.Count > 0;
 

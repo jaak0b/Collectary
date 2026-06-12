@@ -41,6 +41,31 @@ public class AppPreferencesDataTest
     }
 
     [Test]
+    public void SearchBasicMode_DefaultsToTrue()
+    {
+        Assert.That(new AppPreferencesData().SearchBasicMode, Is.True);
+    }
+
+    [Test]
+    public void SearchBasicMode_RoundTripsThroughSaveAndLoad()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(dir);
+        var originalPath = AppPreferences.FilePath;
+        AppPreferences.FilePath = Path.Combine(dir, "preferences.json");
+        try
+        {
+            AppPreferences.Save(new AppPreferencesData(SearchBasicMode: false));
+            Assert.That(AppPreferences.Load().SearchBasicMode, Is.False);
+        }
+        finally
+        {
+            AppPreferences.FilePath = originalPath;
+            Directory.Delete(dir, true);
+        }
+    }
+
+    [Test]
     public void EffectiveColorTheme_FreshDefaults_IsLight()
     {
         Assert.That(new AppPreferencesData().EffectiveColorTheme(), Is.EqualTo("Light"));

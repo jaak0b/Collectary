@@ -1,6 +1,7 @@
 using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
+using Collectary.Core.Search;
 using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
 using Collectary.Presentation.DI;
@@ -65,6 +66,33 @@ public abstract class FlowTestBase
     }
 
     private InventoryDbContext CreateDb() => new(_options);
+
+    protected ISearchFieldCatalog MakeSearchCatalog() => new SearchFieldCatalog(PresetUseCase);
+
+    protected IItemSearchService MakeSearchService(ISearchFieldCatalog catalog) => new ItemSearchService(
+        ItemRepo,
+        catalog,
+        new QueryParser(new QueryLexer()),
+        new QueryBinder(new PseudoFieldCatalog()),
+        new ServerFilterBuilder(),
+        new QueryEvaluator());
+
+    protected PresetDetailViewModel MakePresetDetailVm(
+        Preset preset,
+        Action<Preset, EffectiveFields, Item?>? navigateToItemEditor = null)
+    {
+        var catalog = MakeSearchCatalog();
+        return new PresetDetailViewModel(
+            preset,
+            ItemUseCase,
+            PresetUseCase,
+            MakeSearchService(catalog),
+            catalog,
+            CellBuilder,
+            A.Fake<Collectary.Presentation.Services.IDialogService>(),
+            navigateToItemEditor ?? ((_, _, _) => { }),
+            navigateBack: () => { });
+    }
 
     protected PresetEditorViewModel MakePresetEditorVm(Preset? existing = null, Action? onSaved = null, Action? onCancelled = null, Preset? seed = null)
     {

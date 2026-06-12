@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
+using Collectary.Core.Search;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
@@ -14,6 +15,7 @@ public partial class PresetDetailViewModel : ViewModelBase
 {
     private readonly IItemUseCase _itemUseCase;
     private readonly IPresetUseCase _presetUseCase;
+    private readonly ISearchFieldCatalog _searchCatalog;
     private readonly IListCellBuilder _listCellBuilder;
     private readonly IDialogService _dialogService;
     private readonly Action<Preset, EffectiveFields, Item?> _navigateToItemEditor;
@@ -28,12 +30,24 @@ public partial class PresetDetailViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
+    [ObservableProperty]
+    public partial bool ShowCollectionColumn { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsBasicMode { get; set; }
+
+    public ItemQueryViewModel Query { get; }
+
+    public BasicFilterViewModel BasicFilter { get; }
+
     public IReadOnlyList<ListColumn> ListColumns { get; private set; } = [];
 
     public PresetDetailViewModel(
         Preset preset,
         IItemUseCase itemUseCase,
         IPresetUseCase presetUseCase,
+        IItemSearchService searchService,
+        ISearchFieldCatalog searchCatalog,
         IListCellBuilder listCellBuilder,
         IDialogService dialogService,
         Action<Preset, EffectiveFields, Item?> navigateToItemEditor,
@@ -42,10 +56,17 @@ public partial class PresetDetailViewModel : ViewModelBase
         Preset = preset;
         _itemUseCase = itemUseCase;
         _presetUseCase = presetUseCase;
+        _searchCatalog = searchCatalog;
         _listCellBuilder = listCellBuilder;
         _dialogService = dialogService;
         _navigateToItemEditor = navigateToItemEditor;
         _navigateBack = navigateBack;
+        Query = new ItemQueryViewModel(
+            searchService,
+            searchCatalog,
+            new QuerySuggestionEngine(new QueryLexer(), new PseudoFieldCatalog()),
+            ApplyResultsAsync);
+        BasicFilter = new BasicFilterViewModel(searchCatalog, RunQueryTextAsync);
     }
 
     public async Task LoadAsync()
@@ -57,16 +78,66 @@ public partial class PresetDetailViewModel : ViewModelBase
             var columns = BuildListColumns(effectiveFields);
             ListColumns = columns;
             OnPropertyChanged(nameof(ListColumns));
-            var listFields = columns.Select(c => c.Field).ToList();
-            var all = await _itemUseCase.GetItemsForPresetAsync(Preset.Id);
-            ItemRows = new ObservableCollection<ItemRowViewModel>(
-                all.Select(item => new ItemRowViewModel(item, listFields, _listCellBuilder)));
+            Query.ResetSnapshot();
+            await BasicFilter.LoadAsync();
+            var defaultQuery = DefaultQueryFor(Preset.Name);
+            IsBasicMode = AppPreferences.Load().SearchBasicMode && BasicFilter.TryLoadFromText(defaultQuery);
+            Query.QueryText = defaultQuery;
+            await Query.RunCommand.ExecuteAsync(null);
         }
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Failed to load preset detail for preset {PresetId}", Preset.Id);
             ErrorMessage = LocalizationService.Instance["CouldNotLoad"];
         }
+    }
+
+    private string DefaultQueryFor(string presetName) =>
+        "preset = \"" + presetName.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+
+    private async Task RunQueryTextAsync(string text)
+    {
+        Query.QueryText = text;
+        await Query.RunCommand.ExecuteAsync(null);
+    }
+
+    [RelayCommand]
+    private void SwitchToAdvanced()
+    {
+        Query.QueryText = BasicFilter.ToQueryText();
+        IsBasicMode = false;
+        AppPreferences.Update(p => p with { SearchBasicMode = false });
+    }
+
+    [RelayCommand]
+    private void SwitchToBasic()
+    {
+        if (!BasicFilter.TryLoadFromText(Query.QueryText))
+        {
+            Query.QueryMessage = LocalizationService.Instance["SearchTooComplexForBasic"];
+            return;
+        }
+        IsBasicMode = true;
+        Query.QueryMessage = null;
+        AppPreferences.Update(p => p with { SearchBasicMode = true });
+    }
+
+    private async Task ApplyResultsAsync(ItemSearchResult result)
+    {
+        var listFields = ListColumns.Select(c => c.Field).ToList();
+        var presetIds = result.Items.Select(i => i.PresetId).Distinct().ToList();
+        var showCollection = presetIds.Count > 1 || (presetIds.Count == 1 && presetIds[0] != Preset.Id);
+        var namesById = showCollection
+            ? (await _searchCatalog.GetSnapshotAsync()).Presets
+                .GroupBy(p => p.Id)
+                .ToDictionary(g => g.Key, g => g.First().Name)
+            : new Dictionary<Guid, string>();
+        ShowCollectionColumn = showCollection;
+        ItemRows = new ObservableCollection<ItemRowViewModel>(result.Items.Select(item =>
+            new ItemRowViewModel(item, listFields, _listCellBuilder)
+            {
+                CollectionName = namesById.GetValueOrDefault(item.PresetId),
+            }));
     }
 
     private List<ListColumn> BuildListColumns(EffectiveFields effective)
@@ -117,8 +188,12 @@ public partial class PresetDetailViewModel : ViewModelBase
     [RelayCommand]
     private async Task EditItemAsync(ItemRowViewModel row)
     {
-        var effectiveFields = await _presetUseCase.GetEffectiveFieldsAsync(Preset.Id);
-        _navigateToItemEditor(Preset, effectiveFields, row.Item);
+        var owningPreset = row.Item.PresetId == Preset.Id
+            ? Preset
+            : await _presetUseCase.GetPresetAsync(row.Item.PresetId);
+        if (owningPreset is null) return;
+        var effectiveFields = await _presetUseCase.GetEffectiveFieldsAsync(owningPreset.Id);
+        _navigateToItemEditor(owningPreset, effectiveFields, row.Item);
     }
 
     [RelayCommand]

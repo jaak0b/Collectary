@@ -73,6 +73,7 @@ nav:
       - user-guide/accounts.md
       - user-guide/collections.md
       - user-guide/items.md
+      - user-guide/search.md
       - user-guide/field-types.md
       - user-guide/sharing.md
       - user-guide/sync.md

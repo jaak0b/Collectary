@@ -29,7 +29,8 @@ public record AppPreferencesData(
     bool ExpertColorMode = false,
     FieldLabelLayout FieldLabelLayout = FieldLabelLayout.Adaptive,
     string? AudioInputDeviceId = null,
-    string? AudioOutputDeviceId = null)
+    string? AudioOutputDeviceId = null,
+    bool SearchBasicMode = true)
 {
     public string EffectiveColorTheme() =>
         ColorTheme == "Light" && Theme == AppTheme.Dark ? "Dark" : ColorTheme;

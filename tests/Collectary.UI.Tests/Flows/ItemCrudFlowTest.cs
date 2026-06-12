@@ -32,14 +32,66 @@ public class ItemCrudFlowTest : FlowTestBase
         SetDisplayName(vm, "Clean Code");
         await vm.PersistAsync();
 
-        var detail = new PresetDetailViewModel(
-            _preset, ItemUseCase, PresetUseCase, CellBuilder,
-            A.Fake<IDialogService>(),
-            (_, _, _) => { }, () => { });
+        var detail = MakePresetDetailVm(_preset);
         await detail.LoadAsync();
 
         Assert.That(detail.ItemRows, Has.Count.EqualTo(1));
         Assert.That(detail.ItemRows[0].DisplayName, Is.EqualTo("Clean Code"));
+    }
+
+    [Test]
+    public async Task PresetDetail_PrefillsQueryWithPresetClause()
+    {
+        var vm = MakeItemEditorVm(_preset, _effectiveFields);
+        SetDisplayName(vm, "Clean Code");
+        await vm.PersistAsync();
+
+        var detail = MakePresetDetailVm(_preset);
+        await detail.LoadAsync();
+
+        Assert.That(detail.Query.QueryText, Is.EqualTo("preset = \"Books\""));
+        Assert.That(detail.ItemRows, Has.Count.EqualTo(1));
+        Assert.That(detail.ShowCollectionColumn, Is.False);
+    }
+
+    [Test]
+    public async Task PresetDetail_QueryAcrossPresets_ShowsCollectionColumn()
+    {
+        var vm = MakeItemEditorVm(_preset, _effectiveFields);
+        SetDisplayName(vm, "Clean Code");
+        await vm.PersistAsync();
+
+        var games = new Preset
+        {
+            Name = "Games",
+            Fields = [new DisplayNameFieldDefinition { IsRequired = true }]
+        };
+        await PresetUseCase.CreatePresetAsync(games);
+        var gameVm = MakeItemEditorVm(games, await PresetUseCase.GetEffectiveFieldsAsync(games.Id));
+        SetDisplayName(gameVm, "Catan");
+        await gameVm.PersistAsync();
+
+        var detail = MakePresetDetailVm(_preset);
+        await detail.LoadAsync();
+        detail.Query.QueryText = "ORDER BY name";
+        await detail.Query.RunCommand.ExecuteAsync(null);
+
+        Assert.That(detail.ItemRows, Has.Count.EqualTo(2));
+        Assert.That(detail.ShowCollectionColumn, Is.True);
+        Assert.That(detail.ItemRows.Select(r => r.CollectionName),
+            Is.EqualTo(new[] { "Games", "Books" }));
+    }
+
+    [Test]
+    public async Task PresetDetail_InvalidQuery_ShowsMessageWithoutCrashing()
+    {
+        var detail = MakePresetDetailVm(_preset);
+        await detail.LoadAsync();
+
+        detail.Query.QueryText = "Ghost = 1";
+        await detail.Query.RunCommand.ExecuteAsync(null);
+
+        Assert.That(detail.Query.QueryMessage, Is.Not.Null.And.Not.Empty);
     }
 
     [Test]

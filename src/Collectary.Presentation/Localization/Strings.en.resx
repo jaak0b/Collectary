@@ -377,4 +377,91 @@
   <data name="Cloud_CreateFolder" xml:space="preserve"><value>Create</value></data>
   <data name="Cloud_UseThisFolder" xml:space="preserve"><value>Use this folder</value></data>
   <data name="Cloud_SyncFolder" xml:space="preserve"><value>Sync folder:</value></data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search... e.g. Status = open AND Price &gt; 50 ORDER BY Name</value>
+  </data>
+  <data name="SearchFailed" xml:space="preserve">
+    <value>The search could not run. Please check the logs.</value>
+  </data>
+  <data name="SearchSyntaxError" xml:space="preserve">
+    <value>There is a problem in the query near position {0}.</value>
+  </data>
+  <data name="SearchUnknownField" xml:space="preserve">
+    <value>Unknown field '{0}'.</value>
+  </data>
+  <data name="SearchFieldNotSearchable" xml:space="preserve">
+    <value>'{0}' cannot be searched.</value>
+  </data>
+  <data name="SearchOperatorNotSupported" xml:space="preserve">
+    <value>'{0}' does not support this comparison.</value>
+  </data>
+  <data name="SearchInvalidValue" xml:space="preserve">
+    <value>'{0}' cannot be compared with this value.</value>
+  </data>
+  <data name="SearchNoticeSkipped" xml:space="preserve">
+    <value>Some '{0}' fields could not apply this filter and were skipped.</value>
+  </data>
+  <data name="SearchAllValues" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="SearchSelectedCount" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="SearchTooComplexForBasic" xml:space="preserve">
+    <value>This query is too complex for the basic filter bar. Keep using the advanced search, or simplify it to a plain AND of filters.</value>
+  </data>
+  <data name="SearchItemsPlaceholder" xml:space="preserve">
+    <value>Search items</value>
+  </data>
+  <data name="SearchMore" xml:space="preserve">
+    <value>+ More</value>
+  </data>
+  <data name="SearchFindValues" xml:space="preserve">
+    <value>Find values</value>
+  </data>
+  <data name="SearchFindFields" xml:space="preserve">
+    <value>Find fields</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="SearchRemoveFilter" xml:space="preserve">
+    <value>Remove filter</value>
+  </data>
+  <data name="SearchContainsLabel" xml:space="preserve">
+    <value>contains</value>
+  </data>
+  <data name="SearchEqualsLabel" xml:space="preserve">
+    <value>equals</value>
+  </data>
+  <data name="SearchSortBy" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="SearchSortNone" xml:space="preserve">
+    <value>No sorting</value>
+  </data>
+  <data name="SearchSortAscending" xml:space="preserve">
+    <value>A–Z</value>
+  </data>
+  <data name="SearchSortDescending" xml:space="preserve">
+    <value>Z–A</value>
+  </data>
+  <data name="SearchSwitchToBasic" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="SearchSwitchToAdvanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="SearchValuePlaceholder" xml:space="preserve">
+    <value>Type to filter</value>
+  </data>
+  <data name="PresetNameDuplicateWarning" xml:space="preserve">
+    <value>A collection with this name already exists. You can still save, but searches by name will match both.</value>
+  </data>
+  <data name="CollectionColumn" xml:space="preserve">
+    <value>Collection</value>
+  </data>
 </root>

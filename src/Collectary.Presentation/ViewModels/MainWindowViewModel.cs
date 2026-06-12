@@ -556,11 +556,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         AppLogger.Log.Debug("Navigate: PresetDetail id={Id} name={Name}", preset.Id, preset.Name);
         var itemUseCase = _scope.Resolve<IItemUseCase>();
         var presetUseCase = _scope.Resolve<IPresetUseCase>();
+        var searchService = _scope.Resolve<IItemSearchService>();
+        var searchCatalog = _scope.Resolve<ISearchFieldCatalog>();
 
         var vm = new PresetDetailViewModel(
             preset,
             itemUseCase,
             presetUseCase,
+            searchService,
+            searchCatalog,
             _listCellBuilder,
             _dialogService,
             navigateToItemEditor: NavigateToItemEditor,

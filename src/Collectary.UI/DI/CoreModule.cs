@@ -1,5 +1,6 @@
 using Autofac;
 using Collectary.Core.Ports;
+using Collectary.Core.Search;
 using Collectary.Core.UseCases;
 using Collectary.Core.UseCases.Import;
 
@@ -11,6 +12,15 @@ public class CoreModule : Module
     {
         builder.RegisterType<PresetUseCase>().As<IPresetUseCase>().SingleInstance();
         builder.RegisterType<ItemUseCase>().As<IItemUseCase>().SingleInstance();
+        builder.RegisterType<SearchFieldCatalog>().As<ISearchFieldCatalog>().SingleInstance();
+        builder.Register(c => new ItemSearchService(
+                c.Resolve<IItemRepository>(),
+                c.Resolve<ISearchFieldCatalog>(),
+                new QueryParser(new QueryLexer()),
+                new QueryBinder(new PseudoFieldCatalog()),
+                new ServerFilterBuilder(),
+                new QueryEvaluator()))
+            .As<IItemSearchService>().SingleInstance();
         builder.RegisterType<SharedFieldUseCase>().As<ISharedFieldUseCase>().SingleInstance();
         builder.RegisterType<CollectionAuthorizationService>().As<ICollectionAuthorization>().SingleInstance();
         builder.RegisterType<ShareUseCase>().As<IShareUseCase>().SingleInstance();
