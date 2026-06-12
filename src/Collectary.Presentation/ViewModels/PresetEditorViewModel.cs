@@ -37,6 +37,19 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel, ISystemBa
     public partial string Name { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial string? NameWarning { get; set; }
+
+    private IReadOnlyList<string> _otherPresetNames = [];
+
+    partial void OnNameChanged(string value) => RefreshNameWarning();
+
+    private void RefreshNameWarning() =>
+        NameWarning = _otherPresetNames.Any(n =>
+            string.Equals(n.Trim(), Name.Trim(), StringComparison.OrdinalIgnoreCase))
+            ? LocalizationService.Instance["PresetNameDuplicateWarning"]
+            : null;
+
+    [ObservableProperty]
     public partial int ColumnCount { get; set; } = 1;
 
     public IReadOnlyList<FieldLabelLayoutOption> FieldLabelLayoutOptions { get; } =
@@ -139,6 +152,8 @@ public partial class PresetEditorViewModel : FieldListEditorViewModel, ISystemBa
                 : all.Where(p => p.Id != _existing.Id).ToList();
 
             AvailableParents = new ObservableCollection<Preset>(eligible);
+            _otherPresetNames = eligible.Select(p => p.Name).ToList();
+            RefreshNameWarning();
 
             if (_existing?.ParentPresetId is { } parentId)
                 SelectedParent = AvailableParents.FirstOrDefault(p => p.Id == parentId);

@@ -15,6 +15,11 @@ Templates: Action Figures, Board Games, Books, Building Brick Sets, Camera Gear,
 Home Inventory, Houseplants, Makeup, Model Trains, Movies, Music, Recipes, Sneakers, Stamps, Tools,
 Trading Cards, Video Games, Watches, Whisky, Wine.
 
+Collection names don't have to be unique, but if you pick a name that's already taken, a small
+warning appears under the name box. You can save anyway — it's just a heads-up, because
+[searching by collection name](search.md) matches every collection with that name, so two "Books"
+will always show up together.
+
 ## Defining fields
 
 Open the collection editor to manage fields. Each field has a name, a [type](field-types.md) that
@@ -79,5 +84,6 @@ removes its items too.
 ## Next steps
 
 - [Add and edit items](items.md)
+- [Search and filter items](search.md)
 - [Field types reference](field-types.md)
 - [Share a collection](sharing.md)

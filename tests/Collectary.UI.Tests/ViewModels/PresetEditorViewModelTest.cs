@@ -904,4 +904,86 @@ public class PresetEditorViewModelTest
 
         Assert.That(raised, Does.Contain(nameof(PresetEditorViewModel.IsHeaderVisible)));
     }
+
+    [Test]
+    public async Task NameWarning_DuplicateName_WarnsCaseAndWhitespaceInsensitively()
+    {
+        A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>
+        {
+            new() { Name = "Books" },
+        });
+        var sut = CreateSut();
+        await sut.LoadAsync();
+
+        sut.Name = " BOOKS ";
+
+        Assert.That(sut.NameWarning, Is.Not.Null.And.Not.Empty);
+    }
+
+    [Test]
+    public async Task NameWarning_UniqueName_ClearsTheWarning()
+    {
+        A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>
+        {
+            new() { Name = "Books" },
+        });
+        var sut = CreateSut();
+        await sut.LoadAsync();
+        sut.Name = "Books";
+
+        sut.Name = "Games";
+
+        Assert.That(sut.NameWarning, Is.Null);
+    }
+
+    [Test]
+    public async Task NameWarning_KeepingAnExistingPresetsOwnName_DoesNotWarn()
+    {
+        var existing = new Preset { Name = "Books" };
+        A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>
+        {
+            existing,
+            new() { Name = "Games" },
+        });
+        var sut = CreateSut(existing: existing);
+        await sut.LoadAsync();
+
+        Assert.That(sut.NameWarning, Is.Null);
+
+        sut.Name = "Games";
+        Assert.That(sut.NameWarning, Is.Not.Null.And.Not.Empty);
+    }
+
+    [Test]
+    public async Task NameWarning_AppearsImmediatelyWhenTheLoadedNameIsAlreadyTaken()
+    {
+        A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>
+        {
+            new() { Name = "Books" },
+        });
+        var sut = CreateSut(seed: new Preset { Name = "Books" });
+
+        await sut.LoadAsync();
+
+        Assert.That(sut.NameWarning, Is.Not.Null.And.Not.Empty);
+    }
+
+    [Test]
+    public async Task NameWarning_NeverBlocksSaving()
+    {
+        A.CallTo(() => _presetUseCase.GetAllPresetsAsync()).Returns(new List<Preset>
+        {
+            new() { Name = "Books" },
+        });
+        var sut = CreateSut();
+        await sut.LoadAsync();
+        sut.Name = "Books";
+        Assert.That(sut.NameWarning, Is.Not.Null.And.Not.Empty);
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        A.CallTo(() => _presetUseCase.CreatePresetAsync(
+            A<Preset>.That.Matches(p => p.Name == "Books")))
+            .MustHaveHappenedOnceExactly();
+    }
 }
