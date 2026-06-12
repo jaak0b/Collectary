@@ -1,11 +1,12 @@
 using System.Globalization;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Date")]
 [FieldIcon(IconGlyphs.Calendar)]
 [FieldCatalog(6, FieldCategory.TextAndNumbers)]
-public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplayable, ITextImportable
+public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }
 
@@ -18,6 +19,22 @@ public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplay
         value = new DateFieldValue { FieldDefinitionId = Id, Value = dt.Date };
         return true;
     }
+
+    private ComparableFieldSearch<DateFieldValue, DateTime> Search => new(
+        v => v.Value, v => v.Value,
+        raw => DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
+            ? parsed.Date
+            : null);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class DateFieldValue : FieldValue<DateFieldDefinition>

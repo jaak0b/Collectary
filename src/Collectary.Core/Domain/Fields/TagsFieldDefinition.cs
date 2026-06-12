@@ -1,9 +1,11 @@
+using Collectary.Core.Search;
+
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Tags")]
 [FieldIcon(IconGlyphs.Bookmark)]
 [FieldCatalog(2, FieldCategory.Visual)]
-public class TagsFieldDefinition : FieldDefinition<TagsFieldValue>, IListDisplayable, ITextImportable
+public class TagsFieldDefinition : FieldDefinition<TagsFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;
     public bool ShowInList { get; set; }
@@ -18,6 +20,18 @@ public class TagsFieldDefinition : FieldDefinition<TagsFieldValue>, IListDisplay
         value = new TagsFieldValue { FieldDefinitionId = Id, Tags = parts.ToList() };
         return true;
     }
+
+    private StringListFieldSearch<TagsFieldValue> Search => new(v => v.Tags);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class TagsFieldValue : FieldValue<TagsFieldDefinition>

@@ -1,6 +1,7 @@
 using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -36,4 +37,31 @@ public class MeasurementFieldDefinitionTest
     [Test]
     public void IsListDisplayable() =>
         Assert.That(new MeasurementFieldDefinition(), Is.InstanceOf<IListDisplayable>());
+
+    [Test]
+    public void TryCreateMatcher_Greater_ComparesAmountFromPlainNumberOrAmountWithUnit()
+    {
+        var def = new MeasurementFieldDefinition();
+        var item = new Item
+        {
+            Values = [new MeasurementFieldValue { FieldDefinitionId = def.Id, Amount = 12m, Unit = "mm" }],
+        };
+        ISearchableFieldDefinition search = def;
+
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["10"], out var plain, out _), Is.True);
+        Assert.That(plain!.Matches(item, [def.Id]), Is.True);
+
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["10 mm"], out var withUnit, out _), Is.True);
+        Assert.That(withUnit!.Matches(item, [def.Id]), Is.True);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new MeasurementFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Less));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new MeasurementFieldValue { Amount = 12m }), Is.EqualTo(12m));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
+    }
 }

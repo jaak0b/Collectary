@@ -1,6 +1,7 @@
 using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -34,4 +35,27 @@ public class QrCodeFieldDefinitionTest
     [Test]
     public void IsListDisplayable() =>
         Assert.That(new QrCodeFieldDefinition(), Is.InstanceOf<IListDisplayable>());
+
+    [Test]
+    public void TryCreateMatcher_Contains_MatchesContentFragment()
+    {
+        var def = new QrCodeFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Contains, ["shelf"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new QrCodeFieldValue { FieldDefinitionId = def.Id, Content = "Shelf-A1" }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new QrCodeFieldValue { FieldDefinitionId = def.Id, Content = "box-9" }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new QrCodeFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Equals));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new QrCodeFieldValue { Content = "A1" }), Is.EqualTo("A1"));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
+    }
 }

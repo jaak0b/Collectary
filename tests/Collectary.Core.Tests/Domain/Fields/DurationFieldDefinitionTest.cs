@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -38,5 +40,39 @@ public class DurationFieldDefinitionTest
         var value = def.CreateEmptyValue();
         Assert.That(value, Is.TypeOf<DurationFieldValue>());
         Assert.That(value.FieldDefinitionId, Is.EqualTo(def.Id));
+    }
+
+    [Test]
+    public void TryCreateMatcher_Greater_ParsesDurationNotation()
+    {
+        var def = new DurationFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["1:00"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new DurationFieldValue { FieldDefinitionId = def.Id, TotalMinutes = 90 }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new DurationFieldValue { FieldDefinitionId = def.Id, TotalMinutes = 45 }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_AcceptsHourMinuteWords()
+    {
+        var def = new DurationFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["1h 30m"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new DurationFieldValue { FieldDefinitionId = def.Id, TotalMinutes = 90 }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new DurationFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.GreaterOrEqual));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new DurationFieldValue { TotalMinutes = 90 }), Is.EqualTo(90));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

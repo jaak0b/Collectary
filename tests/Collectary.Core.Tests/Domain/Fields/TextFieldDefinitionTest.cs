@@ -1,6 +1,7 @@
 using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -91,4 +92,33 @@ public class TextFieldDefinitionTest
     [Test]
     public void ImportInferenceOrder_IsCatchAllLast() =>
         Assert.That(((ITextImportable)new TextFieldDefinition()).ImportInferenceOrder, Is.EqualTo(int.MaxValue));
+
+    [Test]
+    public void SupportedOperators_AreStringOperators()
+    {
+        ISearchableFieldDefinition search = new TextFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Contains));
+        Assert.That(search.SupportedOperators, Does.Not.Contain(QueryOperatorKind.Greater));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesStoredTextCaseInsensitively()
+    {
+        var def = new TextFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["open"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new TextFieldValue { FieldDefinitionId = def.Id, Value = "OPEN" }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new TextFieldValue { FieldDefinitionId = def.Id, Value = "closed" }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void SortKey_ReturnsStoredText()
+    {
+        ISearchableFieldDefinition search = new TextFieldDefinition();
+        Assert.That(search.SortKey(new Item(), new TextFieldValue { Value = "abc" }), Is.EqualTo("abc"));
+    }
 }

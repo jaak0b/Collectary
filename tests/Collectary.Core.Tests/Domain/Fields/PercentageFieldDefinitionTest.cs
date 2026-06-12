@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -44,5 +46,26 @@ public class PercentageFieldDefinitionTest
         var importable = (ITextImportable)new PercentageFieldDefinition();
         Assert.That(importable.TryImportFromText("75", CultureInfo.InvariantCulture, out _), Is.True);
         Assert.That(importable.ImportInferenceOrder, Is.GreaterThan(((ITextImportable)new DecimalFieldDefinition()).ImportInferenceOrder));
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_AcceptsTrailingPercentSign()
+    {
+        var def = new PercentageFieldDefinition();
+        var item = new Item { Values = [new PercentageFieldValue { FieldDefinitionId = def.Id, Value = 50m }] };
+        ISearchableFieldDefinition search = def;
+
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["50%"], out var matcher, out _), Is.True);
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new PercentageFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.GreaterOrEqual));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new PercentageFieldValue { Value = 50m }), Is.EqualTo(50m));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

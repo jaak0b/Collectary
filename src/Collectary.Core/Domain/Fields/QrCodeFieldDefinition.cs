@@ -1,3 +1,5 @@
+using Collectary.Core.Search;
+
 namespace Collectary.Core.Domain.Fields;
 
 /// <summary>
@@ -7,7 +9,7 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_QrCode")]
 [FieldIcon(IconGlyphs.QrCode)]
 [FieldCatalog(5, FieldCategory.Visual)]
-public class QrCodeFieldDefinition : FieldDefinition<QrCodeFieldValue>, IListDisplayable, ITextImportable
+public class QrCodeFieldDefinition : FieldDefinition<QrCodeFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;
     public bool ShowInList { get; set; }
@@ -21,6 +23,18 @@ public class QrCodeFieldDefinition : FieldDefinition<QrCodeFieldValue>, IListDis
         value = new QrCodeFieldValue { FieldDefinitionId = Id, Content = raw.Trim() };
         return true;
     }
+
+    private StringFieldSearch<QrCodeFieldValue> Search => new(v => v.Content, v => v.Content);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class QrCodeFieldValue : FieldValue<QrCodeFieldDefinition>

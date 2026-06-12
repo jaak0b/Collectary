@@ -1,4 +1,5 @@
 using System.Globalization;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
@@ -6,7 +7,7 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_Country")]
 [FieldIcon(IconGlyphs.Globe)]
 [FieldCatalog(2, FieldCategory.Choice)]
-public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListDisplayable, ITextImportable
+public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }
 
@@ -34,6 +35,18 @@ public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListD
             return false;
         }
     }
+
+    private StringFieldSearch<CountryFieldValue> Search => new(v => v.Code, v => v.Code);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class CountryFieldValue : FieldValue<CountryFieldDefinition>

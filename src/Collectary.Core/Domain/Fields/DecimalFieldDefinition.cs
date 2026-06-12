@@ -1,11 +1,12 @@
 using System.Globalization;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Decimal")]
 [FieldIcon(IconGlyphs.NumberSymbol)]
 [FieldCatalog(3, FieldCategory.TextAndNumbers)]
-public class DecimalFieldDefinition : FieldDefinition<DecimalFieldValue>, IListDisplayable, ITextImportable
+public class DecimalFieldDefinition : FieldDefinition<DecimalFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public int DecimalPlaces { get; set; } = 2;
     public bool ShowInList { get; set; }
@@ -24,6 +25,22 @@ public class DecimalFieldDefinition : FieldDefinition<DecimalFieldValue>, IListD
     {
         if (source is DecimalFieldDefinition src) DecimalPlaces = src.DecimalPlaces;
     }
+
+    private ComparableFieldSearch<DecimalFieldValue, decimal> Search => new(
+        v => v.Value, v => v.Value,
+        raw => decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class DecimalFieldValue : FieldValue<DecimalFieldDefinition>

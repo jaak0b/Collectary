@@ -1,6 +1,7 @@
 using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -34,4 +35,27 @@ public class BarcodeFieldDefinitionTest
     [Test]
     public void IsListDisplayable() =>
         Assert.That(new BarcodeFieldDefinition(), Is.InstanceOf<IListDisplayable>());
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesStoredCode()
+    {
+        var def = new BarcodeFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["4006381333931"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new BarcodeFieldValue { FieldDefinitionId = def.Id, Code = "4006381333931" }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new BarcodeFieldValue { FieldDefinitionId = def.Id, Code = "1111111111111" }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new BarcodeFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Contains));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new BarcodeFieldValue { Code = "42" }), Is.EqualTo("42"));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
+    }
 }

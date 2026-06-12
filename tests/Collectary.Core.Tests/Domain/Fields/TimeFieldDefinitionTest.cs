@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -28,5 +30,28 @@ public class TimeFieldDefinitionTest
         var value = def.CreateEmptyValue();
         Assert.That(value, Is.TypeOf<TimeFieldValue>());
         Assert.That(value.FieldDefinitionId, Is.EqualTo(def.Id));
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesStoredTime()
+    {
+        var def = new TimeFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["14:30"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new TimeFieldValue { FieldDefinitionId = def.Id, Value = "14:30" }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new TimeFieldValue { FieldDefinitionId = def.Id, Value = "09:00" }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new TimeFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Equals));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new TimeFieldValue { Value = "14:30" }), Is.EqualTo("14:30"));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

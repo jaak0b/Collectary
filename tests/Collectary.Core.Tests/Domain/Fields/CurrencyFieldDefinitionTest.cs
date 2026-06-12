@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -51,5 +53,29 @@ public class CurrencyFieldDefinitionTest
     {
         var ok = ((ITextImportable)new CurrencyFieldDefinition()).TryImportFromText("free", CultureInfo.InvariantCulture, out _);
         Assert.That(ok, Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_AcceptsPlainAndSymbolPrefixedAmounts()
+    {
+        var def = new CurrencyFieldDefinition();
+        var item = new Item { Values = [new CurrencyFieldValue { FieldDefinitionId = def.Id, Value = 5.50m }] };
+        ISearchableFieldDefinition search = def;
+
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["5.50"], out var plain, out _), Is.True);
+        Assert.That(plain!.Matches(item, [def.Id]), Is.True);
+
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["€5.50"], out var symbol, out _), Is.True);
+        Assert.That(symbol!.Matches(item, [def.Id]), Is.True);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new CurrencyFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Greater));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new CurrencyFieldValue { Value = 5.5m }), Is.EqualTo(5.5m));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

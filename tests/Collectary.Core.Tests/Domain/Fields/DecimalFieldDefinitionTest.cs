@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -52,5 +54,28 @@ public class DecimalFieldDefinitionTest
     {
         var ok = ((ITextImportable)new DecimalFieldDefinition()).TryImportFromText("abc", CultureInfo.InvariantCulture, out _);
         Assert.That(ok, Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Greater_ParsesInvariantDecimal()
+    {
+        var def = new DecimalFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["10.5"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new DecimalFieldValue { FieldDefinitionId = def.Id, Value = 11m }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new DecimalFieldValue { FieldDefinitionId = def.Id, Value = 10.5m }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new DecimalFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.LessOrEqual));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+        Assert.That(search.SortKey(new Item(), new DecimalFieldValue { Value = 1.5m }), Is.EqualTo(1.5m));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

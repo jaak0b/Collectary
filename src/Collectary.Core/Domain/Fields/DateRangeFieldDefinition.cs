@@ -1,12 +1,13 @@
 namespace Collectary.Core.Domain.Fields;
 
 using System.Globalization;
+using Collectary.Core.Search;
 
 /// <summary>A from–to date pair — an ownership period, a drink-window, a manufacturing era.</summary>
 [LocalizedName("FieldType_DateRange")]
 [FieldIcon(IconGlyphs.DateRange)]
 [FieldCatalog(7, FieldCategory.TextAndNumbers)]
-public class DateRangeFieldDefinition : FieldDefinition<DateRangeFieldValue>, IListDisplayable, ITextImportable
+public class DateRangeFieldDefinition : FieldDefinition<DateRangeFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;
     public bool ShowInList { get; set; }
@@ -32,6 +33,82 @@ public class DateRangeFieldDefinition : FieldDefinition<DateRangeFieldValue>, IL
         }
         return false;
     }
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators =>
+    [
+        QueryOperatorKind.Equals, QueryOperatorKind.NotEquals,
+        QueryOperatorKind.Less, QueryOperatorKind.LessOrEqual,
+        QueryOperatorKind.Greater, QueryOperatorKind.GreaterOrEqual,
+        QueryOperatorKind.IsEmpty, QueryOperatorKind.IsNotEmpty,
+    ];
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error)
+    {
+        matcher = null;
+        error = null;
+        if (op == QueryOperatorKind.IsEmpty)
+        {
+            matcher = new ValueEmptinessMatcher(expectPresent: false);
+            return true;
+        }
+        if (op == QueryOperatorKind.IsNotEmpty)
+        {
+            matcher = new ValueEmptinessMatcher(expectPresent: true);
+            return true;
+        }
+        if (!SupportedOperators.Contains(op))
+        {
+            error = QueryErrorCode.OperatorNotSupported;
+            return false;
+        }
+        if (!DateTime.TryParse(operands[0], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        {
+            error = QueryErrorCode.InvalidValue;
+            return false;
+        }
+        var day = parsed.Date;
+        matcher = op switch
+        {
+            QueryOperatorKind.Equals => RangeMatcher(
+                v => ContainsDay(v, day),
+                v => (v.From != null || v.To != null)
+                    && (v.From == null || v.From <= day)
+                    && (v.To == null || v.To >= day)),
+            QueryOperatorKind.NotEquals => RangeMatcher(
+                v => !v.IsEmpty && !ContainsDay(v, day),
+                v => (v.From != null || v.To != null)
+                    && ((v.From != null && v.From > day) || (v.To != null && v.To < day))),
+            QueryOperatorKind.Less => RangeMatcher(
+                v => v.To < day,
+                v => v.To != null && v.To < day),
+            QueryOperatorKind.LessOrEqual => RangeMatcher(
+                v => v.To <= day,
+                v => v.To != null && v.To <= day),
+            QueryOperatorKind.Greater => RangeMatcher(
+                v => v.From > day,
+                v => v.From != null && v.From > day),
+            _ => RangeMatcher(
+                v => v.From >= day,
+                v => v.From != null && v.From >= day),
+        };
+        return true;
+    }
+
+    public IComparable? SortKey(Item item, FieldValue? value) =>
+        value is DateRangeFieldValue range ? range.From ?? range.To : null;
+
+    private bool ContainsDay(DateRangeFieldValue value, DateTime day) =>
+        !value.IsEmpty
+        && (value.From is null || value.From <= day)
+        && (value.To is null || value.To >= day);
+
+    private TypedValueMatcher<DateRangeFieldValue> RangeMatcher(
+        Func<DateRangeFieldValue, bool> predicate,
+        System.Linq.Expressions.Expression<Func<DateRangeFieldValue, bool>> serverPredicate) =>
+        new(predicate, serverPredicate);
 }
 
 public class DateRangeFieldValue : FieldValue<DateRangeFieldDefinition>

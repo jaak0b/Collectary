@@ -1,9 +1,12 @@
+using System.Globalization;
+using Collectary.Core.Search;
+
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Bool")]
 [FieldIcon(IconGlyphs.Checkbox)]
 [FieldCatalog(0, FieldCategory.Choice)]
-public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable, ITextImportable
+public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }
     public bool ThreeState { get; set; }
@@ -31,6 +34,24 @@ public class BoolFieldDefinition : FieldDefinition<BoolFieldValue>, IListDisplay
     {
         if (source is BoolFieldDefinition src) ThreeState = src.ThreeState;
     }
+
+    private ComparableFieldSearch<BoolFieldValue, bool> Search => new(
+        v => v.Value, v => v.Value,
+        raw => TryImportFromText(raw, CultureInfo.InvariantCulture, out var parsed)
+            && parsed is BoolFieldValue flag
+            ? flag.Value
+            : null,
+        ordered: false);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => ["true", "false"];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class BoolFieldValue : FieldValue<BoolFieldDefinition>

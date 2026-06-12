@@ -1,11 +1,12 @@
 using System.Globalization;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Time")]
 [FieldIcon(IconGlyphs.Clock)]
 [FieldCatalog(8, FieldCategory.TextAndNumbers)]
-public class TimeFieldDefinition : FieldDefinition<TimeFieldValue>, IListDisplayable, ITextImportable
+public class TimeFieldDefinition : FieldDefinition<TimeFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }
 
@@ -18,6 +19,18 @@ public class TimeFieldDefinition : FieldDefinition<TimeFieldValue>, IListDisplay
         value = new TimeFieldValue { FieldDefinitionId = Id, Value = raw.Trim() };
         return true;
     }
+
+    private StringFieldSearch<TimeFieldValue> Search => new(v => v.Value, v => v.Value);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class TimeFieldValue : FieldValue<TimeFieldDefinition>

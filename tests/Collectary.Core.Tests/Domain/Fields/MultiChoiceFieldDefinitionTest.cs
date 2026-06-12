@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -70,5 +72,41 @@ public class MultiChoiceFieldDefinitionTest
         target.ApplyTypeSpecificProperties(new TextFieldDefinition());
         Assert.That(target.Choices, Has.Count.EqualTo(1));
         Assert.That(target.Choices[0].Value, Is.EqualTo("Keep"));
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesAnySelectedEntry()
+    {
+        var def = new MultiChoiceFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["red"], out var matcher, out _), Is.True);
+
+        var item = new Item
+        {
+            Values = [new MultiChoiceFieldValue { FieldDefinitionId = def.Id, Selected = ["Red", "Green"] }],
+        };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        ((MultiChoiceFieldValue)item.Values[0]).Selected = ["Green"];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void ValueSuggestions_ListChoicesInDisplayOrder()
+    {
+        var def = new MultiChoiceFieldDefinition();
+        def.Choices.Add(new ChoiceOption { Value = "B", DisplayOrder = 2 });
+        def.Choices.Add(new ChoiceOption { Value = "A", DisplayOrder = 1 });
+
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.ValueSuggestions(), Is.EqualTo(new[] { "A", "B" }));
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new MultiChoiceFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Contains));
+        Assert.That(search.SortKey(new Item(), new MultiChoiceFieldValue { Selected = ["a", "b"] }), Is.EqualTo("a, b"));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

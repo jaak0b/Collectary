@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -48,5 +50,38 @@ public class SingleChoiceFieldDefinitionTest
         var value = def.CreateEmptyValue();
         Assert.That(value, Is.TypeOf<SingleChoiceFieldValue>());
         Assert.That(value.FieldDefinitionId, Is.EqualTo(def.Id));
+    }
+
+    [Test]
+    public void ValueSuggestions_ListChoicesInDisplayOrder()
+    {
+        var def = new SingleChoiceFieldDefinition();
+        def.Choices.Add(new ChoiceOption { Value = "Closed", DisplayOrder = 2 });
+        def.Choices.Add(new ChoiceOption { Value = "Open", DisplayOrder = 1 });
+
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.ValueSuggestions(), Is.EqualTo(new[] { "Open", "Closed" }));
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesSelectedChoice()
+    {
+        var def = new SingleChoiceFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["open"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new SingleChoiceFieldValue { FieldDefinitionId = def.Id, Selected = "Open" }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new SingleChoiceFieldValue { FieldDefinitionId = def.Id, Selected = "Closed" }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsAndSortKey()
+    {
+        ISearchableFieldDefinition search = new SingleChoiceFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.In));
+        Assert.That(search.SortKey(new Item(), new SingleChoiceFieldValue { Selected = "Open" }), Is.EqualTo("Open"));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }

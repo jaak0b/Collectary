@@ -1,9 +1,11 @@
+using Collectary.Core.Search;
+
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_MultiChoice")]
 [FieldIcon(IconGlyphs.Multiselect)]
 [FieldCatalog(2, FieldCategory.Choice)]
-public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable, ITextImportable
+public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;
     public List<ChoiceOption> Choices { get; set; } = new();
@@ -29,6 +31,19 @@ public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>
         foreach (var c in src.Choices)
             Choices.Add(new ChoiceOption { Id = c.Id, Value = c.Value, DisplayOrder = c.DisplayOrder });
     }
+
+    private StringListFieldSearch<MultiChoiceFieldValue> Search => new(v => v.Selected);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() =>
+        Choices.OrderBy(c => c.DisplayOrder).Select(c => c.Value);
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class MultiChoiceFieldValue : FieldValue<MultiChoiceFieldDefinition>

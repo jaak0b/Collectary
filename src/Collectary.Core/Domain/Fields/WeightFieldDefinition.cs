@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
@@ -7,7 +8,7 @@ namespace Collectary.Core.Domain.Fields;
 [LocalizedName("FieldType_Weight")]
 [FieldIcon(IconGlyphs.Scales)]
 [FieldCatalog(16, FieldCategory.TextAndNumbers)]
-public class WeightFieldDefinition : FieldDefinition<WeightFieldValue>, IListDisplayable, ITextImportable
+public class WeightFieldDefinition : FieldDefinition<WeightFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }
 
@@ -22,6 +23,28 @@ public class WeightFieldDefinition : FieldDefinition<WeightFieldValue>, IListDis
         value = new WeightFieldValue { FieldDefinitionId = Id, Amount = amount, Unit = match.Groups["unit"].Value.Trim() };
         return true;
     }
+
+    private ComparableFieldSearch<WeightFieldValue, decimal> Search => new(
+        v => v.Amount, v => v.Amount,
+        raw =>
+        {
+            if (decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var plain))
+                return plain;
+            return TryImportFromText(raw, CultureInfo.InvariantCulture, out var parsed)
+                && parsed is WeightFieldValue weight
+                ? weight.Amount
+                : null;
+        });
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class WeightFieldValue : FieldValue<WeightFieldDefinition>

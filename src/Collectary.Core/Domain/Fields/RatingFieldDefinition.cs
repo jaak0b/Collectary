@@ -1,11 +1,12 @@
 using System.Globalization;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Rating")]
 [FieldIcon(IconGlyphs.Star)]
 [FieldCatalog(1, FieldCategory.Visual)]
-public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDisplayable, ITextImportable
+public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public int MaxStars { get; set; } = 5;
     public bool ShowInList { get; set; }
@@ -24,6 +25,22 @@ public class RatingFieldDefinition : FieldDefinition<RatingFieldValue>, IListDis
     {
         if (source is RatingFieldDefinition src) MaxStars = src.MaxStars;
     }
+
+    private ComparableFieldSearch<RatingFieldValue, int> Search => new(
+        v => v.Stars, v => v.Stars,
+        raw => int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class RatingFieldValue : FieldValue<RatingFieldDefinition>

@@ -1,5 +1,7 @@
 using System.Globalization;
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -58,5 +60,41 @@ public class IntegerFieldDefinitionTest
     {
         var ok = ((ITextImportable)new IntegerFieldDefinition()).TryImportFromText("4.5", CultureInfo.InvariantCulture, out _);
         Assert.That(ok, Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Greater_MatchesLargerStoredNumber()
+    {
+        var def = new IntegerFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["5"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new IntegerFieldValue { FieldDefinitionId = def.Id, Value = 6 }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        item.Values = [new IntegerFieldValue { FieldDefinitionId = def.Id, Value = 5 }];
+        Assert.That(matcher.Matches(item, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_NonNumericOperand_ReportsInvalidValue()
+    {
+        ISearchableFieldDefinition search = new IntegerFieldDefinition();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["abc"], out _, out var error), Is.False);
+        Assert.That(error, Is.EqualTo(QueryErrorCode.InvalidValue));
+    }
+
+    [Test]
+    public void SortKey_ReturnsStoredNumber()
+    {
+        ISearchableFieldDefinition search = new IntegerFieldDefinition();
+        Assert.That(search.SortKey(new Item(), new IntegerFieldValue { Value = 7 }), Is.EqualTo(7));
+    }
+
+    [Test]
+    public void SearchSurface_ExposesOperatorsAndNoSuggestions()
+    {
+        ISearchableFieldDefinition search = new IntegerFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Less));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
     }
 }

@@ -1,12 +1,13 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Duration")]
 [FieldIcon(IconGlyphs.Timer)]
 [FieldCatalog(9, FieldCategory.TextAndNumbers)]
-public class DurationFieldDefinition : FieldDefinition<DurationFieldValue>, IListDisplayable, ITextImportable
+public class DurationFieldDefinition : FieldDefinition<DurationFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }
 
@@ -47,6 +48,23 @@ public class DurationFieldDefinition : FieldDefinition<DurationFieldValue>, ILis
         value = new DurationFieldValue { FieldDefinitionId = Id, TotalMinutes = totalMinutes };
         return true;
     }
+
+    private ComparableFieldSearch<DurationFieldValue, int> Search => new(
+        v => v.TotalMinutes, v => v.TotalMinutes,
+        raw => TryImportFromText(raw, CultureInfo.InvariantCulture, out var parsed)
+            && parsed is DurationFieldValue duration
+            ? duration.TotalMinutes
+            : null);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class DurationFieldValue : FieldValue<DurationFieldDefinition>

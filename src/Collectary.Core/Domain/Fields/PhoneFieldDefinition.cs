@@ -1,11 +1,12 @@
 using System.Text.RegularExpressions;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Phone")]
 [FieldIcon(IconGlyphs.Call)]
 [FieldCatalog(11, FieldCategory.TextAndNumbers)]
-public class PhoneFieldDefinition : FieldDefinition<PhoneFieldValue>, IListDisplayable, ITextImportable
+public class PhoneFieldDefinition : FieldDefinition<PhoneFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;
     public bool ShowInList { get; set; }
@@ -20,6 +21,18 @@ public class PhoneFieldDefinition : FieldDefinition<PhoneFieldValue>, IListDispl
         value = new PhoneFieldValue { FieldDefinitionId = Id, Value = text };
         return true;
     }
+
+    private StringFieldSearch<PhoneFieldValue> Search => new(v => v.Value, v => v.Value);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class PhoneFieldValue : FieldValue<PhoneFieldDefinition>
