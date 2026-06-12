@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Logging;
@@ -38,6 +39,14 @@ public class ItemRepository : IItemRepository
         using var db = _dbFactory();
         var query = await ScopedAsync(db, WithDetails(db.Items).AsNoTracking());
         return await query.FirstOrDefaultAsync(i => i.Id == id);
+    }
+
+    public async Task<IReadOnlyList<Item>> SearchAsync(Expression<Func<Item, bool>>? serverFilter)
+    {
+        using var db = _dbFactory();
+        var query = await ScopedAsync(db, WithDetails(db.Items).AsNoTracking());
+        if (serverFilter is not null) query = query.Where(serverFilter);
+        return await query.ToListAsync();
     }
 
     private async Task<IQueryable<Item>> ScopedAsync(InventoryDbContext db, IQueryable<Item> query)

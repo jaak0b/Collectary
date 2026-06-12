@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
+using Collectary.Core.Search;
 using Collectary.Infrastructure.Persistence;
 
 namespace Collectary.Infrastructure.Tests.Repositories;
@@ -568,6 +570,169 @@ public class ItemRepositoryTest : DbIntegrationTestBase
         var result = await scoped.GetByPresetAsync(sharedPresetId);
 
         Assert.That(result.Select(i => i.Id), Does.Contain(sharedItemId));
+    }
+
+    private async Task AddFieldAsync(FieldDefinition definition)
+    {
+        using var db = DbFactory();
+        db.Presets.Attach(_preset);
+        _preset.Fields.Add(definition);
+        await db.SaveChangesAsync();
+    }
+
+    private Expression<Func<Item, bool>>? ServerFilterFor(string query, params FieldDefinition[] extraDefinitions)
+    {
+        var fields = new List<FieldDefinition> { _textField };
+        fields.AddRange(extraDefinitions);
+        var snapshot = new SearchCatalogSnapshot
+        {
+            Fields = fields
+                .GroupBy(f => f.Label, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new SearchFieldGroup(g.Key, g.ToList()))
+                .ToList(),
+            Presets = [new SearchPresetEntry(_preset.Id, _preset.Name)],
+        };
+        var parsed = new QueryParser(new QueryLexer()).Parse(query);
+        var bound = new QueryBinder(new PseudoFieldCatalog()).Bind(parsed.Query!, snapshot);
+        Assert.That(bound.Errors, Is.Empty);
+        var filter = new ServerFilterBuilder().Build(bound.Query!.Root);
+        Assert.That(filter, Is.Not.Null, $"expected a server-translatable filter for: {query}");
+        return filter;
+    }
+
+    [Test]
+    public async Task SearchAsync_WithoutFilter_ReturnsAllItems()
+    {
+        await _sut.AddAsync(MakeItem("A"));
+        await _sut.AddAsync(MakeItem("B"));
+
+        var result = await _sut.SearchAsync(null);
+
+        Assert.That(result, Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public async Task SearchAsync_TextEqualsFilter_RunsInSql()
+    {
+        var hobbit = MakeItem("Hobbit");
+        hobbit.Values.Add(new TextFieldValue { FieldDefinitionId = _textField.Id, Value = "The Hobbit" });
+        var dune = MakeItem("Dune");
+        dune.Values.Add(new TextFieldValue { FieldDefinitionId = _textField.Id, Value = "Dune" });
+        await _sut.AddAsync(hobbit);
+        await _sut.AddAsync(dune);
+
+        var result = await _sut.SearchAsync(ServerFilterFor("Title = \"the hobbit\""));
+
+        Assert.That(result.Single().Id, Is.EqualTo(hobbit.Id));
+    }
+
+    [Test]
+    public async Task SearchAsync_IntegerComparisonFilter_RunsInSql()
+    {
+        var pages = new IntegerFieldDefinition { Label = "Pages", PresetId = _preset.Id };
+        await AddFieldAsync(pages);
+        var thick = MakeItem("Thick");
+        thick.Values.Add(new IntegerFieldValue { FieldDefinitionId = pages.Id, Value = 300 });
+        var thin = MakeItem("Thin");
+        thin.Values.Add(new IntegerFieldValue { FieldDefinitionId = pages.Id, Value = 100 });
+        await _sut.AddAsync(thick);
+        await _sut.AddAsync(thin);
+
+        var result = await _sut.SearchAsync(ServerFilterFor("Pages > 200", pages));
+
+        Assert.That(result.Single().Id, Is.EqualTo(thick.Id));
+    }
+
+    [Test]
+    public async Task SearchAsync_CurrencyComparisonFilter_RunsInSql()
+    {
+        var price = new CurrencyFieldDefinition { Label = "Price", PresetId = _preset.Id };
+        await AddFieldAsync(price);
+        var pricey = MakeItem("Pricey");
+        pricey.Values.Add(new CurrencyFieldValue { FieldDefinitionId = price.Id, Value = 20m });
+        var cheap = MakeItem("Cheap");
+        cheap.Values.Add(new CurrencyFieldValue { FieldDefinitionId = price.Id, Value = 5.50m });
+        await _sut.AddAsync(pricey);
+        await _sut.AddAsync(cheap);
+
+        var result = await _sut.SearchAsync(ServerFilterFor("Price > 10", price));
+
+        Assert.That(result.Single().Id, Is.EqualTo(pricey.Id));
+    }
+
+    [Test]
+    public async Task SearchAsync_DateComparisonFilter_RunsInSql()
+    {
+        var published = new DateFieldDefinition { Label = "Published", PresetId = _preset.Id };
+        await AddFieldAsync(published);
+        var old = MakeItem("Old");
+        old.Values.Add(new DateFieldValue { FieldDefinitionId = published.Id, Value = new DateTime(1954, 7, 29) });
+        var recent = MakeItem("Recent");
+        recent.Values.Add(new DateFieldValue { FieldDefinitionId = published.Id, Value = new DateTime(2025, 5, 1) });
+        await _sut.AddAsync(old);
+        await _sut.AddAsync(recent);
+
+        var result = await _sut.SearchAsync(ServerFilterFor("Published < 2000-01-01", published));
+
+        Assert.That(result.Single().Id, Is.EqualTo(old.Id));
+    }
+
+    [Test]
+    public async Task SearchAsync_InListFilter_RunsInSql()
+    {
+        var hobbit = MakeItem("Hobbit");
+        hobbit.Values.Add(new TextFieldValue { FieldDefinitionId = _textField.Id, Value = "Hobbit" });
+        var dune = MakeItem("Dune");
+        dune.Values.Add(new TextFieldValue { FieldDefinitionId = _textField.Id, Value = "Dune" });
+        var other = MakeItem("Other");
+        other.Values.Add(new TextFieldValue { FieldDefinitionId = _textField.Id, Value = "Other" });
+        await _sut.AddAsync(hobbit);
+        await _sut.AddAsync(dune);
+        await _sut.AddAsync(other);
+
+        var result = await _sut.SearchAsync(ServerFilterFor("Title in (hobbit, dune)"));
+
+        Assert.That(result.Select(i => i.Id), Is.EquivalentTo(new[] { hobbit.Id, dune.Id }));
+    }
+
+    [Test]
+    public async Task SearchAsync_DisplayNamePseudoFilter_RunsInSql()
+    {
+        await _sut.AddAsync(MakeItem("Loco 42"));
+        await _sut.AddAsync(MakeItem("Wagon"));
+
+        var result = await _sut.SearchAsync(ServerFilterFor("name ~ loco"));
+
+        Assert.That(result.Single().DisplayName, Is.EqualTo("Loco 42"));
+    }
+
+    [Test]
+    public async Task SearchAsync_PresetPseudoFilter_RunsInSql()
+    {
+        var other = new Preset { Name = "Other" };
+        using (var db = DbFactory())
+        {
+            db.Presets.Add(other);
+            await db.SaveChangesAsync();
+        }
+        await _sut.AddAsync(MakeItem("Mine"));
+        await _sut.AddAsync(new Item { PresetId = other.Id, DisplayName = "Foreign" });
+
+        var result = await _sut.SearchAsync(ServerFilterFor("preset = books"));
+
+        Assert.That(result.Single().DisplayName, Is.EqualTo("Mine"));
+    }
+
+    [Test]
+    public async Task SearchAsync_WhenScoped_HidesUnauthorizedItems()
+    {
+        var me = Guid.NewGuid();
+        await AddForeignItemAsync(Guid.NewGuid());
+        var scoped = new ItemRepository(DbFactory, null, new FixedItemUser(me));
+
+        var result = await scoped.SearchAsync(null);
+
+        Assert.That(result, Is.Empty);
     }
 }
 
