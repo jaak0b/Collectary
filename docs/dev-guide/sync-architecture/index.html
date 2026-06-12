@@ -405,6 +405,8 @@
       
         
       
+        
+      
     
     
       
@@ -534,6 +536,27 @@
   
   <span class="md-ellipsis">
     Items
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search
   </span>
   
 
@@ -1000,6 +1023,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="A sync run">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integrity-self-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integrity &amp; self-recovery
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-scaling-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Known scaling limits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleting-a-parent-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deleting a parent collection
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1231,6 +1287,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="A sync run">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integrity-self-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integrity &amp; self-recovery
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-scaling-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Known scaling limits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleting-a-parent-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deleting a parent collection
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1411,11 +1500,19 @@ identities are never merged.</p>
 <h2 id="adding-a-sync-kind">Adding a sync kind<a class="headerlink" href="#adding-a-sync-kind" title="Permanent link">&para;</a></h2>
 <p>The kinds are <strong>table-driven</strong>, not switch-driven — there is no per-kind <code>switch</code> to keep in sync. The
 single source of truth for orchestration is <code>SyncKindCatalog.Describe(...)</code>, which yields one <code>SyncKind</code>
-descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply), in
-dependency order (owners first). Both <code>SyncService</code> and <code>BackupService</code> loop over that catalog, so a new
-kind is backed up, restored, and synced from one place. The persistence side mirrors this with a single
-<code>EfSyncStore</code> ops map (<code>kind → find/delete</code>, built from a generic <code>OpsFor&lt;T&gt;()</code>). Completeness-guard
-tests fail if a new <code>SyncEntityKind</code> value is added without its catalog and ops-map rows.</p>
+descriptor per kind (wire string, how to load locals, label, serialize, deserialize, apply, and how to
+read/write its slot in a snapshot), in dependency order (owners first). Each descriptor is built by a
+generic <code>For&lt;T&gt;(...)</code> factory, so the cast/serialize/deserialize boilerplate is written once rather than
+copy-pasted per kind. Both <code>SyncService</code> and <code>BackupService</code> loop over that catalog, so a new kind is
+backed up, restored, and synced from one place.</p>
+<p>The persistence side mirrors this with a single <code>EfSyncStore</code> ops map
+(<code>kind → find / findMany / deleteMany / anyDirty</code>, built from a generic <code>OpsFor&lt;T&gt;()</code>, plus an optional
+per-kind <strong>pre-delete</strong> hook). <strong>Hard-deletion, batched push-stamping, and the "is anything dirty?"
+probe all loop that one ops map</strong> — none of them re-enumerates the kinds — so adding a sync kind touches
+exactly three places: its <code>SyncKindCatalog</code> row, its <code>EfSyncStore</code> ops-map row, and its list on
+<code>DeviceSnapshot</code>. A kind-specific quirk stays local to its registration: the <code>Preset</code> self-FK re-parent
+(below) rides along as that kind's pre-delete hook, not as a special case inside the shared delete loop.
+Completeness-guard tests fail if a new <code>SyncEntityKind</code> value is added without its catalog and ops-map rows.</p>
 <h2 id="versioning-a-lamport-clock-device-id">Versioning: a Lamport clock + device id<a class="headerlink" href="#versioning-a-lamport-clock-device-id" title="Permanent link">&para;</a></h2>
 <p>Every syncable entity carries a <strong>version</strong> that is a pair: a <code>Lamport</code> number plus the
 <code>LastModifiedByDeviceId</code> (a GUID) of whoever last wrote it. The Lamport number is a <em>logical</em> clock —
@@ -1430,29 +1527,89 @@ state — no oscillation).</p>
 <h2 id="a-sync-run">A sync run<a class="headerlink" href="#a-sync-run" title="Permanent link">&para;</a></h2>
 <p><code>SyncService.SyncAsync()</code> (per-device snapshot files, merged on read):</p>
 <ol>
-<li>Loads this device's live entities; stamps any <strong>dirty</strong> ones with a fresh Lamport number and this
-   device id, then writes them all into <strong>one file this device owns</strong> — <code>device-{deviceId}.sync.json</code> —
-   alongside a flat list of tombstone ids.</li>
-<li>Reads <strong>every other</strong> <code>device-*.sync.json</code> in the folder (each in its own try/catch — a corrupt or
-   half-written file is skipped, never aborting the run).</li>
-<li>Folds them: the union of all tombstone ids is hard-deleted locally (<strong>delete-wins</strong>); every other
-   id resolves to the highest <code>(Lamport, DeviceId)</code> winner, which is applied only if it is newer than
-   the local copy. There is no shared mutable object — each device only ever writes its <em>own</em> file — so
-   a concurrent write can never be lost.</li>
-<li>Returns a <code>SyncResult</code> reporting how many records were pushed and pulled. <strong>There are no conflicts</strong>
-   — the merge is automatic and deterministic.</li>
+<li>Reads <strong>every other</strong> device file in the folder (in parallel) and computes a small
+   <strong>fingerprint</strong> from each peer file's <code>sha256:</code> header (the content hash already in the file — no
+   re-hash, no deserialize) plus this device's tombstone count. If our own file is present in the
+   listing, nothing local is dirty, and that fingerprint matches the one we stored after the last
+   successful sync, the run <strong>returns immediately</strong> — it never deserializes the peers, loads the local
+   entity graph, or rewrites its file. So an idle auto-sync tick on a large collection costs reading a
+   couple of small device files and comparing a hash, not re-materializing and re-serializing the whole
+   dataset. (Downloading the peer files is cheap; loading the full local graph and rewriting the
+   multi-MB snapshot is the expensive part this skips. A peer that <em>changed</em> bumps its header hash; a
+   local edit sets a dirty flag; a deletion changes the tombstone count — any of which forces the full
+   path. The fingerprint is only re-stored when no peer file was unreadable, so a corrupt peer keeps the
+   full path running and stays visible. The same applies to a peer that is <em>listed</em> but whose file cannot
+   be read at all — it counts toward <code>UnreadableDevices</code>, blocks both the fast-path and the fingerprint
+   store, and so keeps being reported every run instead of silently vanishing from the merge.)</li>
+<li>When something did change, it deserializes the peer files (each in its own try/catch — a corrupt or
+   half-written file is skipped and counted, never aborting the run), loads this device's live entities,
+   and stamps any <strong>dirty</strong> ones with a fresh Lamport number and this device id (all stamps persisted in
+   <strong>one</strong> batched store call), then unions every tombstone id it learns.</li>
+<li>Applies the union of tombstone ids — hard-deleting locally (<strong>delete-wins</strong>) — <strong>before</strong> writing its
+   own file. Only then does it write <strong>the one file this device owns</strong> (<code>devices/{deviceId}.json</code>),
+   containing its still-live entities and <strong>re-emitting the full learned tombstone set</strong>. Writing after
+   the delete means a device never re-advertises an entity it has just tombstoned, and the re-emission
+   keeps a deletion propagating even after its originating device's file is gone.</li>
+<li>Folds the remotes: every non-deleted id resolves to the highest <code>(Lamport, DeviceId)</code> winner, applied
+   only if it is newer than the local copy. There is no shared mutable object — each device only ever
+   writes its <em>own</em> file — so a concurrent write can never be lost.</li>
+<li>Returns a <code>SyncResult</code> that makes <strong>every</strong> partial outcome visible instead of letting any of them
+   masquerade as a clean success:</li>
+<li><code>Pushed</code> / <code>Pulled</code> — records sent and applied.</li>
+<li><code>Skipped</code> — incoming records that could not be applied locally (e.g. a transient constraint
+     violation); logged and retried next run.</li>
+<li><code>UnreadableDevices</code> — peer snapshots skipped because their file could not be read, their checksum
+     failed, or they would not deserialize, so the user learns a device could not be merged rather than
+     seeing "all good".</li>
+<li><code>ImagesFailed</code> — referenced images that could not transfer this run; image transfer is isolated
+     per blob, so one bad image is counted and retried while the rest still sync.</li>
+<li><code>BackendUnavailable</code> — the configured location was not reachable, so <strong>nothing</strong> synced; the UI
+     shows a distinct "not reachable" notice and does <strong>not</strong> update the last-synced time (an
+     unavailable backend must never look like a successful empty sync).</li>
 </ol>
+<p>When any of these is non-zero the UI raises a single non-blocking notice listing what needs
+   attention, instead of silently reporting success. <strong>There are no conflicts</strong> — the merge is automatic
+   and deterministic.</p>
+<h3 id="integrity-self-recovery">Integrity &amp; self-recovery<a class="headerlink" href="#integrity-self-recovery" title="Permanent link">&para;</a></h3>
+<p>Each device file is written with a <code>sha256:&lt;hex&gt;</code> header line over its JSON body. On read, the body is
+re-hashed and compared; a mismatch — or a <strong>missing</strong> header, since every file we write carries one, so
+its absence means foreign or truncated content — marks that one file unreadable, so it is skipped (and
+counted in <code>UnreadableDevices</code>) while the rest still merge. The check is strict on purpose: unverified
+content is never trusted just because it parses. The local database is the source of truth and is never
+bulk-cleared by sync, so a device whose own file is lost or corrupt simply regenerates it from its
+database on the next run — the fingerprint fast-path checks that our own id is still in the folder
+listing, so a vanished own file always forces a full run that rewrites it.</p>
+<h3 id="known-scaling-limits">Known scaling limits<a class="headerlink" href="#known-scaling-limits" title="Permanent link">&para;</a></h3>
+<p>The fingerprint fast-path makes an <em>idle</em> tick cheap, but a tick that <em>does</em> change still reloads the
+full local entity graph and rewrites the device's <strong>entire</strong> snapshot file — even for a one-item edit,
+because each device file holds that device's complete known state. For very large collections (tens to
+hundreds of thousands of entries) that per-change rewrite is the real ceiling; splitting the snapshot
+into per-kind or per-chunk shards (so a small edit writes a small file) is tracked as future work and
+must preserve the no-shared-write-race, deterministic-merge, and transitive-propagation guarantees.</p>
+<h3 id="deleting-a-parent-collection">Deleting a parent collection<a class="headerlink" href="#deleting-a-parent-collection" title="Permanent link">&para;</a></h3>
+<p>A collection (<code>Preset</code>) may have sub-collections pointing at it via <code>ParentPresetId</code>, and that foreign key
+is <code>Restrict</code> so the <strong>interactive</strong> "delete collection" guard still blocks deleting a parent that has
+children. The <strong>sync</strong> delete path, however, must not abort when a parent's tombstone arrives before a
+peer's still-live child. This is handled as the <code>Preset</code> kind's <strong>pre-delete hook</strong>: before the shared
+delete loop removes any rows, the hook re-parents any surviving child of a to-be-deleted parent to the
+root (<code>ParentPresetId = null</code>). So delete-wins propagates without the <code>Restrict</code> FK aborting the whole
+run, the fix-up lives next to the <code>Preset</code> registration rather than as a special case in the generic
+deletion code, and the interactive guard is left untouched.</p>
 <h2 id="the-file-system-backend">The file-system backend<a class="headerlink" href="#the-file-system-backend" title="Permanent link">&para;</a></h2>
-<p><code>FileSystemSyncBackend</code> stores each document as a JSON file in a kind-specific subdirectory; sync uses
-a single <code>devices/</code> directory holding one <code>device-{deviceId}.sync.json</code> per install, plus images under
-<code>images/</code>. The backend and serializer are kind-agnostic. The root directory is configurable via app
-preferences — point multiple devices at the same shared folder (a cloud-drive folder, network share,
-etc.).</p>
+<p><code>FileSystemSyncBackend</code> stores each document as one flat <code>{id}.json</code> file in a kind-specific
+subdirectory; sync uses a single <code>devices/</code> directory holding one file per install (named by its
+device id), plus images under <code>images/</code>. There is no per-file revision scheme — each device only ever
+rewrites its <em>own</em> file, a write goes to a temp file and is moved into place atomically, and the
+<code>sha256:</code> header catches a torn read on the other side, so one flat name per document is all the
+layout needs. (An earlier <code>{id}.{revision}.json</code> scheme was removed as a clean break; old-format
+files are ignored by readers and swept away by the owning device's next write.) The backend and
+serializer are kind-agnostic. The root directory is configurable via app preferences — point multiple
+devices at the same shared folder (a cloud-drive folder, network share, etc.).</p>
 <h2 id="automatic-merge-no-conflict-dialog">Automatic merge (no conflict dialog)<a class="headerlink" href="#automatic-merge-no-conflict-dialog" title="Permanent link">&para;</a></h2>
 <p>When two devices edit the <strong>same</strong> entity without seeing each other, the higher <code>(Lamport, DeviceId)</code>
 wins automatically — there is no "keep mine / keep theirs" prompt. The losing edit is not destroyed;
-it still lives in its origin device's file and is recoverable. (<code>ISyncService.ResolveAsync</code> remains on
-the port for backward compatibility but is a no-op, since the engine never raises a conflict.)</p>
+it still lives in its origin device's file and is recoverable. There is no conflict-resolution call on
+the port — <code>ISyncService</code> exposes only <code>SyncAsync()</code>, because the engine never raises a conflict.</p>
 <h2 id="deletions-tombstones">Deletions &amp; tombstones<a class="headerlink" href="#deletions-tombstones" title="Permanent link">&para;</a></h2>
 <p>Deleting an object <strong>hard-deletes its row immediately</strong> — the user's data leaves the disk at once — and
 records a tiny <code>Tombstone</code> (just the deleted id) in the same transaction. Each device file carries its
@@ -1482,7 +1639,7 @@ extra ports:</p>
 </tr>
 <tr>
 <td><code>ICloudFileStore</code></td>
-<td>Per-provider file/folder CRUD; <code>CloudSyncBackend</code> adapts it to the <code>{id}.{revision}.json</code> layout.</td>
+<td>Per-provider file/folder CRUD; <code>CloudSyncBackend</code> adapts it to the flat <code>{id}.json</code> layout.</td>
 </tr>
 <tr>
 <td><code>ICloudRootProvider</code></td>

@@ -407,6 +407,8 @@
       
         
       
+        
+      
     
     
       
@@ -539,6 +541,27 @@
   
   <span class="md-ellipsis">
     Items
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search
   </span>
   
 
@@ -1168,11 +1191,12 @@ OneDrive, a network share, …).</p>
 </table>
 <p>You can also trigger a sync manually at any time.</p>
 <h2 id="what-a-sync-does">What a sync does<a class="headerlink" href="#what-a-sync-does" title="Permanent link">&para;</a></h2>
-<p>Each device writes <strong>one file of its own</strong> to the shared folder (<code>device-&lt;id&gt;.sync.json</code>) holding the
+<p>Each device writes <strong>one file of its own</strong> to the shared folder (named by its device id) holding the
 data it knows about, then reads the other devices' files and merges them in. Because a device only ever
 writes <em>its own</em> file, two devices syncing at once can never overwrite each other's changes.</p>
-<p>After a sync you'll see how many records were pushed and pulled. There's nothing to resolve by hand —
-the merge is automatic (see below).</p>
+<p>The sync icon in the top bar opens a small status panel: press <strong>Sync now</strong> there and the panel stays
+open while it works — you'll see "Syncing…" turn into how many records were pushed and pulled, plus
+the updated last-sync time. There's nothing to resolve by hand — the merge is automatic (see below).</p>
 <h2 id="when-two-devices-change-the-same-thing">When two devices change the same thing<a class="headerlink" href="#when-two-devices-change-the-same-thing" title="Permanent link">&para;</a></h2>
 <p>You no longer get a conflict prompt. If the same item is edited on two devices before they sync,
 Collectary keeps the <strong>most recent</strong> edit automatically and everywhere — both devices end up showing
