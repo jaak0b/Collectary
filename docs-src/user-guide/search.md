@@ -92,6 +92,17 @@ Text matching ignores upper/lower case for A–Z. Values with spaces go in quote
 easiest written as `2025-06-15`. Currency values may include the symbol (`Price > €10`), percentages
 the `%` sign, and durations understand `90`, `1:30`, and `1h 30m`.
 
+Dates also work in the format your app language uses — a German user can write
+`created = 13.06.2026` just as well as `created = 2026-06-13`. A date always means *your* calendar
+day: `created = 2026-06-13` finds everything you created on June 13th your time, even if the clock
+in another timezone had already rolled over to the next day.
+
+Measurements and weights understand units. A bare number compares amounts regardless of unit
+(`weight = 500` finds both *500 g* and *500 kg*), while a value with a unit only matches that unit:
+`weight = "500 g"` finds the 500-gram item and leaves the 500-kilogram one alone. Units are matched
+by name, not converted — `weight > "1 kg"` won't find an item stored as *1500 g*. Sorting by such a
+field orders by the raw number, ignoring units.
+
 `!=`, `!~`, and `not in` only match items that *have* a value for that field — an item without a
 `Status` at all is not matched by `Status != open`. Use `is empty` to find those.
 
