@@ -78,17 +78,40 @@ public class BasicQueryTranslatorTest
     [TestCase("a = 1 AND a = 2")]
     [TestCase("a = 1 ORDER BY x, y")]
     [TestCase("a = ")]
-    [TestCase("a in (\"x,y\")")]
-    [TestCase("a = \"x,y\"")]
     public void TryFromText_QueriesBeyondBasicMode_ReturnNull(string text)
     {
         Assert.That(_translator.TryFromText(text), Is.Null);
     }
 
     [Test]
-    public void TryFromText_InListWhereOnlySomeValuesContainCommas_IsRejected()
+    public void TryFromText_QuotedValueContainingComma_IsAccepted()
     {
-        Assert.That(_translator.TryFromText("a in (x, \"y,z\")"), Is.Null);
+        var model = _translator.TryFromText("preset = \"Smith, John\"");
+
+        Assert.That(model, Is.Not.Null);
+        Assert.That(model!.Rows.Single().Values, Is.EqualTo(new[] { "Smith, John" }));
+    }
+
+    [Test]
+    public void TryFromText_InListWithQuotedCommaValue_KeepsOperandsSeparate()
+    {
+        var model = _translator.TryFromText("a in (x, \"y,z\")");
+
+        Assert.That(model, Is.Not.Null);
+        Assert.That(model!.Rows.Single().Values, Is.EqualTo(new[] { "x", "y,z" }));
+    }
+
+    [Test]
+    public void ToText_ValuesContainingCommas_RoundTripUnchanged()
+    {
+        var text = _translator.ToText(new BasicQueryModel
+        {
+            Rows = [new BasicConditionRow("a", QueryOperatorKind.In, ["x", "y,z"])],
+        });
+
+        Assert.That(text, Is.EqualTo("a in (x, \"y,z\")"));
+        var reparsed = _translator.TryFromText(text);
+        Assert.That(reparsed!.Rows.Single().Values, Is.EqualTo(new[] { "x", "y,z" }));
     }
 
     [Test]

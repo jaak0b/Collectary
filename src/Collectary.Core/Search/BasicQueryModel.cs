@@ -77,8 +77,6 @@ public class BasicQueryTranslator
             return false;
         if (condition.Operator is not (QueryOperatorKind.Equals or QueryOperatorKind.In or QueryOperatorKind.Contains))
             return false;
-        if (condition.Operands.Any(o => o.Text.Contains(',')))
-            return false;
 
         rows.Add(new BasicConditionRow(
             condition.Field, condition.Operator, condition.Operands.Select(o => o.Text).ToList()));
