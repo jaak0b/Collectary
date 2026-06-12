@@ -1,3 +1,6 @@
+using System.Globalization;
+using Collectary.Core.Search;
+
 namespace Collectary.Core.Domain.Fields;
 
 public enum AutoNumberStrategy { HighestPlusOne, FillGaps }
@@ -7,7 +10,7 @@ public enum DuplicateHandling { Error, Warn, Allow }
 [LocalizedName("FieldType_AutoNumber")]
 [FieldIcon(IconGlyphs.NumberSymbol)]
 [FieldCatalog(17, FieldCategory.TextAndNumbers)]
-public class AutoNumberFieldDefinition : FieldDefinition<AutoNumberFieldValue>, IListDisplayable
+public class AutoNumberFieldDefinition : FieldDefinition<AutoNumberFieldValue>, IListDisplayable, ISearchableFieldDefinition
 {
     public bool Editable { get; set; }
     public AutoNumberStrategy Strategy { get; set; } = AutoNumberStrategy.HighestPlusOne;
@@ -27,6 +30,22 @@ public class AutoNumberFieldDefinition : FieldDefinition<AutoNumberFieldValue>, 
         Strategy = src.Strategy;
         OnDuplicate = src.OnDuplicate;
     }
+
+    private ComparableFieldSearch<AutoNumberFieldValue, int> Search => new(
+        v => v.Value, v => v.Value,
+        raw => int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null);
+
+    public IReadOnlyList<QueryOperatorKind> SupportedOperators => Search.Operators;
+
+    public IEnumerable<string> ValueSuggestions() => [];
+
+    public bool TryCreateMatcher(QueryOperatorKind op, IReadOnlyList<string> operands,
+        out IFieldConditionMatcher? matcher, out QueryErrorCode? error) =>
+        Search.TryCreateMatcher(op, operands, out matcher, out error);
+
+    public IComparable? SortKey(Item item, FieldValue? value) => Search.SortKey(item, value);
 }
 
 public class AutoNumberFieldValue : FieldValue<AutoNumberFieldDefinition>

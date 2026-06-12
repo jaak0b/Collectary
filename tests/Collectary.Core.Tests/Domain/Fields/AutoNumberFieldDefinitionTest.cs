@@ -1,4 +1,6 @@
+using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Search;
 
 namespace Collectary.Core.Tests.Domain.Fields;
 
@@ -81,5 +83,56 @@ public class AutoNumberFieldDefinitionTest
             Assert.That(def.OnDuplicate, Is.EqualTo(DuplicateHandling.Error));
             Assert.That(def.ShowInList, Is.True);
         });
+    }
+
+    [Test]
+    public void SearchSurface_ExposesComparisonOperatorsAndNoSuggestions()
+    {
+        ISearchableFieldDefinition search = new AutoNumberFieldDefinition();
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Equals));
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.Greater));
+        Assert.That(search.SupportedOperators, Does.Contain(QueryOperatorKind.IsEmpty));
+        Assert.That(search.ValueSuggestions(), Is.Empty);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesTheStoredNumber()
+    {
+        var def = new AutoNumberFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["7"], out var matcher, out _), Is.True);
+
+        var hit = new Item { Values = [new AutoNumberFieldValue { FieldDefinitionId = def.Id, Value = 7 }] };
+        var miss = new Item { Values = [new AutoNumberFieldValue { FieldDefinitionId = def.Id, Value = 8 }] };
+        Assert.That(matcher!.Matches(hit, [def.Id]), Is.True);
+        Assert.That(matcher.Matches(miss, [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Greater_MatchesLargerStoredNumber()
+    {
+        var def = new AutoNumberFieldDefinition();
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Greater, ["5"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new AutoNumberFieldValue { FieldDefinitionId = def.Id, Value = 6 }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+        Assert.That(matcher.Matches(new Item(), [def.Id]), Is.False);
+    }
+
+    [Test]
+    public void TryCreateMatcher_NonNumericOperand_ReportsInvalidValue()
+    {
+        ISearchableFieldDefinition search = new AutoNumberFieldDefinition();
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["abc"], out _, out var error), Is.False);
+        Assert.That(error, Is.EqualTo(QueryErrorCode.InvalidValue));
+    }
+
+    [Test]
+    public void SortKey_ReturnsTheStoredNumber()
+    {
+        ISearchableFieldDefinition search = new AutoNumberFieldDefinition();
+        Assert.That(search.SortKey(new Item(), new AutoNumberFieldValue { Value = 7 }), Is.EqualTo(7));
+        Assert.That(search.SortKey(new Item(), null), Is.Null);
     }
 }
