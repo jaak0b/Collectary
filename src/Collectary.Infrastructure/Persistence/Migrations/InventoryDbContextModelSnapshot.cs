@@ -25,20 +25,20 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<long>("BaseRevision")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("GrantedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("GrantedByUserId")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
+
+                    b.Property<long>("Lamport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LastModifiedByDeviceId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -195,18 +195,18 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
+
+                    b.Property<long>("Lamport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LastModifiedByDeviceId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -278,20 +278,20 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("FieldLabelLayout")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
+
+                    b.Property<long>("Lamport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LastModifiedByDeviceId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -348,14 +348,14 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<long>("BaseRevision")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
+
+                    b.Property<long>("Lamport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LastModifiedByDeviceId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -378,6 +378,32 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("SharedFields", (string)null);
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.SyncState", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("MaxObservedLamport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SyncFingerprint")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SyncState", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Tombstone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tombstones", (string)null);
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -386,18 +412,18 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<long>("BaseRevision")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
+
+                    b.Property<long>("Lamport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LastModifiedByDeviceId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -425,6 +451,25 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
 
                     b.ToTable("AudioFieldDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AutoNumberFieldDefinition", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldDefinition");
+
+                    b.Property<bool>("Editable")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("OnDuplicate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ShowInList")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Strategy")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("AutoNumberFieldDefinitions", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldDefinition", b =>
@@ -766,6 +811,16 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.ToTable("AudioFieldValues", (string)null);
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AutoNumberFieldValue", b =>
+                {
+                    b.HasBaseType("Collectary.Core.Domain.FieldValue");
+
+                    b.Property<int?>("Value")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("AutoNumberFieldValues", (string)null);
                 });
 
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldValue", b =>
@@ -1190,6 +1245,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AutoNumberFieldDefinition", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.AutoNumberFieldDefinition", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Collectary.Core.Domain.Fields.BarcodeFieldDefinition", b =>
                 {
                     b.HasOne("Collectary.Core.Domain.FieldDefinition", null)
@@ -1519,6 +1583,15 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.HasOne("Collectary.Core.Domain.FieldValue", null)
                         .WithOne()
                         .HasForeignKey("Collectary.Core.Domain.Fields.AudioFieldValue", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Collectary.Core.Domain.Fields.AutoNumberFieldValue", b =>
+                {
+                    b.HasOne("Collectary.Core.Domain.FieldValue", null)
+                        .WithOne()
+                        .HasForeignKey("Collectary.Core.Domain.Fields.AutoNumberFieldValue", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

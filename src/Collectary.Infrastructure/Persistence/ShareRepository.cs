@@ -25,8 +25,6 @@ public class ShareRepository : IShareRepository
         {
             existing.Permission = share.Permission;
             existing.GrantedByUserId = share.GrantedByUserId;
-            existing.IsDeleted = false;
-            existing.DeletedAt = null;
             existing.UpdatedAt = DateTime.UtcNow;
             ((ISyncable)existing).StampModified(share.GrantedByUserId);
         }
@@ -37,11 +35,12 @@ public class ShareRepository : IShareRepository
     public async Task RemoveAsync(Guid presetId, Guid sharedWithUserId)
     {
         using var db = _dbFactory();
-        var existing = await db.CollectionShares.IgnoreQueryFilters()
+        var existing = await db.CollectionShares
             .FirstOrDefaultAsync(s => s.PresetId == presetId && s.SharedWithUserId == sharedWithUserId);
-        if (existing is not null && !existing.IsDeleted)
+        if (existing is not null)
         {
-            ((ISyncable)existing).StampDeleted(existing.GrantedByUserId);
+            db.CollectionShares.Remove(existing);
+            db.Tombstones.Add(new Tombstone { Id = existing.Id });
             await db.SaveChangesAsync();
         }
     }
@@ -49,10 +48,13 @@ public class ShareRepository : IShareRepository
     public async Task RemoveAllForPresetAsync(Guid presetId)
     {
         using var db = _dbFactory();
-        var live = await db.CollectionShares.IgnoreQueryFilters()
-            .Where(s => s.PresetId == presetId && !s.IsDeleted).ToListAsync();
+        var live = await db.CollectionShares
+            .Where(s => s.PresetId == presetId).ToListAsync();
         foreach (var share in live)
-            ((ISyncable)share).StampDeleted(share.GrantedByUserId);
+        {
+            db.CollectionShares.Remove(share);
+            db.Tombstones.Add(new Tombstone { Id = share.Id });
+        }
         await db.SaveChangesAsync();
     }
 

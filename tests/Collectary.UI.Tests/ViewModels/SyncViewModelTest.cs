@@ -1,5 +1,8 @@
 using Collectary.Core.Ports;
+using Collectary.Presentation.Localization;
+using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
+using Collectary.UI.Tests.Infrastructure;
 using FakeItEasy;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -16,10 +19,30 @@ public class SyncViewModelTest
         _sync = A.Fake<ISyncService>();
         _status = A.Fake<ISyncStatus>();
         A.CallTo(() => _status.IsConfigured).Returns(true);
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, Array.Empty<SyncConflict>()));
+        A.CallTo(() => _status.LocationLabel).Returns("Sync folder");
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0));
     }
 
-    private SyncViewModel Make() => new(_sync, _status);
+    private SyncViewModel Make(IUiDispatcher? ui = null) => new(_sync, _status, ui ?? new InlineUiDispatcher(), new InlineBackgroundRunner());
+
+    [Test]
+    public async Task SyncNow_MarshalsUiStateThroughTheDispatcher()
+    {
+        var ui = new RecordingUiDispatcher();
+        var vm = Make(ui);
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ui.PostCount, Is.GreaterThan(0), "UI-state writes must go through the dispatcher");
+            Assert.That(vm.LastSyncedAt, Is.Null, "state must not be applied until the dispatcher runs the posted action");
+        });
+
+        ui.Drain();
+
+        Assert.That(vm.LastSyncedAt, Is.Not.Null, "draining the dispatcher applies the queued UI updates");
+    }
 
     [Test]
     public void Close_RaisesCloseRequested()
@@ -57,39 +80,6 @@ public class SyncViewModelTest
     }
 
     [Test]
-    public async Task SyncNow_WithConflicts_PopulatesConflicts()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.That(vm.HasConflicts, Is.True);
-        Assert.That(vm.Conflicts, Has.Count.EqualTo(1));
-    }
-
-    [Test]
-    public async Task SyncNow_WithUnresolvedConflicts_DoesNotStampLastSynced()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.HasConflicts, Is.True);
-            Assert.That(vm.LastSyncedAt, Is.Null, "must not claim a successful sync while conflicts remain");
-        });
-    }
-
-    [Test]
     public async Task SyncNow_WhenSyncThrows_SetsError()
     {
         A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
@@ -97,7 +87,7 @@ public class SyncViewModelTest
 
         await vm.SyncNowCommand.ExecuteAsync(null);
 
-        Assert.That(vm.HasError, Is.True);
+        Assert.That(vm.NeedsAttention, Is.True);
         Assert.That(vm.IsSyncing, Is.False);
     }
 
@@ -156,43 +146,251 @@ public class SyncViewModelTest
     }
 
     [Test]
-    public async Task ConflictResolution_WithMultipleConflicts_KeepsOthersAndDefersResync()
-    {
-        var c1 = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "M1", "T1", 2, 2);
-        var c2 = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "M2", "T2", 2, 2);
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[] { c1, c2 }));
-        var vm = Make();
-        await vm.SyncNowCommand.ExecuteAsync(null);
-        var secondVm = vm.Conflicts[1];
-
-        await vm.Conflicts[0].KeepMineCommand.ExecuteAsync(null);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.Conflicts, Has.Count.EqualTo(1), "resolving one conflict must not tear down the others");
-            Assert.That(vm.Conflicts.Single(), Is.SameAs(secondVm), "the still-unresolved conflict instance must be preserved");
-        });
-        A.CallTo(() => _sync.SyncAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Test]
     public void NeedsAttention_WhenClean_IsFalse()
     {
         Assert.That(Make().NeedsAttention, Is.False);
     }
 
     [Test]
-    public async Task NeedsAttention_WithConflicts_IsTrue()
+    public void Severity_WhenClean_IsNone()
     {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
+        var vm = Make();
+        Assert.Multiple(() =>
         {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
+            Assert.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.None));
+            Assert.That(vm.IsError, Is.False);
+        });
+    }
+
+    [Test]
+    public void SettingSeverity_RaisesPropertyChangedForDerivedFlags()
+    {
+        var vm = Make();
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        vm.Severity = SyncNoticeSeverity.Advisory;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
+            Assert.That(changed, Does.Contain(nameof(vm.IsError)));
+        });
+    }
+
+    [Test]
+    public void IsError_TracksSeverity()
+    {
+        var vm = Make();
+
+        vm.Severity = SyncNoticeSeverity.Advisory;
+        Assert.That(vm.IsError, Is.False);
+
+        vm.Severity = SyncNoticeSeverity.Error;
+        Assert.That(vm.IsError, Is.True);
+    }
+
+    [Test]
+    public async Task SyncNow_AfterACleanSync_ShowsThePushedAndPulledCounts()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(2, 3));
         var vm = Make();
 
         await vm.SyncNowCommand.ExecuteAsync(null);
 
-        Assert.That(vm.NeedsAttention, Is.True);
+        Assert.That(vm.LastResultText, Does.Contain("2").And.Contain("3"),
+            "the user must see how many records were pushed and pulled");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenTheSyncFails_LeavesNoStaleResultText()
+    {
+        var vm = Make();
+        await vm.SyncNowCommand.ExecuteAsync(null);
+        A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.LastResultText, Is.Null, "a failed sync must not display the previous run's counts");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenBackendUnavailable_ShowsNoResultText()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, BackendUnavailable: true));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.LastResultText, Is.Null, "an unavailable location produced no transfer to report");
+    }
+
+    [Test]
+    public async Task Severity_WhenBackendUnavailable_IsAdvisoryNotError()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, BackendUnavailable: true));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.Advisory),
+            "an unreachable location is a retry-able advisory, not a hard failure");
+    }
+
+    [Test]
+    public async Task Severity_WhenPartialSync_IsAdvisory()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, Skipped: 1));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.Advisory));
+    }
+
+    [Test]
+    public async Task Severity_WhenSyncThrows_IsError()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.Error));
+    }
+
+    [Test]
+    public async Task Severity_AfterPartialThenCleanSync_ResetsToNone()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, Skipped: 1));
+        var vm = Make();
+        await vm.SyncNowCommand.ExecuteAsync(null);
+        Assume.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.Advisory));
+
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0));
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.None));
+            Assert.That(vm.NeedsAttention, Is.False);
+        });
+    }
+
+    [Test]
+    public void ReportError_SurfacesTheGenericSyncErrorNotice()
+    {
+        var vm = Make();
+
+        vm.ReportError();
+
+        Assert.That(vm.NeedsAttention, Is.True, "a surfaced scheduler failure must flag attention");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenNothingSkipped_LeavesNoPartialNotice()
+    {
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.NeedsAttention, Is.False, "a clean sync (nothing skipped) must not raise a partial-sync notice");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenSomeEntitiesSkipped_FlagsAttentionButStillRecordsTheSync()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 3, 2));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.NeedsAttention, Is.True, "a partial sync must visibly flag that some items could not be applied");
+            Assert.That(vm.ErrorMessage, Does.Contain("2"), "the notice reports how many items could not be applied");
+            Assert.That(vm.LastSyncedAt, Is.Not.Null, "the sync still completed, so the timestamp updates");
+        });
+    }
+
+    [Test]
+    public async Task SyncNow_WhenMultipleIssuesInGerman_JoinsClausesWithTheLocalizedSeparator()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, Skipped: 2, ImagesFailed: 3));
+        var vm = Make();
+        try
+        {
+            LocalizationService.Instance.Apply("de");
+
+            await vm.SyncNowCommand.ExecuteAsync(null);
+
+            Assert.That(vm.ErrorMessage, Does.Contain(" und "),
+                "German joins the issue clauses with 'und', not a comma splice");
+        }
+        finally
+        {
+            LocalizationService.Instance.Apply("en");
+        }
+    }
+
+    [Test]
+    public async Task SyncNow_WhenBackendUnavailable_ShowsNoticeAndDoesNotRecordASync()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, BackendUnavailable: true));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.LastSyncedAt, Is.Null, "an unavailable backend did not sync, so it must not look successful");
+            Assert.That(vm.NeedsAttention, Is.True, "the user is told the sync location was unreachable");
+        });
+    }
+
+    [Test]
+    public async Task SyncNow_WhenBackendUnavailable_NamesTheConfiguredLocation()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, BackendUnavailable: true));
+        A.CallTo(() => _status.LocationLabel).Returns("OneDrive (Collectary)");
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.ErrorMessage, Does.Contain("OneDrive (Collectary)"),
+            "the unreachable notice tells the user which location failed");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenADeviceWasUnreadable_FlagsAttentionButStillRecordsTheSync()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 1, 0, UnreadableDevices: 1));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.NeedsAttention, Is.True, "an excluded peer device must be surfaced");
+            Assert.That(vm.ErrorMessage, Does.Contain("1"), "the notice reports how many device files were unreadable");
+            Assert.That(vm.LastSyncedAt, Is.Not.Null, "the sync still ran, so the timestamp updates");
+        });
+    }
+
+    [Test]
+    public async Task SyncNow_WhenAnImageFailed_FlagsAttentionButStillRecordsTheSync()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, 0, ImagesFailed: 2));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.NeedsAttention, Is.True, "an image that could not transfer must be surfaced");
+            Assert.That(vm.ErrorMessage, Does.Contain("2"), "the notice reports how many images failed to transfer");
+            Assert.That(vm.LastSyncedAt, Is.Not.Null);
+        });
     }
 
     [Test]
@@ -207,23 +405,6 @@ public class SyncViewModelTest
     }
 
     [Test]
-    public async Task NeedsAttention_WhenConflictsAppear_RaisesPropertyChanged()
-    {
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[]
-        {
-            new SyncConflict(SyncEntityKind.Preset, Guid.NewGuid(), "Mine", "Theirs", 2, 2),
-        }));
-        var vm = Make();
-        var changed = new List<string?>();
-        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
-
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
-        Assert.That(changed, Does.Contain(nameof(vm.HasConflicts)));
-    }
-
-    [Test]
     public async Task NeedsAttention_WhenErrorAppears_RaisesPropertyChanged()
     {
         A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
@@ -233,22 +414,10 @@ public class SyncViewModelTest
 
         await vm.SyncNowCommand.ExecuteAsync(null);
 
-        Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
-        Assert.That(changed, Does.Contain(nameof(vm.HasError)));
-    }
-
-    [Test]
-    public async Task ConflictKeepMine_ResolvesKeepLocalAndResyncs()
-    {
-        var conflict = new SyncConflict(SyncEntityKind.Item, Guid.NewGuid(), "Mine", "Theirs", 2, 2);
-        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, new[] { conflict })).Once()
-            .Then.Returns(new SyncResult(1, 0, Array.Empty<SyncConflict>()));
-        var vm = Make();
-        await vm.SyncNowCommand.ExecuteAsync(null);
-
-        await vm.Conflicts.Single().KeepMineCommand.ExecuteAsync(null);
-
-        A.CallTo(() => _sync.ResolveAsync(conflict, true)).MustHaveHappenedOnceExactly();
-        Assert.That(vm.HasConflicts, Is.False);
+        Assert.Multiple(() =>
+        {
+            Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
+            Assert.That(changed, Does.Contain(nameof(vm.ErrorMessage)));
+        });
     }
 }

@@ -1,4 +1,5 @@
 using Collectary.Core.Domain;
+using Collectary.Core.Ports;
 using Collectary.Infrastructure.Persistence;
 
 namespace Collectary.Infrastructure.Tests.Repositories;
@@ -63,6 +64,27 @@ public class UserRepositoryTest : DbIntegrationTestBase
         var all = await _sut.GetAllAsync();
 
         Assert.That(all.Select(u => u.Username), Is.EquivalentTo(new[] { "a", "b" }));
+    }
+
+    [Test]
+    public async Task DeleteAsync_HardDeletesRowAndRecordsTombstone()
+    {
+        var sut = new UserRepository(DbFactory);
+        var user = new User { Username = "gone", DisplayName = "Gone" };
+        await sut.AddAsync(user);
+
+        await sut.DeleteAsync(user.Id);
+
+        var visible = await sut.GetByIdAsync(user.Id);
+        var store = new EfSyncStore(DbFactory, new FieldDefinitionMerger());
+        var rows = (await store.GetAllUsersAsync()).Where(u => u.Id == user.Id).ToList();
+        var tombstones = await store.GetTombstoneIdsAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(visible, Is.Null);
+            Assert.That(rows, Is.Empty, "the profile row is hard-deleted, leaving no data on disk");
+            Assert.That(tombstones, Does.Contain(user.Id), "a tombstone records the deletion so it syncs");
+        });
     }
 
     [Test]

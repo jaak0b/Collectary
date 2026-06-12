@@ -287,10 +287,18 @@
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            LetterSpacing="1"/>
 
-                <Button Content="{Binding [Profile_Switch], Source={x:Static loc:LocalizationService.Instance}}"
-                        Command="{Binding SwitchProfileCommand}"
-                        HorizontalAlignment="Left"
-                        Padding="12,6"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{Binding [Profile_Switch], Source={x:Static loc:LocalizationService.Instance}}"
+                            Command="{Binding SwitchProfileCommand}"
+                            Padding="12,6"/>
+
+                    <Button Content="{Binding [Profile_Delete], Source={x:Static loc:LocalizationService.Instance}}"
+                            Command="{Binding DeleteProfileCommand}"
+                            Padding="12,6"
+                            Background="Transparent"
+                            Foreground="{DynamicResource DangerBrush}"
+                            BorderBrush="{DynamicResource DangerBrush}"/>
+                </StackPanel>
             </StackPanel>
 
         </StackPanel>

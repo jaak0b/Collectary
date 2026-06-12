@@ -12,15 +12,13 @@ public class PresetRepository : IPresetRepository
     private readonly IFieldDefinitionMerger _merger;
     private readonly IAppLogger _logger;
     private readonly ICurrentUser? _currentUser;
-    private readonly ISyncStatus? _syncStatus;
 
-    public PresetRepository(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null, ICurrentUser? currentUser = null, ISyncStatus? syncStatus = null)
+    public PresetRepository(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null, ICurrentUser? currentUser = null)
     {
         _dbFactory = dbFactory;
         _merger = merger;
         _logger = logger ?? new NullAppLogger();
         _currentUser = currentUser;
-        _syncStatus = syncStatus;
     }
 
     private IQueryable<Preset> WithDetails(IQueryable<Preset> query) =>
@@ -160,10 +158,8 @@ public class PresetRepository : IPresetRepository
         var preset = await db.Presets.FindAsync(id);
         if (preset is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            ((ISyncable)preset).StampDeleted(_currentUser?.AuthenticatedId);
-        else
-            db.Presets.Remove(preset);
+        db.Presets.Remove(preset);
+        db.Tombstones.Add(new Tombstone { Id = id });
 
         await db.SaveChangesAsync();
     }

@@ -22,7 +22,7 @@ public class EfSyncStore : ISyncStore
         _logger = logger ?? new NullAppLogger();
         _ops = new Dictionary<SyncEntityKind, EntityOps>
         {
-            [SyncEntityKind.Preset] = OpsFor<Preset>(),
+            [SyncEntityKind.Preset] = OpsFor<Preset>(ReparentOrphanedChildrenAsync),
             [SyncEntityKind.Item] = OpsFor<Item>(),
             [SyncEntityKind.SharedField] = OpsFor<SharedField>(),
             [SyncEntityKind.User] = OpsFor<User>(),
@@ -31,14 +31,30 @@ public class EfSyncStore : ISyncStore
     }
 
     private sealed record EntityOps(
-        Func<InventoryDbContext, Guid, Task<ISyncable?>> Find,
         Func<InventoryDbContext, Guid, Task> Delete,
-        Func<InventoryDbContext, DateTime, Task<IReadOnlyList<Guid>>> Purge);
+        Func<InventoryDbContext, IReadOnlyCollection<Guid>, Task<IReadOnlyList<ISyncable>>> FindMany,
+        Func<InventoryDbContext, ISet<Guid>, Task> DeleteMany,
+        Func<InventoryDbContext, Task<bool>> AnyDirty,
+        Func<InventoryDbContext, ISet<Guid>, Task>? PreDelete = null);
 
-    private EntityOps OpsFor<T>() where T : DomainObject, ISyncable => new(
-        async (db, id) => await db.Set<T>().IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id),
-        async (db, id) => db.Set<T>().RemoveRange(await db.Set<T>().IgnoreQueryFilters().Where(e => e.Id == id).ToListAsync()),
-        (db, cutoff) => PurgeKindAsync(db.Set<T>(), cutoff));
+    private EntityOps OpsFor<T>(Func<InventoryDbContext, ISet<Guid>, Task>? preDelete = null)
+        where T : DomainObject, ISyncable => new(
+        Delete: async (db, id) => db.Set<T>().RemoveRange(await db.Set<T>().Where(e => e.Id == id).ToListAsync()),
+        FindMany: async (db, ids) =>
+            (await db.Set<T>().Where(e => ids.Contains(e.Id)).ToListAsync()).Cast<ISyncable>().ToList(),
+        DeleteMany: async (db, ids) =>
+            db.Set<T>().RemoveRange(await db.Set<T>().Where(e => ids.Contains(e.Id)).ToListAsync()),
+        AnyDirty: db => db.Set<T>().AnyAsync(e => e.IsDirty),
+        PreDelete: preDelete);
+
+    private async Task ReparentOrphanedChildrenAsync(InventoryDbContext db, ISet<Guid> idSet)
+    {
+        var orphanedChildren = await db.Presets
+            .Where(p => p.ParentPresetId != null && idSet.Contains(p.ParentPresetId.Value) && !idSet.Contains(p.Id))
+            .ToListAsync();
+        foreach (var child in orphanedChildren)
+            child.ParentPresetId = null;
+    }
 
     private EntityOps OpsFor(SyncEntityKind kind) =>
         _ops.TryGetValue(kind, out var ops)
@@ -48,37 +64,37 @@ public class EfSyncStore : ISyncStore
     public async Task<IReadOnlyList<Preset>> GetAllPresetsAsync()
     {
         using var db = _dbFactory();
-        return await WithPresetDetails(db.Presets.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
+        return await WithPresetDetails(db.Presets.AsNoTracking()).ToListAsync();
     }
 
     public async Task<IReadOnlyList<Item>> GetAllItemsAsync()
     {
         using var db = _dbFactory();
-        return await WithItemDetails(db.Items.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
+        return await WithItemDetails(db.Items.AsNoTracking()).ToListAsync();
     }
 
     public async Task<IReadOnlyList<SharedField>> GetAllSharedFieldsAsync()
     {
         using var db = _dbFactory();
-        return await WithSharedFieldDetails(db.SharedFields.IgnoreQueryFilters().AsNoTracking()).ToListAsync();
+        return await WithSharedFieldDetails(db.SharedFields.AsNoTracking()).ToListAsync();
     }
 
     public async Task<IReadOnlyList<User>> GetAllUsersAsync()
     {
         using var db = _dbFactory();
-        return await db.Users.IgnoreQueryFilters().AsNoTracking().ToListAsync();
+        return await db.Users.AsNoTracking().ToListAsync();
     }
 
     public async Task<IReadOnlyList<CollectionShare>> GetAllSharesAsync()
     {
         using var db = _dbFactory();
-        return await db.CollectionShares.IgnoreQueryFilters().AsNoTracking().ToListAsync();
+        return await db.CollectionShares.AsNoTracking().ToListAsync();
     }
 
     public async Task ApplyUserAsync(User user)
     {
         using var db = _dbFactory();
-        var tracked = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == user.Id);
+        var tracked = await db.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
 
         if (tracked is null)
         {
@@ -98,7 +114,7 @@ public class EfSyncStore : ISyncStore
     public async Task ApplyShareAsync(CollectionShare share)
     {
         using var db = _dbFactory();
-        var tracked = await db.CollectionShares.IgnoreQueryFilters().FirstOrDefaultAsync(s => s.Id == share.Id);
+        var tracked = await db.CollectionShares.FirstOrDefaultAsync(s => s.Id == share.Id);
 
         if (tracked is null)
         {
@@ -118,7 +134,7 @@ public class EfSyncStore : ISyncStore
 
     private async Task<string> UniqueUsernameAsync(InventoryDbContext db, string username, Guid selfId)
     {
-        var reserved = (await db.Users.IgnoreQueryFilters()
+        var reserved = (await db.Users
                 .Where(u => u.Id != selfId)
                 .Select(u => u.Username)
                 .ToListAsync())
@@ -129,7 +145,7 @@ public class EfSyncStore : ISyncStore
     public async Task ApplyPresetAsync(Preset preset)
     {
         using var db = _dbFactory();
-        var tracked = await WithPresetDetails(db.Presets.IgnoreQueryFilters())
+        var tracked = await WithPresetDetails(db.Presets)
             .FirstOrDefaultAsync(p => p.Id == preset.Id);
 
         if (tracked is null)
@@ -152,7 +168,7 @@ public class EfSyncStore : ISyncStore
     }
 
     public Task ApplyItemAsync(Item item) =>
-        ReplaceAtomicallyAsync(db => WithItemDetails(db.Items.IgnoreQueryFilters()), item.Id,
+        ReplaceAtomicallyAsync(db => WithItemDetails(db.Items), item.Id,
             (db, e) => db.Items.Add(e), item);
 
     private async Task ReplaceAtomicallyAsync<T>(
@@ -177,7 +193,7 @@ public class EfSyncStore : ISyncStore
     public async Task ApplySharedFieldAsync(SharedField sharedField)
     {
         using var db = _dbFactory();
-        var tracked = await WithSharedFieldDetails(db.SharedFields.IgnoreQueryFilters())
+        var tracked = await WithSharedFieldDetails(db.SharedFields)
             .FirstOrDefaultAsync(sf => sf.Id == sharedField.Id);
 
         if (tracked is null)
@@ -195,42 +211,103 @@ public class EfSyncStore : ISyncStore
         await db.SaveChangesAsync();
     }
 
-    public async Task MarkSyncedAsync(SyncEntityKind kind, Guid id, long baseRevision, bool dirty, long? revision = null)
+    public async Task<IReadOnlyList<Guid>> GetTombstoneIdsAsync()
     {
-        var ops = OpsFor(kind);
         using var db = _dbFactory();
-        var tracked = await ops.Find(db, id);
-        if (tracked is null)
-        {
-            _logger.Warning("MarkSynced skipped: {Kind} {Id} is no longer present locally", kind, id);
-            return;
-        }
+        return await db.Tombstones.AsNoTracking().Select(t => t.Id).ToListAsync();
+    }
 
-        tracked.BaseRevision = baseRevision;
-        if (dirty || tracked.Revision == baseRevision)
-            tracked.IsDirty = dirty;
-        if (revision.HasValue) tracked.Revision = revision.Value;
+    public async Task ApplyDeletionsAsync(IReadOnlyCollection<Guid> ids)
+    {
+        if (ids.Count == 0) return;
+        using var db = _dbFactory();
+        var idSet = ids.ToHashSet();
+
+        foreach (var ops in _ops.Values)
+            if (ops.PreDelete is not null)
+                await ops.PreDelete(db, idSet);
+
+        foreach (var ops in _ops.Values)
+            await ops.DeleteMany(db, idSet);
+
+        var already = (await db.Tombstones.Where(t => idSet.Contains(t.Id)).Select(t => t.Id).ToListAsync()).ToHashSet();
+        foreach (var id in idSet)
+            if (!already.Contains(id))
+                db.Tombstones.Add(new Tombstone { Id = id });
+
         await db.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyList<PurgedTombstone>> PurgeTombstonesAsync(DateTime cutoff)
+    public async Task StampPushedAsync(IReadOnlyCollection<PushStamp> stamps)
     {
+        if (stamps.Count == 0) return;
         using var db = _dbFactory();
-        var purged = new List<PurgedTombstone>();
-        foreach (var (kind, ops) in _ops)
-            foreach (var id in await ops.Purge(db, cutoff))
-                purged.Add(new PurgedTombstone(kind, id));
-        return purged;
+        foreach (var group in stamps.GroupBy(s => s.Kind))
+        {
+            var ids = group.Select(s => s.Id).ToList();
+            var tracked = (await OpsFor(group.Key).FindMany(db, ids)).ToDictionary(e => e.Id);
+            foreach (var stamp in group)
+            {
+                if (!tracked.TryGetValue(stamp.Id, out var entity))
+                {
+                    _logger.Warning("StampPushed skipped: {Kind} {Id} is no longer present locally", stamp.Kind, stamp.Id);
+                    continue;
+                }
+
+                entity.Lamport = stamp.Lamport;
+                entity.LastModifiedByDeviceId = stamp.DeviceId;
+                entity.BaseRevision = entity.Revision;
+                entity.IsDirty = false;
+            }
+        }
+
+        await db.SaveChangesAsync();
     }
 
-    private async Task<IReadOnlyList<Guid>> PurgeKindAsync<T>(DbSet<T> set, DateTime cutoff)
-        where T : DomainObject, ISyncable
+    public async Task<bool> HasDirtyEntitiesAsync()
     {
-        var expired = set.IgnoreQueryFilters()
-            .Where(e => e.IsDeleted && !e.IsDirty && e.DeletedAt != null && e.DeletedAt < cutoff);
-        var ids = await expired.Select(e => e.Id).ToListAsync();
-        await expired.ExecuteDeleteAsync();
-        return ids;
+        using var db = _dbFactory();
+        foreach (var ops in _ops.Values)
+            if (await ops.AnyDirty(db)) return true;
+        return false;
+    }
+
+    public async Task<long> GetMaxObservedLamportAsync()
+    {
+        using var db = _dbFactory();
+        var state = await db.SyncStates.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1);
+        return state?.MaxObservedLamport ?? 0;
+    }
+
+    public async Task SetMaxObservedLamportAsync(long value)
+    {
+        using var db = _dbFactory();
+        var state = await db.SyncStates.FirstOrDefaultAsync(s => s.Id == 1);
+        if (state is null)
+            db.SyncStates.Add(new SyncState { Id = 1, MaxObservedLamport = value });
+        else if (value > state.MaxObservedLamport)
+            state.MaxObservedLamport = value;
+        else
+            return;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<string?> GetSyncFingerprintAsync()
+    {
+        using var db = _dbFactory();
+        var state = await db.SyncStates.AsNoTracking().FirstOrDefaultAsync(s => s.Id == 1);
+        return state?.SyncFingerprint;
+    }
+
+    public async Task SetSyncFingerprintAsync(string fingerprint)
+    {
+        using var db = _dbFactory();
+        var state = await db.SyncStates.FirstOrDefaultAsync(s => s.Id == 1);
+        if (state is null)
+            db.SyncStates.Add(new SyncState { Id = 1, SyncFingerprint = fingerprint });
+        else
+            state.SyncFingerprint = fingerprint;
+        await db.SaveChangesAsync();
     }
 
     public async Task DeleteLocallyAsync(SyncEntityKind kind, Guid id)
@@ -241,18 +318,10 @@ public class EfSyncStore : ISyncStore
         await db.SaveChangesAsync();
     }
 
-    public Task<IReadOnlyList<string>> GetReferencedImageKeysAsync() =>
-        CollectImageKeysAsync(includeDeleted: true);
-
-    public Task<IReadOnlyList<string>> GetLiveReferencedImageKeysAsync() =>
-        CollectImageKeysAsync(includeDeleted: false);
-
-    private async Task<IReadOnlyList<string>> CollectImageKeysAsync(bool includeDeleted)
+    public async Task<IReadOnlyList<string>> GetReferencedImageKeysAsync()
     {
         using var db = _dbFactory();
-        var source = db.Items.AsNoTracking();
-        if (includeDeleted) source = source.IgnoreQueryFilters();
-        var items = await WithItemDetails(source).ToListAsync();
+        var items = await WithItemDetails(db.Items.AsNoTracking()).ToListAsync();
         var keys = new HashSet<string>();
         foreach (var item in items)
             foreach (var value in item.Values)
@@ -263,12 +332,12 @@ public class EfSyncStore : ISyncStore
     private void CopySyncMetadata(ISyncable source, ISyncable target)
     {
         target.UpdatedAt = source.UpdatedAt;
-        target.IsDeleted = source.IsDeleted;
-        target.DeletedAt = source.DeletedAt;
         target.Revision = source.Revision;
         target.BaseRevision = source.BaseRevision;
         target.IsDirty = source.IsDirty;
         target.LastModifiedByUserId = source.LastModifiedByUserId;
+        target.Lamport = source.Lamport;
+        target.LastModifiedByDeviceId = source.LastModifiedByDeviceId;
     }
 
     private IQueryable<Preset> WithPresetDetails(IQueryable<Preset> query) =>

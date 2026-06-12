@@ -38,4 +38,16 @@ public class UserRepository : IUserRepository
         db.Users.Add(user);
         await db.SaveChangesAsync();
     }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        using var db = _dbFactory();
+        var user = await db.Users.FindAsync(id);
+        if (user is null) return;
+
+        db.Users.Remove(user);
+        db.Tombstones.Add(new Tombstone { Id = id });
+
+        await db.SaveChangesAsync();
+    }
 }

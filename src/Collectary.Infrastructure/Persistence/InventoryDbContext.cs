@@ -16,6 +16,8 @@ public class InventoryDbContext : DbContext
     public DbSet<FieldGroup> FieldGroups => Set<FieldGroup>();
     public DbSet<User> Users => Set<User>();
     public DbSet<CollectionShare> CollectionShares => Set<CollectionShare>();
+    public DbSet<Tombstone> Tombstones => Set<Tombstone>();
+    public DbSet<SyncState> SyncStates => Set<SyncState>();
 
     public InventoryDbContext(DbContextOptions<InventoryDbContext> options) : base(options) { }
 
@@ -29,7 +31,25 @@ public class InventoryDbContext : DbContext
         ConfigureFieldValues(modelBuilder);
         ConfigureFieldGroups(modelBuilder);
         ConfigureAccounts(modelBuilder);
+        ConfigureSyncState(modelBuilder);
         ConfigureClientGeneratedKeys(modelBuilder);
+    }
+
+    private static void ConfigureSyncState(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Tombstone>(e =>
+        {
+            e.ToTable("Tombstones");
+            e.HasKey(t => t.Id);
+            e.Property(t => t.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<SyncState>(e =>
+        {
+            e.ToTable("SyncState");
+            e.HasKey(s => s.Id);
+            e.Property(s => s.Id).ValueGeneratedNever();
+        });
     }
 
     private static void ConfigureAccounts(ModelBuilder modelBuilder)
@@ -39,7 +59,6 @@ public class InventoryDbContext : DbContext
             e.ToTable("Users");
             e.HasKey(u => u.Id);
             e.HasIndex(u => u.Username).IsUnique();
-            e.HasQueryFilter(u => !u.IsDeleted);
         });
 
         modelBuilder.Entity<CollectionShare>(e =>
@@ -47,7 +66,6 @@ public class InventoryDbContext : DbContext
             e.ToTable("CollectionShares");
             e.HasKey(s => s.Id);
             e.HasIndex(s => new { s.PresetId, s.SharedWithUserId }).IsUnique();
-            e.HasQueryFilter(s => !s.IsDeleted);
         });
     }
 
@@ -81,7 +99,6 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("SharedFields");
             e.HasKey(sf => sf.Id);
-            e.HasQueryFilter(sf => !sf.IsDeleted);
             e.HasOne(sf => sf.Definition)
              .WithOne()
              .HasForeignKey<FieldDefinition>(f => f.SharedFieldId)
@@ -116,7 +133,6 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("Presets");
             e.HasKey(p => p.Id);
-            e.HasQueryFilter(p => !p.IsDeleted);
             e.HasMany(p => p.Fields)
              .WithOne()
              .HasForeignKey(f => f.PresetId)
@@ -145,7 +161,6 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("Items");
             e.HasKey(i => i.Id);
-            e.HasQueryFilter(i => !i.IsDeleted);
             e.HasMany(i => i.Values)
              .WithOne()
              .HasForeignKey(v => v.ItemId)
@@ -198,6 +213,7 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<DisplayNameFieldDefinition>().ToTable("DisplayNameFieldDefinitions");
         modelBuilder.Entity<TextFieldDefinition>().ToTable("TextFieldDefinitions");
         modelBuilder.Entity<IntegerFieldDefinition>().ToTable("IntegerFieldDefinitions");
+        modelBuilder.Entity<AutoNumberFieldDefinition>().ToTable("AutoNumberFieldDefinitions");
         modelBuilder.Entity<DecimalFieldDefinition>().ToTable("DecimalFieldDefinitions");
         modelBuilder.Entity<ColorFieldDefinition>().ToTable("ColorFieldDefinitions");
         modelBuilder.Entity<ImageFieldDefinition>().ToTable("ImageFieldDefinitions");
@@ -276,6 +292,11 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<IntegerFieldValue>(e =>
         {
             e.ToTable("IntegerFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<AutoNumberFieldValue>(e =>
+        {
+            e.ToTable("AutoNumberFieldValues");
             e.Ignore(v => v.Definition);
         });
         modelBuilder.Entity<DecimalFieldValue>(e =>

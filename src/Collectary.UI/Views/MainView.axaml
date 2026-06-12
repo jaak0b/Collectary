@@ -17,6 +17,12 @@
                 </Animation>
             </Style.Animations>
         </Style>
+        <Style Selector="Ellipse.syncDot">
+            <Setter Property="Fill" Value="{DynamicResource WarningBrush}"/>
+        </Style>
+        <Style Selector="Ellipse.syncDot.error">
+            <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
+        </Style>
     </UserControl.Styles>
 
     <Panel>
@@ -84,7 +90,7 @@
                         Padding="8,4"
                         VerticalAlignment="Center"
                         IsVisible="{Binding Sync.IsConfigured}"
-                        ToolTip.Tip="{Binding [Sync_Now], Source={x:Static loc:LocalizationService.Instance}}">
+                        ToolTip.Tip="{Binding [Sync_Status], Source={x:Static loc:LocalizationService.Instance}}">
                     <Panel>
                         <TextBlock Text="{x:Static icons:IconGlyphs.ArrowSync}"
                                    Classes="icon"
@@ -93,7 +99,8 @@
                                    RenderTransformOrigin="50%,50%"
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
                         <Ellipse Width="7" Height="7"
-                                 Fill="{DynamicResource DangerBrush}"
+                                 Classes="syncDot"
+                                 Classes.error="{Binding Sync.IsError}"
                                  HorizontalAlignment="Right"
                                  VerticalAlignment="Top"
                                  Margin="0,-2,-2,0"

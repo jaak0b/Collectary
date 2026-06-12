@@ -38,6 +38,17 @@
   <data name="DisplayNameField" xml:space="preserve"><value>Display Name</value></data>
   <data name="FieldType_Text" xml:space="preserve"><value>Text</value></data>
   <data name="FieldType_Integer" xml:space="preserve"><value>Integer</value></data>
+  <data name="FieldType_AutoNumber" xml:space="preserve"><value>Auto number</value></data>
+  <data name="AutoNumber_Editable" xml:space="preserve"><value>Number is editable</value></data>
+  <data name="AutoNumber_Strategy" xml:space="preserve"><value>Next number is</value></data>
+  <data name="AutoNumberStrategy_HighestPlusOne" xml:space="preserve"><value>Highest used number + 1</value></data>
+  <data name="AutoNumberStrategy_FillGaps" xml:space="preserve"><value>Lowest unused number (fills gaps)</value></data>
+  <data name="AutoNumber_OnDuplicate" xml:space="preserve"><value>If an entered number is already used</value></data>
+  <data name="DuplicateHandling_Error" xml:space="preserve"><value>Block saving</value></data>
+  <data name="DuplicateHandling_Warn" xml:space="preserve"><value>Show a warning</value></data>
+  <data name="DuplicateHandling_Allow" xml:space="preserve"><value>Allow it</value></data>
+  <data name="AutoNumber_DuplicateNotice" xml:space="preserve"><value>This number is already used by another item.</value></data>
+  <data name="AutoNumber_CouldNotAssign" xml:space="preserve"><value>Couldn't assign a number — try reopening the item.</value></data>
   <data name="FieldType_Decimal" xml:space="preserve"><value>Decimal</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Color</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Image</value></data>
@@ -168,12 +179,13 @@
   <data name="Import_CollectionName" xml:space="preserve"><value>New collection name</value></data>
   <data name="Import_ColumnFallback" xml:space="preserve"><value>Column {0}</value></data>
   <data name="Import_Skip" xml:space="preserve"><value>(don't import)</value></data>
-  <data name="Import_TitleColumn" xml:space="preserve"><value>Item name (title)</value></data>
+  <data name="Import_Col_Source" xml:space="preserve"><value>Column</value></data>
+  <data name="Import_Col_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Import_Name_Tooltip" xml:space="preserve"><value>Use this column as each item's name</value></data>
   <data name="Import_Include" xml:space="preserve"><value>Include</value></data>
   <data name="Import_MapTo" xml:space="preserve"><value>Map to field</value></data>
   <data name="Import_FieldType" xml:space="preserve"><value>Field type</value></data>
   <data name="Import_FieldLabel" xml:space="preserve"><value>Field name</value></data>
-  <data name="Import_UseAsName" xml:space="preserve"><value>Use as item name</value></data>
   <data name="Import_Unmappable_Note" xml:space="preserve"><value>Field types like images, files and links can't be filled from a spreadsheet, so they're shown greyed out.</value></data>
   <data name="Import_Next" xml:space="preserve"><value>Next</value></data>
   <data name="Import_Back" xml:space="preserve"><value>Back</value></data>
@@ -308,6 +320,10 @@
   <data name="Profile_Create" xml:space="preserve"><value>Create</value></data>
   <data name="Profile_Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Profile_Switch" xml:space="preserve"><value>Switch profile</value></data>
+  <data name="Profile_Delete" xml:space="preserve"><value>Delete this profile</value></data>
+  <data name="Profile_DeleteTitle" xml:space="preserve"><value>Delete profile</value></data>
+  <data name="Profile_DeleteBody" xml:space="preserve"><value>Delete "{0}"? This cannot be undone.</value></data>
+  <data name="Profile_DeleteBodyWithCollections" xml:space="preserve"><value>Delete "{0}"? This also permanently deletes the {1} collection(s) you own and everything in them. This cannot be undone.</value></data>
   <data name="Profile_NameRequired" xml:space="preserve"><value>Please enter a profile name.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Share collection</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Share with a profile</value></data>
@@ -331,19 +347,15 @@
   <data name="Sync_LastAt" xml:space="preserve"><value>Last sync: {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
   <data name="Sync_Syncing" xml:space="preserve"><value>Syncing…</value></data>
+  <data name="Sync_Result" xml:space="preserve"><value>Pushed {0}, pulled {1}.</value></data>
+  <data name="Sync_Status" xml:space="preserve"><value>Sync status</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Sync failed. Check the sync location.</value></data>
-  <data name="Sync_ConflictsTitle" xml:space="preserve"><value>Resolve sync conflicts</value></data>
-  <data name="Sync_ConflictsHint" xml:space="preserve"><value>These items changed in two places. Pick which version to keep.</value></data>
-  <data name="Sync_KeepMine" xml:space="preserve"><value>Keep mine</value></data>
-  <data name="Sync_KeepTheirs" xml:space="preserve"><value>Keep theirs</value></data>
-  <data name="Sync_KindPreset" xml:space="preserve"><value>Collection</value></data>
-  <data name="Sync_KindItem" xml:space="preserve"><value>Item</value></data>
-  <data name="Sync_KindSharedField" xml:space="preserve"><value>Shared field</value></data>
-  <data name="Sync_KindUser" xml:space="preserve"><value>Profile</value></data>
-  <data name="Sync_KindShare" xml:space="preserve"><value>Share</value></data>
-  <data name="Sync_Mine" xml:space="preserve"><value>Mine</value></data>
-  <data name="Sync_Theirs" xml:space="preserve"><value>Theirs</value></data>
-  <data name="Sync_ResolveConflicts" xml:space="preserve"><value>Resolve conflicts</value></data>
+  <data name="Sync_Partial" xml:space="preserve"><value>Sync finished with issues: {0}. They will be retried on the next sync.</value></data>
+  <data name="Sync_PartialItems" xml:space="preserve"><value>{0} item(s) could not be applied</value></data>
+  <data name="Sync_PartialDevices" xml:space="preserve"><value>{0} device file(s) were unreadable</value></data>
+  <data name="Sync_PartialImages" xml:space="preserve"><value>{0} image(s) could not be transferred</value></data>
+  <data name="Sync_PartialSeparator" xml:space="preserve"><value>, </value></data>
+  <data name="Sync_Unavailable" xml:space="preserve"><value>The sync location ({0}) is not reachable right now. Your changes will sync once it is available again.</value></data>
   <data name="Settings_Sync" xml:space="preserve"><value>Sync</value></data>
   <data name="Sync_Location" xml:space="preserve"><value>Sync location</value></data>
   <data name="Sync_ChooseFolder" xml:space="preserve"><value>Choose folder…</value></data>

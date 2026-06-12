@@ -52,13 +52,6 @@ public partial class OverlayDialogService : ObservableObject, IDialogService, ID
         await entry.Result.Task;
     }
 
-    public async Task ShowSyncConflictsAsync(SyncViewModel viewModel)
-    {
-        var entry = Enqueue(viewModel);
-        viewModel.CloseRequested = () => Complete(entry, null);
-        await entry.Result.Task;
-    }
-
     public async Task<CloudFolder?> ShowCloudFolderPickerAsync(CloudFolderPickerViewModel viewModel)
     {
         await viewModel.InitializeAsync();

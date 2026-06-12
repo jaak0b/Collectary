@@ -114,6 +114,9 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
 
     public async Task PersistAsync()
     {
+        var error = await new FieldEditorGate().AwaitReadyAndValidateAsync(FieldEditors);
+        if (error is not null) throw new FieldValidationException(error);
+
         var item = _existing ?? new Item { PresetId = _preset.Id, CreatedAt = DateTime.UtcNow };
         var dnEditor = FieldEditors.OfType<DisplayNameFieldEditorViewModel>().FirstOrDefault();
         item.DisplayName = (dnEditor?.Text ?? DisplayName).Trim();
@@ -133,28 +136,26 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
         }
     }
 
-    [RelayCommand]
-    private async Task SaveAsync()
+    private async Task<bool> TryPersistAsync()
     {
         ErrorMessage = null;
-        try { await PersistAsync(); }
+        try { await PersistAsync(); return true; }
+        catch (FieldValidationException ex) { ErrorMessage = ex.Message; return false; }
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Failed to save item");
             ErrorMessage = LocalizationService.Instance["CouldNotSave"];
+            return false;
         }
     }
 
     [RelayCommand]
+    private async Task SaveAsync() => await TryPersistAsync();
+
+    [RelayCommand]
     private async Task BackAsync()
     {
-        ErrorMessage = null;
-        try { await PersistAsync(); _onSaved(); }
-        catch (Exception ex)
-        {
-            AppLogger.Log.Error(ex, "Failed to save item");
-            ErrorMessage = LocalizationService.Instance["CouldNotSave"];
-        }
+        if (await TryPersistAsync()) _onSaved();
     }
 
     [RelayCommand]

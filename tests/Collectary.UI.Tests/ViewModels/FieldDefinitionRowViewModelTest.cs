@@ -56,6 +56,26 @@ public class FieldDefinitionRowViewModelTest
     }
 
     [Test]
+    public void Constructor_LoadsAutoNumberConfigFromDefinition()
+    {
+        var def = new AutoNumberFieldDefinition
+        {
+            Editable = true,
+            Strategy = AutoNumberStrategy.FillGaps,
+            OnDuplicate = DuplicateHandling.Warn,
+        };
+        var sut = new FieldDefinitionRowViewModel(def);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.IsAutoNumber, Is.True);
+            Assert.That(sut.Editable, Is.True);
+            Assert.That(sut.Strategy, Is.EqualTo(AutoNumberStrategy.FillGaps));
+            Assert.That(sut.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn));
+        });
+    }
+
+    [Test]
     public void Constructor_LoadsChoicesFromSingleChoiceDefinition()
     {
         var def = new SingleChoiceFieldDefinition

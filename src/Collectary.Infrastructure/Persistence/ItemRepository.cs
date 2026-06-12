@@ -12,14 +12,12 @@ public class ItemRepository : IItemRepository
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IAppLogger _logger;
     private readonly ICurrentUser? _currentUser;
-    private readonly ISyncStatus? _syncStatus;
 
-    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null, ISyncStatus? syncStatus = null)
+    public ItemRepository(Func<InventoryDbContext> dbFactory, IAppLogger? logger = null, ICurrentUser? currentUser = null)
     {
         _dbFactory = dbFactory;
         _logger = logger ?? new NullAppLogger();
         _currentUser = currentUser;
-        _syncStatus = syncStatus;
     }
 
     private IQueryable<Item> WithDetails(IQueryable<Item> query) =>
@@ -32,6 +30,21 @@ public class ItemRepository : IItemRepository
         using var db = _dbFactory();
         var query = await ScopedAsync(db, WithDetails(db.Items).AsNoTracking());
         return await query.Where(i => i.PresetId == presetId).ToListAsync();
+    }
+
+    public async Task<IReadOnlyCollection<int>> GetUsedAutoNumbersAsync(Guid fieldDefinitionId, Guid? excludeItemId)
+    {
+        using var db = _dbFactory();
+        var authorizedItems = await ScopedAsync(db, db.Items.AsNoTracking());
+        var query =
+            from v in db.Set<AutoNumberFieldValue>().AsNoTracking()
+            join i in authorizedItems on v.ItemId equals i.Id
+            where v.FieldDefinitionId == fieldDefinitionId
+                  && v.Value != null
+                  && (excludeItemId == null || v.ItemId != excludeItemId)
+            select v.Value;
+        var numbers = await query.Distinct().ToListAsync();
+        return numbers.Where(n => n.HasValue).Select(n => n!.Value).ToList();
     }
 
     public async Task<Item?> GetByIdAsync(Guid id)
@@ -173,11 +186,7 @@ public class ItemRepository : IItemRepository
         var item = await db.Items.FindAsync(id);
         if (item is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            SoftDelete(item);
-        else
-            db.Items.Remove(item);
-
+        HardDelete(db, item);
         await db.SaveChangesAsync();
     }
 
@@ -185,18 +194,13 @@ public class ItemRepository : IItemRepository
     {
         using var db = _dbFactory();
         var items = await db.Items.Where(i => i.PresetId == presetId).ToListAsync();
-        if (_syncStatus?.IsConfigured == true)
-        {
-            foreach (var item in items) SoftDelete(item);
-        }
-        else
-        {
-            db.Items.RemoveRange(items);
-        }
-
+        foreach (var item in items) HardDelete(db, item);
         await db.SaveChangesAsync();
     }
 
-    private void SoftDelete(Item item) =>
-        ((ISyncable)item).StampDeleted(_currentUser?.AuthenticatedId);
+    private void HardDelete(InventoryDbContext db, Item item)
+    {
+        db.Items.Remove(item);
+        db.Tombstones.Add(new Tombstone { Id = item.Id });
+    }
 }

@@ -8,5 +8,5 @@ public interface ISpreadsheetImportService
 {
     Task<ImportSummary> ImportExistingAsync(Guid presetId, ShapedGrid grid, IReadOnlyList<ColumnMapping> mappings, CultureInfo culture);
 
-    Task<(Preset Preset, ImportSummary Summary)> ImportNewAsync(string presetName, ShapedGrid grid, IReadOnlyList<NewFieldColumn> columns, CultureInfo culture);
+    Task<ImportNewResult> ImportNewAsync(string presetName, ShapedGrid grid, IReadOnlyList<NewFieldColumn> columns, CultureInfo culture);
 }

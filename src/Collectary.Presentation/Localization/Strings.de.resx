@@ -38,6 +38,17 @@
   <data name="DisplayNameField" xml:space="preserve"><value>Anzeigename</value></data>
   <data name="FieldType_Text" xml:space="preserve"><value>Text</value></data>
   <data name="FieldType_Integer" xml:space="preserve"><value>Ganzzahl</value></data>
+  <data name="FieldType_AutoNumber" xml:space="preserve"><value>Automatische Nummer</value></data>
+  <data name="AutoNumber_Editable" xml:space="preserve"><value>Nummer ist bearbeitbar</value></data>
+  <data name="AutoNumber_Strategy" xml:space="preserve"><value>Nächste Nummer ist</value></data>
+  <data name="AutoNumberStrategy_HighestPlusOne" xml:space="preserve"><value>Höchste vergebene Nummer + 1</value></data>
+  <data name="AutoNumberStrategy_FillGaps" xml:space="preserve"><value>Niedrigste freie Nummer (füllt Lücken)</value></data>
+  <data name="AutoNumber_OnDuplicate" xml:space="preserve"><value>Wenn eine eingegebene Nummer bereits vergeben ist</value></data>
+  <data name="DuplicateHandling_Error" xml:space="preserve"><value>Speichern verhindern</value></data>
+  <data name="DuplicateHandling_Warn" xml:space="preserve"><value>Warnung anzeigen</value></data>
+  <data name="DuplicateHandling_Allow" xml:space="preserve"><value>Zulassen</value></data>
+  <data name="AutoNumber_DuplicateNotice" xml:space="preserve"><value>Diese Nummer wird bereits von einem anderen Eintrag verwendet.</value></data>
+  <data name="AutoNumber_CouldNotAssign" xml:space="preserve"><value>Nummer konnte nicht vergeben werden — Eintrag erneut öffnen.</value></data>
   <data name="FieldType_Decimal" xml:space="preserve"><value>Dezimalzahl</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Farbe</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Bild</value></data>
@@ -168,12 +179,13 @@
   <data name="Import_CollectionName" xml:space="preserve"><value>Name der neuen Sammlung</value></data>
   <data name="Import_ColumnFallback" xml:space="preserve"><value>Spalte {0}</value></data>
   <data name="Import_Skip" xml:space="preserve"><value>(nicht importieren)</value></data>
-  <data name="Import_TitleColumn" xml:space="preserve"><value>Eintragsname (Titel)</value></data>
+  <data name="Import_Col_Source" xml:space="preserve"><value>Spalte</value></data>
+  <data name="Import_Col_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Import_Name_Tooltip" xml:space="preserve"><value>Diese Spalte als Namen jedes Eintrags verwenden</value></data>
   <data name="Import_Include" xml:space="preserve"><value>Einbeziehen</value></data>
   <data name="Import_MapTo" xml:space="preserve"><value>Feld zuordnen</value></data>
   <data name="Import_FieldType" xml:space="preserve"><value>Feldtyp</value></data>
   <data name="Import_FieldLabel" xml:space="preserve"><value>Feldname</value></data>
-  <data name="Import_UseAsName" xml:space="preserve"><value>Als Eintragsname verwenden</value></data>
   <data name="Import_Unmappable_Note" xml:space="preserve"><value>Feldtypen wie Bilder, Dateien und Verknüpfungen lassen sich nicht aus einer Tabelle füllen und sind daher ausgegraut.</value></data>
   <data name="Import_Next" xml:space="preserve"><value>Weiter</value></data>
   <data name="Import_Back" xml:space="preserve"><value>Zurück</value></data>
@@ -308,6 +320,10 @@
   <data name="Profile_Create" xml:space="preserve"><value>Erstellen</value></data>
   <data name="Profile_Cancel" xml:space="preserve"><value>Abbrechen</value></data>
   <data name="Profile_Switch" xml:space="preserve"><value>Profil wechseln</value></data>
+  <data name="Profile_Delete" xml:space="preserve"><value>Dieses Profil löschen</value></data>
+  <data name="Profile_DeleteTitle" xml:space="preserve"><value>Profil löschen</value></data>
+  <data name="Profile_DeleteBody" xml:space="preserve"><value>„{0}" löschen? Dies kann nicht rückgängig gemacht werden.</value></data>
+  <data name="Profile_DeleteBodyWithCollections" xml:space="preserve"><value>„{0}" löschen? Dadurch werden auch die {1} Sammlung(en), die Ihnen gehören, und ihr gesamter Inhalt endgültig gelöscht. Dies kann nicht rückgängig gemacht werden.</value></data>
   <data name="Profile_NameRequired" xml:space="preserve"><value>Bitte geben Sie einen Profilnamen ein.</value></data>
   <data name="Share_Title" xml:space="preserve"><value>Sammlung teilen</value></data>
   <data name="Share_AddUser" xml:space="preserve"><value>Mit einem Profil teilen</value></data>
@@ -331,19 +347,15 @@
   <data name="Sync_LastAt" xml:space="preserve"><value>Letzte Synchronisierung: {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Jetzt synchronisieren</value></data>
   <data name="Sync_Syncing" xml:space="preserve"><value>Synchronisiere…</value></data>
+  <data name="Sync_Result" xml:space="preserve"><value>{0} gesendet, {1} empfangen.</value></data>
+  <data name="Sync_Status" xml:space="preserve"><value>Synchronisierungsstatus</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Synchronisierung fehlgeschlagen. Prüfe den Sync-Speicherort.</value></data>
-  <data name="Sync_ConflictsTitle" xml:space="preserve"><value>Sync-Konflikte lösen</value></data>
-  <data name="Sync_ConflictsHint" xml:space="preserve"><value>Diese Einträge wurden an zwei Stellen geändert. Wähle die zu behaltende Version.</value></data>
-  <data name="Sync_KeepMine" xml:space="preserve"><value>Meine behalten</value></data>
-  <data name="Sync_KeepTheirs" xml:space="preserve"><value>Andere behalten</value></data>
-  <data name="Sync_KindPreset" xml:space="preserve"><value>Sammlung</value></data>
-  <data name="Sync_KindItem" xml:space="preserve"><value>Eintrag</value></data>
-  <data name="Sync_KindSharedField" xml:space="preserve"><value>Geteiltes Feld</value></data>
-  <data name="Sync_KindUser" xml:space="preserve"><value>Profil</value></data>
-  <data name="Sync_KindShare" xml:space="preserve"><value>Freigabe</value></data>
-  <data name="Sync_Mine" xml:space="preserve"><value>Meine</value></data>
-  <data name="Sync_Theirs" xml:space="preserve"><value>Andere</value></data>
-  <data name="Sync_ResolveConflicts" xml:space="preserve"><value>Konflikte lösen</value></data>
+  <data name="Sync_Partial" xml:space="preserve"><value>Synchronisierung mit Problemen abgeschlossen: {0}. Sie werden beim nächsten Sync erneut versucht.</value></data>
+  <data name="Sync_PartialItems" xml:space="preserve"><value>{0} Element(e) konnten nicht angewendet werden</value></data>
+  <data name="Sync_PartialDevices" xml:space="preserve"><value>{0} Gerätedatei(en) waren unlesbar</value></data>
+  <data name="Sync_PartialImages" xml:space="preserve"><value>{0} Bild(er) konnten nicht übertragen werden</value></data>
+  <data name="Sync_PartialSeparator" xml:space="preserve"><value> und </value></data>
+  <data name="Sync_Unavailable" xml:space="preserve"><value>Der Sync-Speicherort ({0}) ist gerade nicht erreichbar. Deine Änderungen werden synchronisiert, sobald er wieder verfügbar ist.</value></data>
   <data name="Settings_Sync" xml:space="preserve"><value>Synchronisierung</value></data>
   <data name="Sync_Location" xml:space="preserve"><value>Sync-Speicherort</value></data>
   <data name="Sync_ChooseFolder" xml:space="preserve"><value>Ordner wählen…</value></data>

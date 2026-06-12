@@ -116,22 +116,6 @@ public class OverlayDialogServiceTest
     }
 
     [Test]
-    public async Task ShowSyncConflictsAsync_ShowsUntilClosed()
-    {
-        var sync = A.Fake<ISyncService>();
-        var status = A.Fake<ISyncStatus>();
-        var vm = new SyncViewModel(sync, status);
-
-        var task = _sut.ShowSyncConflictsAsync(vm);
-        Assert.That(_sut.ActiveDialog, Is.SameAs(vm));
-
-        vm.CloseCommand.Execute(null);
-        await task;
-
-        Assert.That(_sut.HasActiveDialog, Is.False);
-    }
-
-    [Test]
     public async Task SecondDialog_StaysQueuedUntilFirstCloses()
     {
         var first = _sut.ShowMessageAsync("A");

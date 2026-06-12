@@ -25,6 +25,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly Func<Task<bool>>? _exportBackup;
     private readonly Func<Task<BackupImportResult?>>? _importBackup;
     private readonly Action? _switchProfile;
+    private readonly Func<Task>? _deleteProfile;
     private readonly Func<Task<bool>>? _confirmDiscardCustomizations;
     private string _appliedColorThemeId = "Light";
     private bool _loadingSync;
@@ -69,6 +70,9 @@ public partial class SettingsViewModel : ViewModelBase
 
     [RelayCommand]
     private void SwitchProfile() => _switchProfile?.Invoke();
+
+    [RelayCommand]
+    private async Task DeleteProfile() => await (_deleteProfile?.Invoke() ?? Task.CompletedTask);
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
     [
@@ -528,6 +532,7 @@ public partial class SettingsViewModel : ViewModelBase
         Func<Task<bool>>? exportBackup = null,
         Func<Task<BackupImportResult?>>? importBackup = null,
         Action? switchProfile = null,
+        Func<Task>? deleteProfile = null,
         Func<Task<bool>>? confirmDiscardCustomizations = null,
         IAudioRecorder? audioRecorder = null,
         IAudioPlayer? audioPlayer = null)
@@ -543,6 +548,7 @@ public partial class SettingsViewModel : ViewModelBase
         _exportBackup = exportBackup;
         _importBackup = importBackup;
         _switchProfile = switchProfile;
+        _deleteProfile = deleteProfile;
         var currentCode = LocalizationService.Instance.CurrentCode;
         SelectedLanguage = LanguageOptions.FirstOrDefault(o => o.Code == currentCode) ?? LanguageOptions[0];
 

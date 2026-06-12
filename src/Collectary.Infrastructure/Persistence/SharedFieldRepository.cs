@@ -11,15 +11,13 @@ public class SharedFieldRepository : ISharedFieldRepository
     private readonly Func<InventoryDbContext> _dbFactory;
     private readonly IFieldDefinitionMerger _merger;
     private readonly IAppLogger _logger;
-    private readonly ISyncStatus? _syncStatus;
     private readonly ICurrentUser? _currentUser;
 
-    public SharedFieldRepository(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null, ISyncStatus? syncStatus = null, ICurrentUser? currentUser = null)
+    public SharedFieldRepository(Func<InventoryDbContext> dbFactory, IFieldDefinitionMerger merger, IAppLogger? logger = null, ICurrentUser? currentUser = null)
     {
         _dbFactory = dbFactory;
         _merger = merger;
         _logger = logger ?? new NullAppLogger();
-        _syncStatus = syncStatus;
         _currentUser = currentUser;
     }
 
@@ -98,10 +96,8 @@ public class SharedFieldRepository : ISharedFieldRepository
         var field = await db.SharedFields.FindAsync(id);
         if (field is null) return;
 
-        if (_syncStatus?.IsConfigured == true)
-            ((ISyncable)field).StampDeleted(_currentUser?.AuthenticatedId);
-        else
-            db.SharedFields.Remove(field);
+        db.SharedFields.Remove(field);
+        db.Tombstones.Add(new Tombstone { Id = id });
 
         await db.SaveChangesAsync();
     }

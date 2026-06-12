@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Ports;
@@ -11,6 +10,8 @@ public partial class SyncViewModel : ViewModelBase
 {
     private readonly ISyncService _sync;
     private readonly ISyncStatus _status;
+    private readonly IUiDispatcher _ui;
+    private readonly IBackgroundRunner _background;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -21,7 +22,11 @@ public partial class SyncViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
-    public ObservableCollection<SyncConflictViewModel> Conflicts { get; } = new();
+    [ObservableProperty]
+    public partial SyncNoticeSeverity Severity { get; set; }
+
+    [ObservableProperty]
+    public partial string? LastResultText { get; set; }
 
     public event Action? Synced;
 
@@ -29,33 +34,28 @@ public partial class SyncViewModel : ViewModelBase
 
     public bool IsConfigured => _status.IsConfigured;
 
-    public bool HasConflicts => Conflicts.Count > 0;
+    public bool NeedsAttention => Severity != SyncNoticeSeverity.None;
 
-    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
-
-    public bool NeedsAttention => HasConflicts || HasError;
+    public bool IsError => Severity == SyncNoticeSeverity.Error;
 
     public string LastSyncText => LastSyncedAt is null
         ? LocalizationService.Instance["Sync_Never"]
         : string.Format(LocalizationService.Instance["Sync_LastAt"], LastSyncedAt.Value.ToLocalTime());
 
-    public SyncViewModel(ISyncService sync, ISyncStatus status)
+    public SyncViewModel(ISyncService sync, ISyncStatus status, IUiDispatcher ui, IBackgroundRunner background)
     {
         _sync = sync;
         _status = status;
-        Conflicts.CollectionChanged += (_, _) =>
-        {
-            OnPropertyChanged(nameof(HasConflicts));
-            OnPropertyChanged(nameof(NeedsAttention));
-        };
+        _ui = ui;
+        _background = background;
     }
 
     partial void OnLastSyncedAtChanged(DateTime? value) => OnPropertyChanged(nameof(LastSyncText));
 
-    partial void OnErrorMessageChanged(string? value)
+    partial void OnSeverityChanged(SyncNoticeSeverity value)
     {
-        OnPropertyChanged(nameof(HasError));
         OnPropertyChanged(nameof(NeedsAttention));
+        OnPropertyChanged(nameof(IsError));
     }
 
     public void Refresh() => OnPropertyChanged(nameof(IsConfigured));
@@ -68,40 +68,68 @@ public partial class SyncViewModel : ViewModelBase
     {
         if (IsSyncing || !_status.IsConfigured) return;
 
-        IsSyncing = true;
-        ErrorMessage = null;
+        _ui.Post(() =>
+        {
+            IsSyncing = true;
+            ErrorMessage = null;
+            Severity = SyncNoticeSeverity.None;
+            LastResultText = null;
+        });
         try
         {
-            var result = await _sync.SyncAsync();
-            RefreshConflicts(result.Conflicts);
-            if (result.Conflicts.Count == 0) LastSyncedAt = DateTime.UtcNow;
-            Synced?.Invoke();
+            var result = await _background.RunAsync(() => _sync.SyncAsync()).ConfigureAwait(false);
+            _ui.Post(() =>
+            {
+                if (result.BackendUnavailable)
+                {
+                    ErrorMessage = string.Format(LocalizationService.Instance["Sync_Unavailable"], _status.LocationLabel);
+                    Severity = SyncNoticeSeverity.Advisory;
+                    return;
+                }
+
+                LastSyncedAt = DateTime.UtcNow;
+                ErrorMessage = BuildPartialNotice(result);
+                Severity = ErrorMessage is null ? SyncNoticeSeverity.None : SyncNoticeSeverity.Advisory;
+                LastResultText = string.Format(
+                    LocalizationService.Instance["Sync_Result"], result.Pushed, result.Pulled);
+                Synced?.Invoke();
+            });
         }
         catch (Exception ex)
         {
             AppLogger.Log.Error(ex, "Sync failed");
-            ErrorMessage = LocalizationService.Instance["Sync_Error"];
+            _ui.Post(() =>
+            {
+                ErrorMessage = LocalizationService.Instance["Sync_Error"];
+                Severity = SyncNoticeSeverity.Error;
+            });
         }
         finally
         {
-            IsSyncing = false;
+            _ui.Post(() => IsSyncing = false);
         }
     }
 
-    private void RefreshConflicts(IReadOnlyList<SyncConflict> conflicts)
+    public void ReportError() => _ui.Post(() =>
     {
-        Conflicts.Clear();
-        foreach (var conflict in conflicts)
-            Conflicts.Add(new SyncConflictViewModel(conflict, ResolveAsync));
-    }
+        ErrorMessage = LocalizationService.Instance["Sync_Error"];
+        Severity = SyncNoticeSeverity.Error;
+    });
 
-    private async Task ResolveAsync(SyncConflict conflict, bool keepLocal)
+    private string? BuildPartialNotice(SyncResult result)
     {
-        await _sync.ResolveAsync(conflict, keepLocal);
+        var clauses = new List<string>();
+        if (result.Skipped > 0)
+            clauses.Add(string.Format(LocalizationService.Instance["Sync_PartialItems"], result.Skipped));
+        if (result.UnreadableDevices > 0)
+            clauses.Add(string.Format(LocalizationService.Instance["Sync_PartialDevices"], result.UnreadableDevices));
+        if (result.ImagesFailed > 0)
+            clauses.Add(string.Format(LocalizationService.Instance["Sync_PartialImages"], result.ImagesFailed));
 
-        Conflicts.Remove(Conflicts.FirstOrDefault(c => c.Conflict == conflict)!);
-
-        if (Conflicts.Count == 0)
-            await SyncNow();
+        return clauses.Count == 0
+            ? null
+            : string.Format(
+                LocalizationService.Instance["Sync_Partial"],
+                string.Join(LocalizationService.Instance["Sync_PartialSeparator"], clauses));
     }
 }

@@ -1,24 +1,58 @@
-using Avalonia.Threading;
 using Collectary.Presentation.Services;
 
 namespace Collectary.UI.Services;
 
 public sealed class DispatcherSyncScheduler : ISyncScheduler
 {
-    private DispatcherTimer? _timer;
+    private readonly object _gate = new();
+    private Timer? _timer;
+    private CancellationTokenSource? _cancellation;
+    private int _running;
 
-    public void Start(TimeSpan interval, Func<Task> onTickAsync)
+    public event Action<Exception>? TickFailed;
+
+    public void Start(TimeSpan interval, Func<CancellationToken, Task> onTickAsync)
     {
         Stop();
-        _timer = new DispatcherTimer { Interval = interval };
-        _timer.Tick += (_, _) => _ = onTickAsync();
-        _timer.Start();
+        lock (_gate)
+        {
+            _cancellation = new CancellationTokenSource();
+            var token = _cancellation.Token;
+            _timer = new Timer(_ => RunTick(onTickAsync, token), null, interval, interval);
+        }
+    }
+
+    private async void RunTick(Func<CancellationToken, Task> onTickAsync, CancellationToken token)
+    {
+        if (Interlocked.CompareExchange(ref _running, 1, 0) != 0) return;
+        try
+        {
+            if (!token.IsCancellationRequested)
+                await onTickAsync(token);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            TickFailed?.Invoke(ex);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _running, 0);
+        }
     }
 
     public void Stop()
     {
-        _timer?.Stop();
-        _timer = null;
+        lock (_gate)
+        {
+            _cancellation?.Cancel();
+            _timer?.Dispose();
+            _timer = null;
+            _cancellation?.Dispose();
+            _cancellation = null;
+        }
     }
 
     public void Dispose() => Stop();

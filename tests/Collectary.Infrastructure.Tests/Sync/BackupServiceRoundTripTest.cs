@@ -104,7 +104,7 @@ public class BackupServiceRoundTripTest : DbIntegrationTestBase
     }
 
     [Test]
-    public async Task ExportThenImportIntoFreshStore_RestoresBlobsOfSoftDeletedItems()
+    public async Task ExportThenImportIntoFreshStore_RestoresItemBlobs()
     {
         var source = NewStore(out _);
         var sourceImages = NewImageStore();
@@ -120,7 +120,7 @@ public class BackupServiceRoundTripTest : DbIntegrationTestBase
         await sourceImages.ImportAsync(imgKey, new MemoryStream(Encoding.UTF8.GetBytes("IMAGE-BYTES")));
 
         var itemId = Guid.NewGuid();
-        var item = new Item { Id = itemId, DisplayName = "Penny", PresetId = presetId, Revision = 1, IsDeleted = true, DeletedAt = DateTime.UtcNow };
+        var item = new Item { Id = itemId, DisplayName = "Penny", PresetId = presetId, Revision = 1 };
         item.Values.Add(new ImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = imgFieldId, ItemId = itemId, ImageKey = imgKey, FileName = "photo.png" });
         await source.ApplyItemAsync(item);
 
@@ -135,7 +135,7 @@ public class BackupServiceRoundTripTest : DbIntegrationTestBase
         var restoredItem = (await target.GetAllItemsAsync()).Single(i => i.Id == itemId);
         Assert.Multiple(() =>
         {
-            Assert.That(restoredItem.IsDeleted, Is.True);
+            Assert.That(restoredItem.DisplayName, Is.EqualTo("Penny"));
             Assert.That(targetImages.Exists(imgKey), Is.True);
         });
         using var imgReader = new StreamReader(targetImages.Open(imgKey));

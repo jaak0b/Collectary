@@ -2,32 +2,34 @@ namespace Collectary.Core.Domain;
 
 public interface ISyncable
 {
-    bool IsDeleted { get; set; }
-    DateTime? DeletedAt { get; set; }
+    Guid Id { get; }
+
     long Revision { get; set; }
     long BaseRevision { get; set; }
     bool IsDirty { get; set; }
     Guid? LastModifiedByUserId { get; set; }
     DateTime UpdatedAt { get; set; }
 
+    long Lamport { get; set; }
+    Guid LastModifiedByDeviceId { get; set; }
+
     void StampModified(Guid? userId)
     {
         IsDirty = true;
         Revision++;
-        if (userId is { } id) LastModifiedByUserId = id;
-    }
-
-    void StampDeleted(Guid? userId)
-    {
-        IsDeleted = true;
-        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
-        StampModified(userId);
+        if (userId is { } id) LastModifiedByUserId = id;
     }
 
     void MarkPulled()
     {
         BaseRevision = Revision;
         IsDirty = false;
+    }
+
+    void StampLamport(long lamport, Guid deviceId)
+    {
+        Lamport = lamport;
+        LastModifiedByDeviceId = deviceId;
     }
 }

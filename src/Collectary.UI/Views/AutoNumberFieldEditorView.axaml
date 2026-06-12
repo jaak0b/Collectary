@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Collectary.UI.Controls"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Views.AutoNumberFieldEditorView"
+             x:DataType="vm:AutoNumberFieldEditorViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.notice">
+            <Setter Property="Foreground" Value="#C77800"/>
+        </Style>
+        <Style Selector="TextBlock.notice.error">
+            <Setter Property="Foreground" Value="Red"/>
+        </Style>
+    </UserControl.Styles>
+
+    <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
+                                  IsRequired="{Binding Definition.IsRequired}"
+                                  LabelAbove="{Binding LabelAbove}">
+        <StackPanel Spacing="2" HorizontalAlignment="Left">
+            <controls:SafeNumericUpDown Value="{Binding Number}"
+                                        IsEnabled="{Binding IsEditable}"
+                                        Minimum="1"
+                                        Maximum="2147483647"
+                                        FormatString="0"
+                                        Increment="1"
+                                        VerticalAlignment="Top"
+                                        MinWidth="120"/>
+            <TextBlock Classes="notice"
+                       Classes.error="{Binding NoticeIsError}"
+                       Text="{Binding NoticeText}"
+                       IsVisible="{Binding HasNotice}"
+                       FontSize="12"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+    </controls:FieldEditorScaffold>
+</UserControl>

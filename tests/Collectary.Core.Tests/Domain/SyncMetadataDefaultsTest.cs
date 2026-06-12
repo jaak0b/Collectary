@@ -18,26 +18,6 @@ public class SyncMetadataDefaultsTest
         Assert.That(new Item(), Is.InstanceOf<ISyncable>());
 
     [Test]
-    public void Syncable_IsDeleted_DefaultsToFalse()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(new Preset().IsDeleted, Is.False);
-            Assert.That(new Item().IsDeleted, Is.False);
-        });
-    }
-
-    [Test]
-    public void Syncable_DeletedAt_DefaultsToNull()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(new Preset().DeletedAt, Is.Null);
-            Assert.That(new Item().DeletedAt, Is.Null);
-        });
-    }
-
-    [Test]
     public void Syncable_IsDirty_DefaultsToFalse()
     {
         Assert.Multiple(() =>

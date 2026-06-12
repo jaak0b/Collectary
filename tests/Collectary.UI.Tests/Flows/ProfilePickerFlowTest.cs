@@ -1,8 +1,10 @@
 using Collectary.Core.Auth;
 using Collectary.Core.Domain;
+using Collectary.Core.Ports;
 using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
 using Collectary.Presentation.ViewModels;
+using FakeItEasy;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +29,7 @@ public class ProfilePickerFlowTest
             db.Database.EnsureCreated();
 
         _session = new UserSession();
-        _profiles = new ProfileService(new UserRepository(CreateDb), _session);
+        _profiles = new ProfileService(new UserRepository(CreateDb), _session, A.Fake<IPresetUseCase>());
     }
 
     [TearDown]

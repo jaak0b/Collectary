@@ -33,7 +33,7 @@ public class BackupService : IBackupService
 
         foreach (var kind in _catalog.Describe(_store, _serializer))
             foreach (var entity in await kind.GetLocal())
-                await WriteEntryAsync(archive, $"{kind.WireString}/{EntryName(((DomainObject)entity).Id)}", kind.Serialize(entity));
+                await WriteEntryAsync(archive, $"{kind.WireString}/{EntryName(entity.Id)}", kind.Serialize(entity));
 
         foreach (var key in await _store.GetReferencedImageKeysAsync())
             if (_imageStore.Exists(key))
@@ -69,7 +69,7 @@ public class BackupService : IBackupService
 
     private async Task<int> MergeAsync(ZipArchive archive, SyncKind kind, List<SyncConflict> conflicts)
     {
-        var localById = (await kind.GetLocal()).ToDictionary(l => ((DomainObject)l).Id);
+        var localById = (await kind.GetLocal()).ToDictionary(l => l.Id);
         var applied = 0;
 
         foreach (var entry in EntriesIn(archive, $"{kind.WireString}/"))
@@ -77,7 +77,7 @@ public class BackupService : IBackupService
             var remote = kind.Deserialize(await ReadEntryAsync(entry));
             if (remote is null) continue;
 
-            var remoteId = ((DomainObject)remote).Id;
+            var remoteId = remote.Id;
             if (localById.TryGetValue(remoteId, out var local))
             {
                 if (remote.Revision <= local.Revision) continue;

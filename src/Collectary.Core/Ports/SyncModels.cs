@@ -17,11 +17,12 @@ public record SyncConflict(
     long LocalRevision,
     long RemoteRevision);
 
-public record SyncResult(int Pushed, int Pulled, IReadOnlyList<SyncConflict> Conflicts, int Skipped = 0)
-{
-    public bool HasConflicts => Conflicts.Count > 0;
+public readonly record struct PushStamp(SyncEntityKind Kind, Guid Id, long Lamport, Guid DeviceId);
 
-    public bool HadProblems => Conflicts.Count > 0 || Skipped > 0;
-}
-
-public record PurgedTombstone(SyncEntityKind Kind, Guid Id);
+public record SyncResult(
+    int Pushed,
+    int Pulled,
+    int Skipped = 0,
+    int UnreadableDevices = 0,
+    int ImagesFailed = 0,
+    bool BackendUnavailable = false);

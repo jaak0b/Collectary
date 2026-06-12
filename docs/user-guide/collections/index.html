@@ -817,6 +817,8 @@
       
         
       
+        
+      
     
     
       
@@ -883,6 +885,27 @@
   
   <span class="md-ellipsis">
     Building &amp; Running
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/cloud-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cloud Sync Setup
   </span>
   
 
@@ -1187,15 +1210,32 @@ the top.</p>
 on a phone, say — the earliest steps fold away into a small <strong>…</strong> menu that sits right after <em>My
 Collections</em>. Your starting point and the step you're currently on always stay visible; tap the <strong>…</strong>
 to reach anything in between. It never spills over the profile name on the right.</p>
-<p><strong>Save and go back</strong> saves and steps up one level, back to the parent group or list. From the top
-level it saves and returns you to your collections.</p>
+<p>Every editor — collection settings, the shared field library, the item editor, and the list editors —
+shares the same three buttons along the bottom: <strong>← Back</strong>, <strong>Save</strong>, and <strong>Cancel</strong>.</p>
+<ul>
+<li><strong>← Back</strong> retraces your steps one at a time and saves as it goes, exactly like your phone's back
+  button. On a narrow screen it first closes the field settings you have open and returns you to the
+  list you were just in; tap it again and you step up out of a drilled-in sub-list to its parent; tap it
+  once more at the top and it leaves the editor. It never skips straight to the top — each tap goes back
+  exactly one step, and your work is saved on the way.</li>
+<li><strong>Save</strong> writes everything but keeps you exactly where you are, so you can keep editing.</li>
+<li><strong>Cancel</strong> leaves without Back's save — at the top of a collection or item editor it drops the changes
+  you made since your last save; inside a list it simply returns you to the item without saving.</li>
+</ul>
+<p>On a narrow screen — a phone, or the desktop window pulled in tight — the editor only shows one pane at
+a time: the field list on its own, swapping to a single field's settings when you tap one. The buttons
+stay along the bottom the whole time, easy to reach with your thumb.</p>
 <h3 id="layout">Layout<a class="headerlink" href="#layout" title="Permanent link">&para;</a></h3>
 <p>The editor also controls the item editor's layout:</p>
 <ul>
 <li><strong>Columns</strong> — spread fields across several columns so a long form fits without scrolling.</li>
 <li><strong>Label position</strong> — where each field's label sits: <em>Beside</em> (left of the input, compact),
   <em>Above</em> (stacked, cleaner with multiple columns), <em>Adaptive</em> (beside for one column, above for
-  more), or <em>Inherit</em> to follow the app-wide default in <a href="../settings/#appearance">Settings</a>.</li>
+  more), or <em>Inherit</em> to follow the app-wide default in <a href="../settings/#appearance">Settings</a>.
+  <em>Beside</em> is mobile-safe: as the editor gets narrow the labels move above their inputs so they stay
+  full-width, and slide back beside when there's room. A multi-column <em>beside</em> layout also drops to a
+  single column when the window isn't wide enough to give each column room for a label and its input
+  side by side, so inputs never get squeezed into overlap.</li>
 </ul>
 <h3 id="reusing-fields-across-collections">Reusing fields across collections<a class="headerlink" href="#reusing-fields-across-collections" title="Permanent link">&para;</a></h3>
 <p>The Shared Field Library holds field definitions you want in more than one collection: define a

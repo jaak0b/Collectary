@@ -250,6 +250,58 @@ public class ItemEditorViewModelTest
     }
 
     [Test]
+    public async Task PersistAsync_WaitsForEditorReadinessBeforePersisting()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        var ready = new TaskCompletionSource();
+        A.CallTo(() => editor.Ready).Returns(ready.Task);
+        var sut = CreateSut(fields: [def]);
+
+        var persist = sut.PersistAsync();
+
+        Assert.That(persist.IsCompleted, Is.False);
+        A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).MustNotHaveHappened();
+
+        ready.SetResult();
+        await persist;
+
+        A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task SaveCommand_WhenFieldValidationFails_BlocksSaveAndShowsFieldMessage()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        A.CallTo(() => editor.Validate()).Returns("number already used");
+        var sut = CreateSut(fields: [def]);
+
+        await sut.SaveCommand.ExecuteAsync(null);
+
+        Assert.That(sut.ErrorMessage, Is.EqualTo("number already used"));
+        A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task BackCommand_WhenFieldValidationFails_DoesNotNavigate()
+    {
+        var def = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(def);
+        A.CallTo(() => editor.Validate()).Returns("dup");
+        var invoked = false;
+        var sut = CreateSut(fields: [def], onSaved: () => invoked = true);
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(invoked, Is.False);
+            Assert.That(sut.ErrorMessage, Is.EqualTo("dup"));
+        });
+    }
+
+    [Test]
     public async Task SaveCommand_WhenPersistFails_SetsErrorMessage()
     {
         A.CallTo(() => _itemUseCase.CreateItemAsync(A<Item>._)).Throws<InvalidOperationException>();

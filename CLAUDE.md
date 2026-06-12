@@ -30,6 +30,7 @@
 13. **Every new feature is documented.** Add/update the relevant `docs-src/**` page in the same change. Write in a human, conversational style — not terse machine-speak.
 14. **No code comments.** Code self-explains via names and structure, in all we author (C#, XAML, YAML, JSON, `.csproj`). Banned: *what*-narration (`// build the menu`), divider banners, commented-out code (git is the history), and default XML doc-comments. Only allowed: a short non-obvious **why** the code can't express (external-bug workaround, Avalonia gotcha). Tempted to write *what*? Rename until the comment is redundant, then delete it. Markdown docs are exempt.
 15. **Commits require owner review first.** Never run `git commit` or `git push` until the repository owner has explicitly approved the change in chat. Present the diff summary and ask; only proceed after a clear "yes" (or equivalent). Once approved: no AI attribution in anything that touches git or GitHub — not in commit messages, PR titles or descriptions, issue/PR comments, tags, or release notes. No `Co-Authored-By` trailer, no "Generated with" line, no AI author/committer identity. This applies to every git and `gh`/GitHub API action without exception. Commits carry the human's authorship only. **Commit messages are a short, single sentence** — one line, no body, no bullet list; if a change feels too big to describe in one sentence, split it into smaller commits.
+16. **No positional tuple access — code must be refactor-safe.** Never read a tuple by element position (`.Item1`/`.Item2`) and never destructure one positionally (`var (a, b) = …`). Every multi-value return is a named `record` / `record struct` whose members are read by name, so reordering or renaming a member is a compile error, not a silent value swap. This applies to return types, locals, and method results alike; a private named-element `ValueTuple` is tolerated only when it is never destructured positionally — when in doubt, declare a record.
 
 ## Definition of Done — run this checklist before calling any change "finished"
 
@@ -91,6 +92,7 @@ dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 ## Avalonia 12 Gotchas
 
 - **Dynamic `MenuItem` submenus:** build in code-behind (`CollectionChanged` → hand-built `List<MenuItem>`). XAML `ItemsSource` binding does not render submenus in Avalonia 12.
+- **`Button.Flyout` content declared in XAML never receives input:** the popup renders and its bindings resolve (headless tests pass!), but real clicks die with `(PresentationSource) PlatformImpl is null, couldn't handle input` in the log. Build flyout content in code-behind (`new Flyout()` + content controls), like the breadcrumb overflow and sync-status flyouts.
 - **`IsVisible` on a null sub-path** evaluates `true` when the object is null — always add `FallbackValue=False`.
 - **Never replace an `ObservableCollection` instance** — mutate in place (`Clear()` + `Add()`). Flyout menus re-bind unreliably to a replaced collection.
 - **Compiled bindings:** `AvaloniaUseCompiledBindingsByDefault=true`. All `DataTemplate`s need `x:DataType`.

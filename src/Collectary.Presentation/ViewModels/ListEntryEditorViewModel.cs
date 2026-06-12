@@ -23,6 +23,9 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
 
     public string EntryLabel => $"{LocalizationService.Instance["Entry"]} {EntryNumber}";
 
+    [ObservableProperty]
+    public partial string? ErrorMessage { get; set; }
+
     public ObservableCollection<FieldEditorViewModelBase> FieldEditors { get; } = new();
 
     public int UngroupedColumnCount => _ungroupedColumnCount;
@@ -75,11 +78,26 @@ public partial class ListEntryEditorViewModel : ViewModelBase, IGroupedFieldHost
     public List<FieldValue> CollectValues() =>
         FieldEditors.Select(e => e.GetCurrentValue()).ToList();
 
-    [RelayCommand]
-    private async Task Save() => await _context.SaveAsync();
+    private async Task<bool> TrySaveAsync()
+    {
+        ErrorMessage = null;
+        var error = await new FieldEditorGate().AwaitReadyAndValidateAsync(FieldEditors);
+        if (error is not null) { ErrorMessage = error; return false; }
+        try { await _context.SaveAsync(); return true; }
+        catch (FieldValidationException ex) { ErrorMessage = ex.Message; return false; }
+        catch (Exception ex)
+        {
+            AppLogger.Log.Error(ex, "Failed to save list entry");
+            ErrorMessage = LocalizationService.Instance["CouldNotSave"];
+            return false;
+        }
+    }
 
     [RelayCommand]
-    private async Task Back() { await _context.SaveAsync(); _context.GoBack(); }
+    private async Task Save() => await TrySaveAsync();
+
+    [RelayCommand]
+    private async Task Back() { if (await TrySaveAsync()) _context.GoBack(); }
 
     [RelayCommand]
     private void GoBack() => _context.GoBack();

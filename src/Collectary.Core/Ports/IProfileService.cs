@@ -9,4 +9,6 @@ public interface IProfileService
     Task<User> CreateProfileAsync(string name);
     void SelectProfile(User profile);
     void SignOut();
+    Task<int> CountOwnedCollectionsAsync();
+    Task DeleteCurrentProfileAsync();
 }

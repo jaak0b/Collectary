@@ -49,6 +49,7 @@ public class SyncEndToEndTest
         public required EfSyncStore Store { get; init; }
         public required FileSystemImageStore Images { get; init; }
         public required SyncService Sync { get; init; }
+        public required Guid DeviceId { get; init; }
     }
 
     private Client MakeClient()
@@ -61,16 +62,16 @@ public class SyncEndToEndTest
 
         Func<InventoryDbContext> factory = () => new InventoryDbContext(options);
         var merger = new FieldDefinitionMerger();
-        var status = new AlwaysConfiguredSyncStatus();
-        var presets = new PresetRepository(factory, merger, null, null, status);
-        var items = new ItemRepository(factory, null, null, status);
-        var sharedFields = new SharedFieldRepository(factory, merger, null, status);
+        var presets = new PresetRepository(factory, merger);
+        var items = new ItemRepository(factory);
+        var sharedFields = new SharedFieldRepository(factory, merger);
         var store = new EfSyncStore(factory, merger);
 
         var imageDir = Path.Combine(Path.GetTempPath(), $"collectary-img-{Guid.NewGuid():N}");
         _dirs.Add(imageDir);
         var images = new FileSystemImageStore(imageDir);
 
+        var device = new FixedDeviceIdentity(Guid.NewGuid());
         return new Client
         {
             Presets = presets,
@@ -79,7 +80,9 @@ public class SyncEndToEndTest
             PresetUseCase = new PresetUseCase(presets, items, new AllowAllAuthorization()),
             Store = store,
             Images = images,
-            Sync = new SyncService(new FileSystemSyncBackend(_folder), store, new SyncSerializer(), status, images),
+            DeviceId = device.DeviceId,
+            Sync = new SyncService(new FileSystemSyncBackend(_folder), store, new SyncSerializer(),
+                device, images),
         };
     }
 
@@ -203,7 +206,7 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task PresetDelete_PropagatesAsTombstone()
+    public async Task PresetDelete_RemovesRowOnPeer()
     {
         var preset = MakePreset("Doomed");
         await _a.Presets.AddAsync(preset);
@@ -213,11 +216,11 @@ public class SyncEndToEndTest
         await SyncBothAsync();
 
         var visible = await _b.Presets.GetByIdAsync(preset.Id);
-        var tombstone = (await _b.Store.GetAllPresetsAsync()).Single(p => p.Id == preset.Id);
+        var rows = (await _b.Store.GetAllPresetsAsync()).Where(p => p.Id == preset.Id).ToList();
         Assert.Multiple(() =>
         {
             Assert.That(visible, Is.Null);
-            Assert.That(tombstone.IsDeleted, Is.True);
+            Assert.That(rows, Is.Empty, "a hard-deleted preset leaves no row on the peer");
         });
     }
 
@@ -249,11 +252,58 @@ public class SyncEndToEndTest
         await SyncBothAsync();
 
         var visible = (await _b.SharedFields.GetAllAsync()).Any(x => x.Id == sf.Id);
-        var tombstone = (await _b.Store.GetAllSharedFieldsAsync()).Single(x => x.Id == sf.Id);
+        var rows = (await _b.Store.GetAllSharedFieldsAsync()).Where(x => x.Id == sf.Id).ToList();
         Assert.Multiple(() =>
         {
-            Assert.That(visible, Is.False, "deleted system field must disappear on the peer");
-            Assert.That(tombstone.IsDeleted, Is.True);
+            Assert.That(visible, Is.False, "deleted shared field must disappear on the peer");
+            Assert.That(rows, Is.Empty, "a hard-deleted shared field leaves no row on the peer");
+        });
+    }
+
+    [Test]
+    public async Task OwnSnapshot_AfterLearningRemoteDeletion_DropsEntityAndReemitsTombstone()
+    {
+        var preset = MakePreset("Doomed");
+        await _a.Presets.AddAsync(preset);
+        await SyncBothAsync();
+
+        await _a.Presets.DeleteAsync(preset.Id);
+        await _a.Sync.SyncAsync();
+
+        await _b.Sync.SyncAsync();
+
+        var backend = new FileSystemSyncBackend(_folder);
+        var content = await backend.ReadAsync(SyncService.DevicesKind, _b.DeviceId);
+        new SnapshotIntegrity().TryUnwrap(content!, out var json);
+        var snapshot = new SyncSerializer().Deserialize<DeviceSnapshot>(json);
+        Assert.Multiple(() =>
+        {
+            Assert.That(snapshot.Presets.Any(p => p.Id == preset.Id), Is.False,
+                "B's own file must not re-advertise as live an entity it has just deleted");
+            Assert.That(snapshot.Tombstones, Does.Contain(preset.Id),
+                "B re-emits the learned tombstone so the deletion keeps propagating even if A's file disappears");
+        });
+    }
+
+    [Test]
+    public async Task CorruptedDeviceSnapshot_FailsChecksum_AndIsSkippedNotApplied()
+    {
+        var preset = MakePreset("Genuine");
+        await _a.Presets.AddAsync(preset);
+        await _a.Sync.SyncAsync();
+
+        var backend = new FileSystemSyncBackend(_folder);
+        var content = await backend.ReadAsync(SyncService.DevicesKind, _a.DeviceId);
+        var tampered = content!.Replace("Genuine", "Tampered");
+        await backend.WriteAsync(SyncService.DevicesKind, _a.DeviceId, tampered);
+
+        var result = await _b.Sync.SyncAsync();
+
+        var onB = (await _b.Store.GetAllPresetsAsync()).Where(p => p.Id == preset.Id).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.That(onB, Is.Empty, "a snapshot whose checksum no longer matches its body is skipped, not applied");
+            Assert.That(result.UnreadableDevices, Is.EqualTo(1), "the skipped peer is reported so the user learns a device could not be merged");
         });
     }
 
@@ -278,7 +328,8 @@ public class SyncEndToEndTest
         });
     }
 
-    private async Task<(Guid id, SyncConflict conflict)> CreateConflictAsync()
+    [Test]
+    public async Task SameEntityEditedOnBoth_AutoMergesToOneWinner_NoConflicts()
     {
         var preset = MakePreset("Orig");
         await _a.Presets.AddAsync(preset);
@@ -287,60 +338,22 @@ public class SyncEndToEndTest
         var a = await _a.Presets.GetByIdAsync(preset.Id);
         a!.Name = "A-edit";
         await _a.Presets.UpdateAsync(a);
-        await _a.Sync.SyncAsync();
 
         var b = await _b.Presets.GetByIdAsync(preset.Id);
         b!.Name = "B-edit";
         await _b.Presets.UpdateAsync(b);
-        var result = await _b.Sync.SyncAsync();
 
-        return (preset.Id, result.Conflicts.Single());
-    }
-
-    [Test]
-    public async Task Conflict_DetectedWhenBothEditSamePreset()
-    {
-        var (id, conflict) = await CreateConflictAsync();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(conflict.Id, Is.EqualTo(id));
-            Assert.That(conflict.LocalLabel, Is.EqualTo("B-edit"));
-            Assert.That(conflict.RemoteLabel, Is.EqualTo("A-edit"));
-        });
-    }
-
-    [Test]
-    public async Task Conflict_ResolveKeepLocal_PropagatesWinnerToOtherDevice()
-    {
-        var (id, conflict) = await CreateConflictAsync();
-
-        await _b.Sync.ResolveAsync(conflict, keepLocal: true);
+        await _a.Sync.SyncAsync();
         await _b.Sync.SyncAsync();
         await _a.Sync.SyncAsync();
+        await _b.Sync.SyncAsync();
 
-        var bName = (await _b.Presets.GetByIdAsync(id))!.Name;
-        var aName = (await _a.Presets.GetByIdAsync(id))!.Name;
+        var aName = (await _a.Presets.GetByIdAsync(preset.Id))!.Name;
+        var bName = (await _b.Presets.GetByIdAsync(preset.Id))!.Name;
         Assert.Multiple(() =>
         {
-            Assert.That(bName, Is.EqualTo("B-edit"));
-            Assert.That(aName, Is.EqualTo("B-edit"));
-        });
-    }
-
-    [Test]
-    public async Task Conflict_ResolveKeepRemote_TakesOtherDevicesVersion()
-    {
-        var (id, conflict) = await CreateConflictAsync();
-
-        await _b.Sync.ResolveAsync(conflict, keepLocal: false);
-        var after = await _b.Sync.SyncAsync();
-
-        var bName = (await _b.Presets.GetByIdAsync(id))!.Name;
-        Assert.Multiple(() =>
-        {
-            Assert.That(bName, Is.EqualTo("A-edit"));
-            Assert.That(after.HasConflicts, Is.False);
+            Assert.That(aName, Is.EqualTo(bName), "both devices deterministically converge to the same winner with no conflict prompt");
+            Assert.That(aName, Is.AnyOf("A-edit", "B-edit"));
         });
     }
 
@@ -386,7 +399,9 @@ public class SyncEndToEndTest
         Assert.That(((TextFieldValue)clonedEntry.SubValues.Single()).Value, Is.EqualTo("Intro"));
     }
 
-    private async Task<(Guid presetId, Guid itemId, string key)> SeedItemWithImageAsync(Client client, byte[] bytes)
+    private sealed record SeededImage(Guid PresetId, Guid ItemId, string Key);
+
+    private async Task<SeededImage> SeedItemWithImageAsync(Client client, byte[] bytes)
     {
         var preset = new Preset { Name = "Trains" };
         var imageField = new ImageFieldDefinition { Label = "Photo", PresetId = preset.Id };
@@ -400,14 +415,15 @@ public class SyncEndToEndTest
         var item = new Item { PresetId = preset.Id, DisplayName = "Loco 42" };
         item.Values.Add(new ImageFieldValue { FieldDefinitionId = imageField.Id, ImageKey = key, ItemId = item.Id });
         await client.Items.AddAsync(item);
-        return (preset.Id, item.Id, key);
+        return new SeededImage(preset.Id, item.Id, key);
     }
 
     [Test]
     public async Task Image_ReferencedByItem_PropagatesAtoB()
     {
         var bytes = new byte[] { 1, 2, 3, 4, 5 };
-        var (_, _, key) = await SeedItemWithImageAsync(_a, bytes);
+        var seeded = await SeedItemWithImageAsync(_a, bytes);
+        var key = seeded.Key;
 
         await SyncBothAsync();
 
@@ -419,40 +435,117 @@ public class SyncEndToEndTest
     }
 
     [Test]
-    public async Task Image_OfSoftDeletedItem_IsRetainedWhileTombstoneLives()
+    public async Task Image_OfDeletedItem_IsGarbageCollectedOnBothDevices()
     {
-        var (_, itemId, key) = await SeedItemWithImageAsync(_a, new byte[] { 9, 9, 9 });
+        var seeded = await SeedItemWithImageAsync(_a, new byte[] { 9, 9, 9 });
+        var key = seeded.Key;
         await SyncBothAsync();
         Assume.That(_b.Images.Exists(key), Is.True, "precondition: image propagated to B");
 
-        await _a.Items.DeleteAsync(itemId);
+        await _a.Items.DeleteAsync(seeded.ItemId);
         await SyncBothAsync();
 
         Assert.Multiple(() =>
         {
-            Assert.That(_a.Images.Exists(key), Is.True, "a soft-deleted item's image must survive while its tombstone is retained");
-            Assert.That(_b.Images.Exists(key), Is.True, "the peer must also retain the image while the tombstone is retained");
+            Assert.That(_a.Images.Exists(key), Is.False, "a hard-deleted item's image is no longer referenced and is cleaned up");
+            Assert.That(_b.Images.Exists(key), Is.False, "the peer drops the orphaned image once the deletion propagates");
+        });
+    }
+
+
+    [Test]
+    public async Task SecondSync_WithNoPeersAndNoChanges_SkipsAndDoesNotRewriteOwnDeviceFile()
+    {
+        await _a.Presets.AddAsync(MakePreset("Solo"));
+        await _a.Sync.SyncAsync();
+
+        var backend = new FileSystemSyncBackend(_folder);
+        var before = await backend.ReadAsync(SyncService.DevicesKind, _a.DeviceId);
+
+        var result = await _a.Sync.SyncAsync();
+
+        var after = await backend.ReadAsync(SyncService.DevicesKind, _a.DeviceId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Pushed, Is.EqualTo(0));
+            Assert.That(result.Pulled, Is.EqualTo(0));
+            Assert.That(after, Is.EqualTo(before),
+                "an idle sync with no peers and no pending changes must not reload and rewrite the device file");
         });
     }
 
     [Test]
-    public async Task Image_AfterTombstonePurged_IsGarbageCollected()
+    public async Task SecondSync_WithTwoDevicesAndNothingChanged_DoesNotRewriteOwnDeviceFile()
     {
-        var (_, itemId, key) = await SeedItemWithImageAsync(_a, new byte[] { 7 });
-        await _a.Sync.SyncAsync();
-        Assume.That(_a.Images.Exists(key), Is.True, "precondition: image pushed to remote");
+        await _a.Presets.AddAsync(MakePreset("Shared"));
+        await SyncBothAsync();
 
-        var tomb = (await _a.Store.GetAllItemsAsync()).Single(i => i.Id == itemId);
-        tomb.IsDeleted = true;
-        tomb.DeletedAt = DateTime.UtcNow.AddDays(-60);
-        tomb.IsDirty = true;
-        tomb.Revision = 2;
-        await _a.Store.ApplyItemAsync(tomb);
+        var backend = new FileSystemSyncBackend(_folder);
+        var before = await backend.ReadAsync(SyncService.DevicesKind, _a.DeviceId);
 
-        await _a.Sync.SyncAsync();
+        var result = await _a.Sync.SyncAsync();
+
+        var after = await backend.ReadAsync(SyncService.DevicesKind, _a.DeviceId);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Pushed, Is.EqualTo(0));
+            Assert.That(result.Pulled, Is.EqualTo(0));
+            Assert.That(after, Is.EqualTo(before),
+                "with an unchanged peer and no local edits, the device file is not reloaded and rewritten");
+        });
+    }
+
+    [Test]
+    public async Task AfterIdleConvergence_AnEditOnThePeerStillPropagates()
+    {
+        var preset = MakePreset("Orig");
+        await _a.Presets.AddAsync(preset);
+        await SyncBothAsync();
         await _a.Sync.SyncAsync();
 
-        Assert.That(_a.Images.Exists(key), Is.False, "once the tombstone is purged, its image is finally garbage-collected");
+        var onB = await _b.Presets.GetByIdAsync(preset.Id);
+        onB!.Name = "Renamed-by-B";
+        await _b.Presets.UpdateAsync(onB);
+        await _b.Sync.SyncAsync();
+        await _a.Sync.SyncAsync();
+
+        Assert.That((await _a.Presets.GetByIdAsync(preset.Id))!.Name, Is.EqualTo("Renamed-by-B"),
+            "the fingerprint fast-path must still detect a changed peer file and merge it");
+    }
+
+    [Test]
+    public async Task Sync_WhenAListedPeerFileCannotBeRead_ReportsItUnreadableOnEveryRun()
+    {
+        await _a.Presets.AddAsync(MakePreset("Shared"));
+        await SyncBothAsync();
+
+        var blinded = new SyncService(
+            new OnePeerUnreadableBackend(new FileSystemSyncBackend(_folder), _b.DeviceId),
+            _a.Store, new SyncSerializer(), new FixedDeviceIdentity(_a.DeviceId), _a.Images);
+        var first = await blinded.SyncAsync();
+        var second = await blinded.SyncAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(first.UnreadableDevices, Is.EqualTo(1),
+                "a listed peer whose file cannot be read is surfaced to the user");
+            Assert.That(second.UnreadableDevices, Is.EqualTo(1),
+                "the failure keeps being reported and is never masked by the idle fast-path");
+        });
+    }
+
+    private sealed class OnePeerUnreadableBackend(ISyncBackend inner, Guid unreadable) : ISyncBackend
+    {
+        public bool IsAvailable => inner.IsAvailable;
+        public Task<IReadOnlyList<Guid>> ListAsync(string kind) => inner.ListAsync(kind);
+        public Task<string?> ReadAsync(string kind, Guid id) =>
+            id == unreadable ? Task.FromResult<string?>(null) : inner.ReadAsync(kind, id);
+        public Task WriteAsync(string kind, Guid id, string content) => inner.WriteAsync(kind, id, content);
+        public Task DeleteAsync(string kind, Guid id) => inner.DeleteAsync(kind, id);
+        public Task<IReadOnlyList<string>> ListBlobKeysAsync(string kind) => inner.ListBlobKeysAsync(kind);
+        public Task<byte[]?> ReadBlobAsync(string kind, string key) => inner.ReadBlobAsync(kind, key);
+        public Task WriteBlobAsync(string kind, string key, byte[] content) => inner.WriteBlobAsync(kind, key, content);
+        public Task DeleteBlobAsync(string kind, string key) => inner.DeleteBlobAsync(kind, key);
     }
 
     [Test]
@@ -466,16 +559,10 @@ public class SyncEndToEndTest
         Assert.Multiple(() =>
         {
             Assert.That(second.Pushed, Is.EqualTo(0));
-            Assert.That(second.Pulled, Is.EqualTo(0));
-            Assert.That(second.HasConflicts, Is.False);
+            Assert.That(second.Pulled, Is.EqualTo(0), "a no-op second sync transfers nothing");
+            Assert.That(second.Skipped, Is.EqualTo(0), "a healthy sync skips nothing");
         });
     }
-}
-
-internal sealed class AlwaysConfiguredSyncStatus : ISyncStatus
-{
-    public bool IsConfigured => true;
-    public int TombstoneRetentionDays => 30;
 }
 
 internal sealed class AllowAllAuthorization : ICollectionAuthorization

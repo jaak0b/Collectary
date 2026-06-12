@@ -36,7 +36,7 @@ public class RoutingSyncBackendTest
         var id = Guid.NewGuid();
 
         _active = CloudProvider.OneDrive;
-        await sut.WriteAsync("items", id, "od", 1);
+        await sut.WriteAsync("items", id, "od");
 
         Assert.Multiple(() =>
         {
@@ -52,9 +52,9 @@ public class RoutingSyncBackendTest
         var id = Guid.NewGuid();
 
         _active = CloudProvider.Folder;
-        await sut.WriteAsync("items", id, "f", 1);
+        await sut.WriteAsync("items", id, "f");
         _active = CloudProvider.OneDrive;
-        await sut.WriteAsync("items", id, "o", 1);
+        await sut.WriteAsync("items", id, "o");
 
         Assert.Multiple(() =>
         {
@@ -84,12 +84,11 @@ public class RoutingSyncBackendTest
             Assert.That(sut.ListAsync("items").Result, Is.Empty);
             Assert.That(sut.ListBlobKeysAsync("images").Result, Is.Empty);
             Assert.That(sut.ReadAsync("items", Guid.NewGuid()).Result, Is.Null);
-            Assert.That(sut.ReadAtRevisionAsync("items", Guid.NewGuid(), 1).Result, Is.Null);
             Assert.That(sut.ReadBlobAsync("images", "k").Result, Is.Null);
         });
 
         // writes/deletes are silently dropped, not thrown
-        await sut.WriteAsync("items", Guid.NewGuid(), "x", 1);
+        await sut.WriteAsync("items", Guid.NewGuid(), "x");
         await sut.DeleteAsync("items", Guid.NewGuid());
         await sut.WriteBlobAsync("images", "k", new byte[] { 1 });
         await sut.DeleteBlobAsync("images", "k");
@@ -113,25 +112,6 @@ public class RoutingSyncBackendTest
         _ = sut.IsAvailable;
         _ = sut.IsAvailable;
         Assert.That(oneDriveResolved, Is.EqualTo(1), "factory resolved once then cached");
-    }
-
-    [Test]
-    public async Task ReadAtRevision_RoutesToActiveProviderWithoutListing()
-    {
-        var sut = Build();
-        var id = Guid.NewGuid();
-        _active = CloudProvider.OneDrive;
-        await sut.WriteAsync("items", id, "od", 1);
-        var listsBefore = _oneDriveStore.ListFilesCalls;
-
-        var content = await sut.ReadAtRevisionAsync("items", id, 1);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(content, Is.EqualTo("od"));
-            Assert.That(_oneDriveStore.ListFilesCalls - listsBefore, Is.EqualTo(0),
-                "routing must delegate to the provider's revision-addressed read, not fall through to its listing read");
-        });
     }
 
     [Test]

@@ -19,43 +19,32 @@ You can also trigger a sync manually at any time.
 
 ## What a sync does
 
-Each sync **pushes** your local changes to the shared folder and **pulls** changes made elsewhere,
-reconciling the two using revision numbers and timestamps. Entities are stored in the shared folder
-as per-revision JSON files (presets, items, shared fields) plus image blobs.
+Each device writes **one file of its own** to the shared folder (named by its device id) holding the
+data it knows about, then reads the other devices' files and merges them in. Because a device only ever
+writes *its own* file, two devices syncing at once can never overwrite each other's changes.
 
-After a sync you'll see how many records were pushed and pulled, and whether any conflicts need
-your attention.
+The sync icon in the top bar opens a small status panel: press **Sync now** there and the panel stays
+open while it works — you'll see "Syncing…" turn into how many records were pushed and pulled, plus
+the updated last-sync time. There's nothing to resolve by hand — the merge is automatic (see below).
 
-## Resolving conflicts
+## When two devices change the same thing
 
-A **conflict** happens when the same item was changed both locally and remotely since the last
-sync. Collectary can't know which version you want, so it asks:
-
-- **Keep local** — your version wins.
-- **Take remote** — the other device's version wins.
-
-Resolve each conflict and the chosen version is written everywhere on the next sync.
+You no longer get a conflict prompt. If the same item is edited on two devices before they sync,
+Collectary keeps the **most recent** edit automatically and everywhere — both devices end up showing
+the same value, with no dialog to dismiss. (The other edit isn't destroyed; it stays in that device's
+file.) Editing *different* things — or different fields of the same item — keeps both, so a label change
+on your phone never erases the data on your laptop.
 
 ## Deletions
 
-When you delete something, Collectary records a **tombstone** so the deletion propagates to other
-devices instead of the item reappearing on the next pull. Tombstones are kept for the retention
-period you configured, then cleaned up.
+When you delete something, the data is **removed from disk right away** and Collectary records a tiny
+deletion marker so the deletion travels to your other devices. A deletion always wins: once you've
+deleted an item it stays deleted everywhere, even if another device was offline and still had the old
+copy. (There's no undo — see the relevant page for the feature you're deleting.)
 
-A deletion only ever travels as a tombstone. If the shared folder is simply *missing* an item — say
-you pointed sync at a fresh or different folder, or restored your database from a backup — Collectary
-treats that as "nothing to pull here," **not** as a deletion, so your local collection is never wiped
-by an empty or unfamiliar folder. An image attached to a deleted item is likewise kept for as long as
-its tombstone lives, so undoing a deletion (or a device that hasn't caught up yet) still finds the
-picture intact.
-
-## Editing the same collection on two devices
-
-Renaming a collection, reordering its fields, or tweaking it on one device never disturbs the items
-and values you entered on another — those edits are merged field by field rather than replacing the
-whole collection, so a label change on your phone can't erase the data on your laptop. Only when the
-*same* record was changed on both sides since the last sync do you get a [conflict](#resolving-conflicts)
-to resolve.
+If the shared folder is simply *missing* an item — say you pointed sync at a fresh or different folder,
+or restored your database from a backup — Collectary treats that as "nothing to pull here," **not** as
+a deletion, so your local collection is never wiped by an empty or unfamiliar folder.
 
 ## Where sync works
 

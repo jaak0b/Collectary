@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using Autofac;
 using Avalonia;
 using Avalonia.Controls;
@@ -70,9 +71,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public IDialogHost? DialogHost { get; }
 
     [RelayCommand]
-    private async Task ResolveConflicts() => await _dialogService.ShowSyncConflictsAsync(Sync);
-
-    [RelayCommand]
     private void ToggleSidebar()
     {
         IsSidebarOpen = !IsSidebarOpen;
@@ -96,6 +94,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             exportBackup: ExportBackupAsync,
             importBackup: ImportBackupAsync,
             switchProfile: () => SwitchProfileCommand.Execute(null),
+            deleteProfile: DeleteCurrentProfileAsync,
             confirmDiscardCustomizations: () => _dialogService.ConfirmAsync(
                 LocalizationService.Instance["Theme_DiscardCustomBody"],
                 LocalizationService.Instance["Theme_DiscardCustomConfirm"],
@@ -230,7 +229,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Autofac.ResolutionExtensions.ResolveOptional<ISyncBackend>(_scope)?.Invalidate();
         Sync.Refresh();
         ConfigureAutoSyncTimer(AppPreferences.Load());
-        if (Sync.IsConfigured) _ = SyncThenReloadAsync();
+        if (Sync.IsConfigured) _ = SyncThenReloadAsync(CancellationToken.None);
     }
 
     public ObservableCollection<BreadcrumbNode> Breadcrumbs { get; } = new();
@@ -351,8 +350,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _dialogService = dialogService;
         _syncScheduler = syncScheduler;
         DialogHost = dialogService as IDialogHost;
-        Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>());
+        Sync = new SyncViewModel(scope.Resolve<ISyncService>(), scope.Resolve<ISyncStatus>(), scope.Resolve<IUiDispatcher>(), scope.Resolve<IBackgroundRunner>());
         Sync.Synced += OnSynced;
+        _syncScheduler.TickFailed += OnSyncTickFailed;
         Breadcrumbs.CollectionChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(HasBreadcrumbs));
@@ -425,6 +425,23 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         await ShowProfilePickerAsync();
     }
 
+    private async Task DeleteCurrentProfileAsync()
+    {
+        var profiles = _scope.Resolve<IProfileService>();
+        var loc = LocalizationService.Instance;
+        var name = profiles.CurrentProfile?.DisplayName ?? "";
+        var ownedCount = await profiles.CountOwnedCollectionsAsync();
+        var message = ownedCount > 0
+            ? string.Format(loc["Profile_DeleteBodyWithCollections"], name, ownedCount)
+            : string.Format(loc["Profile_DeleteBody"], name);
+
+        if (!await _dialogService.ConfirmAsync(message, loc["Delete"], loc["Profile_DeleteTitle"]))
+            return;
+
+        await profiles.DeleteCurrentProfileAsync();
+        await SwitchProfile();
+    }
+
     public async Task InitializeAsync()
     {
         var prefs = AppPreferences.Load();
@@ -466,7 +483,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private async Task RestoreThenSyncAsync()
     {
         await RestoreCloudSessionsAsync();
-        await SyncThenReloadAsync();
+        await SyncThenReloadAsync(CancellationToken.None);
     }
 
     private async Task RestoreCloudSessionsAsync()
@@ -497,7 +514,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             SyncThenReloadAsync);
     }
 
-    private async Task SyncThenReloadAsync() => await Sync.SyncNowCommand.ExecuteAsync(null);
+    private async Task SyncThenReloadAsync(CancellationToken cancellationToken) => await Sync.SyncNowCommand.ExecuteAsync(null);
+
+    private void OnSyncTickFailed(Exception ex)
+    {
+        AppLogger.Log.Error(ex, "Auto-sync tick failed");
+        Sync.ReportError();
+    }
 
     private async void OnSynced()
     {
@@ -515,6 +538,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         if (_trackedEditor is not null)
             _trackedEditor.DrillBreadcrumbs.CollectionChanged -= OnDrillBreadcrumbsChanged;
+        _syncScheduler.TickFailed -= OnSyncTickFailed;
         _syncScheduler.Dispose();
         Sync.Synced -= OnSynced;
     }
@@ -852,6 +876,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                     options.Add(new LinkedItemOption(it.Id, it.DisplayName));
             return options;
         };
+
+        context.LoadUsedNumbersAsync = fieldId =>
+            itemUseCase.GetUsedAutoNumbersAsync(fieldId, existing?.Id);
 
         context.GlobalFieldLabelLayout = AppPreferences.Load().FieldLabelLayout;
         context.IsNarrow = IsNarrow;

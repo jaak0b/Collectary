@@ -43,6 +43,10 @@ public class ItemEditingContextDefaultsTest
         Assert.That(await Make().LoadLinkableItemsAsync(), Is.Empty);
 
     [Test]
+    public async Task LoadUsedNumbers_DefaultsToEmpty() =>
+        Assert.That(await Make().LoadUsedNumbersAsync(Guid.NewGuid()), Is.Empty);
+
+    [Test]
     public void AudioRecorder_DefaultsToNull() =>
         Assert.That(Make().AudioRecorder, Is.Null);
 

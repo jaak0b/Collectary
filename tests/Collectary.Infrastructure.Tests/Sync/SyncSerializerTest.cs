@@ -47,6 +47,35 @@ public class SyncSerializerTest
     }
 
     [Test]
+    public void AutoNumberField_RoundTrips_WithAllConfigAndValue()
+    {
+        var field = new AutoNumberFieldDefinition
+        {
+            Label = "Number",
+            Editable = true,
+            Strategy = AutoNumberStrategy.FillGaps,
+            OnDuplicate = DuplicateHandling.Warn,
+            ShowInList = false,
+        };
+        var preset = new Preset { Name = "Trains", OwnerId = Guid.NewGuid(), Fields = { field } };
+        var item = new Item { PresetId = preset.Id, DisplayName = "BR 01" };
+        item.Values.Add(new AutoNumberFieldValue { FieldDefinitionId = field.Id, Value = 7 });
+
+        var clonedPreset = _sut.Deserialize<Preset>(_sut.Serialize(preset));
+        var clonedItem = _sut.Deserialize<Item>(_sut.Serialize(item));
+
+        Assert.Multiple(() =>
+        {
+            var def = (AutoNumberFieldDefinition)clonedPreset.Fields.Single();
+            Assert.That(def.Editable, Is.True);
+            Assert.That(def.Strategy, Is.EqualTo(AutoNumberStrategy.FillGaps));
+            Assert.That(def.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn));
+            Assert.That(def.ShowInList, Is.False);
+            Assert.That(((AutoNumberFieldValue)clonedItem.Values.Single()).Value, Is.EqualTo(7));
+        });
+    }
+
+    [Test]
     public void Item_RoundTrips_PolymorphicValuesAndNestedListEntries()
     {
         var listValue = new ListFieldValue();

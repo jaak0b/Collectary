@@ -63,6 +63,10 @@ public partial class ItemEditingContext : ObservableObject
     public Func<Task<IReadOnlyList<LinkedItemOption>>> LoadLinkableItemsAsync { get; set; }
         = () => Task.FromResult<IReadOnlyList<LinkedItemOption>>(Array.Empty<LinkedItemOption>());
 
+    /// <summary>Loads the numbers already used by other items for an auto-number field, so a new item can pick the next one. Default: none.</summary>
+    public Func<Guid, Task<IReadOnlyCollection<int>>> LoadUsedNumbersAsync { get; set; }
+        = _ => Task.FromResult<IReadOnlyCollection<int>>(Array.Empty<int>());
+
     public IAudioRecorder? AudioRecorder { get; set; }
 
     public IAudioPlayer? AudioPlayer { get; set; }
