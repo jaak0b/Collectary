@@ -3,6 +3,7 @@ using System;
 using Collectary.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Collectary.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611220550_AddAutoNumberField")]
+    partial class AddAutoNumberField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.16");
@@ -25,20 +28,20 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<long>("BaseRevision")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("GrantedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("GrantedByUserId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
-
-                    b.Property<long>("Lamport")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("LastModifiedByDeviceId")
-                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -195,18 +198,18 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
-
-                    b.Property<long>("Lamport")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("LastModifiedByDeviceId")
-                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -278,20 +281,20 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("FieldLabelLayout")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
-
-                    b.Property<long>("Lamport")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("LastModifiedByDeviceId")
-                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -348,14 +351,14 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<long>("BaseRevision")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
-
-                    b.Property<long>("Lamport")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("LastModifiedByDeviceId")
-                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");
@@ -378,32 +381,6 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.ToTable("SharedFields", (string)null);
                 });
 
-            modelBuilder.Entity("Collectary.Core.Domain.SyncState", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("MaxObservedLamport")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SyncFingerprint")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SyncState", (string)null);
-                });
-
-            modelBuilder.Entity("Collectary.Core.Domain.Tombstone", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Tombstones", (string)null);
-                });
-
             modelBuilder.Entity("Collectary.Core.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -412,18 +389,18 @@ namespace Collectary.Infrastructure.Persistence.Migrations
                     b.Property<long>("BaseRevision")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsDirty")
                         .HasColumnType("INTEGER");
-
-                    b.Property<long>("Lamport")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("LastModifiedByDeviceId")
-                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("TEXT");

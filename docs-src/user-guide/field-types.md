@@ -13,6 +13,8 @@ kind of information you're storing.
 ## Numbers
 
 - **Integer** — a whole number: a quantity, a year, a count.
+- **Auto Number** — a whole number that fills itself in: every new item gets the next free number, so
+  each train (or coin, or anything you number) ends up unique without you typing it.
 - **Decimal** — a number with fractions, shown to as many decimal places as you choose.
 - **Percentage** — 0–100, shown with a `%`.
 - **Currency** — an amount plus a currency symbol.
@@ -106,6 +108,12 @@ the field panel:
   blank for no limit.
 - **Integer** — set a **minimum** and/or **maximum** so the editor won't accept values outside the
   range. Leave either blank to leave that end open.
+- **Auto Number** — three choices. **Let me edit the number** decides whether the auto-filled number
+  is yours to change or stays read-only. **Next number is** picks how the next one is chosen — either
+  *highest used + 1*, or the *lowest unused number* so it fills the gaps left when you delete items.
+  And when editing is allowed, **if an entered number is already used** lets you choose what happens on
+  a clash: block saving, just warn, or allow it. A number, once given to an item, stays with it — the
+  editor only ever picks a number for a brand-new item.
 - **Decimal** — choose how many **decimal places** to show, both while editing and in lists.
 - **Bool** — choose between a plain yes/no checkbox and the three-state **Allow unanswered** mode.
 - **Rating** — pick how many **stars** the scale runs to.

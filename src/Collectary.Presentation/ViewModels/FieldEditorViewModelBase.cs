@@ -21,4 +21,10 @@ public abstract class FieldEditorViewModelBase : ViewModelBase
     }
 
     public abstract FieldValue GetCurrentValue();
+
+    /// <summary>Completes once the editor has finished any async initialisation (e.g. computing an auto-number). Default: already ready.</summary>
+    public virtual Task Ready => Task.CompletedTask;
+
+    /// <summary>Returns a user-facing error that blocks saving the item, or null when the field is valid.</summary>
+    public virtual string? Validate() => null;
 }

@@ -38,6 +38,17 @@
   <data name="DisplayNameField" xml:space="preserve"><value>Anzeigename</value></data>
   <data name="FieldType_Text" xml:space="preserve"><value>Text</value></data>
   <data name="FieldType_Integer" xml:space="preserve"><value>Ganzzahl</value></data>
+  <data name="FieldType_AutoNumber" xml:space="preserve"><value>Automatische Nummer</value></data>
+  <data name="AutoNumber_Editable" xml:space="preserve"><value>Nummer ist bearbeitbar</value></data>
+  <data name="AutoNumber_Strategy" xml:space="preserve"><value>Nächste Nummer ist</value></data>
+  <data name="AutoNumberStrategy_HighestPlusOne" xml:space="preserve"><value>Höchste vergebene Nummer + 1</value></data>
+  <data name="AutoNumberStrategy_FillGaps" xml:space="preserve"><value>Niedrigste freie Nummer (füllt Lücken)</value></data>
+  <data name="AutoNumber_OnDuplicate" xml:space="preserve"><value>Wenn eine eingegebene Nummer bereits vergeben ist</value></data>
+  <data name="DuplicateHandling_Error" xml:space="preserve"><value>Speichern verhindern</value></data>
+  <data name="DuplicateHandling_Warn" xml:space="preserve"><value>Warnung anzeigen</value></data>
+  <data name="DuplicateHandling_Allow" xml:space="preserve"><value>Zulassen</value></data>
+  <data name="AutoNumber_DuplicateNotice" xml:space="preserve"><value>Diese Nummer wird bereits von einem anderen Eintrag verwendet.</value></data>
+  <data name="AutoNumber_CouldNotAssign" xml:space="preserve"><value>Nummer konnte nicht vergeben werden — Eintrag erneut öffnen.</value></data>
   <data name="FieldType_Decimal" xml:space="preserve"><value>Dezimalzahl</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Farbe</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Bild</value></data>

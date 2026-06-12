@@ -23,6 +23,9 @@ public class ItemUseCase : IItemUseCase
     public Task<IReadOnlyList<Item>> GetItemsForPresetAsync(Guid presetId) =>
         _items.GetByPresetAsync(presetId);
 
+    public Task<IReadOnlyCollection<int>> GetUsedAutoNumbersAsync(Guid fieldDefinitionId, Guid? excludeItemId) =>
+        _items.GetUsedAutoNumbersAsync(fieldDefinitionId, excludeItemId);
+
     public Task<Item?> GetItemAsync(Guid id) =>
         _items.GetByIdAsync(id);
 

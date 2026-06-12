@@ -98,9 +98,10 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     public bool IsInteger => _definition is IntegerFieldDefinition;
     public bool IsDecimal => _definition is DecimalFieldDefinition;
     public bool IsBool => _definition is BoolFieldDefinition;
+    public bool IsAutoNumber => _definition is AutoNumberFieldDefinition;
     public bool HasTypeSettings =>
         IsCurrency || IsColor || IsRating || IsPicture || HasChoices || IsList
-        || IsText || IsInteger || IsDecimal || IsBool;
+        || IsText || IsInteger || IsDecimal || IsBool || IsAutoNumber;
     public bool IsGridInline => IsList && InlineStyle == ListInlineStyle.Grid;
     public IReadOnlyList<ColorFormat> ColorFormats { get; } = Enum.GetValues<ColorFormat>();
     public IReadOnlyList<ListInlineStyle> InlineStyles { get; } = Enum.GetValues<ListInlineStyle>();
@@ -172,6 +173,18 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     [ObservableProperty]
     public partial bool ThreeState { get; set; }
 
+    [ObservableProperty]
+    public partial bool Editable { get; set; }
+
+    [ObservableProperty]
+    public partial AutoNumberStrategy Strategy { get; set; }
+
+    [ObservableProperty]
+    public partial DuplicateHandling OnDuplicate { get; set; }
+
+    public IReadOnlyList<AutoNumberStrategy> AutoNumberStrategies { get; } = Enum.GetValues<AutoNumberStrategy>();
+    public IReadOnlyList<DuplicateHandling> DuplicateHandlings { get; } = Enum.GetValues<DuplicateHandling>();
+
     public FieldDefinitionRowViewModel(
         FieldDefinition definition,
         bool isSharedField = false)
@@ -196,6 +209,9 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
         Max = (_definition as IntegerFieldDefinition)?.Max;
         DecimalPlaces = (_definition as DecimalFieldDefinition)?.DecimalPlaces ?? 2;
         ThreeState = (_definition as BoolFieldDefinition)?.ThreeState ?? false;
+        Editable = (_definition as AutoNumberFieldDefinition)?.Editable ?? false;
+        Strategy = (_definition as AutoNumberFieldDefinition)?.Strategy ?? AutoNumberStrategy.HighestPlusOne;
+        OnDuplicate = (_definition as AutoNumberFieldDefinition)?.OnDuplicate ?? DuplicateHandling.Error;
 
         SubFieldRows.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SubFieldCount));
         AvailableGroups.CollectionChanged += (_, _) =>

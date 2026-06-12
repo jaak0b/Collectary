@@ -122,6 +122,68 @@ public class ListEntryEditorViewModelTest
     }
 
     [Test]
+    public async Task SaveCommand_WhenSubFieldValidationFails_ShowsErrorAndDoesNotSave()
+    {
+        var sub = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(sub);
+        A.CallTo(() => editor.Validate()).Returns("dup");
+        var def = new ListFieldDefinition { SubFields = [sub] };
+        var saved = false;
+        var sut = new ListEntryEditorViewModel(def, new ListEntry(), 1,
+            MakeContext(save: () => { saved = true; return Task.CompletedTask; }));
+
+        await sut.SaveCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.ErrorMessage, Is.EqualTo("dup"));
+            Assert.That(saved, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task BackCommand_WhenSubFieldValidationFails_DoesNotSaveOrGoBack()
+    {
+        var sub = new TextFieldDefinition { Label = "A" };
+        var editor = FakeEditorFor(sub);
+        A.CallTo(() => editor.Validate()).Returns("dup");
+        var def = new ListFieldDefinition { SubFields = [sub] };
+        var order = new List<string>();
+        var sut = new ListEntryEditorViewModel(def, new ListEntry(), 1,
+            MakeContext(goBack: () => order.Add("back"), save: () => { order.Add("save"); return Task.CompletedTask; }));
+
+        await sut.BackCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.ErrorMessage, Is.EqualTo("dup"));
+            Assert.That(order, Is.Empty);
+        });
+    }
+
+    [Test]
+    public async Task SaveCommand_WhenRootValidationThrows_ShowsMessageAndDoesNotThrow()
+    {
+        var sut = new ListEntryEditorViewModel(new ListFieldDefinition(), new ListEntry(), 1,
+            MakeContext(save: () => throw new FieldValidationException("root dup")));
+
+        await sut.SaveCommand.ExecuteAsync(null);
+
+        Assert.That(sut.ErrorMessage, Is.EqualTo("root dup"));
+    }
+
+    [Test]
+    public async Task SaveCommand_WhenSaveThrowsUnexpectedly_ShowsGenericError()
+    {
+        var sut = new ListEntryEditorViewModel(new ListFieldDefinition(), new ListEntry(), 1,
+            MakeContext(save: () => throw new InvalidOperationException("boom")));
+
+        await sut.SaveCommand.ExecuteAsync(null);
+
+        Assert.That(sut.ErrorMessage, Is.EqualTo(LocalizationService.Instance["CouldNotSave"]));
+    }
+
+    [Test]
     public void GoBackCommand_InvokesContextGoBack()
     {
         var back = false;

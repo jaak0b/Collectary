@@ -24,6 +24,7 @@ public sealed class DeveloperTemplate : PresetTemplateBase, IPresetTemplate
             Text("FieldType_Text"),
             RichText("FieldType_RichText"),
             Integer("FieldType_Integer"),
+            new AutoNumberFieldDefinition { Label = L("FieldType_AutoNumber") },
             Decimal("FieldType_Decimal"),
             Percentage("FieldType_Percentage"),
             Currency("FieldType_Currency"),

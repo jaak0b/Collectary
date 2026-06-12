@@ -90,6 +90,27 @@ public class FieldEditorMapperTest
     }
 
     [Test]
+    public void ToDefinition_CopiesAutoNumberConfig()
+    {
+        var auto = (AutoNumberFieldDefinition)_mapper.ToDefinition(
+            new FieldDefinitionRowViewModel(new AutoNumberFieldDefinition())
+            {
+                Editable = true,
+                Strategy = AutoNumberStrategy.FillGaps,
+                OnDuplicate = DuplicateHandling.Warn,
+                ShowInList = false,
+            });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(auto.Editable, Is.True);
+            Assert.That(auto.Strategy, Is.EqualTo(AutoNumberStrategy.FillGaps));
+            Assert.That(auto.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn));
+            Assert.That(auto.ShowInList, Is.False);
+        });
+    }
+
+    [Test]
     public void ToDefinition_List_StampsParentIdAndPreservesSubFieldOrder()
     {
         var sub1 = new TextFieldDefinition { Label = "S1", DisplayOrder = 0 };

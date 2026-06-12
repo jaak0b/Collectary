@@ -213,6 +213,7 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<DisplayNameFieldDefinition>().ToTable("DisplayNameFieldDefinitions");
         modelBuilder.Entity<TextFieldDefinition>().ToTable("TextFieldDefinitions");
         modelBuilder.Entity<IntegerFieldDefinition>().ToTable("IntegerFieldDefinitions");
+        modelBuilder.Entity<AutoNumberFieldDefinition>().ToTable("AutoNumberFieldDefinitions");
         modelBuilder.Entity<DecimalFieldDefinition>().ToTable("DecimalFieldDefinitions");
         modelBuilder.Entity<ColorFieldDefinition>().ToTable("ColorFieldDefinitions");
         modelBuilder.Entity<ImageFieldDefinition>().ToTable("ImageFieldDefinitions");
@@ -291,6 +292,11 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<IntegerFieldValue>(e =>
         {
             e.ToTable("IntegerFieldValues");
+            e.Ignore(v => v.Definition);
+        });
+        modelBuilder.Entity<AutoNumberFieldValue>(e =>
+        {
+            e.ToTable("AutoNumberFieldValues");
             e.Ignore(v => v.Definition);
         });
         modelBuilder.Entity<DecimalFieldValue>(e =>

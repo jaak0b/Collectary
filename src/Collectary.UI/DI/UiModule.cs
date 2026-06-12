@@ -63,6 +63,7 @@ public class UiModule : Module
         builder.RegisterType<TextFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(TextFieldDefinition));
         builder.RegisterType<BoolFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(BoolFieldDefinition));
         builder.RegisterType<IntegerFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(IntegerFieldDefinition));
+        builder.RegisterType<AutoNumberFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(AutoNumberFieldDefinition));
         builder.RegisterType<DecimalFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(DecimalFieldDefinition));
         builder.RegisterType<DateFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(DateFieldDefinition));
         builder.RegisterType<ColorFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(ColorFieldDefinition));
@@ -101,6 +102,7 @@ public class UiModule : Module
 
         TextCell(nameof(TextFieldDefinition));
         TextCell(nameof(IntegerFieldDefinition));
+        TextCell(nameof(AutoNumberFieldDefinition));
         TextCell(nameof(DateFieldDefinition));
         TextCell(nameof(RatingFieldDefinition));
         TextCell(nameof(UrlFieldDefinition));

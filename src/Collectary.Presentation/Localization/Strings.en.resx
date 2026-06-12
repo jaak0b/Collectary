@@ -38,6 +38,17 @@
   <data name="DisplayNameField" xml:space="preserve"><value>Display Name</value></data>
   <data name="FieldType_Text" xml:space="preserve"><value>Text</value></data>
   <data name="FieldType_Integer" xml:space="preserve"><value>Integer</value></data>
+  <data name="FieldType_AutoNumber" xml:space="preserve"><value>Auto number</value></data>
+  <data name="AutoNumber_Editable" xml:space="preserve"><value>Number is editable</value></data>
+  <data name="AutoNumber_Strategy" xml:space="preserve"><value>Next number is</value></data>
+  <data name="AutoNumberStrategy_HighestPlusOne" xml:space="preserve"><value>Highest used number + 1</value></data>
+  <data name="AutoNumberStrategy_FillGaps" xml:space="preserve"><value>Lowest unused number (fills gaps)</value></data>
+  <data name="AutoNumber_OnDuplicate" xml:space="preserve"><value>If an entered number is already used</value></data>
+  <data name="DuplicateHandling_Error" xml:space="preserve"><value>Block saving</value></data>
+  <data name="DuplicateHandling_Warn" xml:space="preserve"><value>Show a warning</value></data>
+  <data name="DuplicateHandling_Allow" xml:space="preserve"><value>Allow it</value></data>
+  <data name="AutoNumber_DuplicateNotice" xml:space="preserve"><value>This number is already used by another item.</value></data>
+  <data name="AutoNumber_CouldNotAssign" xml:space="preserve"><value>Couldn't assign a number — try reopening the item.</value></data>
   <data name="FieldType_Decimal" xml:space="preserve"><value>Decimal</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Color</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Image</value></data>

@@ -31,6 +31,21 @@ public class ItemRepository : IItemRepository
         return await query.Where(i => i.PresetId == presetId).ToListAsync();
     }
 
+    public async Task<IReadOnlyCollection<int>> GetUsedAutoNumbersAsync(Guid fieldDefinitionId, Guid? excludeItemId)
+    {
+        using var db = _dbFactory();
+        var authorizedItems = await ScopedAsync(db, db.Items.AsNoTracking());
+        var query =
+            from v in db.Set<AutoNumberFieldValue>().AsNoTracking()
+            join i in authorizedItems on v.ItemId equals i.Id
+            where v.FieldDefinitionId == fieldDefinitionId
+                  && v.Value != null
+                  && (excludeItemId == null || v.ItemId != excludeItemId)
+            select v.Value;
+        var numbers = await query.Distinct().ToListAsync();
+        return numbers.Where(n => n.HasValue).Select(n => n!.Value).ToList();
+    }
+
     public async Task<Item?> GetByIdAsync(Guid id)
     {
         using var db = _dbFactory();
