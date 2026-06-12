@@ -94,58 +94,133 @@
                            TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
             </StackPanel>
 
-            <ScrollViewer IsVisible="{Binding IsMapStep}">
-                <ItemsControl ItemsSource="{Binding Columns}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:ImportColumnViewModel">
-                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,10">
-                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
-                                    <CheckBox Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Top"
-                                              IsChecked="{Binding IsSelected}" Margin="0,0,10,0"/>
-                                    <StackPanel Grid.Column="1" Grid.Row="0" Spacing="2">
-                                        <TextBlock Text="{Binding Header}" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding SamplePreview}" Opacity="0.6" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,8,0,0" Spacing="6"
-                                                IsEnabled="{Binding IsSelected}">
-                                        <ComboBox HorizontalAlignment="Stretch"
-                                                  IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).IsExistingMode}"
-                                                  ItemsSource="{Binding TargetOptions}"
-                                                  SelectedItem="{Binding SelectedTarget}">
-                                            <ComboBox.Styles>
-                                                <Style Selector="ComboBoxItem">
-                                                    <Setter Property="IsEnabled" Value="{Binding IsMappable, DataType=vm:ColumnTargetOption}"/>
-                                                </Style>
-                                            </ComboBox.Styles>
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate x:DataType="vm:ColumnTargetOption">
-                                                    <TextBlock Text="{Binding Label}"/>
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                        <StackPanel Spacing="6"
-                                                    IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).CreateNewCollection}">
-                                            <TextBox Text="{Binding Label}"
-                                                     Watermark="{Binding [Import_FieldLabel], Source={x:Static loc:LocalizationService.Instance}}"/>
+            <DockPanel IsVisible="{Binding IsMapStep}" LastChildFill="True">
+                <Grid x:Name="MapColumnsHeader" DockPanel.Dock="Top"
+                      IsVisible="{Binding !IsNarrow}"
+                      ColumnDefinitions="90,60,260,*" Margin="0,0,0,6">
+                    <TextBlock Grid.Column="0" FontWeight="SemiBold"
+                               Text="{Binding [Import_Include], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Grid.Column="1" FontWeight="SemiBold" HorizontalAlignment="Center"
+                               Text="{Binding [Import_Col_Name], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Grid.Column="2" FontWeight="SemiBold"
+                               Text="{Binding [Import_Col_Source], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Grid.Column="3" FontWeight="SemiBold"
+                               IsVisible="{Binding IsExistingMode}"
+                               Text="{Binding [Import_MapTo], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Grid.Column="3" FontWeight="SemiBold"
+                               IsVisible="{Binding CreateNewCollection}"
+                               Text="{Binding [Import_FieldLabel], Source={x:Static loc:LocalizationService.Instance}}"/>
+                </Grid>
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Columns}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ImportColumnViewModel">
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                  <Panel>
+                                    <Grid ColumnDefinitions="90,60,260,*" VerticalAlignment="Center"
+                                          IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).IsWide}">
+                                        <CheckBox Grid.Column="0" VerticalAlignment="Center"
+                                                  IsChecked="{Binding IsSelected}"/>
+                                        <RadioButton Grid.Column="1" GroupName="ImportName"
+                                                     VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                     IsChecked="{Binding IsTitle}" IsEnabled="{Binding IsSelected}"
+                                                     ToolTip.Tip="{Binding [Import_Name_Tooltip], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2"
+                                                    Margin="0,0,12,0" IsEnabled="{Binding IsSelected}">
+                                            <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding SamplePreview}" Opacity="0.6" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                        <Panel Grid.Column="3" VerticalAlignment="Center" IsEnabled="{Binding IsSelected}">
+                                            <TextBlock IsVisible="{Binding IsTitle}" VerticalAlignment="Center"
+                                                       Opacity="0.6" FontSize="12" TextTrimming="CharacterEllipsis"
+                                                       Text="{Binding [Import_Name_Tooltip], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                            <Panel IsVisible="{Binding !IsTitle}">
+                                                <ComboBox HorizontalAlignment="Stretch"
+                                                          IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).IsExistingMode}"
+                                                          ItemsSource="{Binding TargetOptions}"
+                                                          SelectedItem="{Binding SelectedTarget}">
+                                                    <ComboBox.Styles>
+                                                        <Style Selector="ComboBoxItem">
+                                                            <Setter Property="IsEnabled" Value="{Binding IsMappable, DataType=vm:ColumnTargetOption}"/>
+                                                        </Style>
+                                                    </ComboBox.Styles>
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:ColumnTargetOption">
+                                                            <TextBlock Text="{Binding Label}"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <Grid ColumnDefinitions="*,Auto"
+                                                      IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).CreateNewCollection}">
+                                                    <TextBox Grid.Column="0" Text="{Binding Label}"
+                                                             Watermark="{Binding [Import_FieldLabel], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                                    <ComboBox Grid.Column="1" MinWidth="130" Margin="6,0,0,0"
+                                                              ToolTip.Tip="{Binding [Import_FieldType], Source={x:Static loc:LocalizationService.Instance}}"
+                                                              ItemsSource="{Binding TypeChoices}"
+                                                              SelectedItem="{Binding SelectedTypeChoice}">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:FieldTypeChoice">
+                                                                <TextBlock Text="{Binding Name}"/>
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                </Grid>
+                                            </Panel>
+                                        </Panel>
+                                    </Grid>
+                                    <StackPanel Spacing="6"
+                                                IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).IsNarrow}">
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <CheckBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0"
+                                                      IsChecked="{Binding IsSelected}"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                <TextBlock Text="{Binding Header}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding SamplePreview}" Opacity="0.6" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <RadioButton GroupName="ImportNameNarrow"
+                                                     IsChecked="{Binding IsTitle}" IsEnabled="{Binding IsSelected}"
+                                                     Content="{Binding [Import_Name_Tooltip], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                        <Panel IsEnabled="{Binding IsSelected}" IsVisible="{Binding !IsTitle}">
                                             <ComboBox HorizontalAlignment="Stretch"
-                                                      ItemsSource="{Binding TypeChoices}"
-                                                      SelectedItem="{Binding SelectedTypeChoice}">
+                                                      IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).IsExistingMode}"
+                                                      ItemsSource="{Binding TargetOptions}"
+                                                      SelectedItem="{Binding SelectedTarget}">
+                                                <ComboBox.Styles>
+                                                    <Style Selector="ComboBoxItem">
+                                                        <Setter Property="IsEnabled" Value="{Binding IsMappable, DataType=vm:ColumnTargetOption}"/>
+                                                    </Style>
+                                                </ComboBox.Styles>
                                                 <ComboBox.ItemTemplate>
-                                                    <DataTemplate x:DataType="vm:FieldTypeChoice">
-                                                        <TextBlock Text="{Binding Name}"/>
+                                                    <DataTemplate x:DataType="vm:ColumnTargetOption">
+                                                        <TextBlock Text="{Binding Label}"/>
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
-                                            <CheckBox Content="{Binding [Import_UseAsName], Source={x:Static loc:LocalizationService.Instance}}"
-                                                      IsChecked="{Binding IsTitle}"/>
-                                        </StackPanel>
+                                            <StackPanel Spacing="6"
+                                                        IsVisible="{Binding $parent[ItemsControl].((vm:ExcelImportViewModel)DataContext).CreateNewCollection}">
+                                                <TextBox Text="{Binding Label}"
+                                                         Watermark="{Binding [Import_FieldLabel], Source={x:Static loc:LocalizationService.Instance}}"/>
+                                                <ComboBox HorizontalAlignment="Stretch"
+                                                          ToolTip.Tip="{Binding [Import_FieldType], Source={x:Static loc:LocalizationService.Instance}}"
+                                                          ItemsSource="{Binding TypeChoices}"
+                                                          SelectedItem="{Binding SelectedTypeChoice}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:FieldTypeChoice">
+                                                            <TextBlock Text="{Binding Name}"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </StackPanel>
+                                        </Panel>
                                     </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                                  </Panel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
 
             <StackPanel Spacing="12" IsVisible="{Binding IsResult}">
                 <TextBlock Text="{Binding SummaryImportedText}" FontSize="16" FontWeight="SemiBold"/>

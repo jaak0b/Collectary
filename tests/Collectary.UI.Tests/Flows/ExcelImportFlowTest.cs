@@ -90,6 +90,7 @@ public class ExcelImportFlowTest : FlowTestBase
         vm.Transpose = true;
 
         Assert.That(vm.ColumnHeaders, Has.Count.EqualTo(2));
+        Assert.That(vm.Columns, Has.Count.EqualTo(2), "recompute rebuilds the column rows from scratch, not on top of the old ones");
     }
 
     [Test]
@@ -107,7 +108,7 @@ public class ExcelImportFlowTest : FlowTestBase
 
         await AdvanceToMapAsync(vm);
 
-        vm.Columns[0].SelectedTarget = vm.Columns[0].TargetOptions.First(o => o.IsTitle);
+        vm.Columns[0].IsTitle = true;
         vm.Columns[1].SelectedTarget = vm.Columns[1].TargetOptions.First(o => o.Field?.Id == notes.Id);
 
         await vm.NextCommand.ExecuteAsync(null); // Map -> import
@@ -131,7 +132,7 @@ public class ExcelImportFlowTest : FlowTestBase
 
         await AdvanceToMapAsync(vm);
 
-        vm.Columns[0].SelectedTarget = vm.Columns[0].TargetOptions.First(o => o.IsTitle);
+        vm.Columns[0].IsTitle = true;
         vm.Columns[1].SelectedTarget = vm.Columns[1].TargetOptions.First(o => o.Field?.Id == notes.Id);
         vm.Columns[2].SelectedTarget = vm.Columns[2].TargetOptions.First(o => o.Field?.Id == notes.Id);
 
@@ -224,6 +225,222 @@ public class ExcelImportFlowTest : FlowTestBase
         {
             LocalizationService.Instance.Apply("en");
         }
+    }
+
+    [Test]
+    public async Task SelectingNameColumn_ClearsNameOnOtherColumns()
+    {
+        var data = Workbook("Sheet1",
+            new[] { Cell("Title"), Cell("Pages") },
+            new[] { Cell("Dune"), Cell("412") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        vm.CreateNewCollection = true;
+        vm.NewCollectionName = "Imported";
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+
+        vm.Columns[1].IsTitle = true;
+
+        Assert.That(vm.Columns.Count(c => c.IsTitle), Is.EqualTo(1));
+        Assert.That(vm.Columns[0].IsTitle, Is.False);
+        Assert.That(vm.Columns[1].IsTitle, Is.True);
+    }
+
+    [Test]
+    public async Task ExistingTargetOptions_OmitTheTitleOption()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var preset = await CreateBooksPresetAsync(notes);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Name"), Cell("Notes") },
+            new[] { Cell("Dune"), Cell("a classic") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+
+        Assert.That(vm.Columns.SelectMany(c => c.TargetOptions).Any(o => o.IsTitle), Is.False,
+            "the item-name choice now lives on the per-row radio, not inside the target dropdown");
+    }
+
+    [Test]
+    public async Task ExistingImport_TitleComesFromNameRadio()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var preset = await CreateBooksPresetAsync(notes);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Name"), Cell("Notes") },
+            new[] { Cell("Dune"), Cell("a classic") },
+            new[] { Cell("Hobbit"), Cell("cosy") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+        vm.Columns[1].SelectedTarget = vm.Columns[1].TargetOptions.First(o => o.Field?.Id == notes.Id);
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        var items = await ItemRepo.GetByPresetAsync(preset.Id);
+        Assert.That(items.Select(i => i.DisplayName), Is.EquivalentTo(new[] { "Dune", "Hobbit" }));
+    }
+
+    [Test]
+    public async Task ExistingMode_DefaultNameColumn_MatchesThePresetTitleFieldHeader()
+    {
+        var preset = new Preset { Name = "Books" };
+        preset.Fields.Add(new DisplayNameFieldDefinition { PresetId = preset.Id, Label = "Title" });
+        var year = new TextFieldDefinition { Label = "Year", PresetId = preset.Id };
+        preset.Fields.Add(year);
+        await PresetUseCase.CreatePresetAsync(preset);
+
+        var data = Workbook("Sheet1",
+            new[] { Cell("Year"), Cell("Title") },
+            new[] { Cell("1984"), Cell("Dune") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+
+        Assert.That(vm.Columns[1].IsTitle, Is.True, "the column whose header matches the title field is the default name");
+        Assert.That(vm.Columns[0].IsTitle, Is.False);
+    }
+
+    [Test]
+    public async Task ExistingMode_DefaultNameColumn_FallsBackToFirstColumn_WhenNoHeaderMatches()
+    {
+        var preset = new Preset { Name = "Books" };
+        preset.Fields.Add(new DisplayNameFieldDefinition { PresetId = preset.Id, Label = "Title" });
+        var notes = new TextFieldDefinition { Label = "Notes", PresetId = preset.Id };
+        preset.Fields.Add(notes);
+        await PresetUseCase.CreatePresetAsync(preset);
+
+        var data = Workbook("Sheet1",
+            new[] { Cell("Author"), Cell("Notes") },
+            new[] { Cell("Herbert"), Cell("classic") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+
+        Assert.That(vm.Columns[0].IsTitle, Is.True, "with no header matching the title field, the first column is the default name");
+        Assert.That(vm.Columns.Count(c => c.IsTitle), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task ChangingAnUnrelatedColumnProperty_DoesNotMoveTheNameSelection()
+    {
+        var data = Workbook("Sheet1",
+            new[] { Cell("Title"), Cell("Pages") },
+            new[] { Cell("Dune"), Cell("412") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        vm.CreateNewCollection = true;
+        vm.NewCollectionName = "Imported";
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+
+        vm.Columns[1].IsSelected = false;
+        vm.Columns[1].Label = "renamed";
+
+        Assert.That(vm.Columns[0].IsTitle, Is.True, "toggling a different column's properties must not steal the name selection");
+        Assert.That(vm.Columns.Count(c => c.IsTitle), Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task ExistingMode_DefaultNameColumn_IgnoresADeselectedMatchingColumn()
+    {
+        var preset = new Preset { Name = "Books" };
+        preset.Fields.Add(new DisplayNameFieldDefinition { PresetId = preset.Id, Label = "Title" });
+        var year = new TextFieldDefinition { Label = "Year", PresetId = preset.Id };
+        preset.Fields.Add(year);
+        await PresetUseCase.CreatePresetAsync(preset);
+
+        var data = Workbook("Sheet1",
+            new[] { Cell("Title"), Cell("Year") },
+            new[] { Cell("Dune"), Cell("1984") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+        vm.Columns[0].IsSelected = false;
+
+        await AdvanceToMapAsync(vm);
+
+        Assert.That(vm.Columns[0].IsTitle, Is.False, "a deselected column can't become the name even if its header matches");
+        Assert.That(vm.Columns[1].IsTitle, Is.True);
+    }
+
+    [Test]
+    public async Task ExistingMode_DeselectedAndSkippedColumns_AreNotImported()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var tags = new TextFieldDefinition { Label = "Tags" };
+        var preset = await CreateBooksPresetAsync(notes, tags);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Name"), Cell("Notes"), Cell("Extra"), Cell("Tags") },
+            new[] { Cell("Dune"), Cell("classic"), Cell("ignore me"), Cell("sci-fi") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+        Assert.That(vm.Columns[1].SelectedTarget!.Field?.Id, Is.EqualTo(notes.Id), "the Notes column auto-matches the Notes field");
+        vm.Columns[1].IsSelected = false;
+        vm.Columns[3].SelectedTarget = vm.Columns[3].TargetOptions.First(o => o.Field?.Id == tags.Id);
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        var item = (await ItemRepo.GetByPresetAsync(preset.Id)).Single();
+        Assert.That(item.DisplayName, Is.EqualTo("Dune"));
+        Assert.That(item.Values.OfType<TextFieldValue>().Select(v => v.FieldDefinitionId),
+            Is.EqualTo(new[] { tags.Id }), "a deselected column is dropped even though it matched a field; the skipped one too");
+    }
+
+    [Test]
+    public async Task ExistingMode_AColumnMarkedAsName_DoesNotAlsoFillItsMatchedField()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var preset = await CreateBooksPresetAsync(notes);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Notes"), Cell("Pages") },
+            new[] { Cell("Dune"), Cell("x") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+        Assert.That(vm.Columns[0].SelectedTarget!.Field?.Id, Is.EqualTo(notes.Id), "the Notes column auto-matches the Notes field");
+        vm.Columns[0].IsTitle = true;
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        var item = (await ItemRepo.GetByPresetAsync(preset.Id)).Single();
+        Assert.That(item.DisplayName, Is.EqualTo("Dune"));
+        Assert.That(item.Values.OfType<TextFieldValue>(), Is.Empty,
+            "a column used as the name must not also populate the field it happened to match");
+    }
+
+    [Test]
+    public async Task ExistingMode_AnUnmappableTargetColumn_IsLeftOutOfTheImport()
+    {
+        var notes = new TextFieldDefinition { Label = "Notes" };
+        var cover = new ImageFieldDefinition { Label = "Cover" };
+        var preset = await CreateBooksPresetAsync(notes, cover);
+        var data = Workbook("Sheet1",
+            new[] { Cell("Name"), Cell("Notes"), Cell("Cover") },
+            new[] { Cell("Dune"), Cell("classic"), Cell("http://img") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+        vm.Columns[1].SelectedTarget = vm.Columns[1].TargetOptions.First(o => o.Field?.Id == notes.Id);
+        vm.Columns[2].SelectedTarget = vm.Columns[2].TargetOptions.First(o => o.Field?.Id == cover.Id);
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Summary!.Imported, Is.EqualTo(1));
+        Assert.That(vm.Summary.Warnings, Is.Empty,
+            "an unmappable column must be dropped while mapping, not carried through as an unreadable cell");
     }
 
     [Test]

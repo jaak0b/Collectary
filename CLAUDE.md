@@ -92,6 +92,7 @@ dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 ## Avalonia 12 Gotchas
 
 - **Dynamic `MenuItem` submenus:** build in code-behind (`CollectionChanged` → hand-built `List<MenuItem>`). XAML `ItemsSource` binding does not render submenus in Avalonia 12.
+- **`Button.Flyout` content declared in XAML never receives input:** the popup renders and its bindings resolve (headless tests pass!), but real clicks die with `(PresentationSource) PlatformImpl is null, couldn't handle input` in the log. Build flyout content in code-behind (`new Flyout()` + content controls), like the breadcrumb overflow and sync-status flyouts.
 - **`IsVisible` on a null sub-path** evaluates `true` when the object is null — always add `FallbackValue=False`.
 - **Never replace an `ObservableCollection` instance** — mutate in place (`Clear()` + `Add()`). Flyout menus re-bind unreliably to a replaced collection.
 - **Compiled bindings:** `AvaloniaUseCompiledBindingsByDefault=true`. All `DataTemplate`s need `x:DataType`.

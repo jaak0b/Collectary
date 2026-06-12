@@ -25,6 +25,9 @@ public partial class SyncViewModel : ViewModelBase
     [ObservableProperty]
     public partial SyncNoticeSeverity Severity { get; set; }
 
+    [ObservableProperty]
+    public partial string? LastResultText { get; set; }
+
     public event Action? Synced;
 
     public Action? CloseRequested { get; set; }
@@ -32,8 +35,6 @@ public partial class SyncViewModel : ViewModelBase
     public bool IsConfigured => _status.IsConfigured;
 
     public bool NeedsAttention => Severity != SyncNoticeSeverity.None;
-
-    public bool IsAdvisory => Severity == SyncNoticeSeverity.Advisory;
 
     public bool IsError => Severity == SyncNoticeSeverity.Error;
 
@@ -54,7 +55,6 @@ public partial class SyncViewModel : ViewModelBase
     partial void OnSeverityChanged(SyncNoticeSeverity value)
     {
         OnPropertyChanged(nameof(NeedsAttention));
-        OnPropertyChanged(nameof(IsAdvisory));
         OnPropertyChanged(nameof(IsError));
     }
 
@@ -73,6 +73,7 @@ public partial class SyncViewModel : ViewModelBase
             IsSyncing = true;
             ErrorMessage = null;
             Severity = SyncNoticeSeverity.None;
+            LastResultText = null;
         });
         try
         {
@@ -89,6 +90,8 @@ public partial class SyncViewModel : ViewModelBase
                 LastSyncedAt = DateTime.UtcNow;
                 ErrorMessage = BuildPartialNotice(result);
                 Severity = ErrorMessage is null ? SyncNoticeSeverity.None : SyncNoticeSeverity.Advisory;
+                LastResultText = string.Format(
+                    LocalizationService.Instance["Sync_Result"], result.Pushed, result.Pulled);
                 Synced?.Invoke();
             });
         }

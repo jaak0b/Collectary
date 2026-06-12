@@ -43,14 +43,27 @@ Excel already stores as real numbers or dates are understood automatically, what
 
 ## Step 4 — Map the columns
 
-This is where you tell Collectary what each column means.
+This is where you tell Collectary what each column means. The columns are laid out as a table — one row
+per spreadsheet column — with a header strip across the top so you can read straight down. Each row has,
+left to right:
 
-- Untick a column to leave it out of the import.
-- **Into an existing collection:** for each column, choose the field it fills, or mark it as the
-  item's **name**. Field types that can't come from a spreadsheet — images, file attachments, audio,
-  linked items, nested lists — are shown greyed out, so you always see they exist but can't pick them.
-- **Into a new collection:** confirm or change each column's field type and name, and tick one column
-  to use as the item's name.
+- an **Include** tick — clear it to leave that column out of the import;
+- the **Column** itself, showing its heading and a few sample values so you can tell what's in it;
+- a **Name** radio — exactly one column becomes each item's name, and choosing a different row moves the
+  mark automatically, so you can never pick two by mistake. The row you mark as the Name doesn't also map
+  to a field; its mapping greys out to show it's spoken for.
+- the **mapping** for everything else. This is the only part that differs by the choice you made in
+  Step 3:
+  - **Into an existing collection** — pick the field each column fills from a drop-down. Field types
+    that can't come from a spreadsheet — images, file attachments, audio, linked items, nested lists —
+    are greyed out in the list, so you always see they exist but can't pick them.
+  - **Into a new collection** — give each column a **field name** (pre-filled from its heading) and a
+    **type** (Collectary suggests one from the data, which you can change).
+
+On a **phone** (or any narrow window) the table would be too wide, so the same step shows one **card per
+column** stacked down the screen instead: the heading and samples on top, a "use this column as each
+item's name" toggle, then the field drop-down (or field name and type) below. The choices are exactly the
+same — only the arrangement changes to fit the screen.
 
 ## Step 5 — Done
 

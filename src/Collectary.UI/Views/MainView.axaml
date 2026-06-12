@@ -23,12 +23,6 @@
         <Style Selector="Ellipse.syncDot.error">
             <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
         </Style>
-        <Style Selector="TextBlock.syncNotice">
-            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
-        </Style>
-        <Style Selector="TextBlock.syncNotice.error">
-            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
-        </Style>
     </UserControl.Styles>
 
     <Panel>
@@ -96,26 +90,7 @@
                         Padding="8,4"
                         VerticalAlignment="Center"
                         IsVisible="{Binding Sync.IsConfigured}"
-                        ToolTip.Tip="{Binding [Sync_Now], Source={x:Static loc:LocalizationService.Instance}}">
-                    <Button.Flyout>
-                        <Flyout Placement="BottomEdgeAlignedRight">
-                            <StackPanel Spacing="8" MinWidth="200" Margin="4">
-                                <TextBlock Text="{Binding Sync.LastSyncText}"
-                                           TextWrapping="Wrap"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                <TextBlock Classes="syncNotice"
-                                           Classes.error="{Binding Sync.IsError}"
-                                           Text="{Binding Sync.ErrorMessage}"
-                                           TextWrapping="Wrap"
-                                           IsVisible="{Binding Sync.NeedsAttention, FallbackValue=False}"/>
-                                <Button Content="{Binding [Sync_Now], Source={x:Static loc:LocalizationService.Instance}}"
-                                        Command="{Binding Sync.SyncNowCommand}"
-                                        HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Center"
-                                        Click="OnSyncNowFlyoutClick"/>
-                            </StackPanel>
-                        </Flyout>
-                    </Button.Flyout>
+                        ToolTip.Tip="{Binding [Sync_Status], Source={x:Static loc:LocalizationService.Instance}}">
                     <Panel>
                         <TextBlock Text="{x:Static icons:IconGlyphs.ArrowSync}"
                                    Classes="icon"

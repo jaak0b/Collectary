@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -37,6 +38,7 @@ public partial class ExcelImportViewModel : ViewModelBase
     private ShapedGrid _shaped = new([], []);
     private Preset? _importedPreset;
     private readonly ImportStep _firstStep;
+    private bool _syncingTitle;
 
     public ExcelImportViewModel(
         WorkbookData data,
@@ -98,6 +100,12 @@ public partial class ExcelImportViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsMapStep))]
     [NotifyPropertyChangedFor(nameof(StepTitle))]
     public partial ImportStep Step { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWide))]
+    public partial bool IsNarrow { get; set; }
+
+    public bool IsWide => !IsNarrow;
 
     [ObservableProperty]
     public partial bool FirstRowIsHeader { get; set; } = true;
@@ -191,7 +199,33 @@ public partial class ExcelImportViewModel : ViewModelBase
 
         Columns.Clear();
         for (var i = 0; i < headers.Count; i++)
-            Columns.Add(new ImportColumnViewModel(i, headers[i], SampleColumn(i)));
+        {
+            var column = new ImportColumnViewModel(i, headers[i], SampleColumn(i));
+            column.PropertyChanged += OnColumnPropertyChanged;
+            Columns.Add(column);
+        }
+    }
+
+    private void OnColumnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_syncingTitle || e.PropertyName != nameof(ImportColumnViewModel.IsTitle)) return;
+        if (sender is not ImportColumnViewModel changed || !changed.IsTitle) return;
+
+        _syncingTitle = true;
+        foreach (var other in Columns)
+            if (!ReferenceEquals(other, changed))
+                other.IsTitle = false;
+        _syncingTitle = false;
+    }
+
+    private void SeedTitleColumn(string? titleLabel)
+    {
+        var chosen = Columns.FirstOrDefault(c =>
+                c.IsSelected && titleLabel is not null
+                && string.Equals(c.Header, titleLabel, StringComparison.OrdinalIgnoreCase))
+            ?? Columns.FirstOrDefault(c => c.IsSelected);
+        foreach (var column in Columns)
+            column.IsTitle = ReferenceEquals(column, chosen);
     }
 
     private string ColumnDisplayName(string header, int index) =>
@@ -279,7 +313,6 @@ public partial class ExcelImportViewModel : ViewModelBase
     {
         var effective = await _presetUseCase.GetEffectiveFieldsAsync(preset.Id);
         var skip = new ColumnTargetOption(LocalizationService.Instance["Import_Skip"], null, false, true, true);
-        var title = new ColumnTargetOption(LocalizationService.Instance["Import_TitleColumn"], null, true, false, true);
         var fieldOptions = effective.Fields
             .Where(f => !f.IsTitleField)
             .Select(f => new ColumnTargetOption(f.Label, f, false, false, f is ITextImportable))
@@ -290,7 +323,6 @@ public partial class ExcelImportViewModel : ViewModelBase
         {
             column.TargetOptions.Clear();
             column.TargetOptions.Add(skip);
-            column.TargetOptions.Add(title);
             foreach (var option in fieldOptions)
                 column.TargetOptions.Add(option);
 
@@ -300,11 +332,12 @@ public partial class ExcelImportViewModel : ViewModelBase
             if (match?.Field is not null) claimed.Add(match.Field.Id);
             column.SelectedTarget = match ?? skip;
         }
+
+        SeedTitleColumn(effective.Fields.FirstOrDefault(f => f.IsTitleField)?.Label);
     }
 
     private void BuildNewCollectionColumns()
     {
-        var titleAssigned = false;
         foreach (var column in Columns)
         {
             column.TypeChoices.Clear();
@@ -314,13 +347,9 @@ public partial class ExcelImportViewModel : ViewModelBase
             var inferred = _inference.Infer(ColumnCells(column.ColumnIndex), SourceCulture);
             column.SelectedTypeChoice = _importableTypes.FirstOrDefault(c => c.Type == inferred.GetType())
                 ?? _importableTypes.FirstOrDefault();
-
-            if (!titleAssigned && column.IsSelected)
-            {
-                column.IsTitle = true;
-                titleAssigned = true;
-            }
         }
+
+        SeedTitleColumn(null);
     }
 
     private IReadOnlyList<WorkbookCell> ColumnCells(int index) =>
@@ -367,11 +396,15 @@ public partial class ExcelImportViewModel : ViewModelBase
         var mappings = new List<ColumnMapping>();
         foreach (var column in Columns)
         {
-            if (!column.IsSelected || column.SelectedTarget is null || column.SelectedTarget.IsSkip) continue;
-            var target = column.SelectedTarget;
-            if (target.IsTitle)
+            if (!column.IsSelected) continue;
+            if (column.IsTitle)
+            {
                 mappings.Add(new ColumnMapping(column.ColumnIndex, Guid.Empty, true));
-            else if (target.Field is not null && target.IsMappable)
+                continue;
+            }
+            var target = column.SelectedTarget;
+            if (target is null || target.IsSkip) continue;
+            if (target.Field is not null && target.IsMappable)
                 mappings.Add(new ColumnMapping(column.ColumnIndex, target.Field.Id, false));
         }
         return mappings;
@@ -380,12 +413,10 @@ public partial class ExcelImportViewModel : ViewModelBase
     private List<NewFieldColumn> BuildNewFieldColumns()
     {
         var columns = new List<NewFieldColumn>();
-        var titleAssigned = false;
         foreach (var column in Columns.Where(c => c.IsSelected))
         {
-            if (column.IsTitle && !titleAssigned)
+            if (column.IsTitle)
             {
-                titleAssigned = true;
                 columns.Add(new NewFieldColumn(column.ColumnIndex, new DisplayNameFieldDefinition(), true));
                 continue;
             }

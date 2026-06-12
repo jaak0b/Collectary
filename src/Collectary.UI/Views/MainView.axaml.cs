@@ -11,6 +11,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Collectary.UI.Controls;
 using Collectary.UI.Views.Helpers;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
 
@@ -26,6 +27,10 @@ public partial class MainView : UserControl
     private Button? _overflowButton;
     private Flyout? _overflowFlyout;
     private TextBlock? _overflowSeparator;
+    private Flyout? _syncFlyout;
+    private TextBlock? _syncLastText;
+    private TextBlock? _syncStatusText;
+    private TextBlock? _syncNoticeText;
 
     public MainView()
     {
@@ -45,6 +50,9 @@ public partial class MainView : UserControl
         _vm.BreadcrumbItems.CollectionChanged += OnBreadcrumbItemsChanged;
         BreadcrumbBar.CollapsedChanged += OnBreadcrumbCollapsedChanged;
         SidebarSplitter.AddHandler(PointerReleasedEvent, OnSplitterReleased, RoutingStrategies.Bubble, handledEventsToo: true);
+        _syncFlyout = new Flyout { Placement = PlacementMode.BottomEdgeAlignedRight, Content = BuildSyncFlyoutContent(_vm.Sync) };
+        SyncStatusButton.Flyout = _syncFlyout;
+        _vm.Sync.PropertyChanged += OnSyncStateChanged;
         ApplySidebarState();
         RebuildBreadcrumbs();
     }
@@ -55,12 +63,54 @@ public partial class MainView : UserControl
         {
             _vm.PropertyChanged -= OnVmPropertyChanged;
             _vm.BreadcrumbItems.CollectionChanged -= OnBreadcrumbItemsChanged;
+            _vm.Sync.PropertyChanged -= OnSyncStateChanged;
         }
         BreadcrumbBar.CollapsedChanged -= OnBreadcrumbCollapsedChanged;
         SidebarSplitter.RemoveHandler(PointerReleasedEvent, OnSplitterReleased);
     }
 
-    private void OnSyncNowFlyoutClick(object? sender, RoutedEventArgs e) => SyncStatusButton.Flyout?.Hide();
+    private Control BuildSyncFlyoutContent(SyncViewModel sync)
+    {
+        _syncLastText = new TextBlock { TextWrapping = TextWrapping.Wrap, Foreground = ThemeBrush("TextSecondaryBrush") };
+        _syncStatusText = new TextBlock { TextWrapping = TextWrapping.Wrap };
+        _syncNoticeText = new TextBlock { TextWrapping = TextWrapping.Wrap };
+
+        var syncNow = new Button
+        {
+            Content = LocalizationService.Instance["Sync_Now"],
+            Command = sync.SyncNowCommand,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Center
+        };
+
+        var panel = new StackPanel { Spacing = 8, MinWidth = 200, MaxWidth = 320, Margin = new Thickness(4) };
+        panel.Children.Add(_syncLastText);
+        panel.Children.Add(_syncStatusText);
+        panel.Children.Add(_syncNoticeText);
+        panel.Children.Add(syncNow);
+        RefreshSyncFlyout(sync);
+        return panel;
+    }
+
+    private void OnSyncStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (_vm is not null) RefreshSyncFlyout(_vm.Sync);
+    }
+
+    private void RefreshSyncFlyout(SyncViewModel sync)
+    {
+        if (_syncLastText is null || _syncStatusText is null || _syncNoticeText is null) return;
+
+        _syncLastText.Text = sync.LastSyncText;
+        _syncStatusText.Text = sync.IsSyncing ? LocalizationService.Instance["Sync_Syncing"] : sync.LastResultText;
+        _syncStatusText.IsVisible = !string.IsNullOrEmpty(_syncStatusText.Text);
+        _syncNoticeText.Text = sync.ErrorMessage;
+        _syncNoticeText.IsVisible = sync.NeedsAttention && !string.IsNullOrEmpty(sync.ErrorMessage);
+        _syncNoticeText.Foreground = ThemeBrush(sync.IsError ? "DangerBrush" : "WarningBrush");
+    }
+
+    private IBrush? ThemeBrush(string key) =>
+        this.TryFindResource(key, out var value) && value is IBrush brush ? brush : null;
 
     private void OnBreadcrumbItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildBreadcrumbs();
 

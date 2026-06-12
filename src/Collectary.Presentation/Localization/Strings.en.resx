@@ -168,12 +168,13 @@
   <data name="Import_CollectionName" xml:space="preserve"><value>New collection name</value></data>
   <data name="Import_ColumnFallback" xml:space="preserve"><value>Column {0}</value></data>
   <data name="Import_Skip" xml:space="preserve"><value>(don't import)</value></data>
-  <data name="Import_TitleColumn" xml:space="preserve"><value>Item name (title)</value></data>
+  <data name="Import_Col_Source" xml:space="preserve"><value>Column</value></data>
+  <data name="Import_Col_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Import_Name_Tooltip" xml:space="preserve"><value>Use this column as each item's name</value></data>
   <data name="Import_Include" xml:space="preserve"><value>Include</value></data>
   <data name="Import_MapTo" xml:space="preserve"><value>Map to field</value></data>
   <data name="Import_FieldType" xml:space="preserve"><value>Field type</value></data>
   <data name="Import_FieldLabel" xml:space="preserve"><value>Field name</value></data>
-  <data name="Import_UseAsName" xml:space="preserve"><value>Use as item name</value></data>
   <data name="Import_Unmappable_Note" xml:space="preserve"><value>Field types like images, files and links can't be filled from a spreadsheet, so they're shown greyed out.</value></data>
   <data name="Import_Next" xml:space="preserve"><value>Next</value></data>
   <data name="Import_Back" xml:space="preserve"><value>Back</value></data>
@@ -335,6 +336,8 @@
   <data name="Sync_LastAt" xml:space="preserve"><value>Last sync: {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
   <data name="Sync_Syncing" xml:space="preserve"><value>Syncing…</value></data>
+  <data name="Sync_Result" xml:space="preserve"><value>Pushed {0}, pulled {1}.</value></data>
+  <data name="Sync_Status" xml:space="preserve"><value>Sync status</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Sync failed. Check the sync location.</value></data>
   <data name="Sync_Partial" xml:space="preserve"><value>Sync finished with issues: {0}. They will be retried on the next sync.</value></data>
   <data name="Sync_PartialItems" xml:space="preserve"><value>{0} item(s) could not be applied</value></data>

@@ -158,7 +158,6 @@ public class SyncViewModelTest
         Assert.Multiple(() =>
         {
             Assert.That(vm.Severity, Is.EqualTo(SyncNoticeSeverity.None));
-            Assert.That(vm.IsAdvisory, Is.False);
             Assert.That(vm.IsError, Is.False);
         });
     }
@@ -175,29 +174,55 @@ public class SyncViewModelTest
         Assert.Multiple(() =>
         {
             Assert.That(changed, Does.Contain(nameof(vm.NeedsAttention)));
-            Assert.That(changed, Does.Contain(nameof(vm.IsAdvisory)));
             Assert.That(changed, Does.Contain(nameof(vm.IsError)));
         });
     }
 
     [Test]
-    public void IsAdvisoryAndIsError_TrackSeverity()
+    public void IsError_TracksSeverity()
     {
         var vm = Make();
 
         vm.Severity = SyncNoticeSeverity.Advisory;
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.IsAdvisory, Is.True);
-            Assert.That(vm.IsError, Is.False);
-        });
+        Assert.That(vm.IsError, Is.False);
 
         vm.Severity = SyncNoticeSeverity.Error;
-        Assert.Multiple(() =>
-        {
-            Assert.That(vm.IsAdvisory, Is.False);
-            Assert.That(vm.IsError, Is.True);
-        });
+        Assert.That(vm.IsError, Is.True);
+    }
+
+    [Test]
+    public async Task SyncNow_AfterACleanSync_ShowsThePushedAndPulledCounts()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(2, 3));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.LastResultText, Does.Contain("2").And.Contain("3"),
+            "the user must see how many records were pushed and pulled");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenTheSyncFails_LeavesNoStaleResultText()
+    {
+        var vm = Make();
+        await vm.SyncNowCommand.ExecuteAsync(null);
+        A.CallTo(() => _sync.SyncAsync()).Throws(new InvalidOperationException("boom"));
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.LastResultText, Is.Null, "a failed sync must not display the previous run's counts");
+    }
+
+    [Test]
+    public async Task SyncNow_WhenBackendUnavailable_ShowsNoResultText()
+    {
+        A.CallTo(() => _sync.SyncAsync()).Returns(new SyncResult(0, 0, BackendUnavailable: true));
+        var vm = Make();
+
+        await vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(vm.LastResultText, Is.Null, "an unavailable location produced no transfer to report");
     }
 
     [Test]

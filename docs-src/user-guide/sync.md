@@ -23,8 +23,9 @@ Each device writes **one file of its own** to the shared folder (named by its de
 data it knows about, then reads the other devices' files and merges them in. Because a device only ever
 writes *its own* file, two devices syncing at once can never overwrite each other's changes.
 
-After a sync you'll see how many records were pushed and pulled. There's nothing to resolve by hand —
-the merge is automatic (see below).
+The sync icon in the top bar opens a small status panel: press **Sync now** there and the panel stays
+open while it works — you'll see "Syncing…" turn into how many records were pushed and pulled, plus
+the updated last-sync time. There's nothing to resolve by hand — the merge is automatic (see below).
 
 ## When two devices change the same thing
 

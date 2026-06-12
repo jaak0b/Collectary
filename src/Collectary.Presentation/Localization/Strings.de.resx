@@ -168,12 +168,13 @@
   <data name="Import_CollectionName" xml:space="preserve"><value>Name der neuen Sammlung</value></data>
   <data name="Import_ColumnFallback" xml:space="preserve"><value>Spalte {0}</value></data>
   <data name="Import_Skip" xml:space="preserve"><value>(nicht importieren)</value></data>
-  <data name="Import_TitleColumn" xml:space="preserve"><value>Eintragsname (Titel)</value></data>
+  <data name="Import_Col_Source" xml:space="preserve"><value>Spalte</value></data>
+  <data name="Import_Col_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Import_Name_Tooltip" xml:space="preserve"><value>Diese Spalte als Namen jedes Eintrags verwenden</value></data>
   <data name="Import_Include" xml:space="preserve"><value>Einbeziehen</value></data>
   <data name="Import_MapTo" xml:space="preserve"><value>Feld zuordnen</value></data>
   <data name="Import_FieldType" xml:space="preserve"><value>Feldtyp</value></data>
   <data name="Import_FieldLabel" xml:space="preserve"><value>Feldname</value></data>
-  <data name="Import_UseAsName" xml:space="preserve"><value>Als Eintragsname verwenden</value></data>
   <data name="Import_Unmappable_Note" xml:space="preserve"><value>Feldtypen wie Bilder, Dateien und Verknüpfungen lassen sich nicht aus einer Tabelle füllen und sind daher ausgegraut.</value></data>
   <data name="Import_Next" xml:space="preserve"><value>Weiter</value></data>
   <data name="Import_Back" xml:space="preserve"><value>Zurück</value></data>
@@ -335,6 +336,8 @@
   <data name="Sync_LastAt" xml:space="preserve"><value>Letzte Synchronisierung: {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Jetzt synchronisieren</value></data>
   <data name="Sync_Syncing" xml:space="preserve"><value>Synchronisiere…</value></data>
+  <data name="Sync_Result" xml:space="preserve"><value>{0} gesendet, {1} empfangen.</value></data>
+  <data name="Sync_Status" xml:space="preserve"><value>Synchronisierungsstatus</value></data>
   <data name="Sync_Error" xml:space="preserve"><value>Synchronisierung fehlgeschlagen. Prüfe den Sync-Speicherort.</value></data>
   <data name="Sync_Partial" xml:space="preserve"><value>Synchronisierung mit Problemen abgeschlossen: {0}. Sie werden beim nächsten Sync erneut versucht.</value></data>
   <data name="Sync_PartialItems" xml:space="preserve"><value>{0} Element(e) konnten nicht angewendet werden</value></data>

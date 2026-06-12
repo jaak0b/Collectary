@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Threading;
 using Collectary.Presentation.ViewModels.Import;
+using Collectary.UI.Controls;
 
 namespace Collectary.UI.Views.Import;
 
@@ -10,6 +11,13 @@ public partial class ExcelImportView : UserControl
     public ExcelImportView()
     {
         InitializeComponent();
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        if (DataContext is ExcelImportViewModel vm)
+            vm.IsNarrow = e.NewSize.Width is > 0 and < ResponsiveSplitLayout.NarrowThreshold;
     }
 
     protected override void OnDataContextChanged(EventArgs e)
