@@ -64,6 +64,29 @@ public class PresetDetailViewTest
     }
 
     [Test]
+    public async Task SuggestionList_NeverTakesFocus_SoClickingASuggestionCannotCloseThePopup()
+    {
+        var vm = await LoadedVmWithOneColumn();
+        var view = new PresetDetailView { DataContext = vm };
+        var window = new Window { Content = view };
+        window.Show();
+
+        vm.Query.Suggestions.Add(new QuerySuggestion("name", "name", 0, 0, QuerySuggestionKind.Field));
+        vm.Query.AreSuggestionsOpen = true;
+        Dispatcher.UIThread.RunJobs();
+
+        var list = view.FindControl<ListBox>("SuggestionList")!;
+        var container = list.ContainerFromIndex(0) as ListBoxItem;
+        Assert.Multiple(() =>
+        {
+            Assert.That(list.Focusable, Is.False, "the suggestion list must not steal focus from the search box");
+            Assert.That(container, Is.Not.Null, "the suggestion item must be realized inside the open popup");
+            Assert.That(container!.Focusable, Is.False, "suggestion items must not steal focus from the search box");
+        });
+        window.Close();
+    }
+
+    [Test]
     public async Task ActionColumn_AppearsExactlyOnce_AsTheLastColumn()
     {
         var vm = await LoadedVmWithOneColumn();

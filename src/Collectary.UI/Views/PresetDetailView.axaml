@@ -150,7 +150,13 @@
                         <ListBox x:Name="SuggestionList"
                                  ItemsSource="{Binding Query.Suggestions}"
                                  SelectedIndex="{Binding Query.SelectedSuggestionIndex, Mode=TwoWay}"
+                                 Focusable="False"
                                  MaxHeight="280">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Focusable" Value="False"/>
+                                </Style>
+                            </ListBox.Styles>
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="search:QuerySuggestion">
                                     <TextBlock Text="{Binding Text}" Padding="4,2"/>
