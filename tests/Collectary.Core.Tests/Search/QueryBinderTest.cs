@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
@@ -16,7 +17,7 @@ public class QueryBinderTest
     public void SetUp()
     {
         _parser = new QueryParser(new QueryLexer());
-        _binder = new QueryBinder(new PseudoFieldCatalog());
+        _binder = new QueryBinder(new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.InvariantCulture));
     }
 
     private sealed class StubMatcher : IFieldConditionMatcher

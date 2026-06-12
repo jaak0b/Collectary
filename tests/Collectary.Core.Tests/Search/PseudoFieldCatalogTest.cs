@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Core.Search;
@@ -15,7 +16,7 @@ public class PseudoFieldCatalogTest
     [SetUp]
     public void SetUp()
     {
-        _catalog = new PseudoFieldCatalog();
+        _catalog = new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.InvariantCulture);
         _books = new SearchPresetEntry(Guid.NewGuid(), "Books");
         _games = new SearchPresetEntry(Guid.NewGuid(), "Games");
         _snapshot = new SearchCatalogSnapshot { Presets = [_books, _games] };
@@ -99,6 +100,96 @@ public class PseudoFieldCatalogTest
         var outcome = _catalog.TryCreateMatcher("preset", QueryOperatorKind.IsEmpty, [], _snapshot);
 
         Assert.That(outcome!.Error, Is.EqualTo(QueryErrorCode.OperatorNotSupported));
+    }
+
+    [Test]
+    public void Timestamps_DayWindow_UsesTheProvidedTimeZone()
+    {
+        var plusTen = TimeZoneInfo.CreateCustomTimeZone("Test+10", TimeSpan.FromHours(10), "Test+10", "Test+10");
+        var catalog = new PseudoFieldCatalog(plusTen, CultureInfo.InvariantCulture);
+        var item = new Item { CreatedAt = new DateTime(2026, 6, 12, 22, 0, 0, DateTimeKind.Utc) };
+
+        var june13 = catalog.TryCreateMatcher("created", QueryOperatorKind.Equals, ["2026-06-13"], _snapshot);
+        var june12 = catalog.TryCreateMatcher("created", QueryOperatorKind.Equals, ["2026-06-12"], _snapshot);
+
+        Assert.That(june13!.Matcher!.Matches(item, []), Is.True);
+        Assert.That(june12!.Matcher!.Matches(item, []), Is.False);
+    }
+
+    [Test]
+    public void Timestamps_ServerFilter_UsesTheSameTimeZoneAdjustedWindow()
+    {
+        var plusTen = TimeZoneInfo.CreateCustomTimeZone("Test+10", TimeSpan.FromHours(10), "Test+10", "Test+10");
+        var catalog = new PseudoFieldCatalog(plusTen, CultureInfo.InvariantCulture);
+        var item = new Item { CreatedAt = new DateTime(2026, 6, 12, 22, 0, 0, DateTimeKind.Utc) };
+
+        var outcome = catalog.TryCreateMatcher("created", QueryOperatorKind.Equals, ["2026-06-13"], _snapshot);
+        var filter = outcome!.Matcher!.ServerFilter([])!.Compile();
+
+        Assert.That(filter(item), Is.True);
+    }
+
+    [Test]
+    public void Timestamps_ParseDatesInTheProvidedCulture()
+    {
+        var german = new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.GetCultureInfo("de-DE"));
+        var item = new Item { CreatedAt = new DateTime(2026, 6, 13, 10, 0, 0, DateTimeKind.Utc) };
+
+        var outcome = german.TryCreateMatcher("created", QueryOperatorKind.Equals, ["13.06.2026"], _snapshot);
+
+        Assert.That(outcome!.Error, Is.Null);
+        Assert.That(outcome.Matcher!.Matches(item, []), Is.True);
+    }
+
+    [Test]
+    public void Timestamps_AmbiguousDottedDate_FollowsTheCultureNotInvariant()
+    {
+        var german = new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.GetCultureInfo("de-DE"));
+        var june1 = new Item { CreatedAt = new DateTime(2026, 6, 1, 10, 0, 0, DateTimeKind.Utc) };
+        var january6 = new Item { CreatedAt = new DateTime(2026, 1, 6, 10, 0, 0, DateTimeKind.Utc) };
+
+        var matcher = german.TryCreateMatcher("created", QueryOperatorKind.Equals, ["01.06.2026"], _snapshot)!.Matcher!;
+
+        Assert.That(matcher.Matches(june1, []), Is.True);
+        Assert.That(matcher.Matches(january6, []), Is.False);
+    }
+
+    [Test]
+    public void Timestamps_IsoDate_ParsesUnderAnyCulture()
+    {
+        var german = new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.GetCultureInfo("de-DE"));
+        var item = new Item { CreatedAt = new DateTime(2026, 6, 13, 10, 0, 0, DateTimeKind.Utc) };
+
+        var outcome = german.TryCreateMatcher("created", QueryOperatorKind.Equals, ["2026-06-13"], _snapshot);
+
+        Assert.That(outcome!.Error, Is.Null);
+        Assert.That(outcome.Matcher!.Matches(item, []), Is.True);
+    }
+
+    [Test]
+    public void Timestamps_DefaultConstructedCatalog_StillBindsDates()
+    {
+        var outcome = new PseudoFieldCatalog()
+            .TryCreateMatcher("created", QueryOperatorKind.Equals, ["2026-06-13"], _snapshot);
+
+        Assert.That(outcome!.Error, Is.Null);
+        Assert.That(outcome.Matcher, Is.Not.Null);
+        Assert.That(() => outcome.Matcher!.Matches(new Item(), []), Throws.Nothing);
+    }
+
+    [Test]
+    public void Timestamps_EachCatalogParsesWithItsOwnCulture_NotTheMachineCulture()
+    {
+        var german = new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.GetCultureInfo("de-DE"));
+        var american = new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.GetCultureInfo("en-US"));
+        var june1 = new Item { CreatedAt = new DateTime(2026, 6, 1, 10, 0, 0, DateTimeKind.Utc) };
+        var january6 = new Item { CreatedAt = new DateTime(2026, 1, 6, 10, 0, 0, DateTimeKind.Utc) };
+
+        var dotted = german.TryCreateMatcher("created", QueryOperatorKind.Equals, ["01.06.2026"], _snapshot)!.Matcher!;
+        var slashed = american.TryCreateMatcher("created", QueryOperatorKind.Equals, ["01/06/2026"], _snapshot)!.Matcher!;
+
+        Assert.That(dotted.Matches(june1, []), Is.True);
+        Assert.That(slashed.Matches(january6, []), Is.True);
     }
 
     [Test]

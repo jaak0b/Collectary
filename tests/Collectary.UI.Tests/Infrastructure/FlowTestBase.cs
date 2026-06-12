@@ -1,3 +1,4 @@
+using System.Globalization;
 using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
@@ -73,7 +74,7 @@ public abstract class FlowTestBase
         ItemRepo,
         catalog,
         new QueryParser(new QueryLexer()),
-        new QueryBinder(new PseudoFieldCatalog()),
+        new QueryBinder(new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.InvariantCulture)),
         new ServerFilterBuilder(),
         new QueryEvaluator());
 

@@ -29,6 +29,14 @@ public sealed record PseudoBindOutcome(
 public class PseudoFieldCatalog
 {
     private readonly AsciiCaseFolding _folding = new();
+    private readonly TimeZoneInfo _timeZone;
+    private readonly CultureInfo? _culture;
+
+    public PseudoFieldCatalog(TimeZoneInfo? timeZone = null, CultureInfo? culture = null)
+    {
+        _timeZone = timeZone ?? TimeZoneInfo.Local;
+        _culture = culture;
+    }
 
     public IReadOnlyList<string> Labels => ["name", "preset", "collection", "created", "updated"];
 
@@ -161,12 +169,11 @@ public class PseudoFieldCatalog
             or QueryOperatorKind.Less or QueryOperatorKind.LessOrEqual
             or QueryOperatorKind.Greater or QueryOperatorKind.GreaterOrEqual))
             return new PseudoBindOutcome(null, QueryErrorCode.OperatorNotSupported, null);
-        if (operands.Count != 1
-            || !DateTime.TryParse(operands[0], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        if (operands.Count != 1 || !TryParseDate(operands[0], out var parsed))
             return new PseudoBindOutcome(null, QueryErrorCode.InvalidValue, null);
 
-        var dayStart = parsed.Date;
-        var dayEnd = dayStart.AddDays(1);
+        var dayStart = ToUtcInstant(parsed.Date);
+        var dayEnd = ToUtcInstant(parsed.Date.AddDays(1));
         Func<Item, DateTime> stamp = created ? item => item.CreatedAt : item => item.UpdatedAt;
         Func<Item, bool> predicate = op switch
         {
@@ -199,6 +206,18 @@ public class PseudoFieldCatalog
                 _ => item => item.UpdatedAt >= dayStart,
             };
         return new PseudoBindOutcome(new ItemPropertyMatcher(predicate, serverFilter), null, null);
+    }
+
+    private bool TryParseDate(string raw, out DateTime parsed) =>
+        DateTime.TryParse(raw, _culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out parsed)
+        || DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed);
+
+    private DateTime ToUtcInstant(DateTime wallClock)
+    {
+        var unspecified = DateTime.SpecifyKind(wallClock, DateTimeKind.Unspecified);
+        if (_timeZone.IsInvalidTime(unspecified))
+            unspecified = unspecified.AddHours(1);
+        return TimeZoneInfo.ConvertTimeToUtc(unspecified, _timeZone);
     }
 
     private PseudoBindOutcome Bound(Func<Item, bool> predicate, Expression<Func<Item, bool>> serverFilter) =>

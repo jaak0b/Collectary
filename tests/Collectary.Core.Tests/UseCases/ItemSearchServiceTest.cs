@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
@@ -24,7 +25,7 @@ public class ItemSearchServiceTest
             _repository,
             _catalog,
             new QueryParser(new QueryLexer()),
-            new QueryBinder(new PseudoFieldCatalog()),
+            new QueryBinder(new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.InvariantCulture)),
             new ServerFilterBuilder(),
             new QueryEvaluator());
     }

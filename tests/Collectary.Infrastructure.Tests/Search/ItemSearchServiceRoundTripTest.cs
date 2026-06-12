@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
@@ -64,7 +65,7 @@ public class ItemSearchServiceRoundTripTest : DbIntegrationTestBase
         _repository,
         new SeededCatalog([_books, _games]),
         new QueryParser(new QueryLexer()),
-        new QueryBinder(new PseudoFieldCatalog()),
+        new QueryBinder(new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.InvariantCulture)),
         new ServerFilterBuilder(),
         new QueryEvaluator());
 

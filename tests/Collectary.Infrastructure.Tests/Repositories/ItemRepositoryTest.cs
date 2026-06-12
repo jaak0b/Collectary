@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq.Expressions;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
@@ -593,7 +594,7 @@ public class ItemRepositoryTest : DbIntegrationTestBase
             Presets = [new SearchPresetEntry(_preset.Id, _preset.Name)],
         };
         var parsed = new QueryParser(new QueryLexer()).Parse(query);
-        var bound = new QueryBinder(new PseudoFieldCatalog()).Bind(parsed.Query!, snapshot);
+        var bound = new QueryBinder(new PseudoFieldCatalog(TimeZoneInfo.Utc, CultureInfo.InvariantCulture)).Bind(parsed.Query!, snapshot);
         Assert.That(bound.Errors, Is.Empty);
         var filter = new ServerFilterBuilder().Build(bound.Query!.Root);
         Assert.That(filter, Is.Not.Null, $"expected a server-translatable filter for: {query}");
