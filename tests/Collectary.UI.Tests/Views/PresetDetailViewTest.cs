@@ -209,34 +209,46 @@ public class PresetDetailViewTest
     }
 
     [Test]
-    public async Task BasicMode_OnANarrowWindow_KeepsTheSortControlsOnScreen()
-    {
-        var vm = await LoadedBasicModeVm();
-        var (view, window) = ShowAt(vm, 380);
-
-        var sortBox = Bar(view).FindControl<ComboBox>("SortFieldBox")!;
-        var sortRect = ViewportRect(sortBox, window);
-
-        Assert.That(sortRect.Width, Is.GreaterThan(0), "the sort control must be laid out");
-        Assert.That(sortRect.Right, Is.LessThanOrEqualTo(window.Width + 0.5),
-            "on a narrow window the sort controls must stay within the viewport, not overflow off the right edge");
-        window.Close();
-    }
-
-    [Test]
-    public async Task BasicMode_OnANarrowWindow_StacksTheBasicPanelChildrenVertically()
+    public async Task BasicMode_OnANarrowWindow_CollapsesFiltersToTheSearchBoxAndAToggle()
     {
         var vm = await LoadedBasicModeVm();
         var (view, window) = ShowAt(vm, 380);
 
         var basicPanel = Bar(view).FindControl<Control>("BasicPanel")!;
+        var sort = Bar(view).FindControl<Control>("SortControls")!;
+        var toggle = Bar(view).FindControl<Control>("FiltersToggle")!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(basicPanel.Classes, Does.Contain("narrow"),
+                "a narrow viewport must put the basic panel into its responsive layout");
+            Assert.That(basicPanel.Classes, Does.Contain("filters-collapsed"),
+                "a narrow viewport collapses the filters by default");
+            Assert.That(sort.IsVisible, Is.False,
+                "collapsed filters hide the sort controls, leaving just the search box and toggle");
+            Assert.That(toggle.IsVisible, Is.True,
+                "a Filters toggle appears on a narrow window so the collapsed filters can be reopened");
+        });
+        window.Close();
+    }
+
+    [Test]
+    public async Task BasicMode_OnANarrowWindow_WhenExpanded_StacksSortBelowTheSearchBoxOnScreen()
+    {
+        var vm = await LoadedBasicModeVm();
+        var (view, window) = ShowAt(vm, 380);
+
+        vm.SearchBar.IsFilterPanelExpanded = true;
+        Dispatcher.UIThread.RunJobs();
+
         var search = Bar(view).FindControl<TextBox>("ItemsSearchBox")!;
         var sort = Bar(view).FindControl<Control>("SortControls")!;
 
-        Assert.That(basicPanel.Classes, Does.Contain("narrow"),
-            "a narrow viewport must put the basic panel into its stacked layout");
+        Assert.That(sort.IsVisible, Is.True, "expanding the filters reveals the sort controls again");
         Assert.That(ViewportRect(sort, window).Top, Is.GreaterThanOrEqualTo(ViewportRect(search, window).Bottom - 0.5),
-            "when narrow, the sort row must sit below the items search box rather than beside it");
+            "when expanded on a narrow window, the sort row must sit below the items search box rather than beside it");
+        Assert.That(ViewportRect(sort, window).Right, Is.LessThanOrEqualTo(window.Width + 0.5),
+            "the expanded sort controls must stay within the viewport, not overflow off the right edge");
         window.Close();
     }
 

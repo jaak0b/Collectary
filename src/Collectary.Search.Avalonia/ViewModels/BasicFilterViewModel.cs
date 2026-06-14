@@ -40,6 +40,10 @@ public partial class BasicFilterViewModel : ObservableObject
 
     internal Task? PendingRun { get; private set; }
 
+    public int ActiveFilterCount => Chips.Count(chip => chip.HasSelection);
+
+    public bool IsSortActive => SelectedSortField is not null;
+
     public BasicFilterViewModel(
         ISearchUiCatalog catalog,
         ILocalizationProvider localization,
@@ -56,6 +60,7 @@ public partial class BasicFilterViewModel : ObservableObject
         _freeTextField = freeTextField;
         _freeTextOperator = freeTextOperator;
         _excludedChipFields = excludedChipFields ?? [];
+        Chips.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ActiveFilterCount));
     }
 
     public async Task LoadAsync()
@@ -154,7 +159,11 @@ public partial class BasicFilterViewModel : ObservableObject
 
     partial void OnSearchTextChanged(string value) => ScheduleRun();
 
-    partial void OnSelectedSortFieldChanged(string? value) => ScheduleRun();
+    partial void OnSelectedSortFieldChanged(string? value)
+    {
+        OnPropertyChanged(nameof(IsSortActive));
+        ScheduleRun();
+    }
 
     partial void OnSortDescendingChanged(bool value) => ScheduleRun();
 
@@ -184,8 +193,14 @@ public partial class BasicFilterViewModel : ObservableObject
     {
         FilterChipViewModel chip = null!;
         chip = new FilterChipViewModel(
-            label, SuggestionsFor(label), TextOperatorFor(label), _localization, ScheduleRun, () => RemoveChip(chip));
+            label, SuggestionsFor(label), TextOperatorFor(label), _localization, OnChipValueChanged, () => RemoveChip(chip));
         return chip;
+    }
+
+    private void OnChipValueChanged()
+    {
+        OnPropertyChanged(nameof(ActiveFilterCount));
+        ScheduleRun();
     }
 
     private IReadOnlyList<string> SuggestionsFor(string label) =>

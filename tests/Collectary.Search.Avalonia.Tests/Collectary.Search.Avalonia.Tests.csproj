@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Headless" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="FakeItEasy" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

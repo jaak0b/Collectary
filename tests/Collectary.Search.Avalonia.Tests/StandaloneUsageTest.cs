@@ -4,35 +4,6 @@ using Collectary.Search.Avalonia.ViewModels;
 
 namespace Collectary.Search.Avalonia.Tests;
 
-file sealed class KeyLocalization : ILocalizationProvider
-{
-    public string Get(string key) => key;
-}
-
-file sealed class FakeCatalog : ISearchUiCatalog
-{
-    public Task<SearchUiSnapshot> GetSnapshotAsync() => Task.FromResult(new SearchUiSnapshot
-    {
-        Fields =
-        [
-            new SearchUiField("name", [], [], [QueryOperatorKind.Contains]),
-            new SearchUiField("Status", [], ["open", "done"],
-                [QueryOperatorKind.Equals, QueryOperatorKind.In]),
-        ],
-    });
-}
-
-file sealed record Widget(string Name);
-
-file sealed class FakeRunner : ISearchRunner
-{
-    private readonly IReadOnlyList<object> _items;
-    public FakeRunner(params Widget[] items) => _items = items;
-
-    public Task<SearchOutcome> SearchAsync(string queryText) =>
-        Task.FromResult(new SearchOutcome(_items, [], []));
-}
-
 [TestFixture]
 public class StandaloneUsageTest
 {
@@ -231,5 +202,83 @@ public class SearchBarViewModelTest
 
         Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.SearchLabel)));
         Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.SortByLabel)));
+    }
+
+    [Test]
+    public async Task IsFilterPanelExpanded_DefaultsToCollapsed()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+
+        Assert.That(bar.IsFilterPanelExpanded, Is.False);
+    }
+
+    [Test]
+    public async Task FiltersLabel_NoActiveFilters_UsesThePlainLabel()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+        await bar.InitializeAsync(string.Empty);
+
+        Assert.That(bar.ActiveFilterCount, Is.EqualTo(0));
+        Assert.That(bar.FiltersLabel, Is.EqualTo(SearchLocalizationKeys.SearchFilters));
+    }
+
+    [Test]
+    public async Task FiltersLabel_WithActiveFilters_UsesTheCountedLabelAndSubstitutesTheCount()
+    {
+        var counting = new CountingLocalization();
+        var query = new ItemQueryViewModel(
+            new FakeRunner(), new FakeCatalog(), new QuerySuggestionEngine(new QueryLexer()), counting,
+            _ => Task.CompletedTask);
+        var basic = new BasicFilterViewModel(
+            new FakeCatalog(), counting, _ => Task.CompletedTask, debounceMilliseconds: 0);
+        var bar = new SearchBarViewModel(query, basic, counting, () => true, _ => { });
+        await basic.LoadAsync();
+        await bar.InitializeAsync("Status = open");
+
+        Assert.That(bar.ActiveFilterCount, Is.EqualTo(1));
+        Assert.That(bar.FiltersLabel, Is.EqualTo("Filters (1)"));
+    }
+
+    [Test]
+    public async Task ActiveFilterCount_AndFiltersLabel_RaiseWhenAFilterIsApplied()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+        await bar.InitializeAsync(string.Empty);
+        bar.BasicFilter.AddChipCommand.Execute("Status");
+        var raised = new List<string?>();
+        bar.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        bar.BasicFilter.Chips.Single().VisibleOptions.First(o => o.Value == "open").IsChecked = true;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(bar.ActiveFilterCount, Is.EqualTo(1));
+            Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.ActiveFilterCount)));
+            Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.FiltersLabel)));
+        });
+    }
+
+    [Test]
+    public async Task IsSortActive_SurfacesFromTheBasicFilter()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+        await bar.InitializeAsync(string.Empty);
+        var raised = new List<string?>();
+        bar.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        bar.BasicFilter.SelectedSortField = "name";
+
+        Assert.That(bar.IsSortActive, Is.True);
+        Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.IsSortActive)));
+    }
+
+    private sealed class CountingLocalization : ILocalizationProvider
+    {
+        public string Get(string key) => key switch
+        {
+            SearchLocalizationKeys.SearchFilters => "Filters",
+            SearchLocalizationKeys.SearchFiltersWithCount => "Filters ({0})",
+            _ => key,
+        };
     }
 }

@@ -436,6 +436,12 @@
   <data name="SearchMore" xml:space="preserve">
     <value>+ More</value>
   </data>
+  <data name="SearchFilters" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="SearchFiltersWithCount" xml:space="preserve">
+    <value>Filters ({0})</value>
+  </data>
   <data name="SearchFindValues" xml:space="preserve">
     <value>Find values</value>
   </data>

@@ -26,6 +26,17 @@ search, if you know it.
 There is no Search button in basic mode — every change runs the search right away. All chips
 combine with AND: an item must match the text box *and* every chip that has a selection.
 
+### When the window gets narrow
+
+On a wide window everything sits on one row. As the window shrinks — or on a phone — the chips,
+**+ More** and the sort picker would start fighting the text box for space, so instead the bar
+tucks them away: you're left with just the search box and a **Filters** button. The button keeps a
+running count of what's active — *Filters (2)* — and shows a small dot when a sort is set, so you
+always know filtering is in effect even while it's collapsed. Tap **Filters** to fold the chips and
+sort picker back into view, stacked below the search box; tap it again to hide them. The text box
+stays put the whole time, because searching by name is the one thing you almost always want within
+reach.
+
 ## Advanced mode
 
 Click **Advanced** and the bar turns into a text box pre-filled with exactly what your chips were

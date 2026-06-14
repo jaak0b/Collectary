@@ -11,6 +11,8 @@ public sealed class SearchLocalizationKeys
     public const string SearchEqualsLabel = "SearchEqualsLabel";
     public const string SearchFailed = "SearchFailed";
     public const string SearchFieldNotSearchable = "SearchFieldNotSearchable";
+    public const string SearchFilters = "SearchFilters";
+    public const string SearchFiltersWithCount = "SearchFiltersWithCount";
     public const string SearchFindFields = "SearchFindFields";
     public const string SearchFindValues = "SearchFindValues";
     public const string SearchInvalidValue = "SearchInvalidValue";

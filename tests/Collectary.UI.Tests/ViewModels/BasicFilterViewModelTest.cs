@@ -347,4 +347,57 @@ public class BasicFilterViewModelTest
         Assert.That(_vm.Chips.Select(c => c.Label), Is.EqualTo(new[] { "Price" }));
         Assert.That(_vm.SearchText, Is.Empty);
     }
+
+    [Test]
+    public async Task ActiveFilterCount_CountsOnlyChipsThatHaveAValue()
+    {
+        _vm.AddChipCommand.Execute("Status");
+        _vm.AddChipCommand.Execute("Author");
+        await AwaitRun();
+        Assert.That(_vm.ActiveFilterCount, Is.EqualTo(0));
+
+        Chip("Status").VisibleOptions.First(o => o.Value == "open").IsChecked = true;
+        await AwaitRun();
+
+        Assert.That(_vm.ActiveFilterCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task ActiveFilterCount_DropsWhenAChipIsRemoved()
+    {
+        _vm.AddChipCommand.Execute("Status");
+        Chip("Status").VisibleOptions.First(o => o.Value == "open").IsChecked = true;
+        await AwaitRun();
+        Assert.That(_vm.ActiveFilterCount, Is.EqualTo(1));
+
+        _vm.RemoveChipCommand.Execute(Chip("Status"));
+        await AwaitRun();
+
+        Assert.That(_vm.ActiveFilterCount, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void ActiveFilterCount_RaisesChangeNotificationWhenAChipGainsAValue()
+    {
+        _vm.AddChipCommand.Execute("Author");
+        var raised = new List<string?>();
+        _vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        Chip("Author").FreeText = "twain";
+
+        Assert.That(raised, Does.Contain(nameof(BasicFilterViewModel.ActiveFilterCount)));
+    }
+
+    [Test]
+    public void IsSortActive_TrueOnlyWhenASortFieldIsSelected()
+    {
+        Assert.That(_vm.IsSortActive, Is.False);
+
+        var raised = new List<string?>();
+        _vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+        _vm.SelectedSortField = "name";
+
+        Assert.That(_vm.IsSortActive, Is.True);
+        Assert.That(raised, Does.Contain(nameof(BasicFilterViewModel.IsSortActive)));
+    }
 }

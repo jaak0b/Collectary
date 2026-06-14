@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -15,6 +16,17 @@ public partial class SearchBarViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsBasicMode { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsFilterPanelExpanded { get; set; }
+
+    public int ActiveFilterCount => BasicFilter.ActiveFilterCount;
+
+    public bool IsSortActive => BasicFilter.IsSortActive;
+
+    public string FiltersLabel => ActiveFilterCount > 0
+        ? string.Format(_localization.Get(SearchLocalizationKeys.SearchFiltersWithCount), ActiveFilterCount)
+        : _localization.Get(SearchLocalizationKeys.SearchFilters);
+
     public SearchBarViewModel(
         ItemQueryViewModel query,
         BasicFilterViewModel basicFilter,
@@ -27,6 +39,20 @@ public partial class SearchBarViewModel : ObservableObject
         _localization = localization;
         _loadBasicModePreference = loadBasicModePreference;
         _saveBasicModePreference = saveBasicModePreference;
+        BasicFilter.PropertyChanged += OnBasicFilterChanged;
+    }
+
+    private void OnBasicFilterChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(BasicFilterViewModel.ActiveFilterCount))
+        {
+            OnPropertyChanged(nameof(ActiveFilterCount));
+            OnPropertyChanged(nameof(FiltersLabel));
+        }
+        else if (e.PropertyName == nameof(BasicFilterViewModel.IsSortActive))
+        {
+            OnPropertyChanged(nameof(IsSortActive));
+        }
     }
 
     public async Task InitializeAsync(string defaultQuery)
@@ -85,6 +111,7 @@ public partial class SearchBarViewModel : ObservableObject
         OnPropertyChanged(nameof(SortNoneLabel));
         OnPropertyChanged(nameof(SortAscendingLabel));
         OnPropertyChanged(nameof(SortDescendingLabel));
+        OnPropertyChanged(nameof(FiltersLabel));
         foreach (var chip in BasicFilter.Chips)
             chip.RefreshLocalization();
     }

@@ -1,3 +1,6 @@
+using System;
+using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -7,7 +10,11 @@ namespace Collectary.Search.Avalonia.Controls;
 
 public partial class SearchBar : UserControl
 {
-    private const double StackBelowWidth = 640;
+    private const double UnconstrainedRowWidth = 100000;
+
+    private readonly ResponsiveSearchBarLayout _responsiveLayout = new();
+    private SearchBarViewModel? _viewModel;
+    private bool _basicStacked;
 
     public SearchBar()
     {
@@ -17,14 +24,58 @@ public partial class SearchBar : UserControl
         SearchBox.LostFocus += (_, _) => Query?.CloseSuggestionsCommand.Execute(null);
         SuggestionList.Tapped += async (_, _) => await AcceptSelectedSuggestionAsync();
         SizeChanged += (_, e) => ApplyResponsiveLayout(e.NewSize.Width);
+        DataContextChanged += (_, _) => HookViewModel();
+        AttachedToVisualTree += (_, _) => HookViewModel();
+        DetachedFromVisualTree += (_, _) => UnhookViewModel();
     }
 
-    private void ApplyResponsiveLayout(double width)
+    internal void ApplyResponsiveLayout(double width)
     {
-        var stacked = width > 0 && width < StackBelowWidth;
-        AdvancedPanel.Classes.Set("narrow", stacked);
-        BasicPanel.Classes.Set("narrow", stacked);
+        AdvancedPanel.Classes.Set("narrow",
+            _responsiveLayout.ShouldStack(width, NaturalRowWidth(SearchBox, AdvancedButtons)));
+        _basicStacked = _responsiveLayout.ShouldStack(
+            width, NaturalRowWidth(ItemsSearchBox, ChipArea, SortControls));
+        BasicPanel.Classes.Set("narrow", _basicStacked);
+        UpdateFilterCollapse();
     }
+
+    private double NaturalRowWidth(params Control[] clusters)
+    {
+        var total = 0d;
+        foreach (var cluster in clusters)
+        {
+            // Avalonia's WrapPanel reports a zero desired width when measured with an infinite
+            // width, so constrain to a finite-but-unreachable width to get the real row width.
+            cluster.Measure(new Size(UnconstrainedRowWidth, double.PositiveInfinity));
+            total += cluster.DesiredSize.Width;
+        }
+        return total;
+    }
+
+    private void HookViewModel()
+    {
+        if (_viewModel is not null)
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        _viewModel = DataContext as SearchBarViewModel;
+        if (_viewModel is not null)
+            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        UpdateFilterCollapse();
+    }
+
+    private void UnhookViewModel()
+    {
+        if (_viewModel is not null)
+            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SearchBarViewModel.IsFilterPanelExpanded))
+            UpdateFilterCollapse();
+    }
+
+    private void UpdateFilterCollapse() =>
+        BasicPanel.Classes.Set("filters-collapsed", _basicStacked && _viewModel?.IsFilterPanelExpanded != true);
 
     public void RefreshLocalization() => (DataContext as SearchBarViewModel)?.RefreshLocalization();
 
