@@ -65,6 +65,13 @@ long deletions are remembered. See [Sync](sync.md).
 A **Switch profile** button returns you to the profile screen without closing the app — the same as
 the button in the top-right of the main window. See [Profiles](accounts.md).
 
+## About
+
+The **About** section at the bottom shows the **version** of Collectary you're running — something
+like `0.1.203`. The number climbs by one with every change that lands in the project, so it's the
+quickest way to tell whether you're on the latest build. If you ever report a problem, quoting this
+version helps pin down exactly which build you saw it on.
+
 ## Remembered automatically
 
 Collectary also remembers smaller things — whether the sidebar was expanded, how you sized the

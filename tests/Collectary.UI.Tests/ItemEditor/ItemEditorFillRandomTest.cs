@@ -72,10 +72,14 @@ public class ItemEditorFillRandomTest : FlowTestBase
     }
 
     [Test]
-    public void IsDebugBuild_IsTrueUnderDebugConfiguration()
+    public void IsDebugBuild_MatchesTheBuildConfiguration()
     {
         var vm = BuildVm([new TextFieldDefinition { Label = "Text" }], out _);
 
+#if DEBUG
         Assert.That(vm.IsDebugBuild, Is.True);
+#else
+        Assert.That(vm.IsDebugBuild, Is.False);
+#endif
     }
 }

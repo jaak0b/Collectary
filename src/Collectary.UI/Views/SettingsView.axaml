@@ -301,6 +301,23 @@
                 </StackPanel>
             </StackPanel>
 
+            <Separator/>
+
+            <StackPanel Spacing="14">
+                <TextBlock Text="{Binding [Settings_About], Source={x:Static loc:LocalizationService.Instance}}"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           LetterSpacing="1"/>
+
+                <controls:SettingsRow Label="{Binding [About_Version], Source={x:Static loc:LocalizationService.Instance}}">
+                    <TextBlock x:Name="AppVersionText"
+                               Text="{Binding AppVersion}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </controls:SettingsRow>
+            </StackPanel>
+
         </StackPanel>
     </ScrollViewer>
 

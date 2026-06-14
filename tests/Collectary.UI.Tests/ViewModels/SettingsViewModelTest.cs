@@ -46,6 +46,22 @@ public class SettingsViewModelTest
     }
 
     [Test]
+    public void Constructor_ExposesProvidedAppVersion()
+    {
+        var sut = new SettingsViewModel(() => { }, appVersion: "0.1.203");
+
+        Assert.That(sut.AppVersion, Is.EqualTo("0.1.203"));
+    }
+
+    [Test]
+    public void Constructor_DefaultsAppVersionToEmptyWhenNotProvided()
+    {
+        var sut = new SettingsViewModel(() => { });
+
+        Assert.That(sut.AppVersion, Is.Empty);
+    }
+
+    [Test]
     public async Task DeleteProfileCommand_InvokesTheCallback()
     {
         var invoked = false;

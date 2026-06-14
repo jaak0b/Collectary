@@ -375,6 +375,8 @@
   <data name="Backup_ImportedWithConflicts" xml:space="preserve"><value>Imported {0} entries. These kept your local version: {1}</value></data>
   <data name="Backup_Error" xml:space="preserve"><value>Backup failed. Please try again.</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>Account</value></data>
+  <data name="Settings_About" xml:space="preserve"><value>About</value></data>
+  <data name="About_Version" xml:space="preserve"><value>Version</value></data>
   <data name="Settings_SyncProvider" xml:space="preserve"><value>Storage provider</value></data>
   <data name="Settings_Provider_Folder" xml:space="preserve"><value>Local / mounted folder</value></data>
   <data name="Settings_Provider_OneDrive" xml:space="preserve"><value>OneDrive</value></data>

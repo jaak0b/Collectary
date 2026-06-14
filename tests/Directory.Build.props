@@ -1,5 +1,7 @@
 <Project>
 
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
   <PropertyGroup>
     <!-- Default every dotnet test run to tests.runsettings so the blame session-hang
          timeout is always armed, even for ad-hoc filtered runs that pass no settings file;

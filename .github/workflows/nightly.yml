@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Nerdbank.GitVersioning needs full history to compute the version
 
       - name: Set up .NET 10
         uses: actions/setup-dotnet@v4
@@ -52,6 +54,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Nerdbank.GitVersioning needs full history to compute the version
 
       - name: Set up .NET 10
         uses: actions/setup-dotnet@v4

@@ -1,0 +1,7 @@
+<Project>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)' != '_build'">
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

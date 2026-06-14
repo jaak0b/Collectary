@@ -100,7 +100,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                 LocalizationService.Instance["Theme_DiscardCustomConfirm"],
                 LocalizationService.Instance["Theme_DiscardCustomTitle"]),
             audioRecorder: _scope.ResolveOptional<IAudioRecorder>(),
-            audioPlayer: _scope.ResolveOptional<IAudioPlayer>());
+            audioPlayer: _scope.ResolveOptional<IAudioPlayer>(),
+            appVersion: new AssemblyAppVersionProvider().Display);
         ResetBreadcrumb(LocalizationService.Instance["Settings"], vm);
         CloseSidebarIfNarrow();
     }

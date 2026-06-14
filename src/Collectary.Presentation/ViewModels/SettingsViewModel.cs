@@ -34,6 +34,8 @@ public partial class SettingsViewModel : ViewModelBase
 
     public bool IsWeb => OperatingSystem.IsBrowser();
 
+    public string AppVersion { get; }
+
     public bool ShowAudioSettings { get; }
 
     public IReadOnlyList<AudioDeviceOption> InputDevices { get; }
@@ -535,8 +537,10 @@ public partial class SettingsViewModel : ViewModelBase
         Func<Task>? deleteProfile = null,
         Func<Task<bool>>? confirmDiscardCustomizations = null,
         IAudioRecorder? audioRecorder = null,
-        IAudioPlayer? audioPlayer = null)
+        IAudioPlayer? audioPlayer = null,
+        string? appVersion = null)
     {
+        AppVersion = appVersion ?? "";
         _navigateToSharedFields = navigateToSharedFields;
         _confirmDiscardCustomizations = confirmDiscardCustomizations;
         _pickFolder = pickFolder;

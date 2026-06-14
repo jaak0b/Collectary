@@ -98,6 +98,31 @@ EF Core migrations run automatically on desktop startup. To add one:
 dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 ```
 
+## Versioning
+
+Versions are computed automatically by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning)
+(nbgv) — there are no version numbers to bump by hand, and no version stamping in CI. The setup is two
+files at the repository root:
+
+- **`version.json`** holds the base version (`"0.1"`) and marks `master` as the public-release branch.
+- **`Directory.Build.props`** adds the `Nerdbank.GitVersioning` package to every project (the version
+  itself is pinned centrally in `Directory.Packages.props`). The test projects pick it up because
+  `tests/Directory.Build.props` imports the root file.
+
+From there, nbgv stamps each assembly's `AssemblyVersion`, `FileVersion`, and
+`AssemblyInformationalVersion` as `0.1.<git-height>`, where the **git height** is the number of commits
+in the branch's history. Every commit — and therefore every merged pull request — automatically bumps
+the number, with no manual step. The Settings → About line reads that stamped version back at runtime
+(`AssemblyAppVersionProvider`), trimming nbgv's `+<commit>` build-metadata suffix for display.
+
+To start a new release line — say `0.2` or `1.0` — edit the `version` field in `version.json`; the
+next commit picks it up.
+
+!!! warning "CI must do a full clone"
+    nbgv computes the version from the **whole** git history, so it fails on a shallow clone. Every
+    workflow that builds checks out with `fetch-depth: 0` for this reason. A new workflow that builds
+    must do the same.
+
 ## Gotchas
 
 ### `wasm-tools` is required to build the browser head

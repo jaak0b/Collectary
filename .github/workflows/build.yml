@@ -1,0 +1,43 @@
+name: Build & test
+
+# Per-change gate: builds and runs the full test suite on every pull request and on
+# pushes to feature branches. Pushes to master are already covered by the quality job
+# in docs.yml, so they are excluded here to avoid running the suite twice.
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [master]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Nerdbank.GitVersioning needs full history to compute the version
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Install Android + WASM workloads
+        run: dotnet workload install android wasm-tools
+
+      - name: Build & run full test suite
+        run: pwsh ./build.ps1 --target Test --configuration Release
