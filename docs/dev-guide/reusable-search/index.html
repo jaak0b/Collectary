@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../items/">
+        <link rel="prev" href="../sync-architecture/">
       
       
-        <link rel="next" href="../field-types/">
+        <link rel="next" href="../testing/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Search - Collectary</title>
+        <title>Reusing the search library - Collectary</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#search" class="md-skip">
+        <a href="#reusing-the-search-library" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Search
+              Reusing the search library
             
           </span>
         </div>
@@ -250,13 +250,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../getting-started/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../user-guide/getting-started/" class="md-tabs__link">
           
   
     
@@ -272,11 +270,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../dev-guide/architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../architecture/" class="md-tabs__link">
           
   
     
@@ -378,14 +378,337 @@
       
   
   
-    
-  
   
   
     
     
       
         
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installing on Android
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/accounts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/collections/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Collections
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/items/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Items
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/field-types/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Field Types
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/sharing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sharing Collections
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/sync/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sync
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Backup &amp; restore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/importing-from-excel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Importing from Excel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/settings/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Settings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
       
         
       
@@ -424,24 +747,24 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   <span class="md-ellipsis">
-    User Guide
+    Developer Guide
   </span>
   
 
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
-            User Guide
+            Developer Guide
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -452,11 +775,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Getting Started
+    Architecture
   </span>
   
 
@@ -473,11 +796,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../android/" class="md-nav__link">
+      <a href="../building/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Installing on Android
+    Building &amp; Running
   </span>
   
 
@@ -494,11 +817,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../accounts/" class="md-nav__link">
+      <a href="../cloud-setup/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Profiles
+    Cloud Sync Setup
   </span>
   
 
@@ -515,11 +838,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../collections/" class="md-nav__link">
+      <a href="../dependency-injection/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Collections
+    Dependency Injection &amp; Navigation
   </span>
   
 
@@ -536,11 +859,74 @@
   
   
     <li class="md-nav__item">
-      <a href="../items/" class="md-nav__link">
+      <a href="../localization/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Items
+    Localization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-a-field-type/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Adding a Field Type
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-tools/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Developer Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sync-architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sync Architecture
   </span>
   
 
@@ -570,7 +956,7 @@
           
   
   <span class="md-ellipsis">
-    Search
+    Reusing the search library
   </span>
   
 
@@ -581,7 +967,7 @@
         
   
   <span class="md-ellipsis">
-    Search
+    Reusing the search library
   </span>
   
 
@@ -603,74 +989,68 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#basic-mode" class="md-nav__link">
+  <a href="#using-the-engine" class="md-nav__link">
     <span class="md-ellipsis">
-      Basic mode
+      Using the engine
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the engine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-describe-how-to-read-your-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Describe how to read your items
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-mode" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#2-turn-fields-into-matchers" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced mode
+      2. Turn fields into matchers
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-a-query" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#3-expose-a-catalog-and-run-a-query" class="md-nav__link">
     <span class="md-ellipsis">
-      Writing a query
+      3. Expose a catalog and run a query
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      Fields
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparisons" class="md-nav__link">
+  <a href="#adding-the-avalonia-ui" class="md-nav__link">
     <span class="md-ellipsis">
-      Comparisons
+      Adding the Avalonia UI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding the Avalonia UI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-localization-key-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      The localization key contract
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#sorting" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sorting
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#searching-across-collections" class="md-nav__link">
-    <span class="md-ellipsis">
-      Searching across collections
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next steps
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -690,393 +1070,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../field-types/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Field Types
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sharing/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Sharing Collections
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sync/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Sync
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../backup/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Backup &amp; restore
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../importing-from-excel/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Importing from Excel
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../settings/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Settings
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    Developer Guide
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            Developer Guide
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/architecture/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Architecture
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/building/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Building &amp; Running
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/cloud-setup/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Cloud Sync Setup
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/dependency-injection/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Dependency Injection &amp; Navigation
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/localization/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Localization
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/adding-a-field-type/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Adding a Field Type
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/developer-tools/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Developer Tools
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/sync-architecture/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Sync Architecture
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/reusable-search/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Reusing the search library
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../dev-guide/testing/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1097,7 +1091,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../dev-guide/contributing/" class="md-nav__link">
+      <a href="../contributing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1145,74 +1139,68 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#basic-mode" class="md-nav__link">
+  <a href="#using-the-engine" class="md-nav__link">
     <span class="md-ellipsis">
-      Basic mode
+      Using the engine
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the engine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-describe-how-to-read-your-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Describe how to read your items
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-mode" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#2-turn-fields-into-matchers" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced mode
+      2. Turn fields into matchers
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-a-query" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#3-expose-a-catalog-and-run-a-query" class="md-nav__link">
     <span class="md-ellipsis">
-      Writing a query
+      3. Expose a catalog and run a query
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      Fields
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparisons" class="md-nav__link">
+  <a href="#adding-the-avalonia-ui" class="md-nav__link">
     <span class="md-ellipsis">
-      Comparisons
+      Adding the Avalonia UI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding the Avalonia UI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-localization-key-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      The localization key contract
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#sorting" class="md-nav__link">
-    <span class="md-ellipsis">
-      Sorting
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#searching-across-collections" class="md-nav__link">
-    <span class="md-ellipsis">
-      Searching across collections
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next steps
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1234,151 +1222,159 @@
   
 
 
-<h1 id="search">Search<a class="headerlink" href="#search" title="Permanent link">&para;</a></h1>
-<p>Every collection screen has a search bar right above the item list, and it comes in two flavours.
-<strong>Basic mode</strong> is a row of filter chips you click together — no syntax to learn. <strong>Advanced mode</strong>
-is a query language for everything the chips can't say. The two are views of the same search: you
-can switch back and forth at any time, and Collectary remembers which one you used last.</p>
-<h2 id="basic-mode">Basic mode<a class="headerlink" href="#basic-mode" title="Permanent link">&para;</a></h2>
-<p>When you open a collection in basic mode you'll see a small text box, a chip reading
-<em>collection: Your Collection</em>, a <strong>+ More</strong> button, and a sort picker — much like Jira's basic
-search, if you know it.</p>
+<h1 id="reusing-the-search-library">Reusing the search library<a class="headerlink" href="#reusing-the-search-library" title="Permanent link">&para;</a></h1>
+<p>Collectary's search is split into two standalone packages so you can drop the same
+JQL-style query experience into a completely different project — even one that has nothing to do
+with Collectary and isn't an Avalonia app at all.</p>
 <ul>
-<li><strong>The text box</strong> filters by item name as you type — <code>loco</code> finds every item whose name contains
-  it.</li>
-<li><strong>Chips</strong> are little dropdown buttons, one per field you're filtering on. Click one and a small
-  panel opens: for choice-like fields (single/multi choice, yes/no, collections) you get a
-  searchable checkbox list — tick one value for "equals", tick several for "any of these". For
-  everything else you get a single input that filters by <em>contains</em> for text-like fields and
-  <em>equals</em> for numbers and dates.</li>
-<li><strong>+ More</strong> opens a searchable list of every field you can filter on — across all your
-  collections, plus the built-ins like <code>created</code> and <code>updated</code>. Picking one adds a chip; a chip
-  with nothing ticked shows <em>All</em> and simply doesn't filter.</li>
-<li><strong>Sort by</strong> picks a field and direction for the result order.</li>
+<li><strong><code>Collectary.Search</code></strong> — the engine. Pure .NET with <strong>no third-party dependencies</strong>. It does the
+  whole pipeline: turn query text into a syntax tree, bind that tree against your fields, push a
+  filter down to your database, evaluate the rest in memory, and sort the results. It is generic
+  over your own item type, so it never needs to know what an "Item" is.</li>
+<li><strong><code>Collectary.Search.Avalonia</code></strong> — the optional UI layer: the chip-bar / advanced-box <code>SearchBar</code>
+  control and its view-models. It depends on Avalonia and the engine, and nothing else.</li>
 </ul>
-<p>There is no Search button in basic mode — every change runs the search right away. All chips
-combine with AND: an item must match the text box <em>and</em> every chip that has a selection.</p>
-<h2 id="advanced-mode">Advanced mode<a class="headerlink" href="#advanced-mode" title="Permanent link">&para;</a></h2>
-<p>Click <strong>Advanced</strong> and the bar turns into a text box pre-filled with exactly what your chips were
-saying — <code>collection = Trains AND Status in (open, done) ORDER BY Name</code>, say. That makes basic mode
-a nice way to <em>learn</em> the query language: build a filter with chips, switch over, and read what it
-wrote.</p>
-<p>Going the other way, <strong>Basic</strong> converts your text back into chips whenever it's a plain AND of
-simple conditions. Queries using <code>OR</code>, <code>NOT</code>, parentheses, comparisons like <code>&gt;</code>, <code>is empty</code>, or
-several sort fields are more than the chips can express — Collectary tells you so and stays in
-advanced mode, with your query untouched. One small wrinkle: your text is re-written in the bar's
-canonical form when you convert, so spacing and quoting may change while the meaning stays the
-same.</p>
-<h2 id="writing-a-query">Writing a query<a class="headerlink" href="#writing-a-query" title="Permanent link">&para;</a></h2>
-<p>A query is a list of conditions joined with <code>AND</code> and <code>OR</code>, with optional parentheses and an
-optional <code>ORDER BY</code> at the end. A few examples:</p>
-<div class="highlight"><pre><span></span><code>Status = open
-Status = open AND Price &gt; 50
-preset = &quot;Books&quot; AND Price &gt; 3 OR (Author != &quot;Twain&quot; AND Pages in (100, 200))
-Tags ~ rare ORDER BY Price DESC, name
+<p>If you only want the query engine, take the first package and ignore the second.</p>
+<h2 id="using-the-engine">Using the engine<a class="headerlink" href="#using-the-engine" title="Permanent link">&para;</a></h2>
+<p>The engine talks to your world through small interfaces. You implement them for your own item and
+field types; everything else comes for free.</p>
+<h3 id="1-describe-how-to-read-your-items">1. Describe how to read your items<a class="headerlink" href="#1-describe-how-to-read-your-items" title="Permanent link">&para;</a></h3>
+<p>Most apps store an item as a bag of typed values, each tagged with the id of the field it belongs
+to. If that sounds like your model, hand the engine an <code>ItemValueModel&lt;TItem, TValueBase&gt;</code> that
+tells it how to read those values — both at runtime and as an expression tree your database can
+translate:</p>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ItemValueModel</span><span class="o">&lt;</span><span class="n">Widget</span><span class="p">,</span><span class="w"> </span><span class="n">WidgetValue</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="n">values</span><span class="p">:</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">Values</span><span class="p">,</span>
+<span class="w">    </span><span class="n">definitionId</span><span class="p">:</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">FieldId</span><span class="p">,</span>
+<span class="w">    </span><span class="n">isEmpty</span><span class="p">:</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">IsEmpty</span><span class="p">,</span>
+<span class="w">    </span><span class="n">valuesExpression</span><span class="p">:</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">Values</span><span class="p">,</span>
+<span class="w">    </span><span class="n">definitionIdExpression</span><span class="p">:</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">.</span><span class="n">FieldId</span><span class="p">);</span>
 </code></pre></div>
-<p>As you type, suggestions pop up under the box: first your field names, then the comparisons that
-field understands, then — for choice fields — the values it can take. Use ↑/↓ to pick one, Enter or
-Tab to accept it, Escape to dismiss the popup. Press Enter (or the Search button) to run the query.</p>
-<h2 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h2>
-<p>Conditions name fields by their <strong>label</strong>. The match is across collections: if both <em>Books</em> and
-<em>Games</em> have a field labelled <code>Price</code>, then <code>Price &gt; 50</code> matches items in both — even when one is a
-currency field and the other a plain number.</p>
-<p>A few built-in names always work, no matter what your fields are called:</p>
+<p>If your model is nothing like a value bag, skip this and implement <code>IFieldConditionMatcher&lt;TItem&gt;</code>
+directly — it has just two members: an optional server-side <code>Expression&lt;Func&lt;TItem, bool&gt;&gt;</code> and an
+in-memory <code>Matches(item, …)</code>.</p>
+<h3 id="2-turn-fields-into-matchers">2. Turn fields into matchers<a class="headerlink" href="#2-turn-fields-into-matchers" title="Permanent link">&para;</a></h3>
+<p>The engine ships ready-made helpers for the common cases, all built on the value model above:</p>
+<ul>
+<li><code>ComparableFieldSearch&lt;…&gt;</code> for numbers, dates, durations — anything ordered (<code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;=</code>,
+  <code>in</code>, <code>is empty</code>, …).</li>
+<li><code>StringFieldSearch&lt;…&gt;</code> for text (<code>~</code> contains, <code>=</code>, <code>in</code>, …), case-insensitive.</li>
+<li><code>StringListFieldSearch&lt;…&gt;</code> for tag-like multi-value fields.</li>
+</ul>
+<p>Each one knows how to produce both the in-memory predicate and the database expression, so a search
+runs as a SQL superset first and an exact in-memory pass second.</p>
+<h3 id="3-expose-a-catalog-and-run-a-query">3. Expose a catalog and run a query<a class="headerlink" href="#3-expose-a-catalog-and-run-a-query" title="Permanent link">&para;</a></h3>
+<p>Implement <code>ISearchCatalog&lt;TItem&gt;</code> to answer two questions — "is this a known field label?" and
+"which fields back this label?" — then wire the pieces together:</p>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">parsed</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">QueryParser</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">QueryLexer</span><span class="p">()).</span><span class="n">Parse</span><span class="p">(</span><span class="n">text</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">bound</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">QueryBinder</span><span class="o">&lt;</span><span class="n">Widget</span><span class="o">&gt;</span><span class="p">(</span><span class="n">catalog</span><span class="p">).</span><span class="n">Bind</span><span class="p">(</span><span class="n">parsed</span><span class="p">.</span><span class="n">Query</span><span class="o">!</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">filter</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ServerFilterBuilder</span><span class="o">&lt;</span><span class="n">Widget</span><span class="o">&gt;</span><span class="p">().</span><span class="n">Build</span><span class="p">(</span><span class="n">bound</span><span class="p">.</span><span class="n">Query</span><span class="o">!</span><span class="p">.</span><span class="n">Root</span><span class="p">);</span><span class="w">   </span><span class="c1">// -&gt; your DB</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">matched</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">candidates</span><span class="p">.</span><span class="n">Where</span><span class="p">(</span><span class="n">w</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">QueryEvaluator</span><span class="o">&lt;</span><span class="n">Widget</span><span class="o">&gt;</span><span class="p">().</span><span class="n">Matches</span><span class="p">(</span><span class="n">bound</span><span class="p">.</span><span class="n">Query</span><span class="p">.</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">));</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">ordered</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">QueryEvaluator</span><span class="o">&lt;</span><span class="n">Widget</span><span class="o">&gt;</span><span class="p">().</span><span class="n">Sort</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span><span class="w"> </span><span class="n">bound</span><span class="p">.</span><span class="n">Query</span><span class="p">.</span><span class="n">OrderBy</span><span class="p">);</span>
+</code></pre></div>
+<p>That's the entire engine. It never references Collectary — the engine's own test suite proves it by
+driving this pipeline end to end over a throwaway fake item type.</p>
+<h2 id="adding-the-avalonia-ui">Adding the Avalonia UI<a class="headerlink" href="#adding-the-avalonia-ui" title="Permanent link">&para;</a></h2>
+<p>The <code>Collectary.Search.Avalonia</code> package adds the <code>SearchBar</code> control plus three view-models:
+<code>ItemQueryViewModel</code> (advanced box + autocomplete), <code>BasicFilterViewModel</code> (the Jira-style chip
+bar), and <code>SearchBarViewModel</code> (which owns the two and the basic↔advanced switch). They depend only
+on the engine, so you keep your own data layer.</p>
+<p>Two seams let you fit them to your app without dragging Collectary along:</p>
+<ul>
+<li><strong>Localization</strong> — the view-models never reach for a static string table. You pass an
+  <code>ILocalizationProvider</code> (a single <code>string Get(string key)</code> method); supply your own resx, JSON,
+  or hard-coded strings.</li>
+<li><strong>Running a search</strong> — <code>ItemQueryViewModel</code> takes an <code>ISearchRunner</code> that returns a
+  <code>SearchOutcome</code> (items plus any errors and notices). Implement it over the engine call above, or
+  over an existing search service.</li>
+</ul>
+<h3 id="the-localization-key-contract">The localization key contract<a class="headerlink" href="#the-localization-key-contract" title="Permanent link">&para;</a></h3>
+<p>The keys the package will ask your provider for are not a guessing game: they all live as
+constants on <code>SearchLocalizationKeys</code>, and <code>new SearchLocalizationKeys().All</code> hands you the
+complete list at runtime — handy for a startup check that your string table covers everything.
+A key your provider doesn't know should fall back to returning the key itself; that keeps the UI
+functional (if ugly) instead of crashing. The full contract:</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>Meaning</th>
+<th>Key</th>
+<th>Used for</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>name</code></td>
-<td>the item's display name</td>
+<td><code>Search</code></td>
+<td>the search button label</td>
 </tr>
 <tr>
-<td><code>preset</code> (or <code>collection</code>)</td>
-<td>the collection the item belongs to, by name</td>
+<td><code>SearchPlaceholder</code></td>
+<td>watermark in the advanced query box</td>
 </tr>
 <tr>
-<td><code>created</code> / <code>updated</code></td>
-<td>when the item was created / last changed</td>
+<td><code>SearchItemsPlaceholder</code></td>
+<td>watermark in a free-text chip</td>
+</tr>
+<tr>
+<td><code>SearchSwitchToBasic</code> / <code>SearchSwitchToAdvanced</code></td>
+<td>the mode-switch links</td>
+</tr>
+<tr>
+<td><code>SearchTooComplexForBasic</code></td>
+<td>message when a query can't round-trip into chips</td>
+</tr>
+<tr>
+<td><code>SearchMore</code></td>
+<td>the "more fields" chip button</td>
+</tr>
+<tr>
+<td><code>SearchFindFields</code> / <code>SearchFindValues</code></td>
+<td>watermarks in the field and value pickers</td>
+</tr>
+<tr>
+<td><code>SearchAllValues</code></td>
+<td>chip summary when nothing is selected</td>
+</tr>
+<tr>
+<td><code>SearchSelectedCount</code></td>
+<td>chip summary for multiple selections (one <code>{0}</code> placeholder)</td>
+</tr>
+<tr>
+<td><code>SearchContainsLabel</code> / <code>SearchEqualsLabel</code></td>
+<td>operator hint inside a free-text chip</td>
+</tr>
+<tr>
+<td><code>SearchValuePlaceholder</code></td>
+<td>watermark in a chip's free-text box</td>
+</tr>
+<tr>
+<td><code>SearchClear</code> / <code>SearchRemoveFilter</code></td>
+<td>chip flyout actions</td>
+</tr>
+<tr>
+<td><code>SearchSortBy</code>, <code>SearchSortNone</code>, <code>SearchSortAscending</code>, <code>SearchSortDescending</code></td>
+<td>the sort controls</td>
+</tr>
+<tr>
+<td><code>SearchFailed</code></td>
+<td>message when the search runner throws</td>
+</tr>
+<tr>
+<td><code>SearchSyntaxError</code>, <code>SearchUnknownField</code>, <code>SearchFieldNotSearchable</code>, <code>SearchOperatorNotSupported</code>, <code>SearchInvalidValue</code></td>
+<td>per-error-code query messages (each takes one <code>{0}</code> placeholder)</td>
+</tr>
+<tr>
+<td><code>SearchNoticeSkipped</code></td>
+<td>notice shown when a condition was skipped (one <code>{0}</code> placeholder)</td>
 </tr>
 </tbody>
 </table>
-<p>If a field's label collides with one of these, both meanings apply — the condition matches when
-either does. Field names with spaces go in quotes: <code>"Purchase Price" &gt; 10</code>.</p>
-<p>Fields that hold images, audio, file attachments, or nested lists can't be searched (yet) — they
-don't show up in the suggestions, and typing one by hand gives you a clear message instead of an
-empty result.</p>
-<h2 id="comparisons">Comparisons<a class="headerlink" href="#comparisons" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Operator</th>
-<th>Meaning</th>
-<th>Works on</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>=</code> / <code>!=</code></td>
-<td>equals / does not equal</td>
-<td>everything</td>
-</tr>
-<tr>
-<td><code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code></td>
-<td>less / greater</td>
-<td>numbers, dates, ratings, durations, weights…</td>
-</tr>
-<tr>
-<td><code>~</code> / <code>!~</code></td>
-<td>contains / does not contain</td>
-<td>text-like fields, tags, multi-choice</td>
-</tr>
-<tr>
-<td><code>in (a, b, c)</code> / <code>not in (…)</code></td>
-<td>matches any of the listed values</td>
-<td>everything</td>
-</tr>
-<tr>
-<td><code>is empty</code> / <code>is not empty</code></td>
-<td>the field has no value / has one</td>
-<td>everything</td>
-</tr>
-</tbody>
-</table>
-<p>Text matching ignores upper/lower case for A–Z. Values with spaces go in quotes
-(<code>Status = "On Hold"</code>), numbers use a dot as the decimal separator (<code>Price &gt; 10.5</code>), and dates are
-easiest written as <code>2025-06-15</code>. Currency values may include the symbol (<code>Price &gt; €10</code>), percentages
-the <code>%</code> sign, and durations understand <code>90</code>, <code>1:30</code>, and <code>1h 30m</code>.</p>
-<p>Dates also work in the format your app language uses — a German user can write
-<code>created = 13.06.2026</code> just as well as <code>created = 2026-06-13</code>. A date always means <em>your</em> calendar
-day: <code>created = 2026-06-13</code> finds everything you created on June 13th your time, even if the clock
-in another timezone had already rolled over to the next day.</p>
-<p>Measurements and weights understand units. A bare number compares amounts regardless of unit
-(<code>weight = 500</code> finds both <em>500 g</em> and <em>500 kg</em>), while a value with a unit only matches that unit:
-<code>weight = "500 g"</code> finds the 500-gram item and leaves the 500-kilogram one alone. Units are matched
-by name, not converted — <code>weight &gt; "1 kg"</code> won't find an item stored as <em>1500 g</em>. Sorting by such a
-field orders by the raw number, ignoring units.</p>
-<p><code>!=</code>, <code>!~</code>, and <code>not in</code> only match items that <em>have</em> a value for that field — an item without a
-<code>Status</code> at all is not matched by <code>Status != open</code>. Use <code>is empty</code> to find those.</p>
-<h2 id="sorting">Sorting<a class="headerlink" href="#sorting" title="Permanent link">&para;</a></h2>
-<p>Finish the query with <code>ORDER BY</code> and one or more fields, each optionally followed by <code>DESC</code>:</p>
-<div class="highlight"><pre><span></span><code>preset = &quot;Books&quot; ORDER BY Author, Published DESC
-</code></pre></div>
-<p>Sorting works across collections too; items without a value for the sort field go last.</p>
-<h2 id="searching-across-collections">Searching across collections<a class="headerlink" href="#searching-across-collections" title="Permanent link">&para;</a></h2>
-<p>Delete the pre-filled <code>preset = …</code> clause (or just write your own query without one) and the search
-runs over every collection you can see. When the results span more than one collection, an extra
-<strong>Collection</strong> column appears so you can tell where each item lives, and opening an item takes you
-to its own editor with its own fields.</p>
-<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../collections/">Collections</a></li>
-<li><a href="../field-types/">Field types reference</a></li>
-</ul>
+<p>The <code>SearchBar</code> is responsive: on a wide window the items search, chips, and sort/mode controls sit
+on one row, and below roughly 640px of control width — a phone, a docked panel, a split view — it
+stacks them into rows so nothing is pushed off-screen. That happens automatically from the control's
+own width, so you don't have to do anything to get a usable layout on Android or a narrow desktop.</p>
+<p>Collectary itself is just one more consumer: it adapts its <code>ISearchFieldCatalog</code>/<code>IItemSearchService</code>
+and its <code>LocalizationService</code> to these interfaces and hosts the <code>SearchBar</code> control inside the
+preset detail view. Your app does the same with your own types.</p>
 
 
 
@@ -1416,7 +1412,7 @@ to its own editor with its own fields.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../items/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Items">
+          <a href="../sync-architecture/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sync Architecture">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1426,20 +1422,20 @@ to its own editor with its own fields.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Items
+                Sync Architecture
               </div>
             </div>
           </a>
         
         
           
-          <a href="../field-types/" class="md-footer__link md-footer__link--next" aria-label="Next: Field Types">
+          <a href="../testing/" class="md-footer__link md-footer__link--next" aria-label="Next: Testing">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Field Types
+                Testing
               </div>
             </div>
             <div class="md-footer__button md-icon">
