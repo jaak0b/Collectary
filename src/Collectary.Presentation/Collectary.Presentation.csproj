@@ -43,6 +43,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Collectary.Core\Collectary.Core.csproj" />
     <ProjectReference Include="..\Collectary.Infrastructure\Collectary.Infrastructure.csproj" />
-    <ProjectReference Include="..\Collectary.Search.Avalonia\Collectary.Search.Avalonia.csproj" />
+    <ProjectReference Include="..\Collectary.Search.ViewModels\Collectary.Search.ViewModels.csproj" />
   </ItemGroup>
 </Project>

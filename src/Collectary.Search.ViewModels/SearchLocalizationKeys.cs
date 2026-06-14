@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Collectary.Search.Avalonia;
+namespace Collectary.Search.ViewModels;
 
 public sealed class SearchLocalizationKeys
 {

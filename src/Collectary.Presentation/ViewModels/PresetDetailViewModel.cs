@@ -6,7 +6,7 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Core.UseCases;
 using Collectary.Search;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;

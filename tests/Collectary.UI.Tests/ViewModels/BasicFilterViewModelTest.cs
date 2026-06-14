@@ -4,7 +4,7 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Core.UseCases;
 using Collectary.Search;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -386,6 +386,18 @@ public class BasicFilterViewModelTest
         Chip("Author").FreeText = "twain";
 
         Assert.That(raised, Does.Contain(nameof(BasicFilterViewModel.ActiveFilterCount)));
+    }
+
+    [Test]
+    public void ActiveFilterCount_RaisesWhenTheChipCollectionChanges()
+    {
+        var raised = new List<string?>();
+        _vm.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        _vm.AddChipCommand.Execute("Status");
+
+        Assert.That(raised, Does.Contain(nameof(BasicFilterViewModel.ActiveFilterCount)),
+            "adding or removing a chip must re-publish the active-filter count");
     }
 
     [Test]

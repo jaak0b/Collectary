@@ -1,4 +1,4 @@
-using Collectary.Search.Avalonia;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Presentation.Localization;
 

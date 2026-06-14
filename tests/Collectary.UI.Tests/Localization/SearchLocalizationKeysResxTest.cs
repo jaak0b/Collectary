@@ -1,5 +1,5 @@
 using Collectary.Presentation.Localization;
-using Collectary.Search.Avalonia;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.UI.Tests.Localization;
 

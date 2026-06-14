@@ -1,4 +1,4 @@
-namespace Collectary.Search.Avalonia;
+namespace Collectary.Search.ViewModels;
 
 public interface ILocalizationProvider
 {

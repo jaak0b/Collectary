@@ -1,6 +1,5 @@
 using Collectary.Search;
-using Collectary.Search.Avalonia;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Search.Avalonia.Tests;
 
@@ -200,8 +199,64 @@ public class SearchBarViewModelTest
         Assert.That(bar.SearchLabel, Is.EqualTo("Search"));
         bar.RefreshLocalization();
 
-        Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.SearchLabel)));
-        Assert.That(raised, Does.Contain(nameof(SearchBarViewModel.SortByLabel)));
+        Assert.That(raised, Is.SupersetOf(new[]
+        {
+            nameof(SearchBarViewModel.SearchPlaceholder),
+            nameof(SearchBarViewModel.SearchLabel),
+            nameof(SearchBarViewModel.SwitchToBasicLabel),
+            nameof(SearchBarViewModel.SwitchToAdvancedLabel),
+            nameof(SearchBarViewModel.ItemsPlaceholder),
+            nameof(SearchBarViewModel.MoreLabel),
+            nameof(SearchBarViewModel.FindFieldsPlaceholder),
+            nameof(SearchBarViewModel.SortByLabel),
+            nameof(SearchBarViewModel.SortNoneLabel),
+            nameof(SearchBarViewModel.SortAscendingLabel),
+            nameof(SearchBarViewModel.SortDescendingLabel),
+            nameof(SearchBarViewModel.FiltersLabel),
+        }));
+    }
+
+    [Test]
+    public async Task RefreshLocalization_AlsoRefreshesEachChip()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+        await bar.InitializeAsync("Status = open");
+        var chip = bar.BasicFilter.Chips.Single();
+        var raised = new List<string?>();
+        chip.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        bar.RefreshLocalization();
+
+        Assert.That(raised, Does.Contain(nameof(FilterChipViewModel.DisplayText)));
+    }
+
+    [Test]
+    public async Task ApplyingAFilter_DoesNotRaiseIsSortActive()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+        await bar.InitializeAsync(string.Empty);
+        bar.BasicFilter.AddChipCommand.Execute("Status");
+        var raised = new List<string?>();
+        bar.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        bar.BasicFilter.Chips.Single().VisibleOptions.First(o => o.Value == "open").IsChecked = true;
+
+        Assert.That(raised, Does.Not.Contain(nameof(SearchBarViewModel.IsSortActive)),
+            "applying a value filter must not masquerade as a sort change");
+    }
+
+    [Test]
+    public async Task ChangingAnUnrelatedFilterProperty_DoesNotRaiseIsSortActive()
+    {
+        var bar = await Make(basicPreference: true, saved: []);
+        await bar.InitializeAsync(string.Empty);
+        var raised = new List<string?>();
+        bar.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        bar.BasicFilter.SortDescending = !bar.BasicFilter.SortDescending;
+
+        Assert.That(raised, Does.Not.Contain(nameof(SearchBarViewModel.IsSortActive)),
+            "only an IsSortActive change on the basic filter may re-publish the bar's IsSortActive");
     }
 
     [Test]

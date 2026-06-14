@@ -1,5 +1,5 @@
 using Collectary.Search;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -273,5 +273,25 @@ public class FilterChipViewModelTest
         chip.FreeText = " 3 ";
 
         Assert.That(chip.ToRow()!.Values, Is.EqualTo(new[] { "3" }));
+    }
+
+    [Test]
+    public void RefreshLocalization_RaisesEveryLocalizedProperty()
+    {
+        var chip = ChoiceChip("open");
+        var raised = new List<string?>();
+        chip.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        chip.RefreshLocalization();
+
+        Assert.That(raised, Is.SupersetOf(new[]
+        {
+            nameof(FilterChipViewModel.DisplayText),
+            nameof(FilterChipViewModel.OperatorHint),
+            nameof(FilterChipViewModel.ValueSearchPlaceholder),
+            nameof(FilterChipViewModel.ValuePlaceholder),
+            nameof(FilterChipViewModel.ClearLabel),
+            nameof(FilterChipViewModel.RemoveLabel),
+        }));
     }
 }

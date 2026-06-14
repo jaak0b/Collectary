@@ -2,7 +2,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace Collectary.Search.Avalonia.ViewModels;
+namespace Collectary.Search.ViewModels;
 
 public partial class SearchBarViewModel : ObservableObject
 {

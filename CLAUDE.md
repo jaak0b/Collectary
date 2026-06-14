@@ -77,7 +77,11 @@ dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 |---|---|
 | `Collectary.Core` | Domain models, ports, use cases |
 | `Collectary.Infrastructure` | EF Core SQLite, image store |
-| `Collectary.UI` | ViewModels, Views, DI, localization, theming |
+| `Collectary.Presentation` | Shared ViewModels, services, localization (Avalonia-package but no XAML) |
+| `Collectary.Search` | Reusable JQL search engine (pure .NET, no UI) |
+| `Collectary.Search.ViewModels` | Search VMs + `ILocalizationProvider`/`ResponsiveSearchBarLayout` (no Avalonia; mutation-tested) |
+| `Collectary.Search.Avalonia` | The `SearchBar` control (XAML; mutation-excluded) |
+| `Collectary.UI` | Views, DI, theming; hosts the `SearchBar` |
 | `Collectary.UI.Desktop` | Desktop entry point |
 | `*.Tests` | Unit (Core), Integration (Infrastructure), Headless (UI) |
 

@@ -9,6 +9,7 @@
   <Project Path="tests/Collectary.Search.Tests/Collectary.Search.Tests.csproj" />
   <Project Path="tests/Collectary.Search.Avalonia.Tests/Collectary.Search.Avalonia.Tests.csproj" />
   <Project Path="src/Collectary.Search/Collectary.Search.csproj" />
+  <Project Path="src/Collectary.Search.ViewModels/Collectary.Search.ViewModels.csproj" />
   <Project Path="src/Collectary.Search.Avalonia/Collectary.Search.Avalonia.csproj" />
   <Project Path="src/Collectary.Core/Collectary.Core.csproj" />
   <Project Path="src/Collectary.Infrastructure/Collectary.Infrastructure.csproj" />

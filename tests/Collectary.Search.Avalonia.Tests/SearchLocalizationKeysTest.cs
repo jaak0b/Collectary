@@ -1,7 +1,6 @@
 using System.Reflection;
 using Collectary.Search;
-using Collectary.Search.Avalonia;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Search.Avalonia.Tests;
 

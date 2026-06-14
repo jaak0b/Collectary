@@ -1,4 +1,4 @@
-namespace Collectary.Search.Avalonia.Controls;
+namespace Collectary.Search.ViewModels;
 
 public sealed class ResponsiveSearchBarLayout
 {

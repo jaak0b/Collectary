@@ -1,4 +1,5 @@
 using Collectary.Search;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Search.Avalonia.Tests;
 

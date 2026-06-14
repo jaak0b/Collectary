@@ -1,6 +1,6 @@
 # Reusing the search library
 
-Collectary's search is split into two standalone packages so you can drop the same
+Collectary's search is split into three standalone packages so you can drop the same
 JQL-style query experience into a completely different project — even one that has nothing to do
 with Collectary and isn't an Avalonia app at all.
 
@@ -8,10 +8,16 @@ with Collectary and isn't an Avalonia app at all.
   whole pipeline: turn query text into a syntax tree, bind that tree against your fields, push a
   filter down to your database, evaluate the rest in memory, and sort the results. It is generic
   over your own item type, so it never needs to know what an "Item" is.
-- **`Collectary.Search.Avalonia`** — the optional UI layer: the chip-bar / advanced-box `SearchBar`
-  control and its view-models. It depends on Avalonia and the engine, and nothing else.
+- **`Collectary.Search.ViewModels`** — the presentation logic: the `ItemQueryViewModel`,
+  `BasicFilterViewModel`, and `SearchBarViewModel` plus the `ILocalizationProvider` seam. It depends
+  on the engine and CommunityToolkit.Mvvm — **no Avalonia** — so the same view-models drive any
+  XAML UI framework (or none, in a test harness).
+- **`Collectary.Search.Avalonia`** — the optional Avalonia layer: just the chip-bar / advanced-box
+  `SearchBar` control. It depends on Avalonia and the view-models, plus the engine itself (its XAML
+  surfaces a few engine types, such as query suggestions).
 
-If you only want the query engine, take the first package and ignore the second.
+If you only want the query engine, take the first package and ignore the rest; if you want the
+view-models without Avalonia, take the first two.
 
 ## Using the engine
 
@@ -68,10 +74,11 @@ driving this pipeline end to end over a throwaway fake item type.
 
 ## Adding the Avalonia UI
 
-The `Collectary.Search.Avalonia` package adds the `SearchBar` control plus three view-models:
-`ItemQueryViewModel` (advanced box + autocomplete), `BasicFilterViewModel` (the Jira-style chip
-bar), and `SearchBarViewModel` (which owns the two and the basic↔advanced switch). They depend only
-on the engine, so you keep your own data layer.
+The `Collectary.Search.Avalonia` package adds the `SearchBar` control, which binds to the three
+view-models from `Collectary.Search.ViewModels`: `ItemQueryViewModel` (advanced box + autocomplete),
+`BasicFilterViewModel` (the Jira-style chip bar), and `SearchBarViewModel` (which owns the two and
+the basic↔advanced switch). The view-models depend only on the engine, so you keep your own data
+layer.
 
 Two seams let you fit them to your app without dragging Collectary along:
 
@@ -110,9 +117,11 @@ functional (if ugly) instead of crashing. The full contract:
 | `SearchNoticeSkipped` | notice shown when a condition was skipped (one `{0}` placeholder) |
 
 The `SearchBar` is responsive: on a wide window the items search, chips, and sort/mode controls sit
-on one row, and below roughly 640px of control width — a phone, a docked panel, a split view — it
-stacks them into rows so nothing is pushed off-screen. That happens automatically from the control's
-own width, so you don't have to do anything to get a usable layout on Android or a narrow desktop.
+on one row. It measures what that row actually needs and, once it no longer fits — a phone, a docked
+panel, a split view — it collapses the chips and sort picker behind a **Filters (n)** toggle,
+leaving just the search box. Expanding the toggle reveals them stacked below. That happens
+automatically from the control's own width, so you don't have to do anything to get a usable layout
+on Android or a narrow desktop.
 
 Collectary itself is just one more consumer: it adapts its `ISearchFieldCatalog`/`IItemSearchService`
 and its `LocalizationService` to these interfaces and hosts the `SearchBar` control inside the

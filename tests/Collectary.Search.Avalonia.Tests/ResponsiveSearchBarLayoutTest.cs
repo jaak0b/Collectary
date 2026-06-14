@@ -1,4 +1,4 @@
-using Collectary.Search.Avalonia.Controls;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Search.Avalonia.Tests;
 

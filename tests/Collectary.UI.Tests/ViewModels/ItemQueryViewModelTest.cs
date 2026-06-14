@@ -4,7 +4,7 @@ using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Core.UseCases;
 using Collectary.Search;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests.ViewModels;
@@ -39,6 +39,129 @@ public class ItemQueryViewModelTest
                 _applied = result;
                 return Task.CompletedTask;
             });
+    }
+
+    private List<string> _logContexts = null!;
+
+    private ItemQueryViewModel MakeVm(params string[] fieldLabels)
+    {
+        var catalog = A.Fake<ISearchFieldCatalog>();
+        var groups = fieldLabels.Select(l => new SearchFieldGroup(l, [new TextFieldDefinition { Label = l }])).ToArray();
+        A.CallTo(() => catalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot { Fields = groups });
+        _logContexts = new List<string>();
+        return new ItemQueryViewModel(
+            new ItemSearchRunner(_searchService),
+            new CollectarySearchUiCatalog(catalog),
+            new QuerySuggestionEngine(new QueryLexer()),
+            new LocalizationProvider(),
+            onResults: _ => Task.CompletedTask,
+            logError: (_, context) => _logContexts.Add(context));
+    }
+
+    [Test]
+    public async Task MoveSelection_WithSeveralSuggestions_StepsAndWrapsArithmetically()
+    {
+        var vm = MakeVm("Series", "Shelf", "Status");
+        vm.QueryText = "S";
+        vm.CaretIndex = 1;
+        await vm.RefreshSuggestionsCommand.ExecuteAsync(null);
+        var count = vm.Suggestions.Count;
+        Assert.That(count, Is.GreaterThanOrEqualTo(2), "need several suggestions to exercise wrap arithmetic");
+
+        Assert.That(vm.SelectedSuggestionIndex, Is.EqualTo(0));
+        vm.MoveSelection(1);
+        Assert.That(vm.SelectedSuggestionIndex, Is.EqualTo(1));
+        vm.MoveSelection(-1);
+        Assert.That(vm.SelectedSuggestionIndex, Is.EqualTo(0));
+        vm.MoveSelection(-1);
+        Assert.That(vm.SelectedSuggestionIndex, Is.EqualTo(count - 1), "moving up from the top wraps to the bottom");
+        vm.MoveSelection(1);
+        Assert.That(vm.SelectedSuggestionIndex, Is.EqualTo(0), "moving down from the bottom wraps to the top");
+    }
+
+    [Test]
+    public async Task RefreshSuggestions_WithNoMatch_ClosesAndDeselects()
+    {
+        var vm = MakeVm("Series", "Shelf");
+        vm.QueryText = "zzz";
+        vm.CaretIndex = 3;
+
+        await vm.RefreshSuggestionsCommand.ExecuteAsync(null);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.Suggestions, Is.Empty);
+            Assert.That(vm.SelectedSuggestionIndex, Is.EqualTo(-1));
+            Assert.That(vm.AreSuggestionsOpen, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task RefreshSuggestions_Twice_FetchesTheSnapshotOnceAndDoesNotAccumulate()
+    {
+        var catalog = A.Fake<ISearchFieldCatalog>();
+        A.CallTo(() => catalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot
+        {
+            Fields = [new SearchFieldGroup("Series", [new TextFieldDefinition { Label = "Series" }])],
+        });
+        var vm = new ItemQueryViewModel(
+            new ItemSearchRunner(_searchService), new CollectarySearchUiCatalog(catalog),
+            new QuerySuggestionEngine(new QueryLexer()), new LocalizationProvider(), _ => Task.CompletedTask);
+
+        vm.QueryText = "Se";
+        vm.CaretIndex = 2;
+        await vm.RefreshSuggestionsCommand.ExecuteAsync(null);
+        var firstCount = vm.Suggestions.Count;
+        await vm.RefreshSuggestionsCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Suggestions.Count, Is.EqualTo(firstCount), "each refresh must clear the previous list");
+        A.CallTo(() => catalog.GetSnapshotAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task Run_WhenServiceThrows_InvokesTheErrorLog()
+    {
+        var vm = MakeVm("Series");
+        A.CallTo(() => _searchService.SearchAsync(A<string>._)).Throws<InvalidOperationException>();
+        vm.QueryText = "Series ~ x";
+
+        await vm.RunCommand.ExecuteAsync(null);
+
+        Assert.That(_logContexts.Single(), Does.Contain("Series ~ x"));
+    }
+
+    [Test]
+    public async Task RefreshSuggestions_WhenCatalogThrows_InvokesTheErrorLog()
+    {
+        var catalog = A.Fake<ISearchFieldCatalog>();
+        A.CallTo(() => catalog.GetSnapshotAsync()).Throws<InvalidOperationException>();
+        var contexts = new List<string>();
+        var vm = new ItemQueryViewModel(
+            new ItemSearchRunner(_searchService), new CollectarySearchUiCatalog(catalog),
+            new QuerySuggestionEngine(new QueryLexer()), new LocalizationProvider(),
+            _ => Task.CompletedTask, (_, context) => contexts.Add(context));
+        vm.QueryText = "Sta";
+
+        await vm.RefreshSuggestionsCommand.ExecuteAsync(null);
+
+        Assert.That(contexts.Single(), Does.Contain("Sta"));
+    }
+
+    [Test]
+    public async Task AcceptSuggestion_RefreshesSuggestionsForTheNewPosition()
+    {
+        var vm = MakeVm("Series", "Shelf", "Status");
+        vm.QueryText = "S";
+        vm.CaretIndex = 1;
+        await vm.RefreshSuggestionsCommand.ExecuteAsync(null);
+        var series = vm.Suggestions.First(s => s.Text == "Series");
+
+        await vm.AcceptSuggestionCommand.ExecuteAsync(series);
+
+        Assert.That(vm.Suggestions, Is.Not.Empty,
+            "accepting a field must recompute suggestions for the new caret position, not leave them empty");
+        Assert.That(vm.Suggestions.Select(s => s.Text), Does.Not.Contain("Shelf"),
+            "after accepting a field the stale field list must be replaced");
     }
 
     [Test]

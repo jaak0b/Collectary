@@ -168,7 +168,7 @@ class Build : NukeBuild
             // Avalonia UI projects (Collectary.UI, Collectary.Search.Avalonia) are omitted: Stryker cannot
             // compile their XAML code-behind because the generated InitializeComponent/x:Name partial is
             // absent from its Roslyn compilation, so it crashes before mutating their view-models.
-            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation", "Collectary.Search" })
+            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation", "Collectary.Search", "Collectary.Search.ViewModels" })
             {
                 var prefix = $"src/{project}/";
                 var relative = changed

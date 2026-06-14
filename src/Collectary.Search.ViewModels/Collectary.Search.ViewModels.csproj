@@ -5,16 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Collectary.Search\Collectary.Search.csproj" />
-    <ProjectReference Include="..\Collectary.Search.ViewModels\Collectary.Search.ViewModels.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Collectary.Search;
 using Collectary.Search.Avalonia.Controls;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Search.Avalonia.Tests;
 

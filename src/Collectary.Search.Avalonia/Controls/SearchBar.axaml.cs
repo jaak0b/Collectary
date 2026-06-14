@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Search.ViewModels;
 
 namespace Collectary.Search.Avalonia.Controls;
 
