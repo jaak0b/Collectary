@@ -324,7 +324,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             return true;
         }
 
-        return false;
+        var loc = LocalizationService.Instance;
+        var confirmedExit = await _dialogService.ConfirmAsync(
+            loc["ConfirmExitBody"], loc["ConfirmExitConfirm"], loc["ConfirmExitTitle"]);
+        return !confirmedExit;
     }
 
     [RelayCommand]

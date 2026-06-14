@@ -736,11 +736,77 @@ public class MainWindowViewModelTest
     }
 
     [Test]
-    public async Task HandleSystemBackAsync_AtHome_ReturnsFalseSoTheOsCanExit()
+    public async Task HandleSystemBackAsync_AtHome_PromptsToConfirmExit()
     {
         var sut = CreateSut();
         sut.ContentViewModel = new WelcomeViewModel();
 
+        await sut.HandleSystemBackAsync();
+
+        A.CallTo(() => _dialogService.ConfirmAsync(A<string>._, A<string>._, A<string>._)).MustHaveHappened();
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_AtHome_WhenUserConfirmsExit_ReturnsFalseSoTheOsCanExit()
+    {
+        var sut = CreateSut();
+        sut.ContentViewModel = new WelcomeViewModel();
+        A.CallTo(() => _dialogService.ConfirmAsync(A<string>._, A<string>._, A<string>._)).Returns(true);
+
         Assert.That(await sut.HandleSystemBackAsync(), Is.False);
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_AtHome_WhenUserCancelsExit_ReturnsTrueAndStaysInApp()
+    {
+        var sut = CreateSut();
+        sut.ContentViewModel = new WelcomeViewModel();
+        A.CallTo(() => _dialogService.ConfirmAsync(A<string>._, A<string>._, A<string>._)).Returns(false);
+
+        Assert.That(await sut.HandleSystemBackAsync(), Is.True);
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_AtHome_SurfacesExitConfirmationThroughRealDialogService()
+    {
+        var dialogs = new OverlayDialogService();
+        var sut = new MainWindowViewModel(
+            _scope, _presetUseCase, _itemUseCase, _sharedFieldUseCase,
+            _listCellBuilder, _editorRegistry, _imageStore, dialogs, _syncScheduler)
+        {
+            ContentViewModel = new WelcomeViewModel()
+        };
+
+        var back = sut.HandleSystemBackAsync();
+        var dialog = (ConfirmDialogViewModel)dialogs.ActiveDialog!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(dialogs.HasActiveDialog, Is.True);
+            Assert.That(dialog.ConfirmLabel, Is.EqualTo(Collectary.Presentation.Localization.LocalizationService.Instance["ConfirmExitConfirm"]));
+        });
+
+        dialog.ConfirmCommand.Execute(null);
+
+        Assert.That(await back, Is.False);
+    }
+
+    [Test]
+    public async Task HandleSystemBackAsync_WhileLayersRemain_NeverPromptsToConfirmExit()
+    {
+        var sut = CreateSut();
+        var first = new PlainContent();
+        var second = new PlainContent();
+        sut.Breadcrumbs.Add(new BreadcrumbNode("first", first));
+        sut.Breadcrumbs.Add(new BreadcrumbNode("second", second));
+        sut.ContentViewModel = second;
+
+        var handled = await sut.HandleSystemBackAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(handled, Is.True);
+            A.CallTo(() => _dialogService.ConfirmAsync(A<string>._, A<string>._, A<string>._)).MustNotHaveHappened();
+        });
     }
 }

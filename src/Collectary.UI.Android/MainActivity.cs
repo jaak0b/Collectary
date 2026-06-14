@@ -4,7 +4,9 @@ using Android.Content.PM;
 using Android.OS;
 using Avalonia;
 using Avalonia.Android;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Collectary.Presentation.ViewModels;
 using Microsoft.Identity.Client;
@@ -19,6 +21,8 @@ namespace Collectary.UI.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
+    private bool _backWired;
+
     // Microphone and camera permissions are requested lazily, the first time the user records or scans
     // (see AndroidPermissionCoordinator), so we don't prompt at launch for features they may never use.
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -35,6 +39,7 @@ public class MainActivity : AvaloniaMainActivity
         base.OnResume();
         if (this.Application is Application app)
             app.CurrentActivity = this;
+        WireSystemBack();
     }
 
     // When MSAL's sign-in browser returns, its activity finishes with a result that has to be handed
@@ -46,23 +51,42 @@ public class MainActivity : AvaloniaMainActivity
         AuthenticationContinuationHelper.SetAuthenticationContinuationEventArgs(requestCode, resultCode, data);
     }
 
-    // The phone's back gesture must not drop the user out of an in-progress edit. We route it through
-    // the shared navigation host, which saves the current screen and steps back; only when there is
-    // nothing left to step back to do we hand the gesture to the OS by sending the app to the background.
-    public override void OnBackPressed()
+    // Avalonia owns the Android system-back gesture and raises TopLevel.BackRequested; an Activity-level
+    // OnBackPressed override never wins against it. We claim that event, mark it handled so Avalonia
+    // performs no default, and route it through the shared navigation host instead.
+    private void WireSystemBack()
     {
+        if (_backWired) return;
+        if (ResolveTopLevel() is not { } topLevel)
+        {
+            Dispatcher.UIThread.Post(WireSystemBack);
+            return;
+        }
+
+        topLevel.BackRequested += OnBackRequested;
+        _backWired = true;
+    }
+
+    private void OnBackRequested(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
         if (MainViewModel() is not { } vm)
         {
-            base.OnBackPressed();
+            Finish();
             return;
         }
 
         Dispatcher.UIThread.Post(async () =>
         {
             if (!await vm.HandleSystemBackAsync())
-                MoveTaskToBack(true);
+                Finish();
         });
     }
+
+    private TopLevel? ResolveTopLevel() =>
+        (Avalonia.Application.Current?.ApplicationLifetime as ISingleViewApplicationLifetime)?.MainView is { } view
+            ? TopLevel.GetTopLevel(view)
+            : null;
 
     private MainWindowViewModel? MainViewModel() =>
         (Avalonia.Application.Current?.ApplicationLifetime as ISingleViewApplicationLifetime)

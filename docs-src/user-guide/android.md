@@ -65,8 +65,12 @@ On a phone the system back button (gesture or button) is the natural way to step
 Collectary treats it the same as the on-screen **back** control rather than as "quit". While you're
 editing an item, a collection, a list entry, or the shared-field library, pressing back **saves what
 you've typed and returns to the previous screen** — you won't lose a half-finished entry by reflexively
-swiping back. From a detail screen it takes you home, and pressing back once more from the home screen
-sends Collectary to the background like any other app. Nothing is ever discarded silently.
+swiping back. From a detail screen it takes you home. The back button only ever steps up **one layer at
+a time**, so you can never be dropped out of the app mid-edit.
+
+Once you're back at the home screen — the very top — pressing back asks **"Do you want to leave the
+app?"** first. Confirm and Collectary closes; cancel and you stay exactly where you were. Nothing is
+ever discarded silently, and the app never quits on you by accident.
 
 ## Dialogs and prompts
 

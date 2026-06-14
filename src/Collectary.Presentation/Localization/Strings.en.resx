@@ -228,6 +228,9 @@
   <data name="CouldNotLoad" xml:space="preserve"><value>Could not load</value></data>
   <data name="ConfirmDeleteTitle" xml:space="preserve"><value>Confirm</value></data>
   <data name="ConfirmDeleteBody" xml:space="preserve"><value>Delete "{0}"? This cannot be undone.</value></data>
+  <data name="ConfirmExitTitle" xml:space="preserve"><value>Exit Collectary</value></data>
+  <data name="ConfirmExitBody" xml:space="preserve"><value>Do you want to leave the app?</value></data>
+  <data name="ConfirmExitConfirm" xml:space="preserve"><value>Exit</value></data>
   <data name="NewFieldNamed" xml:space="preserve"><value>New {0}</value></data>
   <data name="NewTextField" xml:space="preserve"><value>New Text Field</value></data>
   <data name="NewRichTextField" xml:space="preserve"><value>New Rich Text Field</value></data>
