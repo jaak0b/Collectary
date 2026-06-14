@@ -1,6 +1,6 @@
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
-using Collectary.Core.Search;
+using Collectary.Search;
 
 namespace Collectary.Core.Tests.Search;
 

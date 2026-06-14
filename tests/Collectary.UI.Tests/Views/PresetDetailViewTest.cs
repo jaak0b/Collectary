@@ -1,11 +1,14 @@
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
+using Collectary.Search;
+using Collectary.Search.Avalonia.Controls;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Services;
 using Collectary.Presentation.ViewModels;
@@ -71,11 +74,11 @@ public class PresetDetailViewTest
         var window = new Window { Content = view };
         window.Show();
 
-        vm.Query.Suggestions.Add(new QuerySuggestion("name", "name", 0, 0, QuerySuggestionKind.Field));
-        vm.Query.AreSuggestionsOpen = true;
+        vm.SearchBar.Query.Suggestions.Add(new QuerySuggestion("name", "name", 0, 0, QuerySuggestionKind.Field));
+        vm.SearchBar.Query.AreSuggestionsOpen = true;
         Dispatcher.UIThread.RunJobs();
 
-        var list = view.FindControl<ListBox>("SuggestionList")!;
+        var list = Bar(view).FindControl<ListBox>("SuggestionList")!;
         var container = list.ContainerFromIndex(0) as ListBoxItem;
         Assert.Multiple(() =>
         {
@@ -139,6 +142,9 @@ public class PresetDetailViewTest
         return (view, window);
     }
 
+    private static SearchBar Bar(PresetDetailView view) =>
+        Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(view).OfType<SearchBar>().First();
+
     private static IReadOnlyList<Button> ChipButtons(PresetDetailView view) =>
         Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(view)
             .OfType<Button>().Where(b => b.Classes.Contains("chip")).ToList();
@@ -149,13 +155,13 @@ public class PresetDetailViewTest
         var vm = await LoadedBasicModeVm();
         var (view, _) = Show(vm);
 
-        var basic = view.FindControl<Control>("BasicPanel")!;
-        var advanced = view.FindControl<Control>("AdvancedPanel")!;
-        Assert.That(vm.IsBasicMode, Is.True);
+        var basic = Bar(view).FindControl<Control>("BasicPanel")!;
+        var advanced = Bar(view).FindControl<Control>("AdvancedPanel")!;
+        Assert.That(vm.SearchBar.IsBasicMode, Is.True);
         Assert.That(basic.IsVisible, Is.True);
         Assert.That(advanced.IsVisible, Is.False);
 
-        vm.SwitchToAdvancedCommand.Execute(null);
+        vm.SearchBar.SwitchToAdvancedCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
         Assert.That(basic.IsVisible, Is.False);
         Assert.That(advanced.IsVisible, Is.True);
@@ -171,7 +177,7 @@ public class PresetDetailViewTest
         Assert.That(chips, Has.Count.EqualTo(1));
         Assert.That(chips[0].Content, Is.EqualTo("collection: Trains"));
 
-        vm.BasicFilter.AddChipCommand.Execute("Status");
+        vm.SearchBar.BasicFilter.AddChipCommand.Execute("Status");
         Dispatcher.UIThread.RunJobs();
         Assert.That(ChipButtons(view), Has.Count.EqualTo(2));
     }
@@ -182,9 +188,71 @@ public class PresetDetailViewTest
         var vm = await LoadedBasicModeVm();
         var (view, _) = Show(vm);
 
-        Assert.That(view.FindControl<Button>("MoreButton"), Is.Not.Null);
-        var sortBox = view.FindControl<ComboBox>("SortFieldBox")!;
-        Assert.That(sortBox.ItemsSource, Is.SameAs(vm.BasicFilter.SortFieldOptions));
+        Assert.That(Bar(view).FindControl<Button>("MoreButton"), Is.Not.Null);
+        var sortBox = Bar(view).FindControl<ComboBox>("SortFieldBox")!;
+        Assert.That(sortBox.ItemsSource, Is.SameAs(vm.SearchBar.BasicFilter.SortFieldOptions));
+    }
+
+    private static (PresetDetailView View, Window Window) ShowAt(PresetDetailViewModel vm, double width)
+    {
+        var view = new PresetDetailView { DataContext = vm };
+        var window = new Window { Content = view, Width = width, Height = 640 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        return (view, window);
+    }
+
+    private static Rect ViewportRect(Visual control, Visual root)
+    {
+        var topLeft = control.TranslatePoint(default, root) ?? default;
+        return new Rect(topLeft, control.Bounds.Size);
+    }
+
+    [Test]
+    public async Task BasicMode_OnANarrowWindow_KeepsTheSortControlsOnScreen()
+    {
+        var vm = await LoadedBasicModeVm();
+        var (view, window) = ShowAt(vm, 380);
+
+        var sortBox = Bar(view).FindControl<ComboBox>("SortFieldBox")!;
+        var sortRect = ViewportRect(sortBox, window);
+
+        Assert.That(sortRect.Width, Is.GreaterThan(0), "the sort control must be laid out");
+        Assert.That(sortRect.Right, Is.LessThanOrEqualTo(window.Width + 0.5),
+            "on a narrow window the sort controls must stay within the viewport, not overflow off the right edge");
+        window.Close();
+    }
+
+    [Test]
+    public async Task BasicMode_OnANarrowWindow_StacksTheBasicPanelChildrenVertically()
+    {
+        var vm = await LoadedBasicModeVm();
+        var (view, window) = ShowAt(vm, 380);
+
+        var basicPanel = Bar(view).FindControl<Control>("BasicPanel")!;
+        var search = Bar(view).FindControl<TextBox>("ItemsSearchBox")!;
+        var sort = Bar(view).FindControl<Control>("SortControls")!;
+
+        Assert.That(basicPanel.Classes, Does.Contain("narrow"),
+            "a narrow viewport must put the basic panel into its stacked layout");
+        Assert.That(ViewportRect(sort, window).Top, Is.GreaterThanOrEqualTo(ViewportRect(search, window).Bottom - 0.5),
+            "when narrow, the sort row must sit below the items search box rather than beside it");
+        window.Close();
+    }
+
+    [Test]
+    public async Task BasicMode_OnAWideWindow_KeepsTheBasicPanelOnASingleRow()
+    {
+        var vm = await LoadedBasicModeVm();
+        var (view, window) = ShowAt(vm, 1000);
+
+        var search = Bar(view).FindControl<TextBox>("ItemsSearchBox")!;
+        var sort = Bar(view).FindControl<Control>("SortControls")!;
+
+        Assert.That(ViewportRect(sort, window).Left, Is.GreaterThan(ViewportRect(search, window).Right - 0.5),
+            "when wide, the sort controls stay to the right of the items search box on one row");
+        Assert.That(ViewportRect(sort, window).Right, Is.LessThanOrEqualTo(window.Width + 0.5));
+        window.Close();
     }
 
     [Test]
@@ -193,10 +261,10 @@ public class PresetDetailViewTest
         var vm = await LoadedBasicModeVm();
         var (view, _) = Show(vm);
 
-        vm.SwitchToAdvancedCommand.Execute(null);
+        vm.SearchBar.SwitchToAdvancedCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.That(view.FindControl<TextBox>("SearchBox")!.Text, Is.EqualTo("collection = Trains"));
+        Assert.That(Bar(view).FindControl<TextBox>("SearchBox")!.Text, Is.EqualTo("collection = Trains"));
     }
 
     [Test]
@@ -209,11 +277,11 @@ public class PresetDetailViewTest
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
-        var box = view.FindControl<TextBox>("SearchBox");
+        var box = Bar(view).FindControl<TextBox>("SearchBox");
         Assert.That(box, Is.Not.Null, "the query box must exist above the item list");
-        Assert.That(box!.Text, Is.EqualTo(vm.Query.QueryText));
+        Assert.That(box!.Text, Is.EqualTo(vm.SearchBar.Query.QueryText));
 
-        vm.Query.QueryText = "name ~ loco";
+        vm.SearchBar.Query.QueryText = "name ~ loco";
         Dispatcher.UIThread.RunJobs();
         Assert.That(box.Text, Is.EqualTo("name ~ loco"));
     }

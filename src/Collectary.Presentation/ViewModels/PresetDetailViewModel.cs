@@ -4,7 +4,9 @@ using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
+using Collectary.Core.UseCases;
+using Collectary.Search;
+using Collectary.Search.Avalonia.ViewModels;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.Services;
@@ -34,12 +36,7 @@ public partial class PresetDetailViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool ShowCollectionColumn { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsBasicMode { get; set; }
-
-    public ItemQueryViewModel Query { get; }
-
-    public BasicFilterViewModel BasicFilter { get; }
+    public SearchBarViewModel SearchBar { get; }
 
     public IReadOnlyList<ListColumn> ListColumns { get; private set; } = [];
 
@@ -62,12 +59,21 @@ public partial class PresetDetailViewModel : ViewModelBase
         _dialogService = dialogService;
         _navigateToItemEditor = navigateToItemEditor;
         _navigateBack = navigateBack;
-        Query = new ItemQueryViewModel(
-            searchService,
-            searchCatalog,
-            new QuerySuggestionEngine(new QueryLexer(), new PseudoFieldCatalog()),
-            ApplyResultsAsync);
-        BasicFilter = new BasicFilterViewModel(searchCatalog, RunQueryTextAsync);
+        var uiCatalog = new CollectarySearchUiCatalog(searchCatalog);
+        var localization = new LocalizationProvider();
+        var query = new ItemQueryViewModel(
+            new ItemSearchRunner(searchService),
+            uiCatalog,
+            new QuerySuggestionEngine(new QueryLexer()),
+            localization,
+            ApplyResultsAsync,
+            (ex, message) => AppLogger.Log.Error(ex, message));
+        var basicFilter = new BasicFilterViewModel(
+            uiCatalog, localization, RunQueryTextAsync, excludedChipFields: ["preset"]);
+        SearchBar = new SearchBarViewModel(
+            query, basicFilter, localization,
+            () => AppPreferences.Load().SearchBasicMode,
+            on => AppPreferences.Update(p => p with { SearchBasicMode = on }));
     }
 
     public async Task LoadAsync()
@@ -79,12 +85,7 @@ public partial class PresetDetailViewModel : ViewModelBase
             var columns = BuildListColumns(effectiveFields);
             ListColumns = columns;
             OnPropertyChanged(nameof(ListColumns));
-            Query.ResetSnapshot();
-            await BasicFilter.LoadAsync();
-            var defaultQuery = DefaultQueryFor(Preset.Name);
-            IsBasicMode = AppPreferences.Load().SearchBasicMode && BasicFilter.TryLoadFromText(defaultQuery);
-            Query.QueryText = defaultQuery;
-            await Query.RunCommand.ExecuteAsync(null);
+            await SearchBar.InitializeAsync(DefaultQueryFor(Preset.Name));
         }
         catch (Exception ex)
         {
@@ -98,36 +99,15 @@ public partial class PresetDetailViewModel : ViewModelBase
 
     private async Task RunQueryTextAsync(string text)
     {
-        Query.QueryText = text;
-        await Query.RunCommand.ExecuteAsync(null);
+        SearchBar.Query.QueryText = text;
+        await SearchBar.Query.RunCommand.ExecuteAsync(null);
     }
 
-    [RelayCommand]
-    private void SwitchToAdvanced()
+    private async Task ApplyResultsAsync(SearchOutcome result)
     {
-        BasicFilter.CancelPendingRun();
-        Query.QueryText = BasicFilter.ToQueryText();
-        IsBasicMode = false;
-        AppPreferences.Update(p => p with { SearchBasicMode = false });
-    }
-
-    [RelayCommand]
-    private void SwitchToBasic()
-    {
-        if (!BasicFilter.TryLoadFromText(Query.QueryText))
-        {
-            Query.QueryMessage = LocalizationService.Instance["SearchTooComplexForBasic"];
-            return;
-        }
-        IsBasicMode = true;
-        Query.QueryMessage = null;
-        AppPreferences.Update(p => p with { SearchBasicMode = true });
-    }
-
-    private async Task ApplyResultsAsync(ItemSearchResult result)
-    {
+        var items = result.Items.OfType<Item>().ToList();
         var listFields = ListColumns.Select(c => c.Field).ToList();
-        var presetIds = result.Items.Select(i => i.PresetId).Distinct().ToList();
+        var presetIds = items.Select(i => i.PresetId).Distinct().ToList();
         var showCollection = presetIds.Count > 1 || (presetIds.Count == 1 && presetIds[0] != Preset.Id);
         var namesById = showCollection
             ? (await _searchCatalog.GetSnapshotAsync()).Presets
@@ -135,7 +115,7 @@ public partial class PresetDetailViewModel : ViewModelBase
                 .ToDictionary(g => g.Key, g => g.First().Name)
             : new Dictionary<Guid, string>();
         ShowCollectionColumn = showCollection;
-        ItemRows = new ObservableCollection<ItemRowViewModel>(result.Items.Select(item =>
+        ItemRows = new ObservableCollection<ItemRowViewModel>(items.Select(item =>
             new ItemRowViewModel(item, listFields, _listCellBuilder)
             {
                 CollectionName = namesById.GetValueOrDefault(item.PresetId),

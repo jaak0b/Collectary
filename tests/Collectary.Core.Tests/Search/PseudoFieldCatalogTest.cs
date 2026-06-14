@@ -1,7 +1,7 @@
 using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
+using Collectary.Search;
 
 namespace Collectary.Core.Tests.Search;
 
@@ -42,6 +42,24 @@ public class PseudoFieldCatalogTest
     }
 
     [Test]
+    public void AliasesFor_OnlyTheCollectionLabelAliasesPreset()
+    {
+        Assert.That(_catalog.AliasesFor("collection"), Is.EqualTo(new[] { "preset" }));
+        Assert.That(_catalog.AliasesFor("Collection"), Is.EqualTo(new[] { "preset" }));
+        foreach (var label in new[] { "name", "preset", "created", "updated", "Ghost" })
+            Assert.That(_catalog.AliasesFor(label), Is.Empty, $"{label} must carry no aliases");
+    }
+
+    [Test]
+    public void SuggestsPresetNames_OnlyForThePresetScopedLabels()
+    {
+        Assert.That(_catalog.SuggestsPresetNames("preset"), Is.True);
+        Assert.That(_catalog.SuggestsPresetNames("collection"), Is.True);
+        foreach (var label in new[] { "name", "created", "updated", "Ghost" })
+            Assert.That(_catalog.SuggestsPresetNames(label), Is.False, $"{label} must not suggest preset names");
+    }
+
+    [Test]
     public void Name_NotEqualsAndNotContains_NegateTheComparison()
     {
         Assert.That(Matcher("name", QueryOperatorKind.NotEquals, "loco")
@@ -65,6 +83,41 @@ public class PseudoFieldCatalogTest
             .Matches(new Item { DisplayName = "" }, []), Is.True);
         Assert.That(Matcher("name", QueryOperatorKind.IsNotEmpty)
             .Matches(new Item { DisplayName = "x" }, []), Is.True);
+    }
+
+    [Test]
+    public void Name_PositiveServerFilters_NeverExcludeWhatTheMemoryMatchAccepts()
+    {
+        var item = new Item { DisplayName = "CAFÉ" };
+
+        foreach (var op in new[] { QueryOperatorKind.Equals, QueryOperatorKind.Contains, QueryOperatorKind.In })
+        {
+            var matcher = Matcher("name", op, "CAFÉ");
+            Assert.That(matcher.Matches(item, []), Is.True, $"{op} memory match");
+            Assert.That(matcher.ServerFilter([])!.Compile()(item), Is.True,
+                $"{op} server filter must be a superset of the memory match");
+        }
+    }
+
+    [Test]
+    public void Name_PositiveServerFilters_StayCaseInsensitiveForAsciiOperands()
+    {
+        var loco = new Item { DisplayName = "LOCO" };
+        var wagon = new Item { DisplayName = "Wagon" };
+
+        foreach (var op in new[] { QueryOperatorKind.Equals, QueryOperatorKind.Contains, QueryOperatorKind.In })
+        {
+            var filter = Matcher("name", op, "loco").ServerFilter([])!.Compile();
+            Assert.That(filter(loco), Is.True, $"{op} must match case-insensitively");
+            Assert.That(filter(wagon), Is.False, $"{op} must not match a different name");
+        }
+    }
+
+    [Test]
+    public void Name_NegatedOperators_LeaveFilteringToTheExactMemoryPass()
+    {
+        Assert.That(Matcher("name", QueryOperatorKind.NotEquals, "CAFÉ").ServerFilter([]), Is.Null);
+        Assert.That(Matcher("name", QueryOperatorKind.NotContains, "CAFÉ").ServerFilter([]), Is.Null);
     }
 
     [Test]

@@ -1,6 +1,7 @@
 using Autofac;
 using Collectary.Core.Ports;
 using Collectary.Core.Search;
+using Collectary.Search;
 using Collectary.Core.UseCases;
 using Collectary.Core.UseCases.Import;
 

@@ -1,7 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using CommunityToolkit.Mvvm.Messaging;
 using Collectary.Core.Domain.Fields;
 using Collectary.Presentation.Localization;
@@ -16,77 +14,12 @@ public partial class PresetDetailView : UserControl
     {
         InitializeComponent();
         WeakReferenceMessenger.Default.Register<LanguageChangedMessage>(this, static (recipient, _) =>
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => ((PresetDetailView)recipient).RebuildColumns()));
-        SearchBox.AddHandler(KeyDownEvent, OnSearchKeyDown, RoutingStrategies.Tunnel);
-        SearchBox.TextChanged += OnSearchTextChanged;
-        SearchBox.LostFocus += (_, _) => Query?.CloseSuggestionsCommand.Execute(null);
-        SuggestionList.Tapped += async (_, _) => await AcceptSelectedSuggestionAsync();
-    }
-
-    private ItemQueryViewModel? Query => (DataContext as PresetDetailViewModel)?.Query;
-
-    private void OnSearchKeyDown(object? sender, KeyEventArgs e)
-    {
-        if (Query is not { } query) return;
-        switch (e.Key)
-        {
-            case Key.Down:
-                query.MoveSelection(1);
-                e.Handled = true;
-                break;
-            case Key.Up:
-                query.MoveSelection(-1);
-                e.Handled = true;
-                break;
-            case Key.Escape:
-                query.CloseSuggestionsCommand.Execute(null);
-                e.Handled = true;
-                break;
-            case Key.Tab:
-                if (query.AreSuggestionsOpen && query.SelectedSuggestion is not null)
-                {
-                    _ = AcceptSelectedSuggestionAsync();
-                    e.Handled = true;
-                }
-                break;
-            case Key.Enter:
-                if (query.AreSuggestionsOpen && query.SelectedSuggestion is not null)
-                    _ = AcceptSelectedSuggestionAsync();
-                else
-                    query.RunCommand.Execute(null);
-                e.Handled = true;
-                break;
-        }
-    }
-
-    private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
-    {
-        if (Query is not { } query || !SearchBox.IsKeyboardFocusWithin) return;
-        query.CaretIndex = SearchBox.CaretIndex;
-        query.RefreshSuggestionsCommand.Execute(null);
-    }
-
-    private void OnChipButtonLoaded(object? sender, RoutedEventArgs e)
-    {
-        if (sender is not Button { DataContext: FilterChipViewModel { IsFlyoutOpen: true } chip } button) return;
-        chip.IsFlyoutOpen = false;
-        button.Flyout?.ShowAt(button);
-    }
-
-    private void OnAddableFieldSelected(object? sender, SelectionChangedEventArgs e)
-    {
-        if (sender is not ListBox list || list.SelectedItem is not string label) return;
-        list.SelectedItem = null;
-        MoreButton.Flyout?.Hide();
-        (DataContext as PresetDetailViewModel)?.BasicFilter.AddChipCommand.Execute(label);
-    }
-
-    private async Task AcceptSelectedSuggestionAsync()
-    {
-        if (Query is not { } query || query.SelectedSuggestion is null) return;
-        await query.AcceptSuggestionCommand.ExecuteAsync(query.SelectedSuggestion);
-        SearchBox.CaretIndex = query.CaretIndex;
-        SearchBox.Focus();
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var view = (PresetDetailView)recipient;
+                view.RebuildColumns();
+                view.SearchBar.RefreshLocalization();
+            }));
     }
 
     private void RebuildColumns()

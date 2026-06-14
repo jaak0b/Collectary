@@ -89,5 +89,6 @@ nav:
       - dev-guide/adding-a-field-type.md
       - dev-guide/developer-tools.md
       - dev-guide/sync-architecture.md
+      - dev-guide/reusable-search.md
       - dev-guide/testing.md
       - dev-guide/contributing.md

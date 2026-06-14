@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Collectary.Core.Search;
+using Collectary.Search;
 
 namespace Collectary.Core.Domain.Fields;
 

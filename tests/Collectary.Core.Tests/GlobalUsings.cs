@@ -1,0 +1,11 @@
+global using IFieldConditionMatcher = Collectary.Search.IFieldConditionMatcher<Collectary.Core.Domain.Item>;
+global using BoundQuery = Collectary.Search.BoundQuery<Collectary.Core.Domain.Item>;
+global using BoundNode = Collectary.Search.BoundNode<Collectary.Core.Domain.Item>;
+global using BoundAndNode = Collectary.Search.BoundAndNode<Collectary.Core.Domain.Item>;
+global using BoundOrNode = Collectary.Search.BoundOrNode<Collectary.Core.Domain.Item>;
+global using BoundNotNode = Collectary.Search.BoundNotNode<Collectary.Core.Domain.Item>;
+global using BoundConditionNode = Collectary.Search.BoundConditionNode<Collectary.Core.Domain.Item>;
+global using BoundFieldMatch = Collectary.Search.BoundFieldMatch<Collectary.Core.Domain.Item>;
+global using BoundOrderBy = Collectary.Search.BoundOrderBy<Collectary.Core.Domain.Item>;
+global using QueryBindResult = Collectary.Search.QueryBindResult<Collectary.Core.Domain.Item>;
+global using Collectary.Core.Search;

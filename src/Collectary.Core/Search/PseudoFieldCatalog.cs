@@ -40,6 +40,12 @@ public class PseudoFieldCatalog
 
     public IReadOnlyList<string> Labels => ["name", "preset", "collection", "created", "updated"];
 
+    public IReadOnlyList<string> AliasesFor(string label) =>
+        Matches(label, "collection") ? ["preset"] : [];
+
+    public bool SuggestsPresetNames(string label) =>
+        Matches(label, "preset") || Matches(label, "collection");
+
     public IReadOnlyList<QueryOperatorKind> OperatorsFor(string label)
     {
         if (Matches(label, "name"))
@@ -101,30 +107,39 @@ public class PseudoFieldCatalog
             case QueryOperatorKind.NotEquals:
             {
                 var folded = _folding.Fold(operands[0]);
+                var lowered = operands[0].ToLowerInvariant();
                 var equals = op == QueryOperatorKind.Equals;
                 return Bound(
                     item => _folding.AreEqual(item.DisplayName, folded) == equals,
                     equals
-                        ? item => item.DisplayName.ToLower() == folded
-                        : item => item.DisplayName.ToLower() != folded);
+                        ? (Expression<Func<Item, bool>>?)(item =>
+                            item.DisplayName.ToLower() == folded || item.DisplayName.ToLower() == lowered)
+                        : null);
             }
             case QueryOperatorKind.Contains:
             case QueryOperatorKind.NotContains:
             {
                 var folded = _folding.Fold(operands[0]);
+                var lowered = operands[0].ToLowerInvariant();
                 var contains = op == QueryOperatorKind.Contains;
                 return Bound(
                     item => _folding.Contains(item.DisplayName, folded) == contains,
                     contains
-                        ? item => item.DisplayName.ToLower().Contains(folded)
-                        : item => !item.DisplayName.ToLower().Contains(folded));
+                        ? (Expression<Func<Item, bool>>?)(item =>
+                            item.DisplayName.ToLower().Contains(folded)
+                            || item.DisplayName.ToLower().Contains(lowered))
+                        : null);
             }
             case QueryOperatorKind.In:
             {
                 var folded = operands.Select(_folding.Fold).ToList();
+                var variants = operands
+                    .SelectMany(o => new[] { _folding.Fold(o), o.ToLowerInvariant() })
+                    .Distinct()
+                    .ToList();
                 return Bound(
                     item => folded.Contains(_folding.Fold(item.DisplayName)),
-                    item => folded.Contains(item.DisplayName.ToLower()));
+                    item => variants.Contains(item.DisplayName.ToLower()));
             }
             case QueryOperatorKind.IsEmpty:
                 return Bound(item => item.DisplayName == "", item => item.DisplayName == "");
@@ -220,6 +235,6 @@ public class PseudoFieldCatalog
         return TimeZoneInfo.ConvertTimeToUtc(unspecified, _timeZone);
     }
 
-    private PseudoBindOutcome Bound(Func<Item, bool> predicate, Expression<Func<Item, bool>> serverFilter) =>
+    private PseudoBindOutcome Bound(Func<Item, bool> predicate, Expression<Func<Item, bool>>? serverFilter) =>
         new(new ItemPropertyMatcher(predicate, serverFilter), null, null);
 }

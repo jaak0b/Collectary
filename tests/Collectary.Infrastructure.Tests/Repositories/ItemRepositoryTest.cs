@@ -4,6 +4,7 @@ using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Core.Search;
+using Collectary.Search;
 using Collectary.Infrastructure.Persistence;
 
 namespace Collectary.Infrastructure.Tests.Repositories;

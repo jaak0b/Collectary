@@ -1,7 +1,9 @@
+using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
+using Collectary.Core.UseCases;
+using Collectary.Search;
 
 namespace Collectary.Core.Tests.Search;
 
@@ -14,7 +16,7 @@ public class QuerySuggestionEngineTest
     [SetUp]
     public void SetUp()
     {
-        _engine = new QuerySuggestionEngine(new QueryLexer(), new PseudoFieldCatalog());
+        _engine = new QuerySuggestionEngine(new QueryLexer());
         var status = new SingleChoiceFieldDefinition { Label = "Status" };
         status.Choices.Add(new ChoiceOption { Value = "Open", DisplayOrder = 1 });
         status.Choices.Add(new ChoiceOption { Value = "On Hold", DisplayOrder = 2 });
@@ -37,7 +39,14 @@ public class QuerySuggestionEngineTest
     }
 
     private IReadOnlyList<QuerySuggestion> Suggest(string text) =>
-        _engine.Suggest(text, text.Length, _snapshot);
+        _engine.Suggest(text, text.Length, Ui(_snapshot));
+
+    private static SearchUiSnapshot Ui(SearchCatalogSnapshot snapshot)
+    {
+        var catalog = A.Fake<ISearchFieldCatalog>();
+        A.CallTo(() => catalog.GetSnapshotAsync()).Returns(snapshot);
+        return new CollectarySearchUiCatalog(catalog).GetSnapshotAsync().GetAwaiter().GetResult();
+    }
 
     private static IEnumerable<string> Texts(IEnumerable<QuerySuggestion> suggestions) =>
         suggestions.Select(s => s.Text);
@@ -306,7 +315,7 @@ public class QuerySuggestionEngineTest
             ],
         };
 
-        var texts = _engine.Suggest("Sta", 3, snapshot).Select(s => s.Text).ToList();
+        var texts = _engine.Suggest("Sta", 3, Ui(snapshot)).Select(s => s.Text).ToList();
 
         Assert.That(texts.IndexOf("State"), Is.LessThan(texts.IndexOf("Real Estate")));
     }

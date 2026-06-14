@@ -3,6 +3,7 @@ using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
 using Collectary.Core.Search;
+using Collectary.Search;
 using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
 
@@ -145,6 +146,25 @@ public class ItemSearchServiceRoundTripTest : DbIntegrationTestBase
         var result = await CreateService().SearchAsync("");
 
         Assert.That(result.Items, Has.Count.EqualTo(4));
+    }
+
+    [Test]
+    public async Task SearchAsync_NameWithNonAsciiCharacters_SurvivesTheSqlPushdown()
+    {
+        var accented = new Item { PresetId = _books.Id, DisplayName = "CAFÉ Guide" };
+        await _repository.AddAsync(accented);
+        await SeedItemsAsync();
+        var service = CreateService();
+
+        var equals = await service.SearchAsync("name = \"CAFÉ Guide\"");
+        var contains = await service.SearchAsync("name ~ CAFÉ");
+        var inClause = await service.SearchAsync("name in (\"CAFÉ Guide\")");
+        var negated = await service.SearchAsync("name != \"CAFÉ Guide\"");
+
+        Assert.That(equals.Items.Select(i => i.DisplayName), Is.EqualTo(new[] { "CAFÉ Guide" }));
+        Assert.That(contains.Items.Select(i => i.DisplayName), Is.EqualTo(new[] { "CAFÉ Guide" }));
+        Assert.That(inClause.Items.Select(i => i.DisplayName), Is.EqualTo(new[] { "CAFÉ Guide" }));
+        Assert.That(negated.Items, Has.Count.EqualTo(4));
     }
 
     [Test]

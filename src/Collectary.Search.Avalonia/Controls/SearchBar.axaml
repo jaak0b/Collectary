@@ -1,0 +1,204 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Search.Avalonia.ViewModels"
+             xmlns:search="using:Collectary.Search"
+             x:Class="Collectary.Search.Avalonia.Controls.SearchBar"
+             x:DataType="vm:SearchBarViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="WrapPanel#AdvancedButtons">
+            <Setter Property="DockPanel.Dock" Value="Right"/>
+        </Style>
+        <Style Selector="TextBox#ItemsSearchBox">
+            <Setter Property="DockPanel.Dock" Value="Left"/>
+        </Style>
+        <Style Selector="WrapPanel#SortControls">
+            <Setter Property="DockPanel.Dock" Value="Right"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
+        <Style Selector="WrapPanel#ChipArea">
+            <Setter Property="Margin" Value="8,0,8,0"/>
+        </Style>
+
+        <Style Selector="DockPanel.narrow > WrapPanel#AdvancedButtons">
+            <Setter Property="DockPanel.Dock" Value="Bottom"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="0,6,0,0"/>
+        </Style>
+        <Style Selector="DockPanel.narrow > TextBox#ItemsSearchBox">
+            <Setter Property="DockPanel.Dock" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="DockPanel.narrow > WrapPanel#SortControls">
+            <Setter Property="DockPanel.Dock" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,6,0,0"/>
+        </Style>
+        <Style Selector="DockPanel.narrow > WrapPanel#ChipArea">
+            <Setter Property="Margin" Value="0,6,0,0"/>
+        </Style>
+    </UserControl.Styles>
+
+    <StackPanel Spacing="4">
+        <DockPanel x:Name="AdvancedPanel"
+                   LastChildFill="True"
+                   IsVisible="{Binding !IsBasicMode}">
+            <WrapPanel x:Name="AdvancedButtons">
+                <Button Command="{Binding Query.RunCommand}"
+                        Content="{Binding SearchLabel}"
+                        Margin="8,0,0,0"
+                        Padding="12,6"/>
+                <Button Command="{Binding SwitchToBasicCommand}"
+                        Content="{Binding SwitchToBasicLabel}"
+                        Margin="8,0,0,0"
+                        Padding="12,6"/>
+            </WrapPanel>
+            <TextBox x:Name="SearchBox"
+                     Text="{Binding Query.QueryText, Mode=TwoWay}"
+                     Watermark="{Binding SearchPlaceholder}"/>
+        </DockPanel>
+
+        <DockPanel x:Name="BasicPanel"
+                   LastChildFill="True"
+                   IsVisible="{Binding IsBasicMode}">
+            <TextBox x:Name="ItemsSearchBox"
+                     MinWidth="160"
+                     VerticalAlignment="Center"
+                     Text="{Binding BasicFilter.SearchText, Mode=TwoWay}"
+                     Watermark="{Binding ItemsPlaceholder}"/>
+            <WrapPanel x:Name="SortControls"
+                       VerticalAlignment="Center">
+                <TextBlock Text="{Binding SortByLabel}"
+                           FontSize="12"
+                           Margin="0,0,6,0"
+                           VerticalAlignment="Center"/>
+                <ComboBox x:Name="SortFieldBox"
+                          MinWidth="120"
+                          Margin="0,0,6,0"
+                          ItemsSource="{Binding BasicFilter.SortFieldOptions}"
+                          SelectedItem="{Binding BasicFilter.SelectedSortField, Mode=TwoWay}"
+                          PlaceholderText="{Binding SortNoneLabel}"/>
+                <ToggleButton IsChecked="{Binding BasicFilter.SortDescending, Mode=TwoWay}"
+                              Margin="0,0,6,0"
+                              Padding="8,5">
+                    <Panel>
+                        <TextBlock Text="{Binding SortAscendingLabel}"
+                                   IsVisible="{Binding !BasicFilter.SortDescending}"/>
+                        <TextBlock Text="{Binding SortDescendingLabel}"
+                                   IsVisible="{Binding BasicFilter.SortDescending}"/>
+                    </Panel>
+                </ToggleButton>
+                <Button Command="{Binding SwitchToAdvancedCommand}"
+                        Content="{Binding SwitchToAdvancedLabel}"
+                        Padding="10,5"/>
+            </WrapPanel>
+            <WrapPanel x:Name="ChipArea" VerticalAlignment="Center">
+                <ItemsControl ItemsSource="{Binding BasicFilter.Chips}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FilterChipViewModel">
+                            <Button Classes="chip"
+                                    Content="{Binding DisplayText}"
+                                    Margin="0,2,6,2"
+                                    Padding="10,5"
+                                    Loaded="OnChipButtonLoaded">
+                                <Button.Flyout>
+                                    <Flyout Placement="BottomEdgeAlignedLeft">
+                                        <StackPanel Width="240" Spacing="6">
+                                            <StackPanel IsVisible="{Binding IsChoiceStyle}" Spacing="6">
+                                                <TextBox Text="{Binding ValueSearchText, Mode=TwoWay}"
+                                                         Watermark="{Binding ValueSearchPlaceholder}"/>
+                                                <ScrollViewer MaxHeight="220">
+                                                    <ItemsControl ItemsSource="{Binding VisibleOptions}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:ChipValueOption">
+                                                                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                                                          Content="{Binding Value}"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </StackPanel>
+                                            <StackPanel IsVisible="{Binding !IsChoiceStyle}" Spacing="6">
+                                                <TextBlock Text="{Binding OperatorHint}"
+                                                           FontSize="12"
+                                                           Opacity="0.7"/>
+                                                <TextBox Text="{Binding FreeText, Mode=TwoWay}"
+                                                         Watermark="{Binding ValuePlaceholder}"/>
+                                            </StackPanel>
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <Button Grid.Column="0"
+                                                        Content="{Binding ClearLabel}"
+                                                        Command="{Binding ClearValuesCommand}"
+                                                        FontSize="12"
+                                                        Padding="8,3"/>
+                                                <Button Grid.Column="2"
+                                                        Content="{Binding RemoveLabel}"
+                                                        Command="{Binding RemoveCommand}"
+                                                        FontSize="12"
+                                                        Padding="8,3"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button x:Name="MoreButton"
+                        Content="{Binding MoreLabel}"
+                        Margin="0,2,0,2"
+                        Padding="10,5">
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedLeft">
+                            <StackPanel Width="220" Spacing="6">
+                                <TextBox Text="{Binding BasicFilter.FieldSearchText, Mode=TwoWay}"
+                                         Watermark="{Binding FindFieldsPlaceholder}"/>
+                                <ListBox x:Name="FieldList"
+                                         ItemsSource="{Binding BasicFilter.AddableFields}"
+                                         MaxHeight="220"
+                                         SelectionChanged="OnAddableFieldSelected"/>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </WrapPanel>
+        </DockPanel>
+        <Popup x:Name="SuggestionPopup"
+               PlacementTarget="SearchBox"
+               Placement="BottomEdgeAlignedLeft"
+               IsOpen="{Binding Query.AreSuggestionsOpen}"
+               IsLightDismissEnabled="False">
+            <Border Background="{DynamicResource ContentBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    MinWidth="260">
+                <ListBox x:Name="SuggestionList"
+                         ItemsSource="{Binding Query.Suggestions}"
+                         SelectedIndex="{Binding Query.SelectedSuggestionIndex, Mode=TwoWay}"
+                         Focusable="False"
+                         MaxHeight="280">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Focusable" Value="False"/>
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="search:QuerySuggestion">
+                            <TextBlock Text="{Binding Text}" Padding="4,2"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </Popup>
+        <TextBlock Text="{Binding Query.QueryMessage}"
+                   IsVisible="{Binding Query.QueryMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}"
+                   Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                   TextWrapping="Wrap"
+                   FontSize="12"/>
+    </StackPanel>
+</UserControl>
