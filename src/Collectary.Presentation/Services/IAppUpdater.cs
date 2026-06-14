@@ -5,4 +5,6 @@ public interface IAppUpdater
     Task<bool> CheckForUpdateAsync();
 
     Task DownloadUpdateAsync();
+
+    void ApplyUpdateOnExit();
 }

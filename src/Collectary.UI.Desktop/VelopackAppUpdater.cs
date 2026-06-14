@@ -26,4 +26,10 @@ public sealed class VelopackAppUpdater : IAppUpdater
         if (_pending is not null)
             await _manager.DownloadUpdatesAsync(_pending);
     }
+
+    public void ApplyUpdateOnExit()
+    {
+        if (_pending is not null)
+            _manager.WaitExitThenApplyUpdates(_pending.TargetFullRelease, silent: true, restart: false);
+    }
 }

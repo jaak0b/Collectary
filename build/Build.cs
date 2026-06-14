@@ -367,7 +367,8 @@ class Build : NukeBuild
                 + $" --publish"
                 + $" --releaseName \"{releaseName}\""
                 + $" --tag {tag}"
-                + $" --outputDir \"{VelopackDirectory}\"");
+                + $" --outputDir \"{VelopackDirectory}\"",
+                logInvocation: false);
 
             var apk = AndroidProject.Parent
                 .GlobFiles($"bin/Release/**/*-Signed.apk")
@@ -383,11 +384,11 @@ class Build : NukeBuild
             Log.Information("Released {Tag}: installer feed + {Apk}", tag, apk!.Name);
         });
 
-    void Vpk(string arguments)
+    void Vpk(string arguments, bool logInvocation = true)
     {
         var dotnet = ToolPathResolver.GetPathExecutable("dotnet");
         string command = "vpk " + arguments;
-        ProcessTasks.StartProcess(dotnet, command, RootDirectory).AssertZeroExitCode();
+        ProcessTasks.StartProcess(dotnet, command, RootDirectory, logInvocation: logInvocation).AssertZeroExitCode();
     }
 
     string ReleaseVersion()

@@ -30,6 +30,41 @@ public class UpdateCheckTest
     }
 
     [Test]
+    public async Task RunAsync_WhenAnUpdateIsAvailable_StagesItForApplyOnExitAfterDownloading()
+    {
+        var updater = A.Fake<IAppUpdater>();
+        A.CallTo(() => updater.CheckForUpdateAsync()).Returns(true);
+
+        await new UpdateCheck(updater, A.Fake<IAppLogger>()).RunAsync();
+
+        A.CallTo(() => updater.DownloadUpdateAsync()).MustHaveHappenedOnceExactly()
+            .Then(A.CallTo(() => updater.ApplyUpdateOnExit()).MustHaveHappenedOnceExactly());
+    }
+
+    [Test]
+    public async Task RunAsync_WhenNoUpdateIsAvailable_DoesNotStageApply()
+    {
+        var updater = A.Fake<IAppUpdater>();
+        A.CallTo(() => updater.CheckForUpdateAsync()).Returns(false);
+
+        await new UpdateCheck(updater, A.Fake<IAppLogger>()).RunAsync();
+
+        A.CallTo(() => updater.ApplyUpdateOnExit()).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task RunAsync_WhenTheDownloadFails_DoesNotStageApply()
+    {
+        var updater = A.Fake<IAppUpdater>();
+        A.CallTo(() => updater.CheckForUpdateAsync()).Returns(true);
+        A.CallTo(() => updater.DownloadUpdateAsync()).Throws(new InvalidOperationException("network drop"));
+
+        await new UpdateCheck(updater, A.Fake<IAppLogger>()).RunAsync();
+
+        A.CallTo(() => updater.ApplyUpdateOnExit()).MustNotHaveHappened();
+    }
+
+    [Test]
     public void RunAsync_WhenTheCheckFails_SwallowsTheError()
     {
         var updater = A.Fake<IAppUpdater>();

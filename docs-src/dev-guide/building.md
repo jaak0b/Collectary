@@ -129,10 +129,12 @@ The Windows desktop app ships as a [Velopack](https://velopack.io/) installer th
 Velopack is wired in at two points:
 
 - **Startup** — `Program.Main` calls `VelopackApp.Build().Run()` as its very first line (this is what
-  lets Velopack apply a staged update on launch), then kicks off a silent background check via
-  `UpdateCheck` + `VelopackAppUpdater`. If an update is found it downloads quietly and installs the
-  **next** time the app starts — no prompts. When the app isn't a Velopack install (e.g. a plain
-  `dotnet run` during development) the check is a no-op.
+  lets Velopack finish a staged install on launch), then kicks off a silent background check via
+  `UpdateCheck` + `VelopackAppUpdater`. If a newer release is found, it downloads quietly while you
+  keep working, then stages the install with `WaitExitThenApplyUpdates(restart: false)` — the new
+  version is swapped in *when you close the app*, so the next time you open Collectary it's already
+  up to date. There is no prompt and **no forced restart mid-session**. When the app isn't a Velopack
+  install (e.g. a plain `dotnet run` during development) the check is a no-op.
 - **The update feed** is the project's GitHub releases (`GithubSource`), so publishing a release is
   what makes the update available to everyone.
 

@@ -18,7 +18,10 @@ public sealed class UpdateCheck
         try
         {
             if (await _updater.CheckForUpdateAsync())
+            {
                 await _updater.DownloadUpdateAsync();
+                _updater.ApplyUpdateOnExit();
+            }
         }
         catch (Exception ex)
         {
