@@ -1,7 +1,12 @@
 # Collectary
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Built with Avalonia](https://img.shields.io/badge/Built%20with-Avalonia%20%2F%20.NET-512BD4.svg)](https://avaloniaui.net)
+[![Build & test](https://img.shields.io/github/actions/workflow/status/jaak0b/Collectary/build.yml?label=build%20%26%20test)](https://github.com/jaak0b/Collectary/actions/workflows/build.yml)
+[![Docs](https://img.shields.io/github/actions/workflow/status/jaak0b/Collectary/docs.yml?branch=master&label=docs)](https://github.com/jaak0b/Collectary/actions/workflows/docs.yml)
+[![Coverage & mutation](https://img.shields.io/github/actions/workflow/status/jaak0b/Collectary/nightly.yml?label=coverage%20%26%20mutation)](https://github.com/jaak0b/Collectary/actions/workflows/nightly.yml)
+[![Latest release](https://img.shields.io/github/v/release/jaak0b/Collectary?label=release&sort=semver)](https://github.com/jaak0b/Collectary/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/jaak0b/Collectary/total?label=downloads)](https://github.com/jaak0b/Collectary/releases)
+[![License: MIT](https://img.shields.io/github/license/jaak0b/Collectary)](LICENSE)
+[![Built with Avalonia / .NET](https://img.shields.io/badge/built%20with-Avalonia%20%2F%20.NET-512BD4)](https://avaloniaui.net)
 
 **Collectary** is a cross-platform app for cataloguing the things you collect — books, coins, board
 games, sneakers, houseplants, trading cards, whatever you track. Define each collection with typed
