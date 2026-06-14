@@ -36,6 +36,7 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
     AbsolutePath DesktopPublishDirectory => ArtifactsDirectory / "desktop";
     AbsolutePath VelopackDirectory => ArtifactsDirectory / "velopack";
+    AbsolutePath AppIcon => RootDirectory / "src" / "Collectary.UI" / "Assets" / "collectary.ico";
 
     const string GitHubRepoUrl = "https://github.com/jaak0b/Collectary";
 
@@ -345,6 +346,7 @@ class Build : NukeBuild
                 + $" --packVersion {ReleaseVersion()}"
                 + $" --packDir \"{DesktopPublishDirectory}\""
                 + $" --mainExe Collectary.UI.Desktop.exe"
+                + $" --icon \"{AppIcon}\""
                 + $" --releaseNotes \"{notesFile}\""
                 + $" --outputDir \"{VelopackDirectory}\"");
 

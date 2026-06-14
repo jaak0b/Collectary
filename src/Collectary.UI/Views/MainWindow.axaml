@@ -6,7 +6,7 @@
         xmlns:views="using:Collectary.UI.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Collectary.UI.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/Icon.png"
         Title="Collectary">
         <views:MainView />
 </Window>

@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Collectary.UI\Assets\collectary.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

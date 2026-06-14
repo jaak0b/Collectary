@@ -12,6 +12,7 @@ extra_css:
 theme:
   name: material
   font: false
+  favicon: assets/favicon.ico
   icon:
     logo: material/bookshelf
     repo: fontawesome/brands/github
