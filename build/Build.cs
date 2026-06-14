@@ -33,6 +33,15 @@ class Build : NukeBuild
     AbsolutePath TestSettings => RootDirectory / "tests.runsettings";
     AbsolutePath DesktopProject => RootDirectory / "src" / "Collectary.UI.Desktop" / "Collectary.UI.Desktop.csproj";
     AbsolutePath AndroidProject => RootDirectory / "src" / "Collectary.UI.Android" / "Collectary.UI.Android.csproj";
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    AbsolutePath DesktopPublishDirectory => ArtifactsDirectory / "desktop";
+    AbsolutePath VelopackDirectory => ArtifactsDirectory / "velopack";
+
+    const string GitHubRepoUrl = "https://github.com/jaak0b/Collectary";
+
+    [Parameter("GitHub token for publishing releases. Defaults to the GH_TOKEN or GITHUB_TOKEN environment variable.")]
+    readonly string GitHubToken = Environment.GetEnvironmentVariable("GH_TOKEN")
+        ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
 
     IReadOnlyList<CloudCredential> RequiredCredentials =>
     [
@@ -307,6 +316,115 @@ class Build : NukeBuild
             foreach (var apk in apks.Distinct())
                 Log.Information("APK: {Apk}", apk);
         });
+
+    Target PublishDesktop => _ => _
+        .Description("Publishes the Windows desktop head self-contained (win-x64) for packaging.")
+        .Executes(() =>
+        {
+            DesktopPublishDirectory.CreateOrCleanDirectory();
+            DotNetPublish(s => s
+                .SetProject(DesktopProject)
+                .SetConfiguration("Release")
+                .SetRuntime("win-x64")
+                .SetSelfContained(true)
+                .SetOutput(DesktopPublishDirectory));
+        });
+
+    Target Pack => _ => _
+        .Description("Builds the Velopack Windows installer and update feed into artifacts/velopack.")
+        .DependsOn(PublishDesktop)
+        .Executes(() =>
+        {
+            VelopackDirectory.CreateOrCleanDirectory();
+            var notesFile = WriteReleaseNotes();
+
+            Vpk($"pack"
+                + $" --packId Collectary"
+                + $" --packTitle Collectary"
+                + $" --packAuthors Jakob"
+                + $" --packVersion {ReleaseVersion()}"
+                + $" --packDir \"{DesktopPublishDirectory}\""
+                + $" --mainExe Collectary.UI.Desktop.exe"
+                + $" --releaseNotes \"{notesFile}\""
+                + $" --outputDir \"{VelopackDirectory}\"");
+
+            Log.Information("Velopack output → {Dir}", VelopackDirectory);
+        });
+
+    Target Release => _ => _
+        .Description("Publishes a GitHub release: Windows installer + update feed, the Android APK, and commit-message notes.")
+        .DependsOn(Pack, BuildApk)
+        .Requires(() => GitHubToken)
+        .Executes(() =>
+        {
+            var version = ReleaseVersion();
+            var tag = $"v{version}";
+            var releaseName = $"Collectary {version}";
+
+            Vpk($"upload github"
+                + $" --repoUrl {GitHubRepoUrl}"
+                + $" --token {GitHubToken}"
+                + $" --publish"
+                + $" --releaseName \"{releaseName}\""
+                + $" --tag {tag}"
+                + $" --outputDir \"{VelopackDirectory}\"");
+
+            var apk = AndroidProject.Parent
+                .GlobFiles($"bin/Release/**/*-Signed.apk")
+                .FirstOrDefault();
+            Assert.NotNull(apk, "No signed APK was found to attach to the release.");
+
+            var gh = ToolPathResolver.GetPathExecutable("gh");
+            string uploadArgs = $"release upload {tag} {apk} --clobber";
+            ProcessTasks.StartProcess(gh, uploadArgs, RootDirectory,
+                    new Dictionary<string, string> { ["GH_TOKEN"] = GitHubToken })
+                .AssertZeroExitCode();
+
+            Log.Information("Released {Tag}: installer feed + {Apk}", tag, apk!.Name);
+        });
+
+    void Vpk(string arguments)
+    {
+        var dotnet = ToolPathResolver.GetPathExecutable("dotnet");
+        string command = "vpk " + arguments;
+        ProcessTasks.StartProcess(dotnet, command, RootDirectory).AssertZeroExitCode();
+    }
+
+    string ReleaseVersion()
+    {
+        var dotnet = ToolPathResolver.GetPathExecutable("dotnet");
+        var process = ProcessTasks.StartProcess(dotnet,
+            "nbgv get-version --variable SimpleVersion", RootDirectory, logOutput: false);
+        process.AssertZeroExitCode();
+        return process.Output
+            .Where(o => o.Type == OutputType.Std)
+            .Select(o => o.Text.Trim())
+            .First(t => t.Length > 0);
+    }
+
+    AbsolutePath WriteReleaseNotes()
+    {
+        IEnumerable<string> Lines(string arguments) =>
+            Git(arguments, workingDirectory: RootDirectory, logOutput: false)
+                .Where(o => o.Type == OutputType.Std)
+                .Select(o => o.Text);
+
+        var previousTag = Lines("tag --list v* --sort=-version:refname").FirstOrDefault()?.Trim();
+        var range = string.IsNullOrEmpty(previousTag) ? "HEAD" : $"{previousTag}..HEAD";
+        var commits = Lines($"log {range} --no-merges --pretty=format:-%x20%s")
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0)
+            .ToList();
+
+        var body = commits.Count > 0
+            ? string.Join(Environment.NewLine, commits)
+            : "Maintenance release.";
+
+        var notesFile = ArtifactsDirectory / "release-notes.md";
+        ArtifactsDirectory.CreateDirectory();
+        notesFile.WriteAllText(body);
+        return notesFile;
+    }
 
     IReadOnlyList<string> ChangedMutableSourceFiles()
     {

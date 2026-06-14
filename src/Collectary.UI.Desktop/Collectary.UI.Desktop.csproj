@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="NAudio" />
+    <PackageReference Include="Velopack" />
     <PackageReference Include="OpenCvSharp4.Windows" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" >
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>

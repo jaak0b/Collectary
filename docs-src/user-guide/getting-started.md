@@ -15,6 +15,15 @@ dotnet build "src\Collectary.UI.Desktop\Collectary.UI.Desktop.csproj"
 Building requires the **.NET SDK 10** (the desktop head targets net8.0, but the full solution builds
 with SDK 10). See [Building](../dev-guide/building.md) for the full prerequisites.
 
+## Staying up to date
+
+When you install Collectary from the Windows installer (`Collectary-win-Setup.exe` on the
+[releases page](https://github.com/jaak0b/Collectary/releases)), it **keeps itself up to date**. On
+each launch it quietly checks for a newer release in the background and downloads it; the update is
+applied automatically the next time you start the app. There's nothing to click and no interruption —
+you'll simply be on the latest version. You can always grab the newest installer manually from the
+releases page too.
+
 ## First launch
 
 On first launch Collectary:

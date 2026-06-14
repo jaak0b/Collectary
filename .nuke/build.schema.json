@@ -30,6 +30,9 @@
         "Coverage",
         "DeployAndroid",
         "Mutate",
+        "Pack",
+        "PublishDesktop",
+        "Release",
         "Restore",
         "RunDesktop",
         "SetCredentials",
@@ -115,6 +118,10 @@
           "type": "number",
           "description": "Minimum acceptable line coverage percentage for the Coverage gate",
           "format": "double"
+        },
+        "GitHubToken": {
+          "type": "string",
+          "description": "GitHub token for publishing releases. Defaults to the GH_TOKEN or GITHUB_TOKEN environment variable"
         },
         "Since": {
           "type": "string",

@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Collectary.Infrastructure.Cloud;
 using Collectary.Infrastructure.Cloud.Auth;
 using Collectary.Presentation.Services;
+using Velopack;
 
 namespace Collectary.UI.Desktop;
 
@@ -13,10 +14,14 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        VelopackApp.Build().Run();
+
         var logPath = Path.Combine(AppDataPaths.Root, "logs");
         AppLogger.Initialize(logPath);
         try
         {
+            _ = new UpdateCheck(new VelopackAppUpdater(), new SerilogAppLogger()).RunAsync();
+
             var builder = BuildAvaloniaApp();
             Avalonia.Logging.Logger.Sink = new AvaloniaLogSink(AppLogger.Log);
             builder.StartWithClassicDesktopLifetime(args);

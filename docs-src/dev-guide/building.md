@@ -123,6 +123,44 @@ next commit picks it up.
     workflow that builds checks out with `fetch-depth: 0` for this reason. A new workflow that builds
     must do the same.
 
+## Releasing & auto-update
+
+The Windows desktop app ships as a [Velopack](https://velopack.io/) installer that updates itself.
+Velopack is wired in at two points:
+
+- **Startup** — `Program.Main` calls `VelopackApp.Build().Run()` as its very first line (this is what
+  lets Velopack apply a staged update on launch), then kicks off a silent background check via
+  `UpdateCheck` + `VelopackAppUpdater`. If an update is found it downloads quietly and installs the
+  **next** time the app starts — no prompts. When the app isn't a Velopack install (e.g. a plain
+  `dotnet run` during development) the check is a no-op.
+- **The update feed** is the project's GitHub releases (`GithubSource`), so publishing a release is
+  what makes the update available to everyone.
+
+### Cutting a release
+
+Releases are **manual** and produced by the `Release` NUKE target, which:
+
+1. publishes the desktop head self-contained for `win-x64`,
+2. runs `vpk pack` to build `Collectary-win-Setup.exe` and the update feed (`releases.win.json`,
+   the `-full.nupkg`, `RELEASES`),
+3. builds the signed Android APK,
+4. creates a GitHub release tagged `v<version>` whose **notes are the commit messages since the
+   previous release tag**, and attaches the installer feed **and** the APK.
+
+Run it from the **Actions → Release** workflow (manual dispatch). Because releases are manual, only
+cut one when you've bumped the **major/minor** version in `version.json` — build-number-only changes
+don't need a release. Locally you can do the same with:
+
+```powershell
+.\build.ps1 --target Release   # needs a GitHub token in GH_TOKEN/GITHUB_TOKEN and the cloud creds
+```
+
+!!! note "Repository setup the release needs"
+    The release workflow builds the Android head, which bakes in the cloud OAuth identifiers, so the
+    four `COLLECTARY_*` values (see *Cloud credentials* above) must exist as **repository secrets**.
+    The GitHub release itself uses the automatically-provided `GITHUB_TOKEN` — no extra setup. The
+    `vpk` and `nbgv` tools come from `dotnet tool restore`.
+
 ## Gotchas
 
 ### `wasm-tools` is required to build the browser head
