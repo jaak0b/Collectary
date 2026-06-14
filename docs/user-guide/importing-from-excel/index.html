@@ -407,6 +407,8 @@
       
         
       
+        
+      
     
     
       
@@ -539,6 +541,27 @@
   
   <span class="md-ellipsis">
     Items
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search
   </span>
   
 
@@ -1242,15 +1265,27 @@ Excel already stores as real numbers or dates are understood automatically, what
   type (text, number, date, and so on), which you can change.</li>
 </ul>
 <h2 id="step-4-map-the-columns">Step 4 — Map the columns<a class="headerlink" href="#step-4-map-the-columns" title="Permanent link">&para;</a></h2>
-<p>This is where you tell Collectary what each column means.</p>
+<p>This is where you tell Collectary what each column means. The columns are laid out as a table — one row
+per spreadsheet column — with a header strip across the top so you can read straight down. Each row has,
+left to right:</p>
 <ul>
-<li>Untick a column to leave it out of the import.</li>
-<li><strong>Into an existing collection:</strong> for each column, choose the field it fills, or mark it as the
-  item's <strong>name</strong>. Field types that can't come from a spreadsheet — images, file attachments, audio,
-  linked items, nested lists — are shown greyed out, so you always see they exist but can't pick them.</li>
-<li><strong>Into a new collection:</strong> confirm or change each column's field type and name, and tick one column
-  to use as the item's name.</li>
+<li>an <strong>Include</strong> tick — clear it to leave that column out of the import;</li>
+<li>the <strong>Column</strong> itself, showing its heading and a few sample values so you can tell what's in it;</li>
+<li>a <strong>Name</strong> radio — exactly one column becomes each item's name, and choosing a different row moves the
+  mark automatically, so you can never pick two by mistake. The row you mark as the Name doesn't also map
+  to a field; its mapping greys out to show it's spoken for.</li>
+<li>the <strong>mapping</strong> for everything else. This is the only part that differs by the choice you made in
+  Step 3:</li>
+<li><strong>Into an existing collection</strong> — pick the field each column fills from a drop-down. Field types
+    that can't come from a spreadsheet — images, file attachments, audio, linked items, nested lists —
+    are greyed out in the list, so you always see they exist but can't pick them.</li>
+<li><strong>Into a new collection</strong> — give each column a <strong>field name</strong> (pre-filled from its heading) and a
+    <strong>type</strong> (Collectary suggests one from the data, which you can change).</li>
 </ul>
+<p>On a <strong>phone</strong> (or any narrow window) the table would be too wide, so the same step shows one <strong>card per
+column</strong> stacked down the screen instead: the heading and samples on top, a "use this column as each
+item's name" toggle, then the field drop-down (or field name and type) below. The choices are exactly the
+same — only the arrangement changes to fit the screen.</p>
 <h2 id="step-5-done">Step 5 — Done<a class="headerlink" href="#step-5-done" title="Permanent link">&para;</a></h2>
 <p>Collectary imports the rows and shows a summary:</p>
 <ul>

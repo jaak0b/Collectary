@@ -11,7 +11,7 @@
       
       
       
-        <link rel="prev" href="../items/">
+        <link rel="prev" href="../search/">
       
       
         <link rel="next" href="../sharing/">
@@ -407,6 +407,8 @@
       
         
       
+        
+      
     
     
       
@@ -539,6 +541,27 @@
   
   <span class="md-ellipsis">
     Items
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../search/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Search
   </span>
   
 
@@ -1255,6 +1278,8 @@ kind of information you're storing.</p>
 <h2 id="numbers">Numbers<a class="headerlink" href="#numbers" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Integer</strong> — a whole number: a quantity, a year, a count.</li>
+<li><strong>Auto Number</strong> — a whole number that fills itself in: every new item gets the next free number, so
+  each train (or coin, or anything you number) ends up unique without you typing it.</li>
 <li><strong>Decimal</strong> — a number with fractions, shown to as many decimal places as you choose.</li>
 <li><strong>Percentage</strong> — 0–100, shown with a <code>%</code>.</li>
 <li><strong>Currency</strong> — an amount plus a currency symbol.</li>
@@ -1346,6 +1371,12 @@ the field panel:</p>
   blank for no limit.</li>
 <li><strong>Integer</strong> — set a <strong>minimum</strong> and/or <strong>maximum</strong> so the editor won't accept values outside the
   range. Leave either blank to leave that end open.</li>
+<li><strong>Auto Number</strong> — three choices. <strong>Let me edit the number</strong> decides whether the auto-filled number
+  is yours to change or stays read-only. <strong>Next number is</strong> picks how the next one is chosen — either
+  <em>highest used + 1</em>, or the <em>lowest unused number</em> so it fills the gaps left when you delete items.
+  And when editing is allowed, <strong>if an entered number is already used</strong> lets you choose what happens on
+  a clash: block saving, just warn, or allow it. A number, once given to an item, stays with it — the
+  editor only ever picks a number for a brand-new item.</li>
 <li><strong>Decimal</strong> — choose how many <strong>decimal places</strong> to show, both while editing and in lists.</li>
 <li><strong>Bool</strong> — choose between a plain yes/no checkbox and the three-state <strong>Allow unanswered</strong> mode.</li>
 <li><strong>Rating</strong> — pick how many <strong>stars</strong> the scale runs to.</li>
@@ -1395,7 +1426,7 @@ the field panel:</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../items/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Items">
+          <a href="../search/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Search">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1405,7 +1436,7 @@ the field panel:</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Items
+                Search
               </div>
             </div>
           </a>
