@@ -381,9 +381,13 @@ class Build : NukeBuild
             Assert.NotNull(apk, "No signed APK was found to attach to the release.");
 
             var gh = ToolPathResolver.GetPathExecutable("gh");
-            string uploadArgs = $"release upload {tag} {apk} --clobber";
-            ProcessTasks.StartProcess(gh, uploadArgs, RootDirectory,
-                    new Dictionary<string, string> { ["GH_TOKEN"] = GitHubToken })
+            var repoSlug = new Uri(GitHubRepoUrl).AbsolutePath.Trim('/');
+            string uploadArgs = $"release upload {tag} {apk} --repo {repoSlug} --clobber";
+            var environment = Environment.GetEnvironmentVariables()
+                .Cast<System.Collections.DictionaryEntry>()
+                .ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value);
+            environment["GH_TOKEN"] = GitHubToken;
+            ProcessTasks.StartProcess(gh, uploadArgs, RootDirectory, environment)
                 .AssertZeroExitCode();
 
             Log.Information("Released {Tag}: installer feed + {Apk}", tag, apk!.Name);
