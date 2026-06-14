@@ -165,7 +165,10 @@ class Build : NukeBuild
                 return;
             }
 
-            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation", "Collectary.Search", "Collectary.Search.Avalonia" })
+            // Avalonia UI projects (Collectary.UI, Collectary.Search.Avalonia) are omitted: Stryker cannot
+            // compile their XAML code-behind because the generated InitializeComponent/x:Name partial is
+            // absent from its Roslyn compilation, so it crashes before mutating their view-models.
+            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation", "Collectary.Search" })
             {
                 var prefix = $"src/{project}/";
                 var relative = changed
@@ -175,7 +178,7 @@ class Build : NukeBuild
                 if (relative.Length == 0) continue;
 
                 var csproj = RootDirectory / "src" / project / $"{project}.csproj";
-                var patterns = string.Join(" ", relative.Select(f => $"--mutate \"**/{System.IO.Path.GetFileName(f)}\""));
+                var patterns = string.Join(" ", relative.Select(f => $"--mutate **/{System.IO.Path.GetFileName(f)}"));
                 var arguments = $"stryker -p \"{csproj}\" {patterns}";
 
                 var dotnet = ToolPathResolver.GetPathExecutable("dotnet");
