@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Collectary.Search.ViewModels"
              xmlns:search="using:Collectary.Search"
+             xmlns:controls="using:Collectary.Search.Avalonia.Controls"
              x:Class="Collectary.Search.Avalonia.Controls.SearchBar"
              x:DataType="vm:SearchBarViewModel">
 
@@ -9,47 +10,10 @@
         <Style Selector="WrapPanel#AdvancedButtons">
             <Setter Property="DockPanel.Dock" Value="Right"/>
         </Style>
-        <Style Selector="DockPanel#SearchRow">
-            <Setter Property="DockPanel.Dock" Value="Left"/>
-        </Style>
-        <Style Selector="WrapPanel#SortControls">
-            <Setter Property="DockPanel.Dock" Value="Right"/>
-            <Setter Property="Margin" Value="8,0,0,0"/>
-        </Style>
-        <Style Selector="WrapPanel#ChipArea">
-            <Setter Property="Margin" Value="8,0,8,0"/>
-        </Style>
-        <Style Selector="ToggleButton#FiltersToggle">
-            <Setter Property="IsVisible" Value="False"/>
-            <Setter Property="DockPanel.Dock" Value="Right"/>
-            <Setter Property="Margin" Value="8,0,0,0"/>
-        </Style>
-
         <Style Selector="DockPanel.narrow > WrapPanel#AdvancedButtons">
             <Setter Property="DockPanel.Dock" Value="Bottom"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Margin" Value="0,6,0,0"/>
-        </Style>
-        <Style Selector="DockPanel.narrow > DockPanel#SearchRow">
-            <Setter Property="DockPanel.Dock" Value="Top"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        </Style>
-        <Style Selector="DockPanel.narrow > WrapPanel#SortControls">
-            <Setter Property="DockPanel.Dock" Value="Bottom"/>
-            <Setter Property="Margin" Value="0,6,0,0"/>
-        </Style>
-        <Style Selector="DockPanel.narrow > WrapPanel#ChipArea">
-            <Setter Property="Margin" Value="0,6,0,0"/>
-        </Style>
-        <Style Selector="DockPanel.narrow ToggleButton#FiltersToggle">
-            <Setter Property="IsVisible" Value="True"/>
-        </Style>
-
-        <Style Selector="DockPanel.narrow.filters-collapsed > WrapPanel#ChipArea">
-            <Setter Property="IsVisible" Value="False"/>
-        </Style>
-        <Style Selector="DockPanel.narrow.filters-collapsed > WrapPanel#SortControls">
-            <Setter Property="IsVisible" Value="False"/>
         </Style>
     </UserControl.Styles>
 
@@ -72,54 +36,14 @@
                      Watermark="{Binding SearchPlaceholder}"/>
         </DockPanel>
 
-        <DockPanel x:Name="BasicPanel"
-                   LastChildFill="True"
-                   IsVisible="{Binding IsBasicMode}">
-            <DockPanel x:Name="SearchRow" LastChildFill="True">
-                <ToggleButton x:Name="FiltersToggle"
-                              IsChecked="{Binding IsFilterPanelExpanded, Mode=TwoWay}"
-                              VerticalAlignment="Center"
-                              Padding="10,5">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="{Binding FiltersLabel}" VerticalAlignment="Center"/>
-                        <TextBlock Text="●"
-                                   FontSize="9"
-                                   VerticalAlignment="Center"
-                                   IsVisible="{Binding IsSortActive, FallbackValue=False}"/>
-                    </StackPanel>
-                </ToggleButton>
-                <TextBox x:Name="ItemsSearchBox"
-                         MinWidth="160"
-                         VerticalAlignment="Center"
-                         Text="{Binding BasicFilter.SearchText, Mode=TwoWay}"
-                         Watermark="{Binding ItemsPlaceholder}"/>
-            </DockPanel>
-            <WrapPanel x:Name="SortControls"
-                       VerticalAlignment="Center">
-                <TextBlock Text="{Binding SortByLabel}"
-                           FontSize="12"
-                           Margin="0,0,6,0"
-                           VerticalAlignment="Center"/>
-                <ComboBox x:Name="SortFieldBox"
-                          MinWidth="120"
-                          Margin="0,0,6,0"
-                          ItemsSource="{Binding BasicFilter.SortFieldOptions}"
-                          SelectedItem="{Binding BasicFilter.SelectedSortField, Mode=TwoWay}"
-                          PlaceholderText="{Binding SortNoneLabel}"/>
-                <ToggleButton IsChecked="{Binding BasicFilter.SortDescending, Mode=TwoWay}"
-                              Margin="0,0,6,0"
-                              Padding="8,5">
-                    <Panel>
-                        <TextBlock Text="{Binding SortAscendingLabel}"
-                                   IsVisible="{Binding !BasicFilter.SortDescending}"/>
-                        <TextBlock Text="{Binding SortDescendingLabel}"
-                                   IsVisible="{Binding BasicFilter.SortDescending}"/>
-                    </Panel>
-                </ToggleButton>
-                <Button Command="{Binding SwitchToAdvancedCommand}"
-                        Content="{Binding SwitchToAdvancedLabel}"
-                        Padding="10,5"/>
-            </WrapPanel>
+        <controls:SearchRowPanel x:Name="BasicPanel"
+                                 FiltersExpanded="{Binding IsFilterPanelExpanded}"
+                                 IsVisible="{Binding IsBasicMode}">
+            <TextBox x:Name="ItemsSearchBox"
+                     MinWidth="160"
+                     VerticalAlignment="Center"
+                     Text="{Binding BasicFilter.SearchText, Mode=TwoWay}"
+                     Watermark="{Binding ItemsPlaceholder}"/>
             <WrapPanel x:Name="ChipArea" VerticalAlignment="Center">
                 <ItemsControl ItemsSource="{Binding BasicFilter.Chips}">
                     <ItemsControl.ItemsPanel>
@@ -195,7 +119,53 @@
                     </Button.Flyout>
                 </Button>
             </WrapPanel>
-        </DockPanel>
+            <StackPanel x:Name="TrailingControls"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        VerticalAlignment="Center">
+                <Button x:Name="SortButton"
+                        Content="{Binding SortSummary}"
+                        Padding="10,5">
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedRight">
+                            <StackPanel Width="200" Spacing="8">
+                                <ComboBox x:Name="SortFieldBox"
+                                          HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding BasicFilter.SortFieldOptions}"
+                                          SelectedItem="{Binding BasicFilter.SelectedSortField, Mode=TwoWay}"
+                                          PlaceholderText="{Binding SortNoneLabel}"/>
+                                <ToggleButton IsChecked="{Binding BasicFilter.SortDescending, Mode=TwoWay}"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Center"
+                                              Padding="8,5">
+                                    <Panel>
+                                        <TextBlock Text="{Binding SortAscendingLabel}"
+                                                   IsVisible="{Binding !BasicFilter.SortDescending}"/>
+                                        <TextBlock Text="{Binding SortDescendingLabel}"
+                                                   IsVisible="{Binding BasicFilter.SortDescending}"/>
+                                    </Panel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Command="{Binding SwitchToAdvancedCommand}"
+                        Content="{Binding SwitchToAdvancedLabel}"
+                        Padding="10,5"/>
+            </StackPanel>
+            <ToggleButton x:Name="FiltersToggle"
+                          IsChecked="{Binding IsFilterPanelExpanded, Mode=TwoWay}"
+                          VerticalAlignment="Center"
+                          Padding="10,5">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="{Binding FiltersLabel}" VerticalAlignment="Center"/>
+                    <TextBlock Text="●"
+                               FontSize="9"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding IsSortActive, FallbackValue=False}"/>
+                </StackPanel>
+            </ToggleButton>
+        </controls:SearchRowPanel>
         <Popup x:Name="SuggestionPopup"
                PlacementTarget="SearchBox"
                Placement="BottomEdgeAlignedLeft"

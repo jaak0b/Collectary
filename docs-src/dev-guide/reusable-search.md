@@ -116,12 +116,14 @@ functional (if ugly) instead of crashing. The full contract:
 | `SearchSyntaxError`, `SearchUnknownField`, `SearchFieldNotSearchable`, `SearchOperatorNotSupported`, `SearchInvalidValue` | per-error-code query messages (each takes one `{0}` placeholder) |
 | `SearchNoticeSkipped` | notice shown when a condition was skipped (one `{0}` placeholder) |
 
-The `SearchBar` is responsive: on a wide window the items search, chips, and sort/mode controls sit
+The `SearchBar` is responsive: on a wide window the items search, chips, sort, and mode controls sit
 on one row. It measures what that row actually needs and, once it no longer fits — a phone, a docked
-panel, a split view — it collapses the chips and sort picker behind a **Filters (n)** toggle,
-leaving just the search box. Expanding the toggle reveals them stacked below. That happens
-automatically from the control's own width, so you don't have to do anything to get a usable layout
-on Android or a narrow desktop.
+panel, a split view — it collapses **only the chips** behind a **Filters (n)** toggle. Sorting stays
+on the top row as one compact `Sort by: …` dropdown button (a popup with the field picker and the
+ascending/descending switch), and the advanced-mode button sits next to the Filters toggle. Expanding
+the toggle drops the chips onto a second row; the sort button never gets a row of its own. That all
+happens automatically from the control's own width, so you don't have to do anything to get a usable
+layout on Android or a narrow desktop.
 
 Collectary itself is just one more consumer: it adapts its `ISearchFieldCatalog`/`IItemSearchService`
 and its `LocalizationService` to these interfaces and hosts the `SearchBar` control inside the

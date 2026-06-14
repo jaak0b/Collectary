@@ -5,35 +5,35 @@ namespace Collectary.Search.Avalonia.Tests;
 [TestFixture]
 public class ResponsiveSearchBarLayoutTest
 {
-    private readonly ResponsiveSearchBarLayout _layout = new(spacing: 24);
+    private readonly ResponsiveSearchBarLayout _layout = new();
 
     [Test]
-    public void ShouldStack_RowFitsWithRoomToSpare_StaysWide()
+    public void ShouldStack_ContentFitsComfortably_StaysWide()
     {
-        Assert.That(_layout.ShouldStack(availableWidth: 1000, naturalRowWidth: 700), Is.False);
+        Assert.That(_layout.ShouldStack(availableWidth: 1000, naturalRowWidth: 690), Is.False);
     }
 
     [Test]
-    public void ShouldStack_RowWiderThanAvailable_Stacks()
+    public void ShouldStack_ContentWiderThanAvailable_Stacks()
     {
-        Assert.That(_layout.ShouldStack(availableWidth: 650, naturalRowWidth: 700), Is.True);
+        Assert.That(_layout.ShouldStack(availableWidth: 500, naturalRowWidth: 690), Is.True);
     }
 
     [Test]
-    public void ShouldStack_RowFitsButWithinTheSpacingBuffer_StacksEarly()
+    public void ShouldStack_ContentExactlyFills_StaysWide()
     {
-        Assert.That(_layout.ShouldStack(availableWidth: 710, naturalRowWidth: 700), Is.True);
+        Assert.That(_layout.ShouldStack(availableWidth: 690, naturalRowWidth: 690), Is.False);
     }
 
     [Test]
-    public void ShouldStack_RowPlusSpacingExactlyEqualsAvailable_StaysWide()
+    public void ShouldStack_ContentOnePixelWider_Stacks()
     {
-        Assert.That(_layout.ShouldStack(availableWidth: 724, naturalRowWidth: 700), Is.False);
+        Assert.That(_layout.ShouldStack(availableWidth: 689, naturalRowWidth: 690), Is.True);
     }
 
     [Test]
     public void ShouldStack_NotYetMeasuredZeroWidth_StaysWide()
     {
-        Assert.That(_layout.ShouldStack(availableWidth: 0, naturalRowWidth: 700), Is.False);
+        Assert.That(_layout.ShouldStack(availableWidth: 0, naturalRowWidth: 690), Is.False);
     }
 }

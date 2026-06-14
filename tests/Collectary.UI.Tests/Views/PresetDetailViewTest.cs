@@ -189,8 +189,8 @@ public class PresetDetailViewTest
         var (view, _) = Show(vm);
 
         Assert.That(Bar(view).FindControl<Button>("MoreButton"), Is.Not.Null);
-        var sortBox = Bar(view).FindControl<ComboBox>("SortFieldBox")!;
-        Assert.That(sortBox.ItemsSource, Is.SameAs(vm.SearchBar.BasicFilter.SortFieldOptions));
+        Assert.That(Bar(view).FindControl<Button>("SortButton"), Is.Not.Null);
+        Assert.That(vm.SearchBar.BasicFilter.SortFieldOptions, Is.Not.Empty);
     }
 
     private static (PresetDetailView View, Window Window) ShowAt(PresetDetailViewModel vm, double width)
@@ -214,41 +214,45 @@ public class PresetDetailViewTest
         var vm = await LoadedBasicModeVm();
         var (view, window) = ShowAt(vm, 380);
 
-        var basicPanel = Bar(view).FindControl<Control>("BasicPanel")!;
-        var sort = Bar(view).FindControl<Control>("SortControls")!;
+        var basicPanel = Bar(view).FindControl<SearchRowPanel>("BasicPanel")!;
+        var trailing = Bar(view).FindControl<Control>("TrailingControls")!;
+        var chips = Bar(view).FindControl<Control>("ChipArea")!;
         var toggle = Bar(view).FindControl<Control>("FiltersToggle")!;
 
         Assert.Multiple(() =>
         {
-            Assert.That(basicPanel.Classes, Does.Contain("narrow"),
-                "a narrow viewport must put the basic panel into its responsive layout");
-            Assert.That(basicPanel.Classes, Does.Contain("filters-collapsed"),
-                "a narrow viewport collapses the filters by default");
-            Assert.That(sort.IsVisible, Is.False,
-                "collapsed filters hide the sort controls, leaving just the search box and toggle");
-            Assert.That(toggle.IsVisible, Is.True,
-                "a Filters toggle appears on a narrow window so the collapsed filters can be reopened");
+            Assert.That(basicPanel.IsStacked, Is.True,
+                "a narrow viewport must put the basic panel into its stacked layout");
+            Assert.That(chips.Opacity, Is.EqualTo(0),
+                "collapsed filters hide only the chip area");
+            Assert.That(trailing.Opacity, Is.EqualTo(1),
+                "the compact sort + advanced controls stay on the top row, never collapsed");
+            Assert.That(toggle.Opacity, Is.EqualTo(1),
+                "a Filters toggle appears on a narrow window so the collapsed chips can be reopened");
         });
         window.Close();
     }
 
     [Test]
-    public async Task BasicMode_OnANarrowWindow_WhenExpanded_StacksSortBelowTheSearchBoxOnScreen()
+    public async Task BasicMode_OnANarrowWindow_WhenExpanded_KeepsSortOnTopRowAndStacksOnlyChipsBelow()
     {
         var vm = await LoadedBasicModeVm();
-        var (view, window) = ShowAt(vm, 380);
+        var (view, window) = ShowAt(vm, 760);
 
         vm.SearchBar.IsFilterPanelExpanded = true;
         Dispatcher.UIThread.RunJobs();
 
         var search = Bar(view).FindControl<TextBox>("ItemsSearchBox")!;
-        var sort = Bar(view).FindControl<Control>("SortControls")!;
+        var sortButton = Bar(view).FindControl<Control>("SortButton")!;
+        var chips = Bar(view).FindControl<Control>("ChipArea")!;
 
-        Assert.That(sort.IsVisible, Is.True, "expanding the filters reveals the sort controls again");
-        Assert.That(ViewportRect(sort, window).Top, Is.GreaterThanOrEqualTo(ViewportRect(search, window).Bottom - 0.5),
-            "when expanded on a narrow window, the sort row must sit below the items search box rather than beside it");
-        Assert.That(ViewportRect(sort, window).Right, Is.LessThanOrEqualTo(window.Width + 0.5),
-            "the expanded sort controls must stay within the viewport, not overflow off the right edge");
+        Assert.That(ViewportRect(sortButton, window).Left, Is.GreaterThan(ViewportRect(search, window).Right - 0.5),
+            "the compact sort button stays to the right of the search box on the top row, not on a row of its own");
+        Assert.That(ViewportRect(sortButton, window).Top, Is.LessThan(ViewportRect(search, window).Bottom - 0.5),
+            "the sort button shares the top row with the search box");
+        Assert.That(ViewportRect(chips, window).Top, Is.GreaterThanOrEqualTo(ViewportRect(search, window).Bottom - 0.5),
+            "only the chips drop to a second row when expanded");
+        Assert.That(chips.Opacity, Is.EqualTo(1));
         window.Close();
     }
 
@@ -256,14 +260,14 @@ public class PresetDetailViewTest
     public async Task BasicMode_OnAWideWindow_KeepsTheBasicPanelOnASingleRow()
     {
         var vm = await LoadedBasicModeVm();
-        var (view, window) = ShowAt(vm, 1000);
+        var (view, window) = ShowAt(vm, 1200);
 
         var search = Bar(view).FindControl<TextBox>("ItemsSearchBox")!;
-        var sort = Bar(view).FindControl<Control>("SortControls")!;
+        var trailing = Bar(view).FindControl<Control>("TrailingControls")!;
 
-        Assert.That(ViewportRect(sort, window).Left, Is.GreaterThan(ViewportRect(search, window).Right - 0.5),
-            "when wide, the sort controls stay to the right of the items search box on one row");
-        Assert.That(ViewportRect(sort, window).Right, Is.LessThanOrEqualTo(window.Width + 0.5));
+        Assert.That(ViewportRect(trailing, window).Left, Is.GreaterThan(ViewportRect(search, window).Right - 0.5),
+            "when wide, the sort + advanced controls stay to the right of the items search box on one row");
+        Assert.That(ViewportRect(trailing, window).Right, Is.LessThanOrEqualTo(window.Width + 0.5));
         window.Close();
     }
 

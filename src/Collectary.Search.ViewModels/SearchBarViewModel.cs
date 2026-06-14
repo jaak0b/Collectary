@@ -27,6 +27,10 @@ public partial class SearchBarViewModel : ObservableObject
         ? string.Format(_localization.Get(SearchLocalizationKeys.SearchFiltersWithCount), ActiveFilterCount)
         : _localization.Get(SearchLocalizationKeys.SearchFilters);
 
+    public string SortSummary => BasicFilter.SelectedSortField is { } sortField
+        ? $"{SortByLabel}: {sortField} {(BasicFilter.SortDescending ? "↓" : "↑")}"
+        : SortByLabel;
+
     public SearchBarViewModel(
         ItemQueryViewModel query,
         BasicFilterViewModel basicFilter,
@@ -52,6 +56,11 @@ public partial class SearchBarViewModel : ObservableObject
         else if (e.PropertyName == nameof(BasicFilterViewModel.IsSortActive))
         {
             OnPropertyChanged(nameof(IsSortActive));
+        }
+        else if (e.PropertyName == nameof(BasicFilterViewModel.SelectedSortField)
+              || e.PropertyName == nameof(BasicFilterViewModel.SortDescending))
+        {
+            OnPropertyChanged(nameof(SortSummary));
         }
     }
 
@@ -112,6 +121,7 @@ public partial class SearchBarViewModel : ObservableObject
         OnPropertyChanged(nameof(SortAscendingLabel));
         OnPropertyChanged(nameof(SortDescendingLabel));
         OnPropertyChanged(nameof(FiltersLabel));
+        OnPropertyChanged(nameof(SortSummary));
         foreach (var chip in BasicFilter.Chips)
             chip.RefreshLocalization();
     }
