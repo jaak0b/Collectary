@@ -1,25 +1,27 @@
 name: Build & publish documentation
 
-# Docs publish only after `quality` is green. Pages deploys from master -> /docs.
-# Loop guard: the bot commit touches only docs/**, which paths-ignore excludes,
-# and carries [skip ci], so it does not re-trigger this workflow.
+# Builds the MkDocs site (with the WASM demo app embedded under /app) and publishes it
+# with GitHub's native Pages deployment — nothing is committed back to the repository.
+# Requires Settings -> Pages -> Source = "GitHub Actions". Docs deploy only after the
+# quality job (full test suite) is green.
 
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - 'docs/**'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+# Allow one concurrent Pages deployment; let an in-progress run finish rather than cancel it.
 concurrency:
-  group: docs-${{ github.ref }}
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   quality:
@@ -44,7 +46,7 @@ jobs:
       - name: Build & run full test suite
         run: pwsh ./build.ps1 --target Test --configuration Release
 
-  build-docs:
+  build:
     needs: quality
     runs-on: ubuntu-latest
     steps:
@@ -75,24 +77,23 @@ jobs:
       - name: Build MkDocs site
         run: mkdocs build
 
-      - name: Copy WASM app into docs/app/
+      - name: Copy WASM app into site/app/
         run: |
-          mkdir -p docs/app
-          cp -r ./browser-publish/wwwroot/. docs/app/
+          mkdir -p site/app
+          cp -r ./browser-publish/wwwroot/. site/app/
 
-      # GitHub Pages runs Jekyll, which strips underscore-prefixed paths like the
-      # WASM runtime's _framework/ dir. .nojekyll disables that for the whole site.
-      - name: Disable Jekyll processing
-        run: touch docs/.nojekyll
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
-      - name: Commit generated docs
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add --force docs
-          if git diff --cached --quiet; then
-            echo "No documentation changes to commit."
-          else
-            git commit -m "docs: rebuild site and WASM app [skip ci]"
-            git push
-          fi
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

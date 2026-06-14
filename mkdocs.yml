@@ -1,7 +1,7 @@
 site_name: Collectary
 site_description: User and developer documentation for Collectary — a cross-platform collection manager.
 docs_dir: docs-src
-site_dir: docs
+site_dir: site
 
 repo_url: https://github.com/jaak0b/Collectary
 repo_name: jaak0b/Collectary

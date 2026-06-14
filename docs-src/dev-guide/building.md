@@ -201,14 +201,16 @@ The docs are built with [Material for MkDocs](https://squidfunk.github.io/mkdocs
 ```powershell
 pip install -r requirements.txt
 mkdocs serve     # live preview at http://127.0.0.1:8000
-mkdocs build     # builds the static site into ./docs
+mkdocs build     # builds the static site into ./site
 ```
 
-Markdown source lives in `docs-src/`; `mkdocs build` outputs into `docs/` (configured via
-`site_dir` in `mkdocs.yml`). On `master`, once the `quality` job (build + tests + format) passes, the
-[`docs.yml`](https://docs.github.com/en/actions) GitHub Action rebuilds the site, publishes the
-WASM app into `docs/app/`, and commits `docs/` back to the branch.
+Markdown source lives in `docs-src/`; `mkdocs build` outputs into `site/` (configured via
+`site_dir` in `mkdocs.yml`, and git-ignored). On `master`, once the `quality` job (full test suite)
+passes, the [`docs.yml`](https://docs.github.com/en/actions) GitHub Action rebuilds the site,
+publishes the WASM app into `site/app/`, and deploys the result straight to GitHub Pages with
+`actions/deploy-pages`. **Nothing is committed back to the repository** — there's no generated
+`docs/` folder in git any more.
 
 !!! info "One-time GitHub setup"
     For the published site to go live, set the repository's
-    **Settings → Pages → Source** to **Deploy from a branch**, branch **`master`**, folder **`/docs`**.
+    **Settings → Pages → Source** to **GitHub Actions**.

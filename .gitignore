@@ -456,9 +456,7 @@ $RECYCLE.BIN/
 # Stryker mutation testing output
 StrykerOutput/
 
-# Documentation site build artifacts
-# `docs/` is the committed, GitHub-Pages-served MkDocs output (kept on purpose).
-# `browser-publish/` is the transient WASM publish output copied into docs/app/ during the docs build.
+# Documentation site build artifacts — never committed; published to Pages by GitHub Actions.
+# `site/` is the MkDocs output; `browser-publish/` is the transient WASM publish copied into site/app/.
 browser-publish/
-# MkDocs default output dir (unused here — we build into docs/ via site_dir — but ignore it just in case).
 /site/
