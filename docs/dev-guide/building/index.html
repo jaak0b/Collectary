@@ -869,6 +869,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gotchas" class="md-nav__link">
     <span class="md-ellipsis">
       Gotchas
@@ -1178,6 +1187,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gotchas" class="md-nav__link">
     <span class="md-ellipsis">
       Gotchas
@@ -1351,6 +1369,29 @@ setup.</p>
 <p>EF Core migrations run automatically on desktop startup. To add one:</p>
 <div class="highlight"><pre><span></span><code><span class="n">dotnet</span> <span class="n">ef</span> <span class="n">migrations</span> <span class="n">add</span> <span class="p">&lt;</span><span class="n">Name</span><span class="p">&gt;</span> <span class="p">-</span><span class="n">-project</span> <span class="n">src</span><span class="p">\</span><span class="n">Collectary</span><span class="p">.</span><span class="n">Infrastructure</span>
 </code></pre></div>
+<h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">&para;</a></h2>
+<p>Versions are computed automatically by <a href="https://github.com/dotnet/Nerdbank.GitVersioning">Nerdbank.GitVersioning</a>
+(nbgv) — there are no version numbers to bump by hand, and no version stamping in CI. The setup is two
+files at the repository root:</p>
+<ul>
+<li><strong><code>version.json</code></strong> holds the base version (<code>"0.1"</code>) and marks <code>master</code> as the public-release branch.</li>
+<li><strong><code>Directory.Build.props</code></strong> adds the <code>Nerdbank.GitVersioning</code> package to every project (the version
+  itself is pinned centrally in <code>Directory.Packages.props</code>). The test projects pick it up because
+  <code>tests/Directory.Build.props</code> imports the root file.</li>
+</ul>
+<p>From there, nbgv stamps each assembly's <code>AssemblyVersion</code>, <code>FileVersion</code>, and
+<code>AssemblyInformationalVersion</code> as <code>0.1.&lt;git-height&gt;</code>, where the <strong>git height</strong> is the number of commits
+in the branch's history. Every commit — and therefore every merged pull request — automatically bumps
+the number, with no manual step. The Settings → About line reads that stamped version back at runtime
+(<code>AssemblyAppVersionProvider</code>), trimming nbgv's <code>+&lt;commit&gt;</code> build-metadata suffix for display.</p>
+<p>To start a new release line — say <code>0.2</code> or <code>1.0</code> — edit the <code>version</code> field in <code>version.json</code>; the
+next commit picks it up.</p>
+<div class="admonition warning">
+<p class="admonition-title">CI must do a full clone</p>
+<p>nbgv computes the version from the <strong>whole</strong> git history, so it fails on a shallow clone. Every
+workflow that builds checks out with <code>fetch-depth: 0</code> for this reason. A new workflow that builds
+must do the same.</p>
+</div>
 <h2 id="gotchas">Gotchas<a class="headerlink" href="#gotchas" title="Permanent link">&para;</a></h2>
 <h3 id="wasm-tools-is-required-to-build-the-browser-head"><code>wasm-tools</code> is required to build the browser head<a class="headerlink" href="#wasm-tools-is-required-to-build-the-browser-head" title="Permanent link">&para;</a></h3>
 <p>Without it you get a runtime <code>System.DllNotFoundException: libSkiaSharp</code> (SQLite's <code>e_sqlite3</code>
