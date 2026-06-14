@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Collectary.Search\Collectary.Search.csproj" />
+  </ItemGroup>
+
 </Project>

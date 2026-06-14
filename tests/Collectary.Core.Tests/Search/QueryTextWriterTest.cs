@@ -1,4 +1,4 @@
-using Collectary.Core.Search;
+using Collectary.Search;
 
 namespace Collectary.Core.Tests.Search;
 

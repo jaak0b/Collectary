@@ -46,7 +46,9 @@ class Build : NukeBuild
     [
         "Collectary.Core.Tests",
         "Collectary.Infrastructure.Tests",
-        "Collectary.UI.Tests"
+        "Collectary.UI.Tests",
+        "Collectary.Search.Tests",
+        "Collectary.Search.Avalonia.Tests"
     ];
 
     Target Restore => _ => _
@@ -153,7 +155,7 @@ class Build : NukeBuild
                 return;
             }
 
-            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation" })
+            foreach (var project in new[] { "Collectary.Core", "Collectary.Infrastructure", "Collectary.Infrastructure.Cloud", "Collectary.Presentation", "Collectary.Search", "Collectary.Search.Avalonia" })
             {
                 var prefix = $"src/{project}/";
                 var relative = changed

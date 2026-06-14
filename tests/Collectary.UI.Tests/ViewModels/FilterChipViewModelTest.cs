@@ -1,22 +1,23 @@
-using Collectary.Core.Search;
+using Collectary.Search;
+using Collectary.Search.Avalonia.ViewModels;
 using Collectary.Presentation.Localization;
-using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Tests.ViewModels;
 
 [TestFixture]
 public class FilterChipViewModelTest
 {
+    private readonly LocalizationProvider _loc = new();
     private int _changedCount;
 
     [SetUp]
     public void SetUp() => _changedCount = 0;
 
     private FilterChipViewModel ChoiceChip(params string[] suggestions) =>
-        new("Status", suggestions, QueryOperatorKind.Equals, () => _changedCount++);
+        new("Status", suggestions, QueryOperatorKind.Equals, _loc, () => _changedCount++);
 
     private FilterChipViewModel TextChip(QueryOperatorKind textOperator) =>
-        new("Author", [], textOperator, () => _changedCount++);
+        new("Author", [], textOperator, _loc, () => _changedCount++);
 
     [Test]
     public void ChoiceChip_WithSuggestions_IsChoiceStyle()
@@ -257,7 +258,7 @@ public class FilterChipViewModelTest
     {
         var removed = 0;
         var chip = new FilterChipViewModel("Status", ["open"], QueryOperatorKind.Equals,
-            () => _changedCount++, () => removed++);
+            _loc, () => _changedCount++, () => removed++);
 
         chip.RemoveCommand.Execute(null);
 

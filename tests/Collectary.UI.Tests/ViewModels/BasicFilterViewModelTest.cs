@@ -2,8 +2,10 @@ using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
-using Collectary.Presentation.ViewModels;
+using Collectary.Core.UseCases;
+using Collectary.Search;
+using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -39,13 +41,15 @@ public class BasicFilterViewModelTest
             Presets = [new SearchPresetEntry(Guid.NewGuid(), "Trains"), new SearchPresetEntry(Guid.NewGuid(), "Books")],
         });
         var vm = new BasicFilterViewModel(
-            catalog,
+            new CollectarySearchUiCatalog(catalog),
+            new LocalizationProvider(),
             text =>
             {
                 _runs.Add(text);
                 return Task.CompletedTask;
             },
-            debounceMilliseconds);
+            debounceMilliseconds,
+            excludedChipFields: ["preset"]);
         await vm.LoadAsync();
         return vm;
     }
@@ -311,7 +315,9 @@ public class BasicFilterViewModelTest
                 new SearchFieldGroup("Collection", [collectionField]),
             ],
         });
-        var vm = new BasicFilterViewModel(catalog, _ => Task.CompletedTask, 0);
+        var vm = new BasicFilterViewModel(
+            new CollectarySearchUiCatalog(catalog), new LocalizationProvider(), _ => Task.CompletedTask, 0,
+            excludedChipFields: ["preset"]);
 
         await vm.LoadAsync();
 

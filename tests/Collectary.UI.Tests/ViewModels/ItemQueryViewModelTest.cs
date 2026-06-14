@@ -2,8 +2,10 @@ using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
-using Collectary.Presentation.ViewModels;
+using Collectary.Core.UseCases;
+using Collectary.Search;
+using Collectary.Search.Avalonia.ViewModels;
+using Collectary.Presentation.Localization;
 
 namespace Collectary.UI.Tests.ViewModels;
 
@@ -12,7 +14,7 @@ public class ItemQueryViewModelTest
 {
     private IItemSearchService _searchService = null!;
     private ISearchFieldCatalog _catalog = null!;
-    private ItemSearchResult? _applied;
+    private SearchOutcome? _applied;
     private ItemQueryViewModel _vm = null!;
 
     [SetUp]
@@ -28,9 +30,10 @@ public class ItemQueryViewModelTest
         });
         _applied = null;
         _vm = new ItemQueryViewModel(
-            _searchService,
-            _catalog,
-            new QuerySuggestionEngine(new QueryLexer(), new PseudoFieldCatalog()),
+            new ItemSearchRunner(_searchService),
+            new CollectarySearchUiCatalog(_catalog),
+            new QuerySuggestionEngine(new QueryLexer()),
+            new LocalizationProvider(),
             onResults: result =>
             {
                 _applied = result;

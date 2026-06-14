@@ -90,8 +90,8 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: new Preset { Name = "My \"Books\"" });
         await sut.LoadAsync();
 
-        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = \"My \\\"Books\\\"\""));
-        A.CallTo(() => _searchService.SearchAsync(sut.Query.QueryText)).MustHaveHappened();
+        Assert.That(sut.SearchBar.Query.QueryText, Is.EqualTo("preset = \"My \\\"Books\\\"\""));
+        A.CallTo(() => _searchService.SearchAsync(sut.SearchBar.Query.QueryText)).MustHaveHappened();
     }
 
     [Test]
@@ -200,7 +200,7 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: new Preset { Name = @"My\Stuff" });
         await sut.LoadAsync();
 
-        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = \"My\\\\Stuff\""));
+        Assert.That(sut.SearchBar.Query.QueryText, Is.EqualTo("preset = \"My\\\\Stuff\""));
     }
 
     [Test]
@@ -487,8 +487,8 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
 
-        Assert.That(sut.IsBasicMode, Is.True);
-        var chip = sut.BasicFilter.Chips.Single();
+        Assert.That(sut.SearchBar.IsBasicMode, Is.True);
+        var chip = sut.SearchBar.BasicFilter.Chips.Single();
         Assert.That(chip.Label, Is.EqualTo("collection"));
         Assert.That(chip.ToRow()!.Values, Is.EqualTo(new[] { "Trains" }));
         A.CallTo(() => _searchService.SearchAsync("preset = Trains")).MustHaveHappened();
@@ -502,8 +502,8 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
 
-        Assert.That(sut.IsBasicMode, Is.True);
-        var chip = sut.BasicFilter.Chips.Single();
+        Assert.That(sut.SearchBar.IsBasicMode, Is.True);
+        var chip = sut.SearchBar.BasicFilter.Chips.Single();
         Assert.That(chip.ToRow()!.Values, Is.EqualTo(new[] { "Smith, John" }));
         A.CallTo(() => _searchService.SearchAsync("preset = \"Smith, John\"")).MustHaveHappened();
     }
@@ -517,8 +517,8 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
 
-        Assert.That(sut.IsBasicMode, Is.False);
-        Assert.That(sut.Query.QueryText, Is.EqualTo("preset = Trains"));
+        Assert.That(sut.SearchBar.IsBasicMode, Is.False);
+        Assert.That(sut.SearchBar.Query.QueryText, Is.EqualTo("preset = Trains"));
     }
 
     [Test]
@@ -527,7 +527,7 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: new Preset { Name = "Trains" });
         await sut.LoadAsync();
 
-        Assert.That(sut.IsBasicMode, Is.False);
+        Assert.That(sut.SearchBar.IsBasicMode, Is.False);
         A.CallTo(() => _searchService.SearchAsync("preset = Trains")).MustHaveHappened();
     }
 
@@ -537,13 +537,13 @@ public class PresetDetailViewModelTest
         var preset = SeedSearchableCatalog();
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
-        sut.SwitchToAdvancedCommand.Execute(null);
-        sut.Query.QueryText = "Status = open OR Status = done";
+        sut.SearchBar.SwitchToAdvancedCommand.Execute(null);
+        sut.SearchBar.Query.QueryText = "Status = open OR Status = done";
 
-        sut.SwitchToBasicCommand.Execute(null);
+        sut.SearchBar.SwitchToBasicCommand.Execute(null);
 
-        Assert.That(sut.IsBasicMode, Is.False);
-        Assert.That(sut.Query.QueryMessage, Is.Not.Null.And.Not.Empty);
+        Assert.That(sut.SearchBar.IsBasicMode, Is.False);
+        Assert.That(sut.SearchBar.Query.QueryMessage, Is.Not.Null.And.Not.Empty);
         Assert.That(AppPreferences.Load().SearchBasicMode, Is.False);
     }
 
@@ -554,13 +554,13 @@ public class PresetDetailViewModelTest
         var preset = SeedSearchableCatalog();
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
-        sut.Query.QueryText = "Status in (open, done) AND preset = \"Trains\"";
+        sut.SearchBar.Query.QueryText = "Status in (open, done) AND preset = \"Trains\"";
 
-        sut.SwitchToBasicCommand.Execute(null);
+        sut.SearchBar.SwitchToBasicCommand.Execute(null);
 
-        Assert.That(sut.IsBasicMode, Is.True);
-        Assert.That(sut.BasicFilter.Chips.Select(c => c.Label), Is.EqualTo(new[] { "Status", "collection" }));
-        Assert.That(sut.Query.QueryMessage, Is.Null.Or.Empty);
+        Assert.That(sut.SearchBar.IsBasicMode, Is.True);
+        Assert.That(sut.SearchBar.BasicFilter.Chips.Select(c => c.Label), Is.EqualTo(new[] { "Status", "collection" }));
+        Assert.That(sut.SearchBar.Query.QueryMessage, Is.Null.Or.Empty);
         Assert.That(AppPreferences.Load().SearchBasicMode, Is.True);
     }
 
@@ -576,13 +576,13 @@ public class PresetDetailViewModelTest
             var preset = SeedSearchableCatalog();
             var sut = CreateSut(preset: preset);
             sut.LoadAsync().GetAwaiter().GetResult();
-            sut.BasicFilter.AddChipCommand.Execute("Status");
-            var chip = sut.BasicFilter.Chips.Single(c => c.Label == "Status");
+            sut.SearchBar.BasicFilter.AddChipCommand.Execute("Status");
+            var chip = sut.SearchBar.BasicFilter.Chips.Single(c => c.Label == "Status");
 
             chip.VisibleOptions.First(o => o.Value == "open").IsChecked = true;
-            sut.BasicFilter.PendingRun!.GetAwaiter().GetResult();
+            sut.SearchBar.BasicFilter.PendingRun!.GetAwaiter().GetResult();
 
-            Assert.That(sut.Query.QueryText, Is.EqualTo("collection = Trains AND Status = open"));
+            Assert.That(sut.SearchBar.Query.QueryText, Is.EqualTo("collection = Trains AND Status = open"));
             A.CallTo(() => _searchService.SearchAsync("collection = Trains AND Status = open"))
                 .MustHaveHappened();
         }
@@ -605,12 +605,12 @@ public class PresetDetailViewModelTest
             var sut = CreateSut(preset: preset);
             sut.LoadAsync().GetAwaiter().GetResult();
 
-            sut.BasicFilter.SearchText = "loc";
-            sut.SwitchToAdvancedCommand.Execute(null);
-            sut.Query.QueryText = "Status = open OR Status = done";
-            sut.BasicFilter.PendingRun!.GetAwaiter().GetResult();
+            sut.SearchBar.BasicFilter.SearchText = "loc";
+            sut.SearchBar.SwitchToAdvancedCommand.Execute(null);
+            sut.SearchBar.Query.QueryText = "Status = open OR Status = done";
+            sut.SearchBar.BasicFilter.PendingRun!.GetAwaiter().GetResult();
 
-            Assert.That(sut.Query.QueryText, Is.EqualTo("Status = open OR Status = done"));
+            Assert.That(sut.SearchBar.Query.QueryText, Is.EqualTo("Status = open OR Status = done"));
             A.CallTo(() => _searchService.SearchAsync(A<string>.That.Contains("name ~ loc")))
                 .MustNotHaveHappened();
         }
@@ -627,10 +627,10 @@ public class PresetDetailViewModelTest
         var sut = CreateSut(preset: preset);
         await sut.LoadAsync();
 
-        sut.SwitchToAdvancedCommand.Execute(null);
+        sut.SearchBar.SwitchToAdvancedCommand.Execute(null);
 
-        Assert.That(sut.IsBasicMode, Is.False);
-        Assert.That(sut.Query.QueryText, Is.EqualTo("collection = Trains"));
+        Assert.That(sut.SearchBar.IsBasicMode, Is.False);
+        Assert.That(sut.SearchBar.Query.QueryText, Is.EqualTo("collection = Trains"));
         Assert.That(AppPreferences.Load().SearchBasicMode, Is.False);
     }
 }

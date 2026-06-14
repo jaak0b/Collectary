@@ -1,5 +1,5 @@
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
+using Collectary.Search;
 
 namespace Collectary.Core.Domain.Fields;
 

@@ -49,7 +49,7 @@ public class ItemCrudFlowTest : FlowTestBase
         var detail = MakePresetDetailVm(_preset);
         await detail.LoadAsync();
 
-        Assert.That(detail.Query.QueryText, Is.EqualTo("preset = Books"));
+        Assert.That(detail.SearchBar.Query.QueryText, Is.EqualTo("preset = Books"));
         Assert.That(detail.ItemRows, Has.Count.EqualTo(1));
         Assert.That(detail.ShowCollectionColumn, Is.False);
     }
@@ -73,8 +73,8 @@ public class ItemCrudFlowTest : FlowTestBase
 
         var detail = MakePresetDetailVm(_preset);
         await detail.LoadAsync();
-        detail.Query.QueryText = "ORDER BY name";
-        await detail.Query.RunCommand.ExecuteAsync(null);
+        detail.SearchBar.Query.QueryText = "ORDER BY name";
+        await detail.SearchBar.Query.RunCommand.ExecuteAsync(null);
 
         Assert.That(detail.ItemRows, Has.Count.EqualTo(2));
         Assert.That(detail.ShowCollectionColumn, Is.True);
@@ -88,10 +88,10 @@ public class ItemCrudFlowTest : FlowTestBase
         var detail = MakePresetDetailVm(_preset);
         await detail.LoadAsync();
 
-        detail.Query.QueryText = "Ghost = 1";
-        await detail.Query.RunCommand.ExecuteAsync(null);
+        detail.SearchBar.Query.QueryText = "Ghost = 1";
+        await detail.SearchBar.Query.RunCommand.ExecuteAsync(null);
 
-        Assert.That(detail.Query.QueryMessage, Is.Not.Null.And.Not.Empty);
+        Assert.That(detail.SearchBar.Query.QueryMessage, Is.Not.Null.And.Not.Empty);
     }
 
     [Test]

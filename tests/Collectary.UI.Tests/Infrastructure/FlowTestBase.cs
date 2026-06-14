@@ -3,6 +3,7 @@ using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Core.Search;
+using Collectary.Search;
 using Collectary.Core.UseCases;
 using Collectary.Infrastructure.Persistence;
 using Collectary.Presentation.DI;

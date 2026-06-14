@@ -1,5 +1,5 @@
 using Collectary.Core.Domain;
-using Collectary.Core.Search;
+using Collectary.Search;
 
 namespace Collectary.Core.Ports;
 

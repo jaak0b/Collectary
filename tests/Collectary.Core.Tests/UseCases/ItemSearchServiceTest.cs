@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Linq.Expressions;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
-using Collectary.Core.Search;
+using Collectary.Search;
 using Collectary.Core.UseCases;
 using FakeItEasy;
 

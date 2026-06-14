@@ -1,7 +1,7 @@
 namespace Collectary.Core.Domain.Fields;
 
 using System.Globalization;
-using Collectary.Core.Search;
+using Collectary.Search;
 
 /// <summary>A from–to date pair — an ownership period, a drink-window, a manufacturing era.</summary>
 [LocalizedName("FieldType_DateRange")]
