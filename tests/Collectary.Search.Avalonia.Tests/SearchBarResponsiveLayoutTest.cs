@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Collectary.Search;
 using Collectary.Search.Avalonia.Controls;
 using Collectary.Search.ViewModels;
@@ -72,6 +73,71 @@ public class SearchBarResponsiveLayoutTest
     }
 
     [Test]
+    public async Task BasicPanel_WithNoRoom_DropsTrailingControlsBelowTheSearchBox()
+    {
+        var control = Show(await MakeBar(basicPreference: true, "Status = open"), NoRoom);
+
+        Assert.That(Named(control, "TrailingControls").Bounds.Y,
+            Is.GreaterThan(Named(control, "ItemsSearchBox").Bounds.Bottom - 1),
+            "on a phone-width screen the sort/advanced/filters controls must not crowd the search box");
+    }
+
+    private static bool ArrowShown(Control sortButton, string arrow)
+    {
+        var text = sortButton.GetVisualDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Text == arrow);
+        if (text is null) return false;
+        for (Visual? v = text; v is not null && !ReferenceEquals(v, sortButton); v = v.GetVisualParent())
+            if (v is Control { IsVisible: false }) return false;
+        return true;
+    }
+
+    [Test]
+    public async Task BasicMode_SortButtonWidthIsIndependentOfTheSortFieldLength()
+    {
+        var shortBar = await MakeBar(basicPreference: true, "Status = open");
+        shortBar.BasicFilter.SelectedSortField = "X";
+        double shortWidth = Named(Show(shortBar, AmpleRoom), "SortButton").Bounds.Width;
+
+        var longBar = await MakeBar(basicPreference: true, "Status = open");
+        longBar.BasicFilter.SelectedSortField = new string('M', 80);
+        double longWidth = Named(Show(longBar, AmpleRoom), "SortButton").Bounds.Width;
+
+        Assert.That(longWidth, Is.EqualTo(shortWidth).Within(0.5),
+            "the icon-only sort button must not grow with the sort field name");
+    }
+
+    [Test]
+    public async Task BasicMode_SortButtonShowsTheDirectionArrowForTheActiveSort()
+    {
+        var bar = await MakeBar(basicPreference: true, "Status = open");
+        var control = Show(bar, AmpleRoom);
+        var sortButton = Named(control, "SortButton");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ArrowShown(sortButton, "↑"), Is.False, "no arrow before a sort field is chosen");
+            Assert.That(ArrowShown(sortButton, "↓"), Is.False);
+        });
+
+        bar.BasicFilter.SelectedSortField = "Name";
+        bar.BasicFilter.SortDescending = false;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Multiple(() =>
+        {
+            Assert.That(ArrowShown(sortButton, "↑"), Is.True, "ascending shows the up arrow");
+            Assert.That(ArrowShown(sortButton, "↓"), Is.False);
+        });
+
+        bar.BasicFilter.SortDescending = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Multiple(() =>
+        {
+            Assert.That(ArrowShown(sortButton, "↓"), Is.True, "descending shows the down arrow");
+            Assert.That(ArrowShown(sortButton, "↑"), Is.False);
+        });
+    }
+
+    [Test]
     public async Task BasicPanel_WithAmpleRoom_ShowsChipsAndTrailing()
     {
         var control = Show(await MakeBar(basicPreference: true, "Status = open"), AmpleRoom);
@@ -94,6 +160,22 @@ public class SearchBarResponsiveLayoutTest
         Dispatcher.UIThread.RunJobs();
 
         Assert.That(Named(control, "ChipArea").Opacity, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task AdvancedMode_WhenStacked_AlignsTheSearchButtonWithTheQueryBoxLeftEdge()
+    {
+        var control = Show(await MakeBar(basicPreference: false, "collection = Trains"), 400);
+
+        var buttons = control.FindControl<WrapPanel>("AdvancedButtons")!;
+        var searchButton = (Control)buttons.Children[0];
+        var box = Named(control, "SearchBox");
+
+        double boxLeft = box.TranslatePoint(new Point(0, 0), control)!.Value.X;
+        double buttonLeft = searchButton.TranslatePoint(new Point(0, 0), control)!.Value.X;
+
+        Assert.That(buttonLeft, Is.EqualTo(boxLeft).Within(0.5),
+            "stacked advanced mode: the Search button lines up with the query box, not indented from it");
     }
 
     [Test]
