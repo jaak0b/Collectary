@@ -154,6 +154,7 @@ public partial class SettingsViewModel : ViewModelBase
         ("SidebarSelected", "Color_SidebarSelected", false),
         ("Danger", "Color_Danger", false),
         ("DangerForeground", "Color_DangerForeground", false),
+        ("Warning", "Color_Warning", false),
     ];
 
     partial void OnExpertColorModeChanged(bool value)

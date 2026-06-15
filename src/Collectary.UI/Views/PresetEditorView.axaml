@@ -21,22 +21,16 @@
     <Grid RowDefinitions="Auto,*,Auto" Margin="16">
 
         <!-- Header form — hidden when drilled into a sub-list or when narrow with a field selected -->
-        <Grid Grid.Row="0" x:Name="CollectionSettingsHeader" ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,8"
+        <Grid Grid.Row="0" x:Name="CollectionSettingsHeader" ColumnDefinitions="*,*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="4" Margin="0,0,0,8"
               IsVisible="{Binding IsHeaderVisible}">
-            <StackPanel Grid.Column="0" Spacing="2">
-                <TextBox Text="{Binding Name}"
-                         PlaceholderText="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"/>
-                <TextBlock x:Name="NameWarningText"
-                           Text="{Binding NameWarning}"
-                           IsVisible="{Binding NameWarning, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}"
-                           Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
-                           TextWrapping="Wrap"
-                           FontSize="12"/>
-            </StackPanel>
-            <ComboBox Grid.Column="1"
+            <TextBox Grid.Row="0" Grid.Column="0" x:Name="NameGroup"
+                     Text="{Binding Name}"
+                     PlaceholderText="{Binding [Name], Source={x:Static loc:LocalizationService.Instance}}"/>
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      x:Name="ParentField"
+                      HorizontalAlignment="Stretch"
                       ItemsSource="{Binding AvailableParents}"
                       SelectedItem="{Binding SelectedParent}"
-                      HorizontalAlignment="Stretch"
                       PlaceholderText="{Binding [NoneOption], Source={x:Static loc:LocalizationService.Instance}}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -44,7 +38,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <controls:SafeNumericUpDown Grid.Column="2"
+            <controls:SafeNumericUpDown Grid.Row="0" Grid.Column="2" x:Name="ColumnStepper"
                            Value="{Binding ColumnCount}"
                            Minimum="1"
                            Maximum="24"
@@ -52,12 +46,19 @@
                            FormatString="0"
                            ToolTip.Tip="{Binding [ColumnCount], Source={x:Static loc:LocalizationService.Instance}}"
                            MinWidth="72"/>
-            <ComboBox Grid.Column="3"
+            <ComboBox Grid.Row="0" Grid.Column="3" x:Name="LabelLayoutField"
                       ItemsSource="{Binding FieldLabelLayoutOptions}"
                       SelectedItem="{Binding SelectedFieldLabelLayout}"
                       DisplayMemberBinding="{Binding Display}"
                       ToolTip.Tip="{Binding [FieldLabel_Layout], Source={x:Static loc:LocalizationService.Instance}}"
                       MinWidth="140"/>
+            <TextBlock x:Name="NameWarningText"
+                       Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"
+                       Text="{Binding NameWarning}"
+                       IsVisible="{Binding NameWarning, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}"
+                       Foreground="{DynamicResource WarningBrush}"
+                       TextWrapping="Wrap"
+                       FontSize="12"/>
         </Grid>
 
         <!-- Master / detail split -->

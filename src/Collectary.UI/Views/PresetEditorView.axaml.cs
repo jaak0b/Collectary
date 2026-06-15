@@ -106,8 +106,47 @@ public partial class PresetEditorView : UserControl
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
+        var narrow = e.NewSize.Width < ResponsiveSplitLayout.NarrowThreshold;
         _layout.Apply(e.NewSize.Width);
+        ApplyHeaderLayout(narrow);
         if (DataContext is FieldListEditorViewModel vm)
-            vm.IsNarrow = e.NewSize.Width < ResponsiveSplitLayout.NarrowThreshold;
+            vm.IsNarrow = narrow;
+    }
+
+    private bool? _headerNarrow;
+
+    private void ApplyHeaderLayout(bool narrow)
+    {
+        if (_headerNarrow == narrow) return;
+        _headerNarrow = narrow;
+
+        LabelLayoutField.IsVisible = !narrow;
+
+        if (narrow)
+        {
+            CollectionSettingsHeader.ColumnDefinitions = new ColumnDefinitions("Auto,*");
+            CollectionSettingsHeader.RowDefinitions = new RowDefinitions("Auto,Auto,Auto");
+            Place(NameGroup, row: 0, column: 0, columnSpan: 2);
+            Place(ColumnStepper, row: 1, column: 0, columnSpan: 1);
+            Place(ParentField, row: 1, column: 1, columnSpan: 1);
+            Place(NameWarningText, row: 2, column: 0, columnSpan: 2);
+        }
+        else
+        {
+            CollectionSettingsHeader.ColumnDefinitions = new ColumnDefinitions("*,*,Auto,Auto");
+            CollectionSettingsHeader.RowDefinitions = new RowDefinitions("Auto,Auto");
+            Place(NameGroup, row: 0, column: 0, columnSpan: 1);
+            Place(ParentField, row: 0, column: 1, columnSpan: 1);
+            Place(ColumnStepper, row: 0, column: 2, columnSpan: 1);
+            Place(LabelLayoutField, row: 0, column: 3, columnSpan: 1);
+            Place(NameWarningText, row: 1, column: 0, columnSpan: 4);
+        }
+    }
+
+    private void Place(Control control, int row, int column, int columnSpan)
+    {
+        Grid.SetRow(control, row);
+        Grid.SetColumn(control, column);
+        Grid.SetColumnSpan(control, columnSpan);
     }
 }

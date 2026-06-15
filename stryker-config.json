@@ -1,6 +1,6 @@
 {
   "stryker-config": {
-    "reporters": [ "cleartexttree", "progress", "html" ],
+    "reporters": [ "cleartexttree", "progress", "html", "json" ],
     "thresholds": {
       "high": 98,
       "low": 90,
