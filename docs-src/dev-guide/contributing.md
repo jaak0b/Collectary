@@ -39,8 +39,31 @@ not drop. The [Testing](testing.md) page walks through the workflow in detail.
 - **Never replace an `ObservableCollection` instance** — mutate it in place (`Clear()` + `Add()`).
 - **Compiled bindings are on by default** — every `DataTemplate` needs `x:DataType`.
 
+## Pull requests and release notes
+
+Every change ships as a **pull request** — never a direct commit to `master`. Two conventions make the
+release notes write themselves:
+
+- **The PR title is the release note.** Write it as a single, user-facing sentence describing the change
+  the way it should read in the release notes, not as an internal summary. The release is built from these
+  titles, so "Collapse the search filters into a Filters toggle on narrow windows" is right, while
+  "refactor SearchBarViewModel" is not.
+- **Label the PR so it lands in the right section.** Release notes are grouped by label via
+  `.github/release.yml`:
+
+  | Label | Section |
+  |---|---|
+  | `feature` | Features |
+  | `fix` or `bug` | Fixes |
+
+  A PR with **none** of these labels does not appear in the release notes at all — that's how
+  deployment, CI, chore, and docs-only changes are kept out. The flip side: if you forget to label a
+  real feature or fix, it is silently dropped from the notes, so add the label when you open the PR.
+
 ## Before you open a change
 
 - Make sure all three test layers are green and the coverage and mutation gates still pass.
 - For UI changes, verify manually in the running app with explicit repro steps — see
   [Building](building.md).
+- Give the PR a release-note-quality title and the right `feature`/`fix` label (or leave it unlabeled if
+  it should stay out of the notes).

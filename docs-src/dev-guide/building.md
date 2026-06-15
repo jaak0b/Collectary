@@ -146,8 +146,14 @@ Releases are **manual** and produced by the `Release` NUKE target, which:
 2. runs `vpk pack` to build `Collectary-win-Setup.exe` and the update feed (`releases.win.json`,
    the `-full.nupkg`, `RELEASES`),
 3. builds the signed Android APK,
-4. creates a GitHub release tagged `v<version>` whose **notes are the commit messages since the
-   previous release tag**, and attaches the installer feed **and** the APK.
+4. creates a GitHub release tagged `v<version>` whose **notes are the titles of the labeled pull
+   requests merged since the previous release tag** (grouped into Features and Fixes by the `feature`
+   and `fix`/`bug` labels — see [Contributing](contributing.md#pull-requests-and-release-notes)), and
+   attaches the installer feed **and** the APK.
+
+   The notes are produced by GitHub's auto-generated release notes (`gh ... releases/generate-notes`,
+   driven by `.github/release.yml`). If no GitHub token is available — e.g. a local `Pack` run offline —
+   it falls back to the commit messages since the previous tag so the build never breaks.
 
 Run it from the **Actions → Release** workflow (manual dispatch). Because releases are manual, only
 cut one when you've bumped the **major/minor** version in `version.json` — build-number-only changes
