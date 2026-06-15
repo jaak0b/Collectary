@@ -137,6 +137,7 @@
   <data name="Color_SidebarSelected" xml:space="preserve"><value>Sidebar selection</value></data>
   <data name="Color_Danger" xml:space="preserve"><value>Danger</value></data>
   <data name="Color_DangerForeground" xml:space="preserve"><value>Danger text</value></data>
+  <data name="Color_Warning" xml:space="preserve"><value>Warning</value></data>
   <data name="FieldLabel_Layout" xml:space="preserve"><value>Label position</value></data>
   <data name="FieldLabel_Inherit" xml:space="preserve"><value>Inherit (default)</value></data>
   <data name="FieldLabel_Beside" xml:space="preserve"><value>Beside input</value></data>
@@ -482,7 +483,7 @@
     <value>Type to filter</value>
   </data>
   <data name="PresetNameDuplicateWarning" xml:space="preserve">
-    <value>A collection with this name already exists. You can still save, but searches by name will match both.</value>
+    <value>A collection with this name already exists — you can still save, but searches by name will match both.</value>
   </data>
   <data name="CollectionColumn" xml:space="preserve">
     <value>Collection</value>

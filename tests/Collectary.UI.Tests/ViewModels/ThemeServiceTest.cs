@@ -310,6 +310,39 @@ public class ThemeServiceTest
     }
 
     [Test]
+    public void EveryColorTheme_DefinesWarningColorAndBrush()
+    {
+        foreach (var id in ThemeService.Instance.Themes.Select(t => t.Id))
+        {
+            ThemeService.Instance.ApplyColorTheme(id);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(Resource<SolidColorBrush>("WarningBrush"), Is.Not.Null,
+                    $"theme '{id}' must define WarningBrush so the warning text always has a colour");
+                Assert.That(Resource<Color?>("WarningColor"), Is.Not.Null,
+                    $"theme '{id}' must define WarningColor");
+            });
+        }
+    }
+
+    [Test]
+    public void ApplyCustomColors_WarningOverride_SetsColorAndBrush()
+    {
+        ThemeService.Instance.ApplyColorTheme("Light");
+        ThemeService.Instance.ApplyCustomColors(new Dictionary<string, Color>
+        {
+            ["Warning"] = Colors.Magenta,
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Resource<Color>("WarningColor"), Is.EqualTo(Colors.Magenta));
+            Assert.That(Resource<SolidColorBrush>("WarningBrush").Color, Is.EqualTo(Colors.Magenta));
+        });
+    }
+
+    [Test]
     public void ApplyCustomColors_Null_RevertsToPalette()
     {
         ThemeService.Instance.ApplyColorTheme("Light");

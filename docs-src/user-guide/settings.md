@@ -20,7 +20,9 @@ Classic — which controls corners and control sizes.
 
 - **Easy** — the five colours that matter most: accent, window background, surfaces/cards, main
   text, and sidebar. Changing the accent derives matching hover and pressed shades automatically.
-- **Expert** — every background, text, border, sidebar, and danger colour the app uses.
+- **Expert** — every background, text, border, sidebar, danger, and warning colour the app uses. The
+  **warning** colour is the amber used for non-blocking notes such as the "a collection with this name
+  already exists" hint, kept distinct from the red danger colour.
 
 The moment you change a colour or the accent, a small **Custom (based on …)** note appears under
 the colour-theme dropdown. It's there to remind you that what you're looking at is your own tweaked

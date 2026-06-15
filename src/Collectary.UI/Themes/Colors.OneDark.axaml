@@ -18,6 +18,7 @@
     <Color x:Key="SidebarSelectedColor">#2C323C</Color>
     <Color x:Key="DangerColor">#E06C75</Color>
     <Color x:Key="DangerForegroundColor">#282C34</Color>
+    <Color x:Key="WarningColor">#E5C07B</Color>
 
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
@@ -37,4 +38,5 @@
     <SolidColorBrush x:Key="SidebarSelectedBrush" Color="{StaticResource SidebarSelectedColor}"/>
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
     <SolidColorBrush x:Key="DangerForegroundBrush" Color="{StaticResource DangerForegroundColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
 </ResourceDictionary>

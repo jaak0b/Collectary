@@ -137,6 +137,7 @@
   <data name="Color_SidebarSelected" xml:space="preserve"><value>Seitenleisten-Auswahl</value></data>
   <data name="Color_Danger" xml:space="preserve"><value>Gefahr</value></data>
   <data name="Color_DangerForeground" xml:space="preserve"><value>Gefahrentext</value></data>
+  <data name="Color_Warning" xml:space="preserve"><value>Warnung</value></data>
   <data name="FieldLabel_Layout" xml:space="preserve"><value>Beschriftungsposition</value></data>
   <data name="FieldLabel_Inherit" xml:space="preserve"><value>Standard übernehmen</value></data>
   <data name="FieldLabel_Beside" xml:space="preserve"><value>Neben dem Feld</value></data>
@@ -482,7 +483,7 @@
     <value>Zum Filtern tippen</value>
   </data>
   <data name="PresetNameDuplicateWarning" xml:space="preserve">
-    <value>Eine Sammlung mit diesem Namen existiert bereits. Speichern ist trotzdem möglich, aber Suchen nach dem Namen treffen beide.</value>
+    <value>Eine Sammlung mit diesem Namen existiert bereits – Speichern ist möglich, aber Suchen nach dem Namen treffen beide.</value>
   </data>
   <data name="CollectionColumn" xml:space="preserve">
     <value>Sammlung</value>

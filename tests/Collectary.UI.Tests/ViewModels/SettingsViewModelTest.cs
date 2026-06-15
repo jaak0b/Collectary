@@ -188,7 +188,23 @@ public class SettingsViewModelTest
         {
             Assert.That(sut.ColorSlots.Where(s => s.IsEasy).Select(s => s.Key),
                 Is.EquivalentTo(new[] { "Background", "Surface", "TextPrimary", "SidebarBackground" }));
-            Assert.That(sut.ColorSlots, Has.Count.EqualTo(18));
+            Assert.That(sut.ColorSlots, Has.Count.EqualTo(19));
+        });
+    }
+
+    [Test]
+    public void ColorSlots_IncludeWarningAsExpertOnlySlot()
+    {
+        var sut = new SettingsViewModel(() => { });
+
+        var warning = sut.ColorSlots.SingleOrDefault(s => s.Key == "Warning");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(warning, Is.Not.Null, "Expected a customizable 'Warning' color slot.");
+            Assert.That(warning!.IsEasy, Is.False, "Warning should be an Expert-only slot, like Danger.");
+            Assert.That(warning.LabelKey, Is.EqualTo("Color_Warning"),
+                "Warning slot must label itself from the Color_Warning resource.");
         });
     }
 
