@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
@@ -381,13 +382,8 @@ class Build : NukeBuild
             Assert.NotNull(apk, "No signed APK was found to attach to the release.");
 
             var gh = ToolPathResolver.GetPathExecutable("gh");
-            var repoSlug = new Uri(GitHubRepoUrl).AbsolutePath.Trim('/');
-            string uploadArgs = $"release upload {tag} {apk} --repo {repoSlug} --clobber";
-            var environment = Environment.GetEnvironmentVariables()
-                .Cast<System.Collections.DictionaryEntry>()
-                .ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value);
-            environment["GH_TOKEN"] = GitHubToken;
-            ProcessTasks.StartProcess(gh, uploadArgs, RootDirectory, environment)
+            string uploadArgs = $"release upload {tag} {apk} --repo {GitHubRepoSlug} --clobber";
+            ProcessTasks.StartProcess(gh, uploadArgs, RootDirectory, GitHubEnvironment())
                 .AssertZeroExitCode();
 
             Log.Information("Released {Tag}: installer feed + {Apk}", tag, apk!.Name);
@@ -414,26 +410,75 @@ class Build : NukeBuild
 
     AbsolutePath WriteReleaseNotes()
     {
-        IEnumerable<string> Lines(string arguments) =>
-            Git(arguments, workingDirectory: RootDirectory, logOutput: false)
-                .Where(o => o.Type == OutputType.Std)
-                .Select(o => o.Text);
-
-        var previousTag = Lines("tag --list v* --sort=-version:refname").FirstOrDefault()?.Trim();
-        var range = string.IsNullOrEmpty(previousTag) ? "HEAD" : $"{previousTag}..HEAD";
-        var commits = Lines($"log {range} --no-merges --pretty=format:-%x20%s")
-            .Select(l => l.Trim())
-            .Where(l => l.Length > 0)
-            .ToList();
-
-        var body = commits.Count > 0
-            ? string.Join(Environment.NewLine, commits)
-            : "Maintenance release.";
+        var body = NotesFromPullRequests() ?? NotesFromCommits();
 
         var notesFile = ArtifactsDirectory / "release-notes.md";
         ArtifactsDirectory.CreateDirectory();
         notesFile.WriteAllText(body);
         return notesFile;
+    }
+
+    string? NotesFromPullRequests()
+    {
+        if (string.IsNullOrEmpty(GitHubToken)) return null;
+
+        try
+        {
+            var headSha = GitLines("rev-parse HEAD").FirstOrDefault()?.Trim();
+            var previousTag = GitLines("tag --list v* --sort=-version:refname").FirstOrDefault()?.Trim();
+
+            var arguments = new StringBuilder($"api repos/{GitHubRepoSlug}/releases/generate-notes")
+                .Append($" -f tag_name=v{ReleaseVersion()}");
+            if (!string.IsNullOrEmpty(headSha))
+                arguments.Append($" -f target_commitish={headSha}");
+            if (!string.IsNullOrEmpty(previousTag))
+                arguments.Append($" -f previous_tag_name={previousTag}");
+
+            var gh = ToolPathResolver.GetPathExecutable("gh");
+            var process = ProcessTasks.StartProcess(gh, arguments.ToString(), RootDirectory, GitHubEnvironment(), logOutput: false);
+            process.AssertZeroExitCode();
+
+            var json = string.Join(Environment.NewLine,
+                process.Output.Where(o => o.Type == OutputType.Std).Select(o => o.Text));
+            using var document = JsonDocument.Parse(json);
+            var body = document.RootElement.GetProperty("body").GetString();
+            return string.IsNullOrWhiteSpace(body) ? null : body.Trim();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "gh generate-notes failed; falling back to commit-based release notes");
+            return null;
+        }
+    }
+
+    string NotesFromCommits()
+    {
+        var previousTag = GitLines("tag --list v* --sort=-version:refname").FirstOrDefault()?.Trim();
+        var range = string.IsNullOrEmpty(previousTag) ? "HEAD" : $"{previousTag}..HEAD";
+        var commits = GitLines($"log {range} --no-merges --pretty=format:-%x20%s")
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0)
+            .ToList();
+
+        return commits.Count > 0
+            ? string.Join(Environment.NewLine, commits)
+            : "Maintenance release.";
+    }
+
+    IEnumerable<string> GitLines(string arguments) =>
+        Git(arguments, workingDirectory: RootDirectory, logOutput: false)
+            .Where(o => o.Type == OutputType.Std)
+            .Select(o => o.Text);
+
+    string GitHubRepoSlug => new Uri(GitHubRepoUrl).AbsolutePath.Trim('/');
+
+    IReadOnlyDictionary<string, string> GitHubEnvironment()
+    {
+        var environment = Environment.GetEnvironmentVariables()
+            .Cast<System.Collections.DictionaryEntry>()
+            .ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value);
+        environment["GH_TOKEN"] = GitHubToken;
+        return environment;
     }
 
     IReadOnlyList<string> ChangedMutableSourceFiles()
