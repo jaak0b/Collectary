@@ -18,8 +18,8 @@
                        TextWrapping="Wrap"/>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Padding="16,8,16,16">
-            <ItemsControl ItemsSource="{Binding Categories}">
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Categories}" Margin="16,8,16,16">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:PresetTemplateCategoryViewModel">
                         <StackPanel Margin="8,12,8,4">
