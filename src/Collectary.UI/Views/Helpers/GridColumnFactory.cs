@@ -50,11 +50,12 @@ public static class GridColumnFactory
             Width = new DataGridLength(1, DataGridLengthUnitType.Star),
             CellTemplate = new FuncDataTemplate<TRow>((row, _) =>
             {
+                const double scrollbarGutter = 16;
                 var panel = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(4, 2)
+                    Margin = new Thickness(4, 2, scrollbarGutter, 2)
                 };
 
                 var flyout = new MenuFlyout();
