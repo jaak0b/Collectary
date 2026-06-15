@@ -21,7 +21,9 @@ search, if you know it.
 - **+ More** opens a searchable list of every field you can filter on — across all your
   collections, plus the built-ins like `created` and `updated`. Picking one adds a chip; a chip
   with nothing ticked shows *All* and simply doesn't filter.
-- **Sort by** picks a field and direction for the result order.
+- **Sort by** is a compact `⇅` button that picks a field and direction for the result order; once a
+  sort is set it shows the direction as an arrow (`⇅ ↑` / `⇅ ↓`). The chosen field lives in the
+  button's menu — and in its hover tooltip — so a long field name never crowds the other controls.
 
 There is no Search button in basic mode — every change runs the search right away. All chips
 combine with AND: an item must match the text box *and* every chip that has a selection.
@@ -36,6 +38,10 @@ always know filtering is in effect even while it's collapsed. Tap **Filters** to
 sort picker back into view, stacked below the search box; tap it again to hide them. The text box
 stays put the whole time, because searching by name is the one thing you almost always want within
 reach.
+
+On a really narrow phone, even the sort, mode and **Filters** buttons need more room than fits beside
+the search box. When that happens the bar gives the search box its own full-width row and drops those
+buttons onto the line below, so nothing ever overlaps or gets clipped off the edge.
 
 ## Advanced mode
 

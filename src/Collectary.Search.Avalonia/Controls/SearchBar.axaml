@@ -9,6 +9,7 @@
     <UserControl.Styles>
         <Style Selector="WrapPanel#AdvancedButtons">
             <Setter Property="DockPanel.Dock" Value="Right"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
         </Style>
         <Style Selector="DockPanel.narrow > WrapPanel#AdvancedButtons">
             <Setter Property="DockPanel.Dock" Value="Bottom"/>
@@ -24,7 +25,6 @@
             <WrapPanel x:Name="AdvancedButtons">
                 <Button Command="{Binding Query.RunCommand}"
                         Content="{Binding SearchLabel}"
-                        Margin="8,0,0,0"
                         Padding="12,6"/>
                 <Button Command="{Binding SwitchToBasicCommand}"
                         Content="{Binding SwitchToBasicLabel}"
@@ -124,8 +124,15 @@
                         Spacing="6"
                         VerticalAlignment="Center">
                 <Button x:Name="SortButton"
-                        Content="{Binding SortSummary}"
-                        Padding="10,5">
+                        Padding="10,5"
+                        ToolTip.Tip="{Binding SortSummary}">
+                    <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                        <TextBlock Text="⇅" VerticalAlignment="Center"/>
+                        <Panel IsVisible="{Binding IsSortActive, FallbackValue=False}" VerticalAlignment="Center">
+                            <TextBlock Text="↑" IsVisible="{Binding !BasicFilter.SortDescending}"/>
+                            <TextBlock Text="↓" IsVisible="{Binding BasicFilter.SortDescending}"/>
+                        </Panel>
+                    </StackPanel>
                     <Button.Flyout>
                         <Flyout Placement="BottomEdgeAlignedRight">
                             <StackPanel Width="200" Spacing="8">

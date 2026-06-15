@@ -25,7 +25,9 @@ public class SearchRowPanel : Panel
 
     private readonly ResponsiveSearchBarLayout _layout = new();
     private bool _cachedStacked;
+    private bool _cachedControlsStacked;
     private double _cachedNatural;
+    private double _cachedTopRowNatural;
 
     private Control Search => Children[0];
     private Control Chips => Children[1];
@@ -33,6 +35,8 @@ public class SearchRowPanel : Panel
     private Control Toggle => Children[3];
 
     public bool IsStacked => _cachedStacked;
+
+    public bool IsControlsStacked => _cachedControlsStacked;
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -46,24 +50,37 @@ public class SearchRowPanel : Panel
         double available = double.IsInfinity(availableSize.Width) ? natural : availableSize.Width;
         _cachedStacked = _layout.ShouldStack(available, natural);
         _cachedNatural = natural;
+        _cachedTopRowNatural = Search.DesiredSize.Width
+            + ClusterSpacing + Trailing.DesiredSize.Width
+            + ClusterSpacing + Toggle.DesiredSize.Width;
 
         if (!_cachedStacked)
         {
+            _cachedControlsStacked = false;
             double rowHeight = Math.Max(Search.DesiredSize.Height,
                 Math.Max(Chips.DesiredSize.Height, Trailing.DesiredSize.Height));
             return new Size(available, rowHeight);
         }
 
-        double topRow = TopRowHeight();
+        _cachedControlsStacked = _layout.ShouldStack(available, _cachedTopRowNatural);
+
+        double topPortion = TopPortionHeight();
         if (!FiltersExpanded)
-            return new Size(available, topRow);
+            return new Size(available, topPortion);
 
         Chips.Measure(new Size(available, double.PositiveInfinity));
-        return new Size(available, topRow + RowSpacing + Chips.DesiredSize.Height);
+        return new Size(available, topPortion + RowSpacing + Chips.DesiredSize.Height);
     }
+
+    private double TopPortionHeight() => _cachedControlsStacked
+        ? Search.DesiredSize.Height + RowSpacing + ControlsRowHeight()
+        : TopRowHeight();
 
     private double TopRowHeight() => Math.Max(Search.DesiredSize.Height,
         Math.Max(Trailing.DesiredSize.Height, Toggle.DesiredSize.Height));
+
+    private double ControlsRowHeight() =>
+        Math.Max(Trailing.DesiredSize.Height, Toggle.DesiredSize.Height);
 
     protected override Size ArrangeOverride(Size finalSize) =>
         _layout.ShouldStack(finalSize.Width, _cachedNatural)
@@ -72,6 +89,7 @@ public class SearchRowPanel : Panel
 
     private Size ArrangeWide(Size finalSize)
     {
+        _cachedControlsStacked = false;
         Hide(Toggle);
         double height = finalSize.Height;
         double chipsW = Chips.DesiredSize.Width;
@@ -90,6 +108,25 @@ public class SearchRowPanel : Panel
     {
         double trailingW = Trailing.DesiredSize.Width;
         double toggleW = Toggle.DesiredSize.Width;
+        _cachedControlsStacked = _layout.ShouldStack(finalSize.Width, _cachedTopRowNatural);
+
+        double topPortion = _cachedControlsStacked
+            ? ArrangeStackedControls(finalSize, trailingW, toggleW)
+            : ArrangeSharedTopRow(finalSize, trailingW, toggleW);
+
+        if (!FiltersExpanded)
+        {
+            Hide(Chips);
+            return new Size(finalSize.Width, topPortion);
+        }
+
+        double y = topPortion + RowSpacing;
+        Show(Chips).Arrange(new Rect(0, y, finalSize.Width, Chips.DesiredSize.Height));
+        return new Size(finalSize.Width, y + Chips.DesiredSize.Height);
+    }
+
+    private double ArrangeSharedTopRow(Size finalSize, double trailingW, double toggleW)
+    {
         double topRow = TopRowHeight();
         double searchW = Math.Max(0, finalSize.Width - trailingW - toggleW - 2 * ClusterSpacing);
 
@@ -98,16 +135,19 @@ public class SearchRowPanel : Panel
         Show(Trailing).Arrange(new Rect(x, 0, trailingW, topRow));
         x += trailingW + ClusterSpacing;
         Show(Toggle).Arrange(new Rect(x, 0, toggleW, topRow));
+        return topRow;
+    }
 
-        if (!FiltersExpanded)
-        {
-            Hide(Chips);
-            return new Size(finalSize.Width, topRow);
-        }
+    private double ArrangeStackedControls(Size finalSize, double trailingW, double toggleW)
+    {
+        double searchH = Search.DesiredSize.Height;
+        double controlsH = ControlsRowHeight();
 
-        double y = topRow + RowSpacing;
-        Show(Chips).Arrange(new Rect(0, y, finalSize.Width, Chips.DesiredSize.Height));
-        return new Size(finalSize.Width, y + Chips.DesiredSize.Height);
+        Search.Arrange(new Rect(0, 0, finalSize.Width, searchH));
+        double y = searchH + RowSpacing;
+        Show(Trailing).Arrange(new Rect(0, y, trailingW, controlsH));
+        Show(Toggle).Arrange(new Rect(trailingW + ClusterSpacing, y, toggleW, controlsH));
+        return y + controlsH;
     }
 
     // Collapsed clusters stay measurable: IsVisible=false would zero their measured width,
