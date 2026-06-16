@@ -212,7 +212,7 @@
                     Padding="16,6">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <TextBlock Text="←" FontSize="16"/>
-                    <TextBlock Text="{Binding [Back], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    <TextBlock Text="{Binding [SaveAndBack], Source={x:Static loc:LocalizationService.Instance}}"/>
                 </StackPanel>
             </Button>
             <Button Command="{Binding SaveCommand}"
