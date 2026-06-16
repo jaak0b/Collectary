@@ -10,6 +10,9 @@ the editor for each [field type](field-types.md) — a text box for text, a date
 star control for ratings, an image picker for images, and so on. Fields are arranged by the
 collection's [field groups](collections.md#field-groups).
 
+When you're done, **Save and back** saves your changes and returns to the collection in one step.
+**Save** keeps you in the editor so you can carry on, and **Cancel** leaves without saving.
+
 ## Editing and deleting
 
 Open an item to edit its values or delete it. Edits save immediately and are attributed to the
