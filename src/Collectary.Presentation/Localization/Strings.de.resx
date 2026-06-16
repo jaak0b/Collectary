@@ -27,6 +27,7 @@
   <data name="DeleteItem" xml:space="preserve"><value>Eintrag löschen</value></data>
   <data name="Save" xml:space="preserve"><value>Speichern</value></data>
   <data name="Back" xml:space="preserve"><value>Zurück</value></data>
+  <data name="SaveAndBack" xml:space="preserve"><value>Speichern und zurück</value></data>
   <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
   <data name="Dialog_Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Delete" xml:space="preserve"><value>Löschen</value></data>
