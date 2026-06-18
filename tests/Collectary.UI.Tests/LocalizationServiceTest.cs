@@ -25,6 +25,18 @@ public class LocalizationServiceTest
     }
 
     [Test]
+    public void SettingsSectionHeaders_AreLocalizedInBothLanguages()
+    {
+        LocalizationService.Instance.Apply("en");
+        Assert.That(LocalizationService.Instance["Settings_Appearance"], Is.EqualTo("Appearance"));
+        Assert.That(LocalizationService.Instance["Settings_Language"], Is.EqualTo("Language"));
+
+        LocalizationService.Instance.Apply("de");
+        Assert.That(LocalizationService.Instance["Settings_Appearance"], Is.EqualTo("Darstellung"));
+        Assert.That(LocalizationService.Instance["Settings_Language"], Is.EqualTo("Sprache"));
+    }
+
+    [Test]
     public void Indexer_FallsBackToKey_WhenMissing() =>
         Assert.That(LocalizationService.Instance["___no_such_key___"], Is.EqualTo("___no_such_key___"));
 
@@ -107,14 +119,17 @@ public class LocalizationServiceTest
     public void Apply_RaisesLanguageChangedAndPropertyChanged()
     {
         var languageChanged = false;
-        var propertyChanged = false;
+        string? changedProperty = "untouched";
         LocalizationService.Instance.LanguageChanged += Handler;
         LocalizationService.Instance.PropertyChanged += PropHandler;
         try
         {
             LocalizationService.Instance.Apply("de");
             Assert.That(languageChanged, Is.True);
-            Assert.That(propertyChanged, Is.True);
+            Assert.That(changedProperty, Is.Null.Or.Empty,
+                "the notification must signal that all properties changed (null/empty name) so already-bound "
+                + "indexer bindings like {Binding [Key]} refresh live — the WPF-style \"Item[]\" name is not "
+                + "honoured by Avalonia's compiled bindings");
         }
         finally
         {
@@ -123,7 +138,7 @@ public class LocalizationServiceTest
         }
 
         void Handler(object? s, EventArgs e) => languageChanged = true;
-        void PropHandler(object? s, System.ComponentModel.PropertyChangedEventArgs e) => propertyChanged = true;
+        void PropHandler(object? s, System.ComponentModel.PropertyChangedEventArgs e) => changedProperty = e.PropertyName;
     }
 
     [Test]
