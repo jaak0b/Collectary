@@ -319,21 +319,15 @@ class Build : NukeBuild
             var signing = ResolveAndroidSigning();
             try
             {
-                DotNetPublish(s =>
-                {
-                    var settings = s
-                        .SetProject(AndroidProject)
-                        .SetConfiguration(Configuration);
-                    if (signing is null) return settings;
-
-                    var passwordReference = $"env:{AndroidKeystorePasswordVariable}";
-                    return settings
-                        .SetProperty("AndroidKeyStore", "true")
-                        .SetProperty("AndroidSigningKeyStore", signing.KeyStorePath)
-                        .SetProperty("AndroidSigningKeyAlias", AndroidSigningKeyAlias)
-                        .SetProperty("AndroidSigningStorePass", passwordReference)
-                        .SetProperty("AndroidSigningKeyPass", passwordReference);
-                });
+                var passwordReference = $"env:{AndroidKeystorePasswordVariable}";
+                DotNetPublish(s => s
+                    .SetProject(AndroidProject)
+                    .SetConfiguration(Configuration)
+                    .SetProperty("AndroidKeyStore", "true")
+                    .SetProperty("AndroidSigningKeyStore", signing.KeyStorePath)
+                    .SetProperty("AndroidSigningKeyAlias", AndroidSigningKeyAlias)
+                    .SetProperty("AndroidSigningStorePass", passwordReference)
+                    .SetProperty("AndroidSigningKeyPass", passwordReference));
 
                 var apks = AndroidProject.Parent
                     .GlobFiles($"bin/{Configuration}/**/*-Signed.apk", $"bin/{Configuration}/**/*.apk");
@@ -342,25 +336,19 @@ class Build : NukeBuild
             }
             finally
             {
-                if (signing is not null)
-                {
-                    signing.Delete();
-                    Environment.SetEnvironmentVariable(AndroidKeystorePasswordVariable, null);
-                }
+                signing.Delete();
+                Environment.SetEnvironmentVariable(AndroidKeystorePasswordVariable, null);
             }
         });
 
-    AndroidSigning? ResolveAndroidSigning()
+    AndroidSigning ResolveAndroidSigning()
     {
         var base64 = ResolveCredential(AndroidKeystoreBase64Variable);
         var password = ResolveCredential(AndroidKeystorePasswordVariable);
-        if (string.IsNullOrWhiteSpace(base64) || string.IsNullOrWhiteSpace(password))
-        {
-            Log.Warning("Android release signing is not configured ({KeyStoreVar}/{PasswordVar} absent); the APK "
-                + "will be signed with the local debug key and cannot update store-installed builds.",
-                AndroidKeystoreBase64Variable, AndroidKeystorePasswordVariable);
-            return null;
-        }
+        Assert.True(!string.IsNullOrWhiteSpace(base64) && !string.IsNullOrWhiteSpace(password),
+            $"Android signing is not configured: set {AndroidKeystoreBase64Variable} and "
+            + $"{AndroidKeystorePasswordVariable} (CI secrets, or user/machine environment variables locally). "
+            + "BuildApk and Release sign the APK with the permanent release keystore.");
 
         byte[] keyStoreBytes;
         try
