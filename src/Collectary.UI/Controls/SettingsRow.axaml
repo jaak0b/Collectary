@@ -9,12 +9,13 @@
             <ControlTemplate>
                 <Grid RowDefinitions="Auto,Auto">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="140" SharedSizeGroup="SettingsLabel"/>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SettingsLabel"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Name="PART_Label"
                                Grid.Row="0" Grid.Column="0"
                                Text="{TemplateBinding Label}"
+                               MaxWidth="160"
                                TextWrapping="Wrap"
                                VerticalAlignment="Center"
                                Margin="0,0,16,0"

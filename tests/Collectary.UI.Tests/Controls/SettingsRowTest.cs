@@ -46,7 +46,7 @@ public class SettingsRowTest
     }
 
     [Test]
-    public void WideLayout_ExpandsLabelColumnToFitLongText_AndKeepsRowsAligned()
+    public void LabelColumn_IsSharedAndCapped_SoLongLabelsWrapInsteadOfWideningTheColumn()
     {
         var theme = (ControlTheme)((ResourceDictionary)AvaloniaXamlLoader.Load(
             new Uri("avares://Collectary.UI/Controls/SettingsRow.axaml")))[typeof(SettingsRow)]!;
@@ -55,7 +55,7 @@ public class SettingsRowTest
         var longRow = new SettingsRow
         {
             Theme = theme,
-            Label = "Beschriftungsposition Sehr Langer Text",
+            Label = "Automatische Synchronisierung Sehr Lang",
             Content = new TextBlock { Text = "y" },
         };
 
@@ -69,11 +69,15 @@ public class SettingsRowTest
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Assert.That(Label(longRow).Bounds.Height, Is.LessThan(Label(shortRow).Bounds.Height * 1.6),
-                "the label column must widen to fit a long label on one line instead of wrapping it");
+            Assert.That(Content(shortRow).Bounds.X, Is.EqualTo(Content(longRow).Bounds.X).Within(0.5),
+                "every row's control must line up at the same left edge (one shared label column)");
 
-            Assert.That(Content(longRow).Bounds.X, Is.EqualTo(Content(shortRow).Bounds.X).Within(0.5),
-                "a shared label column must keep every row's control aligned to the same left edge");
+            Assert.That(Content(shortRow).Bounds.X, Is.LessThan(200),
+                "the shared column must stay capped: a very long label must wrap rather than push the "
+                + "column out to its full width and leave a giant gap before short labels' controls");
+
+            Assert.That(Label(longRow).Bounds.Height, Is.GreaterThan(Label(shortRow).Bounds.Height * 1.4),
+                "a label longer than the cap must wrap onto multiple lines (on spaces)");
         }
         finally
         {
