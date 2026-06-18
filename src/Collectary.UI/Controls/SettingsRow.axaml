@@ -17,6 +17,7 @@
                                Text="{TemplateBinding Label}"
                                MaxWidth="160"
                                TextWrapping="Wrap"
+                               HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                Margin="0,0,16,0"
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
