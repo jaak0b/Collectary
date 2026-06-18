@@ -85,6 +85,36 @@ public class SettingsRowTest
         }
     }
 
+    [Test]
+    public void NarrowStackedLayout_LabelIsLeftAligned_NotCentered()
+    {
+        var theme = (ControlTheme)((ResourceDictionary)AvaloniaXamlLoader.Load(
+            new Uri("avares://Collectary.UI/Controls/SettingsRow.axaml")))[typeof(SettingsRow)]!;
+
+        var row = new SettingsRow
+        {
+            Theme = theme,
+            Label = "Style",
+            Content = new TextBlock { Text = "x" },
+            NarrowThreshold = 400,
+        };
+        var window = new Window { Content = row, Width = 300, Height = 200 };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.That(row.Classes.Contains(":narrow"), Is.True, "precondition: row is in the stacked layout");
+            Assert.That(Label(row).Bounds.X, Is.LessThan(10),
+                "in the stacked (narrow) layout the label must stay left-aligned, not be centered by its "
+                + "MaxWidth cap");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static TextBlock Label(SettingsRow row) =>
         row.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Name == "PART_Label");
 
