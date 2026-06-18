@@ -13,6 +13,7 @@ public class CoreModule : Module
     {
         builder.RegisterType<PresetUseCase>().As<IPresetUseCase>().SingleInstance();
         builder.RegisterType<ItemUseCase>().As<IItemUseCase>().SingleInstance();
+        builder.RegisterType<AutoNumberService>().As<IAutoNumberService>().SingleInstance();
         builder.RegisterType<SearchFieldCatalog>().As<ISearchFieldCatalog>().SingleInstance();
         builder.Register(c => new ItemSearchService(
                 c.Resolve<IItemRepository>(),

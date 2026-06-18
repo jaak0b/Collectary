@@ -881,8 +881,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             return options;
         };
 
-        context.LoadUsedNumbersAsync = fieldId =>
-            itemUseCase.GetUsedAutoNumbersAsync(fieldId, existing?.Id);
+        context.EditingItemId = existing?.Id;
 
         context.GlobalFieldLabelLayout = AppPreferences.Load().FieldLabelLayout;
         context.IsNarrow = IsNarrow;

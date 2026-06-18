@@ -130,8 +130,10 @@ public partial class ExcelImportViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(SummaryImportedText))]
     [NotifyPropertyChangedFor(nameof(SummarySkippedText))]
     [NotifyPropertyChangedFor(nameof(SummaryWarningsText))]
+    [NotifyPropertyChangedFor(nameof(SummaryDuplicatesText))]
     [NotifyPropertyChangedFor(nameof(HasSkipped))]
     [NotifyPropertyChangedFor(nameof(HasWarnings))]
+    [NotifyPropertyChangedFor(nameof(HasDuplicates))]
     public partial ImportSummary? Summary { get; set; }
 
     public bool IsResult => Step == ImportStep.Result;
@@ -156,6 +158,7 @@ public partial class ExcelImportViewModel : ViewModelBase
 
     public bool HasSkipped => Summary is { Skipped.Count: > 0 };
     public bool HasWarnings => Summary is { Warnings.Count: > 0 };
+    public bool HasDuplicates => Summary is { Duplicates.Count: > 0 };
 
     public string SummarySkippedText => Summary is null
         ? string.Empty
@@ -167,10 +170,16 @@ public partial class ExcelImportViewModel : ViewModelBase
         : string.Format(LocalizationService.Instance["Import_Summary_Warnings"], Summary.Warnings.Count)
           + "\n" + string.Join("\n", Summary.Warnings.Select(w => $"#{w.RowNumber}: {DescribeIssue(w)}"));
 
+    public string SummaryDuplicatesText => Summary is null
+        ? string.Empty
+        : string.Format(LocalizationService.Instance["Import_Summary_Duplicates"], Summary.Duplicates.Count)
+          + "\n" + string.Join("\n", Summary.Duplicates.Select(d => $"#{d.RowNumber}: {DescribeIssue(d)}"));
+
     private string DescribeIssue(ImportIssue issue) => issue.Kind switch
     {
         ImportIssueKind.NoValues => string.Format(LocalizationService.Instance["Import_Issue_NoValues"], issue.Detail),
         ImportIssueKind.UnparsedCells => string.Format(LocalizationService.Instance["Import_Issue_Unparsed"], issue.Detail),
+        ImportIssueKind.DuplicateValue => string.Format(LocalizationService.Instance["Import_Issue_Duplicate"], issue.Detail),
         _ => issue.Detail
     };
 

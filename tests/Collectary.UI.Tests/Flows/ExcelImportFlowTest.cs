@@ -213,7 +213,8 @@ public class ExcelImportFlowTest : FlowTestBase
         vm.Summary = new ImportSummary(
             0,
             new[] { new ImportIssue(2, ImportIssueKind.NoValues, "Pages: 'abc'") },
-            new[] { new ImportIssue(3, ImportIssueKind.UnparsedCells, "Pages: 'xyz'") });
+            new[] { new ImportIssue(3, ImportIssueKind.UnparsedCells, "Pages: 'xyz'") },
+            Array.Empty<ImportIssue>());
 
         try
         {
@@ -441,6 +442,76 @@ public class ExcelImportFlowTest : FlowTestBase
         Assert.That(vm.Summary!.Imported, Is.EqualTo(1));
         Assert.That(vm.Summary.Warnings, Is.Empty,
             "an unmappable column must be dropped while mapping, not carried through as an unreadable cell");
+    }
+
+    [Test]
+    public async Task ExistingMode_AutoNumberField_IsMappable()
+    {
+        var preset = await CreateBooksPresetAsync(new AutoNumberFieldDefinition { Label = "No" });
+        var data = Workbook("Sheet1", new[] { Cell("Name") }, new[] { Cell("Dune") });
+        var vm = MakeVm(data, new[] { preset });
+        vm.SelectedPreset = preset;
+
+        await AdvanceToMapAsync(vm);
+
+        var option = vm.Columns.SelectMany(c => c.TargetOptions).First(o => o.Field is AutoNumberFieldDefinition);
+        Assert.That(option.IsMappable, Is.True, "an AutoNumber field must be selectable as an import target");
+    }
+
+    [Test]
+    public async Task NewCollectionImport_AutoNumberColumn_ImportsValueAsEditableWarnField()
+    {
+        var data = Workbook("Sheet1",
+            new[] { Cell("Title"), Cell("No") },
+            new[] { Cell("Dune"), Cell("42") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        vm.CreateNewCollection = true;
+        vm.NewCollectionName = "Imported";
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+        var numberColumn = vm.Columns[1];
+        numberColumn.SelectedTypeChoice = numberColumn.TypeChoices.First(t => t.Type == typeof(AutoNumberFieldDefinition));
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Summary!.Imported, Is.EqualTo(1));
+        var preset = (await PresetUseCase.GetAllPresetsAsync()).Single(p => p.Name == "Imported");
+        var number = (AutoNumberFieldDefinition)preset.Fields.Single(f => f.Label == "No");
+        Assert.Multiple(() =>
+        {
+            Assert.That(number.Editable, Is.True);
+            Assert.That(number.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn));
+        });
+        var items = await ItemRepo.GetByPresetAsync(preset.Id);
+        Assert.That(((AutoNumberFieldValue)items.Single().Values.Single()).Value, Is.EqualTo(42));
+    }
+
+    [Test]
+    public async Task NewCollectionImport_DuplicateAutoNumbers_AreReportedInTheSummary()
+    {
+        var data = Workbook("Sheet1",
+            new[] { Cell("Title"), Cell("No") },
+            new[] { Cell("Dune"), Cell("5") },
+            new[] { Cell("Hobbit"), Cell("5") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        vm.CreateNewCollection = true;
+        vm.NewCollectionName = "Imported";
+
+        await AdvanceToMapAsync(vm);
+        vm.Columns[0].IsTitle = true;
+        var numberColumn = vm.Columns[1];
+        numberColumn.SelectedTypeChoice = numberColumn.TypeChoices.First(t => t.Type == typeof(AutoNumberFieldDefinition));
+
+        await vm.NextCommand.ExecuteAsync(null);
+
+        Assert.That(vm.Summary!.Imported, Is.EqualTo(2));
+        Assert.That(vm.HasWarnings, Is.False, "a duplicate must not be reported as a cell left blank");
+        Assert.That(vm.HasDuplicates, Is.True);
+        Assert.That(vm.SummaryDuplicatesText, Does.Contain("No"), "the duplicate auto-number must be named in the summary");
+        var items = await ItemRepo.GetByPresetAsync((await PresetUseCase.GetAllPresetsAsync()).Single(p => p.Name == "Imported").Id);
+        Assert.That(items.SelectMany(i => i.Values).OfType<AutoNumberFieldValue>().Select(v => v.Value),
+            Is.EquivalentTo(new int?[] { 5, 5 }), "both duplicate rows must be imported unchanged");
     }
 
     [Test]

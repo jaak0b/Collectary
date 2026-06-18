@@ -62,6 +62,58 @@ public class SpreadsheetImportServiceTest : DbIntegrationTestBase
     }
 
     [Test]
+    public async Task ImportNewAsync_AutoNumberColumn_RoundTripsValueAndPersistsWarnEditableDefaults()
+    {
+        var grid = new ShapedGrid(new[] { "Name", "No" }, new IReadOnlyList<WorkbookCell>[]
+        {
+            new[] { Text("Dune"), Text("42") }
+        });
+        var columns = new[]
+        {
+            new NewFieldColumn(0, new DisplayNameFieldDefinition(), true),
+            new NewFieldColumn(1, new AutoNumberFieldDefinition { Label = "No" }, false)
+        };
+
+        var result = await _sut.ImportNewAsync("Books", grid, columns, CultureInfo.InvariantCulture);
+
+        Assert.That(result.Summary.Imported, Is.EqualTo(1));
+        var items = await _itemRepo.GetByPresetAsync(result.Preset.Id);
+        Assert.That(((AutoNumberFieldValue)items.Single().Values.Single()).Value, Is.EqualTo(42));
+
+        var effective = await _presetUseCase.GetEffectiveFieldsAsync(result.Preset.Id);
+        var number = (AutoNumberFieldDefinition)effective.Fields.Single(f => f.Label == "No");
+        Assert.Multiple(() =>
+        {
+            Assert.That(number.Editable, Is.True);
+            Assert.That(number.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn));
+        });
+    }
+
+    [Test]
+    public async Task ImportNewAsync_DuplicateAutoNumbers_AreImportedAndReportedAsWarnings()
+    {
+        var grid = new ShapedGrid(new[] { "Name", "No" }, new IReadOnlyList<WorkbookCell>[]
+        {
+            new[] { Text("Dune"), Text("5") },
+            new[] { Text("Hobbit"), Text("5") }
+        });
+        var columns = new[]
+        {
+            new NewFieldColumn(0, new DisplayNameFieldDefinition(), true),
+            new NewFieldColumn(1, new AutoNumberFieldDefinition { Label = "No" }, false)
+        };
+
+        var result = await _sut.ImportNewAsync("Books", grid, columns, CultureInfo.InvariantCulture);
+
+        Assert.That(result.Summary.Imported, Is.EqualTo(2));
+        Assert.That(result.Summary.Duplicates, Has.Count.EqualTo(1));
+        Assert.That(result.Summary.Warnings, Is.Empty, "a duplicate must not be reported as a left-blank cell");
+        var items = await _itemRepo.GetByPresetAsync(result.Preset.Id);
+        Assert.That(items.SelectMany(i => i.Values).OfType<AutoNumberFieldValue>().Select(v => v.Value),
+            Is.EquivalentTo(new int?[] { 5, 5 }));
+    }
+
+    [Test]
     public async Task ImportExistingAsync_PersistsItemsIntoExistingPreset()
     {
         var preset = new Preset { Name = "Books" };
