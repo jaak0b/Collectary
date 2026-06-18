@@ -7,10 +7,15 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto">
+                <Grid RowDefinitions="Auto,Auto">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SettingsLabel"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <TextBlock x:Name="PART_Label"
                                Grid.Row="0" Grid.Column="0"
                                Text="{TemplateBinding Label}"
+                               MaxWidth="160"
                                TextWrapping="Wrap"
                                VerticalAlignment="Center"
                                Margin="0,0,16,0"

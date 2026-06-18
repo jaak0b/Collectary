@@ -53,7 +53,7 @@ public class LocalizationService : INotifyPropertyChanged
 
         _managers = BuildManagers(languageCode);
 
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
         LanguageChanged?.Invoke(this, EventArgs.Empty);
         WeakReferenceMessenger.Default.Send(new LanguageChangedMessage());
     }

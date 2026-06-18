@@ -108,7 +108,9 @@
   <data name="Audio_Earpiece" xml:space="preserve"><value>Hörmuschel</value></data>
   <data name="Audio_WiredHeadset" xml:space="preserve"><value>Kabelgebundenes Headset</value></data>
   <data name="Audio_WiredHeadphones" xml:space="preserve"><value>Kabelgebundene Kopfhörer</value></data>
+  <data name="Settings_Appearance" xml:space="preserve"><value>Darstellung</value></data>
   <data name="Settings_Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Sprache</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Erscheinungsbild</value></data>
   <data name="Theme_Light" xml:space="preserve"><value>Hell</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dunkel</value></data>
