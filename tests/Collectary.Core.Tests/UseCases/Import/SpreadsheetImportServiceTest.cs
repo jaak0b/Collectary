@@ -25,6 +25,7 @@ public class SpreadsheetImportServiceTest
         A.CallTo(() => _items.CreateItemAsync(A<Item>._))
             .Invokes((Item i) => _created.Add(i))
             .Returns(Task.CompletedTask);
+        A.CallTo(() => _items.GetItemsForPresetAsync(A<Guid>._)).Returns(new List<Item>());
         _sut = new SpreadsheetImportService(_items, _presets);
     }
 
@@ -155,6 +156,115 @@ public class SpreadsheetImportServiceTest
         Assert.That(_created[0].DisplayName, Is.EqualTo("Dune"));
         Assert.That(_created[0].Values.OfType<IntegerFieldValue>().Select(v => v.Value),
             Is.EquivalentTo(new int?[] { 412, 1965 }));
+    }
+
+    [Test]
+    public async Task ImportExistingAsync_AutoNumberColumn_ImportsTheNumberVerbatim()
+    {
+        var presetId = Guid.NewGuid();
+        var number = new AutoNumberFieldDefinition { Label = "No" };
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId))
+            .Returns(new EffectiveFields { Fields = new FieldDefinition[] { new DisplayNameFieldDefinition(), number } });
+
+        var grid = Grid(new[] { "Name", "No" }, new[] { Text("Dune"), Text("42") });
+        var mappings = new[] { new ColumnMapping(0, Guid.Empty, true), new ColumnMapping(1, number.Id, false) };
+
+        var summary = await _sut.ImportExistingAsync(presetId, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(1));
+        Assert.That(((AutoNumberFieldValue)_created[0].Values.Single()).Value, Is.EqualTo(42));
+    }
+
+    [Test]
+    public async Task ImportNewAsync_AutoNumberColumn_IsEditableAndWarnsOnDuplicate()
+    {
+        Preset? captured = null;
+        A.CallTo(() => _presets.CreatePresetAsync(A<Preset>._))
+            .Invokes((Preset p) => captured = p)
+            .Returns(Task.CompletedTask);
+
+        var grid = Grid(new[] { "Title", "No" }, new[] { Text("Dune"), Text("7") });
+        var columns = new[]
+        {
+            new NewFieldColumn(0, new DisplayNameFieldDefinition(), true),
+            new NewFieldColumn(1, new AutoNumberFieldDefinition { Label = "No" }, false)
+        };
+
+        await _sut.ImportNewAsync("Books", grid, columns, CultureInfo.InvariantCulture);
+
+        var number = (AutoNumberFieldDefinition)captured!.Fields.Single(f => f.Label == "No");
+        Assert.Multiple(() =>
+        {
+            Assert.That(number.Editable, Is.True, "imported numbers must be editable so the duplicate warning can surface");
+            Assert.That(number.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn), "duplicates must warn, never block the save");
+        });
+        Assert.That(((AutoNumberFieldValue)_created[0].Values.Single()).Value, Is.EqualTo(7));
+    }
+
+    [Test]
+    public async Task ImportExistingAsync_DuplicateAutoNumbersWithinTheSheet_AreImportedButWarned()
+    {
+        var presetId = Guid.NewGuid();
+        var number = new AutoNumberFieldDefinition { Label = "No", OnDuplicate = DuplicateHandling.Warn };
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId))
+            .Returns(new EffectiveFields { Fields = new FieldDefinition[] { new DisplayNameFieldDefinition(), number } });
+
+        var grid = Grid(new[] { "Name", "No" },
+            new[] { Text("Dune"), Text("5") },
+            new[] { Text("Hobbit"), Text("5") });
+        var mappings = new[] { new ColumnMapping(0, Guid.Empty, true), new ColumnMapping(1, number.Id, false) };
+
+        var summary = await _sut.ImportExistingAsync(presetId, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(2), "a duplicate must never block the import");
+        Assert.That(summary.Warnings, Is.Empty, "a duplicate is not a left-blank cell and must not inflate that count");
+        var dup = summary.Duplicates.Single();
+        Assert.That(dup.Kind, Is.EqualTo(ImportIssueKind.DuplicateValue));
+        Assert.That(dup.RowNumber, Is.EqualTo(2));
+        Assert.That(dup.Detail, Does.Contain("No"));
+        Assert.That(((AutoNumberFieldValue)_created[1].Values.Single()).Value, Is.EqualTo(5),
+            "the duplicate value must be imported unchanged, never dropped");
+    }
+
+    [Test]
+    public async Task ImportExistingAsync_AutoNumberCollidingWithAnExistingItem_IsWarned()
+    {
+        var presetId = Guid.NewGuid();
+        var number = new AutoNumberFieldDefinition { Label = "No", OnDuplicate = DuplicateHandling.Error };
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId))
+            .Returns(new EffectiveFields { Fields = new FieldDefinition[] { new DisplayNameFieldDefinition(), number } });
+        A.CallTo(() => _items.GetItemsForPresetAsync(presetId)).Returns(new List<Item>
+        {
+            new() { Values = { new AutoNumberFieldValue { FieldDefinitionId = number.Id, Value = 5 } } }
+        });
+
+        var grid = Grid(new[] { "Name", "No" }, new[] { Text("Dune"), Text("5") });
+        var mappings = new[] { new ColumnMapping(0, Guid.Empty, true), new ColumnMapping(1, number.Id, false) };
+
+        var summary = await _sut.ImportExistingAsync(presetId, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(1));
+        Assert.That(summary.Duplicates, Has.Count.EqualTo(1));
+        Assert.That(((AutoNumberFieldValue)_created[0].Values.Single()).Value, Is.EqualTo(5));
+    }
+
+    [Test]
+    public async Task ImportExistingAsync_DuplicateAutoNumbers_WhenDuplicatesAreAllowed_AreNotWarned()
+    {
+        var presetId = Guid.NewGuid();
+        var number = new AutoNumberFieldDefinition { Label = "No", OnDuplicate = DuplicateHandling.Allow };
+        A.CallTo(() => _presets.GetEffectiveFieldsAsync(presetId))
+            .Returns(new EffectiveFields { Fields = new FieldDefinition[] { new DisplayNameFieldDefinition(), number } });
+
+        var grid = Grid(new[] { "Name", "No" },
+            new[] { Text("Dune"), Text("5") },
+            new[] { Text("Hobbit"), Text("5") });
+        var mappings = new[] { new ColumnMapping(0, Guid.Empty, true), new ColumnMapping(1, number.Id, false) };
+
+        var summary = await _sut.ImportExistingAsync(presetId, grid, mappings, CultureInfo.InvariantCulture);
+
+        Assert.That(summary.Imported, Is.EqualTo(2));
+        Assert.That(summary.Duplicates, Is.Empty);
     }
 
     [Test]

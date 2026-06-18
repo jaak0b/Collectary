@@ -1,3 +1,4 @@
+using System.Globalization;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 using Collectary.Search;
@@ -43,6 +44,40 @@ public class AutoNumberFieldDefinitionTest
     }
 
     [Test]
+    public void NextNumber_HighestPlusOne_AtIntMaxValue_DoesNotOverflowToNegative()
+    {
+        var def = new AutoNumberFieldDefinition { Strategy = AutoNumberStrategy.HighestPlusOne };
+        var used = new[] { 1, 2, int.MaxValue };
+
+        var next = def.NextNumber(used);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(next, Is.GreaterThan(0), "the next number must never wrap to a negative value");
+            Assert.That(used, Does.Not.Contain(next), "the next number must not collide with an existing one");
+        });
+    }
+
+    [Test]
+    public void EnforcesUniqueImportValues_IsTrue_WhenDuplicatesAreErrorOrWarn(
+        [Values(DuplicateHandling.Error, DuplicateHandling.Warn)] DuplicateHandling mode)
+    {
+        Assert.That(new AutoNumberFieldDefinition { OnDuplicate = mode }.EnforcesUniqueImportValues, Is.True);
+    }
+
+    [Test]
+    public void EnforcesUniqueImportValues_IsFalse_WhenDuplicatesAreAllowed()
+    {
+        Assert.That(new AutoNumberFieldDefinition { OnDuplicate = DuplicateHandling.Allow }.EnforcesUniqueImportValues, Is.False);
+    }
+
+    [Test]
+    public void EnforcesUniqueImportValues_IsFalse_ByDefaultForImportableFieldsThatDoNotTrackUniqueness()
+    {
+        Assert.That(((ITextImportable)new TextFieldDefinition()).EnforcesUniqueImportValues, Is.False);
+    }
+
+    [Test]
     public void ApplyTypeSpecificProperties_CopiesConfig()
     {
         var target = new AutoNumberFieldDefinition();
@@ -82,6 +117,56 @@ public class AutoNumberFieldDefinitionTest
             Assert.That(def.Strategy, Is.EqualTo(AutoNumberStrategy.HighestPlusOne));
             Assert.That(def.OnDuplicate, Is.EqualTo(DuplicateHandling.Error));
             Assert.That(def.ShowInList, Is.True);
+        });
+    }
+
+    [Test]
+    public void TryImportFromText_ParsesInteger_IntoAutoNumberValue()
+    {
+        var def = new AutoNumberFieldDefinition();
+        ITextImportable importable = def;
+
+        Assert.That(importable.TryImportFromText("42", CultureInfo.InvariantCulture, out var value), Is.True);
+        var auto = (AutoNumberFieldValue)value;
+        Assert.That(auto.Value, Is.EqualTo(42));
+        Assert.That(auto.FieldDefinitionId, Is.EqualTo(def.Id));
+    }
+
+    [Test]
+    public void TryImportFromText_AllowsThousandsSeparators()
+    {
+        ITextImportable importable = new AutoNumberFieldDefinition();
+
+        Assert.That(importable.TryImportFromText("1,000", CultureInfo.InvariantCulture, out var value), Is.True);
+        Assert.That(((AutoNumberFieldValue)value).Value, Is.EqualTo(1000));
+    }
+
+    [Test]
+    public void TryImportFromText_NonInteger_ReturnsFalseWithEmptyValue()
+    {
+        ITextImportable importable = new AutoNumberFieldDefinition();
+
+        Assert.That(importable.TryImportFromText("abc", CultureInfo.InvariantCulture, out var value), Is.False);
+        Assert.That(value.IsEmpty, Is.True);
+    }
+
+    [Test]
+    public void ImportInferenceOrder_IsMaxValue_SoAPlainNumberColumnNeverInfersAsAutoNumber()
+    {
+        Assert.That(((ITextImportable)new AutoNumberFieldDefinition()).ImportInferenceOrder, Is.EqualTo(int.MaxValue));
+    }
+
+    [Test]
+    public void ApplyImportDefaults_MakesItEditableAndWarnOnDuplicate_SoImportedNumbersDoNotBlockSaving()
+    {
+        var def = new AutoNumberFieldDefinition();
+
+        ((ITextImportable)def).ApplyImportDefaults();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(def.Editable, Is.True);
+            Assert.That(def.OnDuplicate, Is.EqualTo(DuplicateHandling.Warn));
         });
     }
 

@@ -8,11 +8,16 @@ public enum ImportIssueKind
 {
     NoValues,
     UnparsedCells,
-    Error
+    Error,
+    DuplicateValue
 }
 
 public sealed record ImportIssue(int RowNumber, ImportIssueKind Kind, string Detail);
 
-public sealed record ImportSummary(int Imported, IReadOnlyList<ImportIssue> Skipped, IReadOnlyList<ImportIssue> Warnings);
+public sealed record ImportSummary(
+    int Imported,
+    IReadOnlyList<ImportIssue> Skipped,
+    IReadOnlyList<ImportIssue> Warnings,
+    IReadOnlyList<ImportIssue> Duplicates);
 
 public sealed record ImportNewResult(Preset Preset, ImportSummary Summary);

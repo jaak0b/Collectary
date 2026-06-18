@@ -58,6 +58,13 @@ public class FieldTypeInferenceTest
     }
 
     [Test]
+    public void Infer_PlainIntegerColumn_NeverInfersAsAutoNumber()
+    {
+        var column = new[] { Text("1"), Text("2"), Text("3") };
+        Assert.That(new FieldTypeInference().Infer(column, _invariant), Is.Not.TypeOf<AutoNumberFieldDefinition>());
+    }
+
+    [Test]
     public void Infer_TypedNumberCells_ParseInvariantNotSourceCulture()
     {
         var column = new[] { Number("1234.56"), Number("99.10") };

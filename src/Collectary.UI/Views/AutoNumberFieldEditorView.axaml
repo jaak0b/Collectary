@@ -24,6 +24,7 @@
                                         Maximum="2147483647"
                                         FormatString="0"
                                         Increment="1"
+                                        HorizontalAlignment="Left"
                                         VerticalAlignment="Top"
                                         MinWidth="120"/>
             <TextBlock Classes="notice"

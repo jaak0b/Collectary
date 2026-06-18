@@ -40,6 +40,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             }
             column.Definition.PresetId = preset.Id;
             column.Definition.DisplayOrder = order++;
+            if (column.Definition is ITextImportable importable) importable.ApplyImportDefaults();
             preset.Fields.Add(column.Definition);
             mappings.Add(new ColumnMapping(column.ColumnIndex, column.Definition.Id, false));
         }
@@ -61,6 +62,8 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
         var imported = 0;
         var skipped = new List<ImportIssue>();
         var warnings = new List<ImportIssue>();
+        var duplicateNotices = new List<ImportIssue>();
+        var seenUniqueValues = await BuildUniqueValueTrackersAsync(presetId, fieldsById, distinctMappings);
 
         for (var rowIndex = 0; rowIndex < grid.Rows.Count; rowIndex++)
         {
@@ -68,6 +71,8 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             var rowNumber = rowIndex + 1;
             var item = new Item { PresetId = presetId };
             var unparsed = new List<string>();
+            var duplicates = new List<string>();
+            var pendingUnique = new List<UniqueValueHit>();
 
             foreach (var mapping in distinctMappings)
             {
@@ -93,6 +98,13 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
                 {
                     value.FieldDefinitionId = definition.Id;
                     item.Values.Add(value);
+
+                    if (seenUniqueValues.TryGetValue(definition.Id, out var seen) && !value.IsEmpty)
+                    {
+                        var key = value.ToString()!;
+                        if (seen.Contains(key)) duplicates.Add(definition.Label);
+                        pendingUnique.Add(new UniqueValueHit(definition.Id, key));
+                    }
                 }
                 else
                 {
@@ -111,8 +123,11 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             {
                 await _items.CreateItemAsync(item);
                 imported++;
+                foreach (var hit in pendingUnique) seenUniqueValues[hit.FieldDefinitionId].Add(hit.Key);
                 if (unparsed.Count > 0)
                     warnings.Add(new ImportIssue(rowNumber, ImportIssueKind.UnparsedCells, string.Join("; ", unparsed)));
+                if (duplicates.Count > 0)
+                    duplicateNotices.Add(new ImportIssue(rowNumber, ImportIssueKind.DuplicateValue, string.Join("; ", duplicates)));
             }
             catch (Exception ex)
             {
@@ -120,7 +135,32 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             }
         }
 
-        return new ImportSummary(imported, skipped, warnings);
+        return new ImportSummary(imported, skipped, warnings, duplicateNotices);
+    }
+
+    private sealed record UniqueValueHit(Guid FieldDefinitionId, string Key);
+
+    private async Task<Dictionary<Guid, HashSet<string>>> BuildUniqueValueTrackersAsync(
+        Guid presetId,
+        IReadOnlyDictionary<Guid, FieldDefinition> fieldsById,
+        IReadOnlyList<ColumnMapping> distinctMappings)
+    {
+        var trackers = new Dictionary<Guid, HashSet<string>>();
+        foreach (var mapping in distinctMappings)
+        {
+            if (mapping.IsTitle) continue;
+            if (fieldsById.TryGetValue(mapping.FieldDefinitionId, out var definition)
+                && definition is ITextImportable { EnforcesUniqueImportValues: true })
+                trackers[mapping.FieldDefinitionId] = new HashSet<string>(StringComparer.Ordinal);
+        }
+        if (trackers.Count == 0) return trackers;
+
+        foreach (var existing in await _items.GetItemsForPresetAsync(presetId))
+            foreach (var value in existing.Values)
+                if (!value.IsEmpty && trackers.TryGetValue(value.FieldDefinitionId, out var seen))
+                    seen.Add(value.ToString()!);
+
+        return trackers;
     }
 
     private IReadOnlyList<ColumnMapping> DistinctMappings(IReadOnlyList<ColumnMapping> mappings)

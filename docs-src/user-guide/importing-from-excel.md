@@ -98,6 +98,18 @@ A few CSV-specific notes:
   are recognised on their own and read the same way no matter what that picker is set to, so a file
   exported by a program rather than a person just works.
 
+## Auto-number columns
+
+If your spreadsheet already has its own running number — an article number, a catalogue ID, that kind
+of thing — you can bring it in as an **Auto-number** field. Map the column (or pick the Auto-number type
+when building a new collection) and Collectary keeps the numbers exactly as they are in the sheet; it
+never renumbers or overwrites them. Imported auto-number fields come in **editable**, so you can adjust a
+value later. If the same number turns up twice — repeated within the sheet, or clashing with a number
+already in the collection — the import doesn't block: it brings the rows in and **lists the duplicates on
+the final summary** so you can tidy them up. New items you add after the import still get their next number
+assigned automatically, and a cell left blank in the sheet simply comes in without a number (it gets one
+the first time you open that item).
+
 ## When a value doesn't fit
 
 The import never invents data. If a cell can't be read as the field you mapped it to — a word in a

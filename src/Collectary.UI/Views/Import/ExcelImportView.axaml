@@ -226,6 +226,7 @@
                 <TextBlock Text="{Binding SummaryImportedText}" FontSize="16" FontWeight="SemiBold"/>
                 <SelectableTextBlock Text="{Binding SummarySkippedText}" IsVisible="{Binding HasSkipped}" TextWrapping="Wrap"/>
                 <SelectableTextBlock Text="{Binding SummaryWarningsText}" IsVisible="{Binding HasWarnings}" TextWrapping="Wrap" Opacity="0.75"/>
+                <SelectableTextBlock Text="{Binding SummaryDuplicatesText}" IsVisible="{Binding HasDuplicates}" TextWrapping="Wrap" Opacity="0.75"/>
             </StackPanel>
 
         </Grid>
