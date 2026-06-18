@@ -66,7 +66,13 @@ public partial class SettingsViewModel : ViewModelBase
         {
             new(null, LocalizationService.Instance["Audio_SystemDefault"]),
         };
-        if (devices is not null) options.AddRange(devices);
+        if (devices is not null)
+        {
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var device in devices)
+                if (seenNames.Add(device.Name))
+                    options.Add(device);
+        }
         return options;
     }
 

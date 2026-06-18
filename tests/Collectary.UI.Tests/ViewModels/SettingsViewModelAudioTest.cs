@@ -61,6 +61,23 @@ public class SettingsViewModelAudioTest
     }
 
     [Test]
+    public void InputDevices_CollapseDuplicateNamesKeepingTheFirst()
+    {
+        var sut = Make(RecorderWith(
+            new AudioInputDevice("1", "Phone microphone"),
+            new AudioInputDevice("2", "Phone microphone"),
+            new AudioInputDevice("3", "Headset")));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(sut.InputDevices.Select(o => o.Name), Is.EqualTo(
+                new[] { LocalizationService.Instance["Audio_SystemDefault"], "Phone microphone", "Headset" }));
+            Assert.That(sut.InputDevices.First(o => o.Name == "Phone microphone").Id, Is.EqualTo("1"),
+                "the first device carrying a duplicated name wins");
+        });
+    }
+
+    [Test]
     public void OutputDevices_SystemDefaultFirst_ThenEnumeratedSpeakers()
     {
         var sut = Make(player: PlayerWith(new AudioOutputDevice("9", "Speakers")));
