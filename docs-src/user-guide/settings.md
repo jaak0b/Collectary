@@ -52,6 +52,10 @@ through. Both start on **System default**, so they follow whatever your operatin
 pick a specific device only if you want to override that. The choice is app-wide and is used the next
 time you record or play a clip; the browser build has no audio, so the section is hidden there.
 
+On Android the lists name each device by its role — *Phone microphone*, *Phone speaker*, *Earpiece*,
+wired and Bluetooth devices by their own names — and collapse the duplicate entries the platform
+otherwise reports for a single built-in device.
+
 ## Language
 
 Collectary is available in English and German. Pick a language and the UI updates immediately — no

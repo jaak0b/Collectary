@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Media;
 using Collectary.Core.Ports;
+using Collectary.Presentation.Localization;
 using Application = Android.App.Application;
 using Stream = System.IO.Stream;
 
@@ -24,9 +25,18 @@ public sealed class AndroidAudioPlayer : IAudioPlayer
         var outputs = GetManager()?.GetDevices(GetDevicesTargets.Outputs);
         if (outputs is null) return devices;
         foreach (var device in outputs)
-            devices.Add(new AudioOutputDevice(device.Id.ToString(), device.ProductName?.ToString() ?? "Speaker"));
+            devices.Add(new AudioOutputDevice(device.Id.ToString(), OutputDeviceName(device)));
         return devices;
     }
+
+    private string OutputDeviceName(AudioDeviceInfo device) => device.Type switch
+    {
+        AudioDeviceType.BuiltinSpeaker => LocalizationService.Instance["Audio_PhoneSpeaker"],
+        AudioDeviceType.BuiltinEarpiece => LocalizationService.Instance["Audio_Earpiece"],
+        AudioDeviceType.WiredHeadphones => LocalizationService.Instance["Audio_WiredHeadphones"],
+        AudioDeviceType.WiredHeadset => LocalizationService.Instance["Audio_WiredHeadset"],
+        _ => device.ProductName?.ToString() ?? LocalizationService.Instance["Audio_PhoneSpeaker"],
+    };
 
     public async Task PlayAsync(Stream audio, string? deviceId)
     {

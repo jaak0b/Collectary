@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Media;
 using Collectary.Core.Ports;
+using Collectary.Presentation.Localization;
 using Application = Android.App.Application;
 using Encoding = Android.Media.Encoding;
 
@@ -31,9 +32,16 @@ public sealed class AndroidAudioRecorder : IAudioRecorder
         var inputs = GetManager()?.GetDevices(GetDevicesTargets.Inputs);
         if (inputs is null) return devices;
         foreach (var device in inputs)
-            devices.Add(new AudioInputDevice(device.Id.ToString(), device.ProductName?.ToString() ?? "Microphone"));
+            devices.Add(new AudioInputDevice(device.Id.ToString(), InputDeviceName(device)));
         return devices;
     }
+
+    private string InputDeviceName(AudioDeviceInfo device) => device.Type switch
+    {
+        AudioDeviceType.BuiltinMic => LocalizationService.Instance["Audio_PhoneMicrophone"],
+        AudioDeviceType.WiredHeadset => LocalizationService.Instance["Audio_WiredHeadset"],
+        _ => device.ProductName?.ToString() ?? LocalizationService.Instance["Audio_PhoneMicrophone"],
+    };
 
     public void Start(string? deviceId)
     {
