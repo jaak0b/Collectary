@@ -25,7 +25,7 @@
         </Style>
     </UserControl.Styles>
 
-    <Panel>
+    <Panel Background="{DynamicResource BackgroundBrush}">
 
     <Grid RowDefinitions="48,*" IsVisible="{Binding IsAuthenticated}">
 
