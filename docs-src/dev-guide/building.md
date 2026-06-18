@@ -145,7 +145,11 @@ Releases are **manual** and produced by the `Release` NUKE target, which:
 1. publishes the desktop head self-contained for `win-x64`,
 2. runs `vpk pack` to build `Collectary-win-Setup.exe` and the update feed (`releases.win.json`,
    the `-full.nupkg`, `RELEASES`),
-3. builds the signed Android APK,
+3. builds the Android APK, signed with the **permanent release keystore** from the
+   `COLLECTARY_ANDROID_KEYSTORE_BASE64` / `COLLECTARY_ANDROID_KEYSTORE_PASSWORD` secrets so every release
+   carries the same signing identity and phones can update in place (see
+   [Cloud setup → Self-signed release](cloud-setup.md#getting-the-android-signature-hash)); without those
+   secrets the APK falls back to the local debug key, fine for testing but not for distribution,
 4. creates a GitHub release tagged `v<version>` whose **notes are the titles of the labeled pull
    requests merged since the previous release tag** (grouped into Features and Fixes by the `feature`
    and `fix`/`bug` labels — see [Contributing](contributing.md#pull-requests-and-release-notes)), and

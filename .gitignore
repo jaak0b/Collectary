@@ -460,3 +460,7 @@ StrykerOutput/
 # `site/` is the MkDocs output; `browser-publish/` is the transient WASM publish copied into site/app/.
 browser-publish/
 /site/
+
+# Android release signing keys must never enter the repo — they live outside it and in CI secrets.
+*.keystore
+*.jks

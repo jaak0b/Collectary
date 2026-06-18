@@ -41,6 +41,10 @@ class Build : NukeBuild
 
     const string GitHubRepoUrl = "https://github.com/jaak0b/Collectary";
 
+    const string AndroidSigningKeyAlias = "collectary";
+    const string AndroidKeystoreBase64Variable = "COLLECTARY_ANDROID_KEYSTORE_BASE64";
+    const string AndroidKeystorePasswordVariable = "COLLECTARY_ANDROID_KEYSTORE_PASSWORD";
+
     [Parameter("GitHub token for publishing releases. Defaults to the GH_TOKEN or GITHUB_TOKEN environment variable.")]
     readonly string GitHubToken = Environment.GetEnvironmentVariable("GH_TOKEN")
         ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
@@ -312,15 +316,69 @@ class Build : NukeBuild
         .DependsOn(CheckCredentials)
         .Executes(() =>
         {
-            DotNetPublish(s => s
-                .SetProject(AndroidProject)
-                .SetConfiguration(Configuration));
+            var signing = ResolveAndroidSigning();
+            try
+            {
+                DotNetPublish(s =>
+                {
+                    var settings = s
+                        .SetProject(AndroidProject)
+                        .SetConfiguration(Configuration);
+                    if (signing is null) return settings;
 
-            var apks = AndroidProject.Parent
-                .GlobFiles($"bin/{Configuration}/**/*-Signed.apk", $"bin/{Configuration}/**/*.apk");
-            foreach (var apk in apks.Distinct())
-                Log.Information("APK: {Apk}", apk);
+                    var passwordReference = $"env:{AndroidKeystorePasswordVariable}";
+                    return settings
+                        .SetProperty("AndroidKeyStore", "true")
+                        .SetProperty("AndroidSigningKeyStore", signing.KeyStorePath)
+                        .SetProperty("AndroidSigningKeyAlias", AndroidSigningKeyAlias)
+                        .SetProperty("AndroidSigningStorePass", passwordReference)
+                        .SetProperty("AndroidSigningKeyPass", passwordReference);
+                });
+
+                var apks = AndroidProject.Parent
+                    .GlobFiles($"bin/{Configuration}/**/*-Signed.apk", $"bin/{Configuration}/**/*.apk");
+                foreach (var apk in apks.Distinct())
+                    Log.Information("APK: {Apk}", apk);
+            }
+            finally
+            {
+                if (signing is not null)
+                {
+                    signing.Delete();
+                    Environment.SetEnvironmentVariable(AndroidKeystorePasswordVariable, null);
+                }
+            }
         });
+
+    AndroidSigning? ResolveAndroidSigning()
+    {
+        var base64 = ResolveCredential(AndroidKeystoreBase64Variable);
+        var password = ResolveCredential(AndroidKeystorePasswordVariable);
+        if (string.IsNullOrWhiteSpace(base64) || string.IsNullOrWhiteSpace(password))
+        {
+            Log.Warning("Android release signing is not configured ({KeyStoreVar}/{PasswordVar} absent); the APK "
+                + "will be signed with the local debug key and cannot update store-installed builds.",
+                AndroidKeystoreBase64Variable, AndroidKeystorePasswordVariable);
+            return null;
+        }
+
+        byte[] keyStoreBytes;
+        try
+        {
+            keyStoreBytes = Convert.FromBase64String(base64.Trim());
+        }
+        catch (FormatException exception)
+        {
+            throw new Exception($"{AndroidKeystoreBase64Variable} is not valid base64 — recreate it with "
+                + "[Convert]::ToBase64String([IO.File]::ReadAllBytes('your.keystore')).", exception);
+        }
+
+        var keyStorePath = TemporaryDirectory / $"collectary-release-{Guid.NewGuid():N}.keystore";
+        keyStorePath.WriteAllBytes(keyStoreBytes);
+        Environment.SetEnvironmentVariable(AndroidKeystorePasswordVariable, password);
+        Log.Information("Signing the Android APK with the configured release keystore.");
+        return new AndroidSigning(keyStorePath);
+    }
 
     Target PublishDesktop => _ => _
         .Description("Publishes the Windows desktop head self-contained (win-x64) for packaging.")
@@ -361,6 +419,8 @@ class Build : NukeBuild
         .Description("Publishes a GitHub release: Windows installer + update feed, the Android APK, and commit-message notes.")
         .DependsOn(Pack, BuildApk)
         .Requires(() => GitHubToken)
+        .Requires(() => !string.IsNullOrWhiteSpace(ResolveCredential(AndroidKeystoreBase64Variable)))
+        .Requires(() => !string.IsNullOrWhiteSpace(ResolveCredential(AndroidKeystorePasswordVariable)))
         .Executes(() =>
         {
             var version = ReleaseVersion();
@@ -512,4 +572,9 @@ class Build : NukeBuild
         || path.EndsWith("/DialogService.cs", StringComparison.OrdinalIgnoreCase);
 
     record CloudCredential(string EnvVariable, string Purpose);
+
+    sealed record AndroidSigning(AbsolutePath KeyStorePath)
+    {
+        public void Delete() => KeyStorePath.DeleteFile();
+    }
 }
