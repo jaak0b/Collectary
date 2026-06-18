@@ -45,6 +45,7 @@
   <data name="AutoNumberStrategy_HighestPlusOne" xml:space="preserve"><value>Highest used number + 1</value></data>
   <data name="AutoNumberStrategy_FillGaps" xml:space="preserve"><value>Lowest unused number (fills gaps)</value></data>
   <data name="AutoNumber_OnDuplicate" xml:space="preserve"><value>If an entered number is already used</value></data>
+  <data name="AutoNumber_GeneratesOnSave" xml:space="preserve"><value>Generates on save</value></data>
   <data name="DuplicateHandling_Error" xml:space="preserve"><value>Block saving</value></data>
   <data name="DuplicateHandling_Warn" xml:space="preserve"><value>Show a warning</value></data>
   <data name="DuplicateHandling_Allow" xml:space="preserve"><value>Allow it</value></data>

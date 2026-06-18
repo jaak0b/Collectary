@@ -6,6 +6,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Collectary.Core.Domain.Fields;
+using Collectary.Core.Ports;
 using Collectary.Presentation.DI;
 using Collectary.Presentation.ViewModels;
 using Collectary.UI.Controls;
@@ -17,25 +18,32 @@ namespace Collectary.UI.Tests.Views;
 [TestFixture]
 public class AutoNumberFieldEditorViewTest
 {
-    private static ItemEditingContext MakeContext(IReadOnlyCollection<int> used)
+    private static ItemEditingContext MakeContext(Guid editingItemId)
     {
-        var ctx = new ItemEditingContext(
+        return new ItemEditingContext(
             editorRegistry: A.Fake<IFieldEditorRegistry>(),
             listCellBuilder: A.Fake<IListCellBuilder>(),
             goBack: () => { },
             pickAndStoreImageAsync: () => Task.FromResult<(string, string, Avalonia.Media.Imaging.Bitmap)?>(null),
             exportImageAsync: (_, _) => Task.CompletedTask,
             loadImageBitmap: _ => null,
-            deleteImageAsync: _ => Task.CompletedTask);
-        ctx.LoadUsedNumbersAsync = _ => Task.FromResult(used);
-        return ctx;
+            deleteImageAsync: _ => Task.CompletedTask)
+        { EditingItemId = editingItemId };
+    }
+
+    private static IAutoNumberService Service(IReadOnlyCollection<int> used)
+    {
+        var service = A.Fake<IAutoNumberService>();
+        A.CallTo(() => service.UsedNumbersAsync(A<Guid>._, A<Guid?>._)).Returns(used);
+        return service;
     }
 
     [Test]
     public async Task DuplicateNotice_DoesNotResizeTheNumberControl()
     {
         var def = new AutoNumberFieldDefinition { Editable = true, OnDuplicate = DuplicateHandling.Warn, Label = "No" };
-        var vm = new AutoNumberFieldEditorViewModel(def, new AutoNumberFieldValue { FieldDefinitionId = def.Id }, MakeContext(new[] { 5 }));
+        var vm = new AutoNumberFieldEditorViewModel(
+            def, new AutoNumberFieldValue { FieldDefinitionId = def.Id }, MakeContext(Guid.NewGuid()), Service(new[] { 5 }));
         await vm.Ready;
 
         var view = new AutoNumberFieldEditorView { DataContext = vm };

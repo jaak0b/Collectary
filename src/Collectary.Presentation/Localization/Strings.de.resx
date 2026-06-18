@@ -45,6 +45,7 @@
   <data name="AutoNumberStrategy_HighestPlusOne" xml:space="preserve"><value>Höchste vergebene Nummer + 1</value></data>
   <data name="AutoNumberStrategy_FillGaps" xml:space="preserve"><value>Niedrigste freie Nummer (füllt Lücken)</value></data>
   <data name="AutoNumber_OnDuplicate" xml:space="preserve"><value>Wenn eine eingegebene Nummer bereits vergeben ist</value></data>
+  <data name="AutoNumber_GeneratesOnSave" xml:space="preserve"><value>Wird beim Speichern erzeugt</value></data>
   <data name="DuplicateHandling_Error" xml:space="preserve"><value>Speichern verhindern</value></data>
   <data name="DuplicateHandling_Warn" xml:space="preserve"><value>Warnung anzeigen</value></data>
   <data name="DuplicateHandling_Allow" xml:space="preserve"><value>Zulassen</value></data>

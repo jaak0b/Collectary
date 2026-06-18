@@ -107,8 +107,8 @@ never renumbers or overwrites them. Imported auto-number fields come in **editab
 value later. If the same number turns up twice — repeated within the sheet, or clashing with a number
 already in the collection — the import doesn't block: it brings the rows in and **lists the duplicates on
 the final summary** so you can tidy them up. New items you add after the import still get their next number
-assigned automatically, and a cell left blank in the sheet simply comes in without a number (it gets one
-the first time you open that item).
+assigned automatically, but a cell left blank in the sheet comes in **without** a number and stays that
+way — an imported item is never silently renumbered. You fill in the number yourself if you want one.
 
 ## When a value doesn't fit
 

@@ -19,6 +19,9 @@ public partial class ItemEditingContext : ObservableObject
     [ObservableProperty]
     public partial bool IsNarrow { get; set; }
 
+    /// <summary>The id of the item being edited, or null while creating a brand-new one. A field type uses this to tell "creating" from "editing an existing/imported item" without the host needing to know anything field-specific.</summary>
+    public Guid? EditingItemId { get; set; }
+
     /// <summary>App-wide default label layout, used to resolve a preset's null (inherit) choice.</summary>
     public FieldLabelLayout GlobalFieldLabelLayout { get; set; } = FieldLabelLayout.Adaptive;
 
@@ -62,10 +65,6 @@ public partial class ItemEditingContext : ObservableObject
     /// <summary>Loads the items that a link field may point at. Default: none available.</summary>
     public Func<Task<IReadOnlyList<LinkedItemOption>>> LoadLinkableItemsAsync { get; set; }
         = () => Task.FromResult<IReadOnlyList<LinkedItemOption>>(Array.Empty<LinkedItemOption>());
-
-    /// <summary>Loads the numbers already used by other items for an auto-number field, so a new item can pick the next one. Default: none.</summary>
-    public Func<Guid, Task<IReadOnlyCollection<int>>> LoadUsedNumbersAsync { get; set; }
-        = _ => Task.FromResult<IReadOnlyCollection<int>>(Array.Empty<int>());
 
     public IAudioRecorder? AudioRecorder { get; set; }
 
