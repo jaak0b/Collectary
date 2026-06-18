@@ -9,6 +9,13 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
   </PropertyGroup>
 
+  <!-- Debug builds install side by side with the release app under their own id, so testing a debug
+       build never disturbs the installed release. OneDrive sign-in is unavailable under this id because
+       its msauth redirect is registered for com.collectary.app only. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <ApplicationId>com.collectary.app.debug</ApplicationId>
+  </PropertyGroup>
+
   <ItemGroup>
     <AndroidResource Include="Icon.png">
       <Link>Resources\drawable\Icon.png</Link>

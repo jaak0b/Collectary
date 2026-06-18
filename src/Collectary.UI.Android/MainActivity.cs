@@ -14,7 +14,11 @@ using Microsoft.Identity.Client;
 namespace Collectary.UI.Android;
 
 [Activity(
-    Label = "Collectary.UI.Android",
+#if DEBUG
+    Label = "DEBUG Collectary",
+#else
+    Label = "Collectary",
+#endif
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
     MainLauncher = true,
