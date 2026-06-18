@@ -308,8 +308,11 @@ class Build : NukeBuild
         .DependsOn(CheckCredentials)
         .Executes(() =>
         {
-            DotNet($"build \"{AndroidProject}\" --configuration {Configuration} -t:Install"
-                + " -p:EmbedAssembliesIntoApk=true",
+            // One interpolated string, no concatenation: a `$"..." + "..."` collapses to a plain string
+            // that Nuke's ArgumentStringHandler passes as a single pre-quoted token, so dotnet looks for a
+            // command literally named "build ...". The handler quotes the interpolated path hole itself.
+            DotNet(
+                $"build {AndroidProject} --configuration {Configuration} -t:Install -p:EmbedAssembliesIntoApk=true",
                 workingDirectory: RootDirectory);
 
             var apks = AndroidProject.Parent
