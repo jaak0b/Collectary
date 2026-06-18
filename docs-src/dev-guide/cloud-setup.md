@@ -88,14 +88,24 @@ signs the app, so each build flavour has its own:
 
 === "Self-signed release"
 
-    Generate a release keystore once and keep it safe — it's your app's identity for life:
+    Generate a release keystore **once** and guard it for life — it's your app's permanent identity.
+    Every published release must be signed with this same key, or phones refuse the in-place update and
+    fall back to "uninstall the old version first":
 
     ```bash
     keytool -genkeypair -v -keystore collectary-release.keystore \
-      -alias collectary -keyalg RSA -keysize 2048 -validity 10000
+      -alias collectary -keyalg RSA -keysize 4096 -validity 36500
     ```
 
-    Then take its hash the same way (swap in the release keystore + alias).
+    Then take its hash the same way (swap in the release keystore + alias) and register that hash in
+    Entra alongside your debug one — both coexist, so local debug builds and releases both sign in.
+
+    The build server signs with this key automatically from two GitHub Actions secrets: store the
+    base64 of the keystore file (`[Convert]::ToBase64String([IO.File]::ReadAllBytes('collectary-release.keystore'))`)
+    in `COLLECTARY_ANDROID_KEYSTORE_BASE64`, and its password in `COLLECTARY_ANDROID_KEYSTORE_PASSWORD`.
+    The `Release` target decodes the keystore, signs the APK, and discards the temporary copy. Keep the
+    keystore file and password backed up outside the repo — if you ever lose both, no future build can
+    update an installed app, ever.
 
 === "Google Play App Signing"
 
