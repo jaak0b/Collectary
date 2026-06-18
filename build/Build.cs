@@ -308,8 +308,14 @@ class Build : NukeBuild
         .DependsOn(CheckCredentials)
         .Executes(() =>
         {
-            DotNet($"build \"{AndroidProject}\" --configuration {Configuration} -t:Install",
+            DotNet($"build \"{AndroidProject}\" --configuration {Configuration} -t:Install"
+                + " -p:EmbedAssembliesIntoApk=true",
                 workingDirectory: RootDirectory);
+
+            var apks = AndroidProject.Parent
+                .GlobFiles($"bin/{Configuration}/**/*-Signed.apk", $"bin/{Configuration}/**/*.apk");
+            foreach (var apk in apks.Distinct())
+                Log.Information("Installed, and ready to sideload by hand: {Apk}", apk);
         });
 
     Target BuildApk => _ => _
