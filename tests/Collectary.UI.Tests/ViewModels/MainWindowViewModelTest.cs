@@ -95,6 +95,18 @@ public class MainWindowViewModelTest
         _syncScheduler);
 
     [Test]
+    public void IsDebugBuild_MatchesTheBuildConfiguration()
+    {
+        var sut = CreateSut();
+
+#if DEBUG
+        Assert.That(sut.IsDebugBuild, Is.True);
+#else
+        Assert.That(sut.IsDebugBuild, Is.False);
+#endif
+    }
+
+    [Test]
     public void IsMobileSidebarVisible_WhenNarrowAndOpen_ReturnsTrue()
     {
         var sut = CreateSut();
