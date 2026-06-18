@@ -244,11 +244,15 @@ Two one-time steps outside the code, because they depend on your signing certifi
 registration:
 
 1. **Azure app registration** — add an **Android** platform with package name `com.collectary.app`
-   and the **signature hash** of your APK signing key. MSAL prints the expected hash in the error
-   message on the first sign-in attempt if it's wrong.
-2. **Manifest + build** — put that same hash into the `BrowserTabActivity` `android:path` in
-   `AndroidManifest.xml`, and supply it to the redirect via the `COLLECTARY_ANDROID_SIGNATURE_HASH`
-   environment variable at build time (it defaults to a placeholder otherwise).
+   and the **signature hash** of your release signing key. MSAL prints the expected hash in the error
+   message on the first sign-in attempt if it's wrong. The side-by-side debug build uses its own
+   package id and key, so it needs a second entry — see
+   [Cloud setup → debug OneDrive sign-in](cloud-setup.md#letting-the-debug-build-sign-in-to-onedrive).
+2. **Manifest + build** — the `BrowserTabActivity` intent-filter in `AndroidManifest.xml` matches the
+   redirect on scheme + host (the application id) only, listing both the release and debug hosts, so it
+   catches the redirect whatever hash it carries; the hash itself is supplied at build time via
+   `COLLECTARY_ANDROID_SIGNATURE_HASH` (release) or `COLLECTARY_ANDROID_DEBUG_SIGNATURE_HASH` (debug)
+   and enforced by MSAL against the redirect URI (it defaults to a placeholder otherwise).
 
 ## Scheduling
 

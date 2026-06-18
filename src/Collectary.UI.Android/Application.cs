@@ -41,7 +41,7 @@ namespace Collectary.UI.Android
             var cacheDirectory = AppDataPaths.Root;
             var androidConfig = new AndroidCloudConfig();
             var oneDriveMsalOptions = new AndroidMsalPlatformOptionsFactory(
-                AndroidCloudConfig.PackageName,
+                PackageName!,
                 androidConfig.SignatureHash,
                 () => CurrentActivity).Create();
 
