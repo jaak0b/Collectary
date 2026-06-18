@@ -182,6 +182,23 @@
     <ContentControl Content="{Binding ProfilePicker}"
                     IsVisible="{Binding !IsAuthenticated}"/>
 
+    <Border x:Name="DebugBadge"
+            ZIndex="90"
+            IsHitTestVisible="False"
+            IsVisible="{Binding IsDebugBuild}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Margin="0,0,12,12"
+            Background="{DynamicResource DangerBrush}"
+            CornerRadius="4"
+            Padding="14,6"
+            Opacity="0.9">
+        <TextBlock Text="DEBUG"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="White"/>
+    </Border>
+
     <Border x:Name="DialogOverlay"
             ZIndex="100"
             Background="#80000000"

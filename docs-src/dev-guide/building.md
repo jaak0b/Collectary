@@ -27,6 +27,9 @@ dotnet run --project src\Collectary.UI.Browser
 .\build.ps1 --target Mutate    # mutation testing
 ```
 
+Debug builds show a bold red **DEBUG** badge in the bottom-right corner of the window, so a local
+debug build is never mistaken for an installed release. Release builds never render it.
+
 There are also NUKE targets that wrap the day-to-day run/deploy flow and validate cloud credentials
 up front:
 

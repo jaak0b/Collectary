@@ -56,13 +56,6 @@ public partial class ItemEditorViewModel : ViewModelBase, IGroupedFieldHost, ISy
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
-    public bool IsDebugBuild =>
-#if DEBUG
-        true;
-#else
-        false;
-#endif
-
     public ItemEditorViewModel(
         IItemUseCase itemUseCase,
         IPresetUseCase presetUseCase,
