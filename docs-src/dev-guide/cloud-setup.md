@@ -14,11 +14,15 @@ the Google section entirely (and vice-versa).
     | Variable | Provider | Platforms |
     |---|---|---|
     | `COLLECTARY_ONEDRIVE_CLIENT_ID` | OneDrive | desktop + Android |
-    | `COLLECTARY_ANDROID_SIGNATURE_HASH` | OneDrive | Android only |
+    | `COLLECTARY_ANDROID_SIGNATURE_HASH` | OneDrive | Android **release** |
     | `COLLECTARY_GOOGLE_CLIENT_ID` | Google Drive | Windows desktop |
     | `COLLECTARY_GOOGLE_CLIENT_SECRET` | Google Drive | Windows desktop |
 
     The last step of this page shows how to store them. Don't worry about them until then.
+
+    One more is **optional** — only if you want OneDrive in the side-by-side *debug* Android build:
+    `COLLECTARY_ANDROID_DEBUG_SIGNATURE_HASH` (see [Letting the debug build sign in to
+    OneDrive](#letting-the-debug-build-sign-in-to-onedrive)).
 
 ---
 
@@ -51,13 +55,15 @@ the app once, tell it who's allowed to sign in and where to send them back, and 
 
 Still under **Authentication** → **Add a platform** → **Android**:
 
-1. **Package name**: `com.collectary.app`.
-2. **Signature hash**: the Base64 fingerprint of the certificate that signs your APK (the next
+1. **Package name**: `com.collectary.app` (the installed release id).
+2. **Signature hash**: the Base64 fingerprint of the certificate that signs your release APK (the next
    section shows how to get it).
 3. Entra builds a `msauth://com.collectary.app/<hash>` redirect for you. **Save**.
 
-You can add more than one Android entry later (one per signing key — debug, release, Play Store), and
-they happily coexist.
+You can add more than one Android entry, and they happily coexist. The local *debug* build installs
+under a **different** package id (`com.collectary.app.debug`) signed with a **different** key, so it
+needs its own Android entry — see [Letting the debug build sign in to
+OneDrive](#letting-the-debug-build-sign-in-to-onedrive) below.
 
 ### 4. Grant the Graph permissions
 
@@ -74,7 +80,7 @@ signs the app, so each build flavour has its own:
 
 === "Local dev (debug build)"
 
-    Debug builds are signed with the shared Android debug keystore. Compute its hash with `keytool`
+    Debug builds are signed with your local Android debug keystore. Compute its hash with `keytool`
     (ships with the JDK) and `openssl`:
 
     ```bash
@@ -83,8 +89,10 @@ signs the app, so each build flavour has its own:
       | openssl sha1 -binary | openssl base64
     ```
 
-    The one-line Base64 string it prints is your debug `COLLECTARY_ANDROID_SIGNATURE_HASH`. Register
-    that same string in Entra (step 3 above).
+    The one-line Base64 string it prints is the debug hash. Because the debug build installs under its
+    own package id, register it under a **separate** Android entry and feed it to the build as
+    `COLLECTARY_ANDROID_DEBUG_SIGNATURE_HASH` — both covered in [Letting the debug build sign in to
+    OneDrive](#letting-the-debug-build-sign-in-to-onedrive).
 
 === "Self-signed release"
 
@@ -118,6 +126,30 @@ signs the app, so each build flavour has its own:
 !!! tip "Lost? Let MSAL tell you"
     If the hash is ever wrong, sign-in fails and MSAL's error message prints the exact hash it
     expected for the installed app. You can read it straight from there.
+
+### Letting the debug build sign in to OneDrive
+
+The debug Android build installs side by side with the release app under a different id
+(`com.collectary.app.debug`) and is signed with your **local debug keystore**, so its OneDrive
+redirect differs from the release one on both halves — host *and* signature hash. It's optional: skip
+this and the debug app simply can't reach OneDrive; everything else works.
+
+To turn it on:
+
+1. **Register a second Android platform entry** in Entra (**Authentication** → **Add a platform** →
+   **Android**, or **Add URI** under the existing Android platform):
+    - **Package name**: `com.collectary.app.debug`
+    - **Signature hash**: your debug keystore's hash (the *Local dev* tab above shows how to compute it).
+
+    Entra builds a `msauth://com.collectary.app.debug/<hash>` redirect. It sits happily alongside the
+    release `com.collectary.app` entry. **Save**.
+2. **Set `COLLECTARY_ANDROID_DEBUG_SIGNATURE_HASH`** to that same debug hash. The debug build bakes it
+   in (release builds keep using `COLLECTARY_ANDROID_SIGNATURE_HASH`); the app's manifest already
+   lists both redirect hosts, so nothing else changes.
+3. Rebuild and redeploy the debug app (`.\build.ps1 --target DeployAndroid`) and sign in.
+
+If you skip step 2, the debug build just bakes an empty hash and OneDrive sign-in fails with a clear
+MSAL error — it never breaks the build.
 
 ---
 

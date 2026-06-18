@@ -41,7 +41,7 @@ up front:
 .\build.ps1 --target BuildApk          # publish a signed Android APK
 ```
 
-Debug Android builds install as a **separate app** — id `com.collectary.app.debug`, launcher name **DEBUG Collectary** — so they sit alongside an installed release (`com.collectary.app`, **Collectary**) without disturbing it. `DeployAndroid` embeds the assemblies into the APK, so the file it produces under `bin/Debug` can also be sideloaded by hand (`adb install`), not just fast-deployed to the attached device. OneDrive sign-in is unavailable in the debug app, because its `msauth` redirect is registered for `com.collectary.app` only.
+Debug Android builds install as a **separate app** — id `com.collectary.app.debug`, launcher name **DEBUG Collectary** — so they sit alongside an installed release (`com.collectary.app`, **Collectary**) without disturbing it. `DeployAndroid` embeds the assemblies into the APK, so the file it produces under `bin/Debug` can also be sideloaded by hand (`adb install`), not just fast-deployed to the attached device. OneDrive sign-in works in the debug app too, signed with your local debug keystore — see [Cloud setup → debug OneDrive sign-in](cloud-setup.md#letting-the-debug-build-sign-in-to-onedrive) for the one-time Azure registration and the `COLLECTARY_ANDROID_DEBUG_SIGNATURE_HASH` it needs.
 
 `RunDesktop`, `DeployAndroid`, and `BuildApk` all depend on `CheckCredentials`, so they refuse to
 run with placeholder cloud credentials rather than producing a build that silently can't sign in.

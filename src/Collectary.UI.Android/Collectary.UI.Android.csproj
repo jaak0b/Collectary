@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <!-- Debug builds install side by side with the release app under their own id, so testing a debug
-       build never disturbs the installed release. OneDrive sign-in is unavailable under this id because
-       its msauth redirect is registered for com.collectary.app only. -->
+       build never disturbs the installed release. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <ApplicationId>com.collectary.app.debug</ApplicationId>
   </PropertyGroup>
@@ -39,6 +38,17 @@
       <_Parameter1>CollectaryOneDriveClientId</_Parameter1>
       <_Parameter2>$(COLLECTARY_ONEDRIVE_CLIENT_ID)</_Parameter2>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- The signature hash must match the keystore each configuration is signed with, so it is baked
+       per-configuration: the local debug keystore for Debug, the permanent release keystore otherwise. -->
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CollectaryAndroidSignatureHash</_Parameter1>
+      <_Parameter2>$(COLLECTARY_ANDROID_DEBUG_SIGNATURE_HASH)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>CollectaryAndroidSignatureHash</_Parameter1>
       <_Parameter2>$(COLLECTARY_ANDROID_SIGNATURE_HASH)</_Parameter2>

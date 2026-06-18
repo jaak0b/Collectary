@@ -7,9 +7,11 @@
 	<application android:label="Collectary" android:icon="@drawable/Icon" android:enableOnBackInvokedCallback="true">
 		<!--
 			Catches the OneDrive MSAL sign-in redirect and returns control to the app from the Chrome
-			Custom Tab. Matching on scheme + host only (no android:path) catches the redirect whatever
-			signature hash it carries, so one manifest works for the debug, release and Play signing
-			keys; the hash that must match Azure is enforced by MSAL against the redirect URI itself.
+			Custom Tab. The redirect host is the application id, which differs between the release and
+			debug builds (com.collectary.app and com.collectary.app.debug install side by side), so both
+			hosts are listed. Matching on scheme + host only (no android:path) catches the redirect
+			whatever signature hash it carries; the hash that must match Azure is enforced by MSAL
+			against the redirect URI itself.
 		-->
 		<activity android:name="microsoft.identity.client.BrowserTabActivity" android:exported="true">
 			<intent-filter>
@@ -17,6 +19,7 @@
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
 				<data android:scheme="msauth" android:host="com.collectary.app" />
+				<data android:scheme="msauth" android:host="com.collectary.app.debug" />
 			</intent-filter>
 		</activity>
 	</application>
