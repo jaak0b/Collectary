@@ -89,6 +89,49 @@ public class PresetDetailViewTest
         window.Close();
     }
 
+    private static async Task<PresetDetailViewModel> LoadedVmWithManyWideColumns()
+    {
+        var itemUseCase = A.Fake<IItemUseCase>();
+        var presetUseCase = A.Fake<IPresetUseCase>();
+        var searchService = A.Fake<IItemSearchService>();
+        var searchCatalog = A.Fake<ISearchFieldCatalog>();
+        var listCellBuilder = A.Fake<IListCellBuilder>();
+        var dialogService = A.Fake<IDialogService>();
+
+        var preset = new Preset { Name = "Trains" };
+        var fields = Enumerable.Range(0, 8)
+            .Select(i => (FieldDefinition)new TextFieldDefinition { Label = $"A rather wide column header {i}", ShowInList = true })
+            .ToList();
+        A.CallTo(() => presetUseCase.GetEffectiveFieldsAsync(preset.Id))
+            .Returns(new EffectiveFields { Fields = fields });
+        A.CallTo(() => searchService.SearchAsync(A<string>._))
+            .Returns(new ItemSearchResult([], [], []));
+        A.CallTo(() => searchCatalog.GetSnapshotAsync()).Returns(new SearchCatalogSnapshot());
+        A.CallTo(() => listCellBuilder.HasListCellViewModel(typeof(TextFieldDefinition))).Returns(true);
+        A.CallTo(() => listCellBuilder.Build(A<IReadOnlyList<FieldValue>>._, A<IReadOnlyList<FieldDefinition>>._))
+            .Returns((IReadOnlyList<ListCellViewModelBase>)new List<ListCellViewModelBase>());
+
+        var vm = new PresetDetailViewModel(preset, itemUseCase, presetUseCase, searchService, searchCatalog,
+            listCellBuilder, dialogService,
+            navigateToItemEditor: (_, _, _) => { }, navigateBack: () => { });
+        await vm.LoadAsync();
+        return vm;
+    }
+
+    [Test]
+    public async Task ActionColumn_OnANarrowOverflowingGrid_StaysWideEnoughToShowTheMenuButton()
+    {
+        var vm = await LoadedVmWithManyWideColumns();
+        var (view, window) = ShowAt(vm, 380);
+
+        var grid = view.FindControl<DataGrid>("ItemGrid")!;
+        var actionColumn = grid.Columns[^1];
+
+        Assert.That(actionColumn.ActualWidth, Is.GreaterThanOrEqualTo(48),
+            "when the grid overflows a narrow window the action column must not collapse, or the ⋯ button is clipped");
+        window.Close();
+    }
+
     [Test]
     public async Task ActionColumn_AppearsExactlyOnce_AsTheLastColumn()
     {

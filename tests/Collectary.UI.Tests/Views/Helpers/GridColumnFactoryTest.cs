@@ -25,4 +25,14 @@ public class GridColumnFactoryTest
                 "the ⋯ button needs a right gutter so the overlay scrollbar can't cover it");
         });
     }
+
+    [Test]
+    public void ActionColumn_ReservesAMinimumWidth_SoItCannotCollapseWhenTheGridOverflows()
+    {
+        var actions = new (string Header, Action<Row> Run)[] { ("Edit", _ => { }) };
+        var column = (DataGridTemplateColumn)GridColumnFactory.ActionColumn(actions);
+
+        Assert.That(column.MinWidth, Is.GreaterThanOrEqualTo(48),
+            "a star column gets no leftover width when the grid overflows, so the action column must keep a minimum width that fits the ⋯ button and its scrollbar gutter");
+    }
 }

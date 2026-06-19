@@ -43,19 +43,22 @@ public static class GridColumnFactory
             })
         };
 
+    private const double ScrollbarGutter = 16;
+    private const double ActionButtonRoom = 40;
+
     public static DataGridColumn ActionColumn<TRow>(IReadOnlyList<(string Header, Action<TRow> Run)> actions) where TRow : class =>
         new DataGridTemplateColumn
         {
             Header = "",
             Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+            MinWidth = ScrollbarGutter + ActionButtonRoom,
             CellTemplate = new FuncDataTemplate<TRow>((row, _) =>
             {
-                const double scrollbarGutter = 16;
                 var panel = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(4, 2, scrollbarGutter, 2)
+                    Margin = new Thickness(4, 2, ScrollbarGutter, 2)
                 };
 
                 var flyout = new MenuFlyout();
