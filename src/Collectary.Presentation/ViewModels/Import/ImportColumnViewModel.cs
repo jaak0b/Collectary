@@ -34,6 +34,8 @@ public sealed class FieldTypeChoice
     public string Name { get; }
 }
 
+public sealed record DuplicateRowView(string Item, string Field, string Value);
+
 public sealed class ImportPreviewRow
 {
     public ImportPreviewRow(IReadOnlyList<string> cells) => Cells = cells;

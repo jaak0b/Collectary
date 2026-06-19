@@ -226,7 +226,38 @@
                 <TextBlock Text="{Binding SummaryImportedText}" FontSize="16" FontWeight="SemiBold"/>
                 <SelectableTextBlock Text="{Binding SummarySkippedText}" IsVisible="{Binding HasSkipped}" TextWrapping="Wrap"/>
                 <SelectableTextBlock Text="{Binding SummaryWarningsText}" IsVisible="{Binding HasWarnings}" TextWrapping="Wrap" Opacity="0.75"/>
-                <SelectableTextBlock Text="{Binding SummaryDuplicatesText}" IsVisible="{Binding HasDuplicates}" TextWrapping="Wrap" Opacity="0.75"/>
+                <StackPanel IsVisible="{Binding HasDuplicates}" Grid.IsSharedSizeScope="True" Spacing="2" Opacity="0.75">
+                    <TextBlock Text="{Binding SummaryDuplicatesHeader}"/>
+                    <Grid Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="DupItem"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="DupField"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="DupValue"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" FontWeight="SemiBold" Margin="0,0,24,0"
+                                   Text="{Binding [Import_Duplicate_Col_Item], Source={x:Static loc:LocalizationService.Instance}}"/>
+                        <TextBlock Grid.Column="1" FontWeight="SemiBold" Margin="0,0,24,0"
+                                   Text="{Binding [Import_Duplicate_Col_Field], Source={x:Static loc:LocalizationService.Instance}}"/>
+                        <TextBlock Grid.Column="2" FontWeight="SemiBold"
+                                   Text="{Binding [Import_Duplicate_Col_Value], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding DuplicateRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DuplicateRowView">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="DupItem"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="DupField"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="DupValue"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Item}" Margin="0,0,24,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Field}" Margin="0,0,24,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Value}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </StackPanel>
 
         </Grid>
