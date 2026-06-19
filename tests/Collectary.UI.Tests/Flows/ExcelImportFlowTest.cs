@@ -214,7 +214,7 @@ public class ExcelImportFlowTest : FlowTestBase
             0,
             new[] { new ImportIssue(2, ImportIssueKind.NoValues, "Pages: 'abc'") },
             new[] { new ImportIssue(3, ImportIssueKind.UnparsedCells, "Pages: 'xyz'") },
-            Array.Empty<ImportIssue>());
+            Array.Empty<DuplicateValueRow>());
 
         try
         {
@@ -226,6 +226,26 @@ public class ExcelImportFlowTest : FlowTestBase
         {
             LocalizationService.Instance.Apply("en");
         }
+    }
+
+    [Test]
+    public void DuplicateRows_FallBackToRowNumber_WhenTheItemHasNoName()
+    {
+        var data = Workbook("Sheet1", new[] { Cell("Name") }, new[] { Cell("Dune") });
+        var vm = MakeVm(data, Array.Empty<Preset>());
+        vm.Summary = new ImportSummary(
+            1,
+            Array.Empty<ImportIssue>(),
+            Array.Empty<ImportIssue>(),
+            new[] { new DuplicateValueRow(7, null, "No", "5") });
+
+        var dup = vm.DuplicateRows.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(dup.Item, Is.EqualTo("#7"), "with no name, fall back to the row number");
+            Assert.That(dup.Field, Is.EqualTo("No"));
+            Assert.That(dup.Value, Is.EqualTo("5"));
+        });
     }
 
     [Test]
@@ -508,7 +528,13 @@ public class ExcelImportFlowTest : FlowTestBase
         Assert.That(vm.Summary!.Imported, Is.EqualTo(2));
         Assert.That(vm.HasWarnings, Is.False, "a duplicate must not be reported as a cell left blank");
         Assert.That(vm.HasDuplicates, Is.True);
-        Assert.That(vm.SummaryDuplicatesText, Does.Contain("No"), "the duplicate auto-number must be named in the summary");
+        var dup = vm.DuplicateRows.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(dup.Item, Is.EqualTo("Hobbit"), "the duplicate row is named by the item, not a row number");
+            Assert.That(dup.Field, Is.EqualTo("No"));
+            Assert.That(dup.Value, Is.EqualTo("5"));
+        });
         var items = await ItemRepo.GetByPresetAsync((await PresetUseCase.GetAllPresetsAsync()).Single(p => p.Name == "Imported").Id);
         Assert.That(items.SelectMany(i => i.Values).OfType<AutoNumberFieldValue>().Select(v => v.Value),
             Is.EquivalentTo(new int?[] { 5, 5 }), "both duplicate rows must be imported unchanged");

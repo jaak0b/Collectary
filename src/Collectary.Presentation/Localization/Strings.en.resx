@@ -171,7 +171,6 @@
   <data name="Import_NoData" xml:space="preserve"><value>There are no data rows to import.</value></data>
   <data name="Import_Issue_NoValues" xml:space="preserve"><value>No values could be imported ({0})</value></data>
   <data name="Import_Issue_Unparsed" xml:space="preserve"><value>Unparsed cells: {0}</value></data>
-  <data name="Import_Issue_Duplicate" xml:space="preserve"><value>Duplicate value in: {0}</value></data>
   <data name="Import_FileType_Excel" xml:space="preserve"><value>Excel workbook</value></data>
   <data name="Import_FileType_Csv" xml:space="preserve"><value>CSV file</value></data>
   <data name="Import_NoSheets" xml:space="preserve"><value>This workbook has no worksheets to import.</value></data>
@@ -210,7 +209,10 @@
   <data name="Import_Summary_Imported" xml:space="preserve"><value>Imported {0} item(s).</value></data>
   <data name="Import_Summary_Skipped" xml:space="preserve"><value>Skipped {0} row(s).</value></data>
   <data name="Import_Summary_Warnings" xml:space="preserve"><value>{0} cell(s) could not be read and were left blank.</value></data>
-  <data name="Import_Summary_Duplicates" xml:space="preserve"><value>{0} item(s) have a duplicate value — imported unchanged, just flagged:</value></data>
+  <data name="Import_Summary_Duplicates" xml:space="preserve"><value>Duplicate values ({0})</value></data>
+  <data name="Import_Duplicate_Col_Item" xml:space="preserve"><value>Item</value></data>
+  <data name="Import_Duplicate_Col_Field" xml:space="preserve"><value>Field</value></data>
+  <data name="Import_Duplicate_Col_Value" xml:space="preserve"><value>Value</value></data>
   <data name="TemplatePickerTitle" xml:space="preserve"><value>Choose a Template</value></data>
   <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Start from a preconfigured collection and customize it to your needs.</value></data>
   <data name="Collection" xml:space="preserve"><value>Collection</value></data>

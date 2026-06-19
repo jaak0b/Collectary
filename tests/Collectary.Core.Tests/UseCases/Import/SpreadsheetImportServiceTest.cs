@@ -219,9 +219,13 @@ public class SpreadsheetImportServiceTest
         Assert.That(summary.Imported, Is.EqualTo(2), "a duplicate must never block the import");
         Assert.That(summary.Warnings, Is.Empty, "a duplicate is not a left-blank cell and must not inflate that count");
         var dup = summary.Duplicates.Single();
-        Assert.That(dup.Kind, Is.EqualTo(ImportIssueKind.DuplicateValue));
-        Assert.That(dup.RowNumber, Is.EqualTo(2));
-        Assert.That(dup.Detail, Does.Contain("No"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(dup.RowNumber, Is.EqualTo(2));
+            Assert.That(dup.ItemName, Is.EqualTo("Hobbit"), "the row is identified by the item's name, not its number");
+            Assert.That(dup.FieldLabel, Is.EqualTo("No"));
+            Assert.That(dup.Value, Is.EqualTo("5"));
+        });
         Assert.That(((AutoNumberFieldValue)_created[1].Values.Single()).Value, Is.EqualTo(5),
             "the duplicate value must be imported unchanged, never dropped");
     }
