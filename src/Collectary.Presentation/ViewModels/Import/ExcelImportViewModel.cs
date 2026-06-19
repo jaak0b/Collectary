@@ -130,7 +130,8 @@ public partial class ExcelImportViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(SummaryImportedText))]
     [NotifyPropertyChangedFor(nameof(SummarySkippedText))]
     [NotifyPropertyChangedFor(nameof(SummaryWarningsText))]
-    [NotifyPropertyChangedFor(nameof(SummaryDuplicatesText))]
+    [NotifyPropertyChangedFor(nameof(SummaryDuplicatesHeader))]
+    [NotifyPropertyChangedFor(nameof(DuplicateRows))]
     [NotifyPropertyChangedFor(nameof(HasSkipped))]
     [NotifyPropertyChangedFor(nameof(HasWarnings))]
     [NotifyPropertyChangedFor(nameof(HasDuplicates))]
@@ -170,16 +171,23 @@ public partial class ExcelImportViewModel : ViewModelBase
         : string.Format(LocalizationService.Instance["Import_Summary_Warnings"], Summary.Warnings.Count)
           + "\n" + string.Join("\n", Summary.Warnings.Select(w => $"#{w.RowNumber}: {DescribeIssue(w)}"));
 
-    public string SummaryDuplicatesText => Summary is null
+    public string SummaryDuplicatesHeader => Summary is null
         ? string.Empty
-        : string.Format(LocalizationService.Instance["Import_Summary_Duplicates"], Summary.Duplicates.Count)
-          + "\n" + string.Join("\n", Summary.Duplicates.Select(d => $"#{d.RowNumber}: {DescribeIssue(d)}"));
+        : string.Format(LocalizationService.Instance["Import_Summary_Duplicates"], Summary.Duplicates.Count);
+
+    public IReadOnlyList<DuplicateRowView> DuplicateRows => Summary is null
+        ? Array.Empty<DuplicateRowView>()
+        : Summary.Duplicates
+            .Select(d => new DuplicateRowView(
+                string.IsNullOrWhiteSpace(d.ItemName) ? $"#{d.RowNumber}" : d.ItemName!,
+                d.FieldLabel,
+                d.Value))
+            .ToList();
 
     private string DescribeIssue(ImportIssue issue) => issue.Kind switch
     {
         ImportIssueKind.NoValues => string.Format(LocalizationService.Instance["Import_Issue_NoValues"], issue.Detail),
         ImportIssueKind.UnparsedCells => string.Format(LocalizationService.Instance["Import_Issue_Unparsed"], issue.Detail),
-        ImportIssueKind.DuplicateValue => string.Format(LocalizationService.Instance["Import_Issue_Duplicate"], issue.Detail),
         _ => issue.Detail
     };
 

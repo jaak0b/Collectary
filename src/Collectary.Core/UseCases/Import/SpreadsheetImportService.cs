@@ -62,7 +62,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
         var imported = 0;
         var skipped = new List<ImportIssue>();
         var warnings = new List<ImportIssue>();
-        var duplicateNotices = new List<ImportIssue>();
+        var duplicateNotices = new List<DuplicateValueRow>();
         var seenUniqueValues = await BuildUniqueValueTrackersAsync(presetId, fieldsById, distinctMappings);
 
         for (var rowIndex = 0; rowIndex < grid.Rows.Count; rowIndex++)
@@ -71,7 +71,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
             var rowNumber = rowIndex + 1;
             var item = new Item { PresetId = presetId };
             var unparsed = new List<string>();
-            var duplicates = new List<string>();
+            var duplicates = new List<DuplicateField>();
             var pendingUnique = new List<UniqueValueHit>();
 
             foreach (var mapping in distinctMappings)
@@ -102,7 +102,7 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
                     if (seenUniqueValues.TryGetValue(definition.Id, out var seen) && !value.IsEmpty)
                     {
                         var key = value.ToString()!;
-                        if (seen.Contains(key)) duplicates.Add(definition.Label);
+                        if (seen.Contains(key)) duplicates.Add(new DuplicateField(definition.Label, key));
                         pendingUnique.Add(new UniqueValueHit(definition.Id, key));
                     }
                 }
@@ -126,8 +126,8 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
                 foreach (var hit in pendingUnique) seenUniqueValues[hit.FieldDefinitionId].Add(hit.Key);
                 if (unparsed.Count > 0)
                     warnings.Add(new ImportIssue(rowNumber, ImportIssueKind.UnparsedCells, string.Join("; ", unparsed)));
-                if (duplicates.Count > 0)
-                    duplicateNotices.Add(new ImportIssue(rowNumber, ImportIssueKind.DuplicateValue, string.Join("; ", duplicates)));
+                foreach (var dup in duplicates)
+                    duplicateNotices.Add(new DuplicateValueRow(rowNumber, item.DisplayName, dup.Label, dup.Value));
             }
             catch (Exception ex)
             {
@@ -139,6 +139,8 @@ public sealed class SpreadsheetImportService : ISpreadsheetImportService
     }
 
     private sealed record UniqueValueHit(Guid FieldDefinitionId, string Key);
+
+    private sealed record DuplicateField(string Label, string Value);
 
     private async Task<Dictionary<Guid, HashSet<string>>> BuildUniqueValueTrackersAsync(
         Guid presetId,

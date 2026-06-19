@@ -171,7 +171,6 @@
   <data name="Import_NoData" xml:space="preserve"><value>Es gibt keine Datenzeilen zum Importieren.</value></data>
   <data name="Import_Issue_NoValues" xml:space="preserve"><value>Es konnten keine Werte importiert werden ({0})</value></data>
   <data name="Import_Issue_Unparsed" xml:space="preserve"><value>Nicht erkannte Zellen: {0}</value></data>
-  <data name="Import_Issue_Duplicate" xml:space="preserve"><value>Doppelter Wert in: {0}</value></data>
   <data name="Import_FileType_Excel" xml:space="preserve"><value>Excel-Arbeitsmappe</value></data>
   <data name="Import_FileType_Csv" xml:space="preserve"><value>CSV-Datei</value></data>
   <data name="Import_NoSheets" xml:space="preserve"><value>Diese Arbeitsmappe enthält keine importierbaren Tabellen.</value></data>
@@ -210,7 +209,10 @@
   <data name="Import_Summary_Imported" xml:space="preserve"><value>{0} Eintrag/Einträge importiert.</value></data>
   <data name="Import_Summary_Skipped" xml:space="preserve"><value>{0} Zeile(n) übersprungen.</value></data>
   <data name="Import_Summary_Warnings" xml:space="preserve"><value>{0} Zelle(n) konnten nicht gelesen werden und blieben leer.</value></data>
-  <data name="Import_Summary_Duplicates" xml:space="preserve"><value>{0} Eintrag/Einträge haben einen doppelten Wert – unverändert importiert, nur markiert:</value></data>
+  <data name="Import_Summary_Duplicates" xml:space="preserve"><value>Doppelte Werte ({0})</value></data>
+  <data name="Import_Duplicate_Col_Item" xml:space="preserve"><value>Eintrag</value></data>
+  <data name="Import_Duplicate_Col_Field" xml:space="preserve"><value>Feld</value></data>
+  <data name="Import_Duplicate_Col_Value" xml:space="preserve"><value>Wert</value></data>
   <data name="TemplatePickerTitle" xml:space="preserve"><value>Vorlage wählen</value></data>
   <data name="TemplatePickerSubtitle" xml:space="preserve"><value>Starte mit einer vorkonfigurierten Sammlung und passe sie an deine Bedürfnisse an.</value></data>
   <data name="Collection" xml:space="preserve"><value>Sammlung</value></data>
