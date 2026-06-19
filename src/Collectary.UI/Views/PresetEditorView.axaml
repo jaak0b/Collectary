@@ -84,7 +84,6 @@
                                                Tag="DragHandle"
                                                Background="Transparent"
                                                Cursor="SizeAll"
-                                               IsVisible="{Binding CanDelete}"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,0"/>

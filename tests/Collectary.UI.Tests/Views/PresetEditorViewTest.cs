@@ -1,6 +1,8 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Collectary.Core.Domain;
 using Collectary.Core.Ports;
 using Collectary.Presentation.Services;
@@ -44,6 +46,26 @@ public class PresetEditorViewTest
                 Dispatcher.UIThread.RunJobs();
             }
         });
+    }
+
+    [Test]
+    public void TitleFieldRow_ShowsItsDragHandle_SoTheDisplayNameFieldCanBeReordered()
+    {
+        var vm = CreateViewModel();
+        var view = new PresetEditorView { DataContext = vm };
+        var window = new Window { Content = view, Width = 1000, Height = 600 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var list = view.GetLogicalDescendants().OfType<ListBox>().First(l => l.Name == "FieldListBox");
+        var titleRow = vm.CurrentRows.OfType<FieldDefinitionRowViewModel>().First(r => r.IsDisplayName);
+        var container = list.ContainerFromIndex(vm.CurrentRows.IndexOf(titleRow))!;
+        var handle = container.GetVisualDescendants().OfType<TextBlock>()
+            .First(t => t.Tag as string == "DragHandle");
+
+        Assert.That(handle.IsVisible, Is.True,
+            "the Display Name field is reorderable, so its drag handle must be visible even though it cannot be deleted");
+        window.Close();
     }
 
     [Test]
