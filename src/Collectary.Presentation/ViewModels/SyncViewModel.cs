@@ -77,7 +77,7 @@ public partial class SyncViewModel : ViewModelBase
         });
         try
         {
-            var result = await _background.RunAsync(() => _sync.SyncAsync()).ConfigureAwait(false);
+            var result = await _background.RunAsync(() => _sync.SyncAsync());
             _ui.Post(() =>
             {
                 if (result.BackendUnavailable)
@@ -106,8 +106,44 @@ public partial class SyncViewModel : ViewModelBase
         }
         finally
         {
-            _ui.Post(() => IsSyncing = false);
+            await OnUiAsync(() => IsSyncing = false);
         }
+    }
+
+    public Task RequestSyncAsync()
+    {
+        var completion = new TaskCompletionSource();
+        _ui.Post(async () =>
+        {
+            try
+            {
+                await SyncNowCommand.ExecuteAsync(null);
+                completion.SetResult();
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+        return completion.Task;
+    }
+
+    private Task OnUiAsync(Action action)
+    {
+        var completion = new TaskCompletionSource();
+        _ui.Post(() =>
+        {
+            try
+            {
+                action();
+                completion.SetResult();
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+        return completion.Task;
     }
 
     public void ReportError() => _ui.Post(() =>
