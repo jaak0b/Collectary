@@ -42,7 +42,7 @@
                     </TabControl.ItemTemplate>
                     <TabControl.ContentTemplate>
                         <DataTemplate DataType="vm:FieldGroupViewModel">
-                            <StackPanel Spacing="4" Margin="0,8,0,0">
+                            <StackPanel Spacing="4" Margin="0">
                                 <ItemsControl ItemsSource="{Binding Editors}" Grid.IsSharedSizeScope="True">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
