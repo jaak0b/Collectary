@@ -327,6 +327,10 @@
   <data name="ImageSizeMode_Fixed" xml:space="preserve"><value>Fest</value></data>
   <data name="ImageSizeMode_Min" xml:space="preserve"><value>Minimum</value></data>
   <data name="ImageSizeMode_Max" xml:space="preserve"><value>Maximum</value></data>
+  <data name="MultiChoice_DisplayMode" xml:space="preserve"><value>Anzeige</value></data>
+  <data name="MultiChoice_SelectPlaceholder" xml:space="preserve"><value>Auswählen…</value></data>
+  <data name="MultiChoiceDisplayMode_Expanded" xml:space="preserve"><value>Liste</value></data>
+  <data name="MultiChoiceDisplayMode_Collapsed" xml:space="preserve"><value>Dropdown</value></data>
   <data name="FieldSettings" xml:space="preserve"><value>Feldeinstellungen</value></data>
   <data name="SelectFieldHint" xml:space="preserve"><value>Wähle links ein Feld aus, um es zu bearbeiten, oder füge ein neues hinzu.</value></data>
   <data name="ConfigureSubFields" xml:space="preserve"><value>Unterfelder konfigurieren →</value></data>

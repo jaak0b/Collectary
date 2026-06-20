@@ -10,6 +10,7 @@ public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>
     public override int DefaultColumnSpan => 2;
     public List<ChoiceOption> Choices { get; set; } = new();
     public bool ShowInList { get; set; }
+    public MultiChoiceDisplayMode DisplayMode { get; set; } = MultiChoiceDisplayMode.Expanded;
 
     public int ImportInferenceOrder => int.MaxValue;
 
@@ -27,6 +28,7 @@ public class MultiChoiceFieldDefinition : FieldDefinition<MultiChoiceFieldValue>
     public override void ApplyTypeSpecificProperties(FieldDefinition source)
     {
         if (source is not MultiChoiceFieldDefinition src) return;
+        DisplayMode = src.DisplayMode;
         Choices.Clear();
         foreach (var c in src.Choices)
             Choices.Add(new ChoiceOption { Id = c.Id, Value = c.Value, DisplayOrder = c.DisplayOrder });

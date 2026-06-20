@@ -41,7 +41,10 @@ The sections below follow the same grouping.
   no). Turn on **Allow unanswered** if you'd rather have three states — yes, no, or left blank — so an
   item you haven't decided on yet stays empty instead of silently counting as "no".
 - **Single Choice** — a dropdown, pick one.
-- **Multi Choice** — checkboxes, pick any number.
+- **Multi Choice** — pick any number of options. Choose how it looks with the **Display** setting:
+  *Checkboxes* shows every option inline (the default), while *Dropdown* collapses them into a single
+  picker that opens a checklist — handy when a field has lots of options and you want to keep the form
+  compact.
 - **Tags** — a set of keywords, each shown as a chip.
 - **Country** — pick a country from a list, shown with its flag. Because everyone records the same
   value, you can group or filter by country.

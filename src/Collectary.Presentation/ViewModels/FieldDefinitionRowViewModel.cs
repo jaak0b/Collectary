@@ -82,6 +82,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     public int SubFieldCount => SubFieldRows.Count;
     public bool CanShowInList => _definition is IListDisplayable;
     public bool HasChoices => _definition is SingleChoiceFieldDefinition or MultiChoiceFieldDefinition;
+    public bool IsMultiChoice => _definition is MultiChoiceFieldDefinition;
     public bool IsDisplayName => _definition.IsTitleField;
     public bool CanDelete => !IsDisplayName;
     public bool IsLabelEditable => !IsDisplayName;
@@ -105,6 +106,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     public bool IsGridInline => IsList && InlineStyle == ListInlineStyle.Grid;
     public IReadOnlyList<ColorFormat> ColorFormats { get; } = Enum.GetValues<ColorFormat>();
     public IReadOnlyList<ListInlineStyle> InlineStyles { get; } = Enum.GetValues<ListInlineStyle>();
+    public IReadOnlyList<MultiChoiceDisplayMode> MultiChoiceDisplayModes { get; } = Enum.GetValues<MultiChoiceDisplayMode>();
 
     [ObservableProperty]
     public partial ColorFormat Format { get; set; }
@@ -112,6 +114,9 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGridInline))]
     public partial ListInlineStyle InlineStyle { get; set; }
+
+    [ObservableProperty]
+    public partial MultiChoiceDisplayMode DisplayMode { get; set; }
 
     [ObservableProperty]
     public partial int DisplayWidth { get; set; }
@@ -197,6 +202,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
         ShowInList = (_definition as IListDisplayable)?.ShowInList ?? false;
         Format = (_definition as ColorFieldDefinition)?.Format ?? ColorFormat.Hex;
         InlineStyle = (_definition as ListFieldDefinition)?.InlineStyle ?? ListInlineStyle.Card;
+        DisplayMode = (_definition as MultiChoiceFieldDefinition)?.DisplayMode ?? MultiChoiceDisplayMode.Expanded;
         DisplayWidth = (_definition as ImageFieldDefinition)?.DisplayWidth ?? 200;
         DisplayHeight = (_definition as ImageFieldDefinition)?.DisplayHeight ?? 200;
         SizeMode = (_definition as ImageFieldDefinition)?.SizeMode ?? ImageSizeMode.Fixed;

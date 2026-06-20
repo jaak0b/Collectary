@@ -8,15 +8,24 @@
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <ItemsControl ItemsSource="{Binding ChoiceItems}"
-                      VerticalAlignment="Top">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:MultiChoiceItemViewModel">
-                    <CheckBox IsChecked="{Binding IsSelected}"
-                              Content="{Binding Label}"
-                              Margin="0,2"/>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <Panel>
+            <ItemsControl ItemsSource="{Binding ChoiceItems}"
+                          IsVisible="{Binding !IsCollapsed}"
+                          VerticalAlignment="Top">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MultiChoiceItemViewModel">
+                        <CheckBox IsChecked="{Binding IsSelected}"
+                                  Content="{Binding Label}"
+                                  Margin="0,2"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Name="CollapsedButton"
+                    IsVisible="{Binding IsCollapsed}"
+                    Content="{Binding SelectionDisplay}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    VerticalAlignment="Top"/>
+        </Panel>
     </controls:FieldEditorScaffold>
 </UserControl>

@@ -117,6 +117,15 @@ public class FieldDefinitionRowViewModelTest
     }
 
     [Test]
+    public void Constructor_LoadsDisplayModeFromMultiChoiceDefinition()
+    {
+        var def = new MultiChoiceFieldDefinition { DisplayMode = MultiChoiceDisplayMode.Collapsed };
+        var sut = new FieldDefinitionRowViewModel(def);
+
+        Assert.That(sut.DisplayMode, Is.EqualTo(MultiChoiceDisplayMode.Collapsed));
+    }
+
+    [Test]
     public void IsSharedField_FalseByDefault()
     {
         var sut = new FieldDefinitionRowViewModel(new TextFieldDefinition());
