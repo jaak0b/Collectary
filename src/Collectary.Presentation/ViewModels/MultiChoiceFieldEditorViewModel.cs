@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Presentation.Localization;
 
 namespace Collectary.Presentation.ViewModels;
 
@@ -26,6 +27,13 @@ public partial class MultiChoiceFieldEditorViewModel : FieldEditorViewModelBase
 
     public ObservableCollection<MultiChoiceItemViewModel> ChoiceItems { get; }
 
+    public bool IsCollapsed => _definition.DisplayMode == MultiChoiceDisplayMode.Collapsed;
+
+    public string SelectionDisplay =>
+        ChoiceItems.Any(c => c.IsSelected)
+            ? string.Join(", ", ChoiceItems.Where(c => c.IsSelected).Select(c => c.Label))
+            : LocalizationService.Instance["MultiChoice_SelectPlaceholder"];
+
     public MultiChoiceFieldEditorViewModel(MultiChoiceFieldDefinition definition, MultiChoiceFieldValue value)
     {
         _definition = definition;
@@ -33,6 +41,12 @@ public partial class MultiChoiceFieldEditorViewModel : FieldEditorViewModelBase
         ChoiceItems = new ObservableCollection<MultiChoiceItemViewModel>(
             definition.Choices.OrderBy(c => c.DisplayOrder)
                 .Select(c => new MultiChoiceItemViewModel(c.Value, value.Selected.Contains(c.Value))));
+        foreach (var item in ChoiceItems)
+            item.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MultiChoiceItemViewModel.IsSelected))
+                    OnPropertyChanged(nameof(SelectionDisplay));
+            };
     }
 
     public override FieldDefinition Definition => _definition;

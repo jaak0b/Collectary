@@ -70,6 +70,7 @@ public class PresetRepositoryTest : DbIntegrationTestBase
         preset.Fields.Add(new IntegerFieldDefinition { Label = "Count", Min = 1, Max = 99, PresetId = preset.Id });
         preset.Fields.Add(new DecimalFieldDefinition { Label = "Score", DecimalPlaces = 4, PresetId = preset.Id });
         preset.Fields.Add(new BoolFieldDefinition { Label = "Owned", ThreeState = true, PresetId = preset.Id });
+        preset.Fields.Add(new MultiChoiceFieldDefinition { Label = "Tags", DisplayMode = MultiChoiceDisplayMode.Collapsed, PresetId = preset.Id });
         await _sut.AddAsync(preset);
 
         var loaded = await _sut.GetByIdAsync(preset.Id);
@@ -80,6 +81,7 @@ public class PresetRepositoryTest : DbIntegrationTestBase
         Assert.That(integer.Max, Is.EqualTo(99));
         Assert.That(loaded.Fields.OfType<DecimalFieldDefinition>().Single().DecimalPlaces, Is.EqualTo(4));
         Assert.That(loaded.Fields.OfType<BoolFieldDefinition>().Single().ThreeState, Is.True);
+        Assert.That(loaded.Fields.OfType<MultiChoiceFieldDefinition>().Single().DisplayMode, Is.EqualTo(MultiChoiceDisplayMode.Collapsed));
     }
 
     [Test]

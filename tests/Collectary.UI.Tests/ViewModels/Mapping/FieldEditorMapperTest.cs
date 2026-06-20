@@ -66,6 +66,10 @@ public class FieldEditorMapperTest
             new FieldDefinitionRowViewModel(new ListFieldDefinition()) { ColumnCount = 4, InlineStyle = ListInlineStyle.Grid });
         Assert.That(list.ColumnCount, Is.EqualTo(4));
         Assert.That(list.InlineStyle, Is.EqualTo(ListInlineStyle.Grid));
+
+        var multi = (MultiChoiceFieldDefinition)_mapper.ToDefinition(
+            new FieldDefinitionRowViewModel(new MultiChoiceFieldDefinition()) { DisplayMode = MultiChoiceDisplayMode.Collapsed });
+        Assert.That(multi.DisplayMode, Is.EqualTo(MultiChoiceDisplayMode.Collapsed));
     }
 
     [Test]

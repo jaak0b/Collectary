@@ -76,6 +76,27 @@ public class SyncSerializerTest
     }
 
     [Test]
+    public void MultiChoiceField_RoundTrips_WithDisplayMode()
+    {
+        var field = new MultiChoiceFieldDefinition
+        {
+            Label = "Colours",
+            DisplayMode = MultiChoiceDisplayMode.Collapsed,
+            Choices = { new ChoiceOption { Value = "Red" }, new ChoiceOption { Value = "Blue" } },
+        };
+        var preset = new Preset { Name = "Palette", OwnerId = Guid.NewGuid(), Fields = { field } };
+
+        var clone = _sut.Deserialize<Preset>(_sut.Serialize(preset));
+
+        var def = (MultiChoiceFieldDefinition)clone.Fields.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(def.DisplayMode, Is.EqualTo(MultiChoiceDisplayMode.Collapsed));
+            Assert.That(def.Choices, Has.Count.EqualTo(2));
+        });
+    }
+
+    [Test]
     public void Item_RoundTrips_PolymorphicValuesAndNestedListEntries()
     {
         var listValue = new ListFieldValue();

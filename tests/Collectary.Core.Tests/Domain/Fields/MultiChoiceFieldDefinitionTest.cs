@@ -65,6 +65,19 @@ public class MultiChoiceFieldDefinitionTest
     }
 
     [Test]
+    public void DisplayMode_DefaultsToExpanded() =>
+        Assert.That(new MultiChoiceFieldDefinition().DisplayMode, Is.EqualTo(MultiChoiceDisplayMode.Expanded));
+
+    [Test]
+    public void ApplyTypeSpecificProperties_CopiesDisplayMode()
+    {
+        var source = new MultiChoiceFieldDefinition { DisplayMode = MultiChoiceDisplayMode.Collapsed };
+        var target = new MultiChoiceFieldDefinition();
+        target.ApplyTypeSpecificProperties(source);
+        Assert.That(target.DisplayMode, Is.EqualTo(MultiChoiceDisplayMode.Collapsed));
+    }
+
+    [Test]
     public void ApplyTypeSpecificProperties_IgnoresForeignType()
     {
         var target = new MultiChoiceFieldDefinition();

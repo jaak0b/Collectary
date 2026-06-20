@@ -289,6 +289,20 @@
                                 Command="{Binding AddChoiceCommand}"
                                 Padding="8,3"
                                 Margin="0,2,0,0"/>
+                        <StackPanel IsVisible="{Binding IsMultiChoice}" Spacing="4" Margin="0,8,0,0">
+                            <TextBlock Text="{Binding [MultiChoice_DisplayMode], Source={x:Static loc:LocalizationService.Instance}}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <ComboBox ItemsSource="{Binding MultiChoiceDisplayModes}"
+                                      SelectedItem="{Binding DisplayMode}"
+                                      MinWidth="160">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource LocalizedEnum}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- List config -->
