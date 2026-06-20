@@ -39,6 +39,13 @@ public partial class TagsFieldEditorViewModel : FieldEditorViewModelBase
     [RelayCommand]
     private void RemoveTag(string tag) => Tags.Remove(tag);
 
+    [RelayCommand]
+    private void RemoveLastTag()
+    {
+        if (Tags.Count > 0)
+            Tags.RemoveAt(Tags.Count - 1);
+    }
+
     public override void Randomize(Services.ISampleData data)
     {
         Tags.Clear();

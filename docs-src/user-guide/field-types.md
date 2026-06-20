@@ -45,7 +45,9 @@ The sections below follow the same grouping.
   *Checkboxes* shows every option inline (the default), while *Dropdown* collapses them into a single
   picker that opens a checklist — handy when a field has lots of options and you want to keep the form
   compact.
-- **Tags** — a set of keywords, each shown as a chip.
+- **Tags** — a set of keywords. Type into the field and press Enter to add each one; tags
+  appear as chips right inside the box. Remove a chip with its × button, or press Backspace when
+  the box is empty to drop the last one.
 - **Country** — pick a country from a list, shown with its flag. Because everyone records the same
   value, you can group or filter by country.
 - **Linked Item** — points one item at another (a minifig at its set, a lens at its camera body).
