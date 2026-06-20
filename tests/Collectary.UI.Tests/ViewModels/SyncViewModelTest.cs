@@ -26,22 +26,27 @@ public class SyncViewModelTest
     private SyncViewModel Make(IUiDispatcher? ui = null) => new(_sync, _status, ui ?? new InlineUiDispatcher(), new InlineBackgroundRunner());
 
     [Test]
-    public async Task SyncNow_MarshalsUiStateThroughTheDispatcher()
+    public void SyncNow_MarshalsUiStateThroughTheDispatcher()
     {
         var ui = new RecordingUiDispatcher();
         var vm = Make(ui);
 
-        await vm.SyncNowCommand.ExecuteAsync(null);
+        var task = vm.SyncNowCommand.ExecuteAsync(null);
 
         Assert.Multiple(() =>
         {
             Assert.That(ui.PostCount, Is.GreaterThan(0), "UI-state writes must go through the dispatcher");
             Assert.That(vm.LastSyncedAt, Is.Null, "state must not be applied until the dispatcher runs the posted action");
+            Assert.That(task.IsCompleted, Is.False, "the command must not finish until the dispatcher runs its final update");
         });
 
         ui.Drain();
 
-        Assert.That(vm.LastSyncedAt, Is.Not.Null, "draining the dispatcher applies the queued UI updates");
+        Assert.Multiple(() =>
+        {
+            Assert.That(vm.LastSyncedAt, Is.Not.Null, "draining the dispatcher applies the queued UI updates");
+            Assert.That(task.IsCompleted, Is.True, "the command completes once its final UI update has run");
+        });
     }
 
     [Test]
@@ -65,6 +70,22 @@ public class SyncViewModelTest
 
         Assert.That(vm.LastSyncedAt, Is.Not.Null);
         A.CallTo(() => _sync.SyncAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public void SyncNow_CompletesThroughTheUiDispatcher_SoCanExecuteChangedFiresOnTheUiThread()
+    {
+        var ui = new RecordingUiDispatcher();
+        var vm = Make(ui);
+
+        var task = vm.SyncNowCommand.ExecuteAsync(null);
+
+        Assert.That(task.IsCompleted, Is.False,
+            "the command must not finish until the UI dispatcher has run its final update; otherwise the AsyncRelayCommand raises CanExecuteChanged off the UI thread and a bound Button crashes Avalonia");
+
+        ui.Drain();
+
+        Assert.That(task.IsCompleted, Is.True, "draining the dispatcher lets the command complete on the UI thread");
     }
 
     [Test]
