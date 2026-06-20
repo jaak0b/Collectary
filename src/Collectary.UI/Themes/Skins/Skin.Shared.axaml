@@ -176,14 +176,77 @@
         <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
     </Style>
 
-    <!-- Tabs -->
+    <Style Selector="TabControl">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="{DynamicResource ControlBorderThickness}"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        ClipToBounds="True">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Top"
+                                Background="{DynamicResource SurfaceAltBrush}"
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="0,0,0,1">
+                            <ItemsPresenter Name="PART_ItemsPresenter"
+                                            ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                        </Border>
+                        <ContentPresenter Name="PART_SelectedContentHost"
+                                          Margin="16"
+                                          Content="{TemplateBinding SelectedContent}"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}"
+                                          HorizontalContentAlignment="Stretch"
+                                          VerticalContentAlignment="Stretch"/>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
     <Style Selector="TabItem">
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_LayoutRoot"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <Panel>
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                          HorizontalContentAlignment="Center"
+                                          VerticalContentAlignment="Center"/>
+                        <Border Name="PART_AccentLine"
+                                VerticalAlignment="Bottom"
+                                Height="2"
+                                Margin="0,0,0,-1"
+                                Background="Transparent"/>
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
     </Style>
     <Style Selector="TabItem:selected">
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+    <Style Selector="TabItem:selected /template/ Border#PART_AccentLine">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
     </Style>
 
     <!-- CheckBox / RadioButton -->
