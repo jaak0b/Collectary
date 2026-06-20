@@ -6,20 +6,20 @@
 2. **Localization is resx-only.** All translatable strings live in `Strings.en/de.resx` or a domain-specific resx pair. Reference via `LocalizationService.Instance["Key"]` / `{Binding [Key], Source=…}`. Both language files must have every key.
 3. **TDD mandatory, test-first, no exceptions.** For EVERY behavior change incl. bug fixes: commit the test before the production code. Order is non-negotiable: (a) write the test, (b) run it and PASTE the failing output, (c) only then touch production code, (d) re-run to green. A red run you can quote is the gate — no red proof = the fix does not start. Writing the fix first, or "I'll add a test after", is a rule violation; if you catch yourself having edited production code first, revert it and restart from (a).
 4. **Three test layers per change.** Every feature and bug fix needs unit + integration + headless tests. "It's only a small change" is not an exemption — if it changes behavior, all three layers apply. Untestable-by-design code (pure XAML, generated code) is the only exception, and you must say so explicitly.
-5. **Verification gate — scaled to the change.** A change is NOT done until it has been verified and the real command output quoted. Never claim a feature is finished, never hand back to the user, and never commit on *assumed* results. The depth of the gate depends on the blast radius of the change:
+5. **Verification gate — local is fast, CI is thorough.** A change is NOT done until it has been verified and the real command output quoted. Never claim a feature is finished, never hand back to the user, and never commit on *assumed* results. **The full test suite and coverage are CI's job — never run them locally.** The complete `.\build.ps1 --target Test` runs on every PR via `.github/workflows/build.yml`, and the ≥95% coverage trend runs nightly via `.github/workflows/nightly.yml`; running either locally only duplicates CI and wastes dev time. What you run locally scales with the blast radius of the change:
 
-   - **Small, localized change** (a few files inside one project, no cross-project/API/schema/DI surface touched — e.g. a single ViewModel tweak, one resx value, a catalog reorder): run only the **directly relevant test fixtures** (`dotnet test … --filter`) and quote their totals. Coverage and mutation are **not** required. State that you classified it as small and which fixtures you ran.
-   - **Big or multi-file / multi-project change** (touches more than one project, or changes a public API, DB schema/migration, DI wiring, sync/backup format, or shared infrastructure): run the **full gate** below, all steps, output quoted.
+   - **Small, localized change** (a few files inside one project, no cross-project/API/schema/DI surface touched — e.g. a single ViewModel tweak, one resx value, a catalog reorder): run only the **directly relevant test fixtures** (`dotnet test … --filter`) and quote their totals. Mutation is **not** required. State that you classified it as small and which fixtures you ran.
+   - **Big or multi-file / multi-project change** (touches more than one project, or changes a public API, DB schema/migration, DI wiring, sync/backup format, or shared infrastructure): run the **local gate** below — changed-area fixtures, diff-scoped mutation, and manual UI — output quoted.
 
-   When unsure which bucket applies, **ask the user for confirmation** before choosing — do not silently pick one. The TDD red-proof (rule #3) and three-layer thinking (rule #4) apply to *every* change regardless of size; this rule scales only *how much of the suite* you run to verify.
+   When unsure which bucket applies, **ask the user for confirmation** before choosing — do not silently pick one. The TDD red-proof (rule #3) and three-layer thinking (rule #4) apply to *every* change regardless of size.
 
-   Full gate:
-   1. **Full suite green.** Run the complete `.\build.ps1 --target Test` (not just the fixtures you touched) and paste the pass/fail totals. A single failure blocks everything.
-   2. **Coverage ≥95% and not dropped.** Run `.\build.ps1 --target Coverage`, quote the exact merged line-coverage number. If it dropped versus the baseline — even while still ≥95% — that is a regression: add tests until it recovers, or state precisely why (e.g. pre-existing untested code in an unrelated assembly) with the measured baseline to prove it.
+   Local gate:
+   1. **Full suite — CI only.** Do NOT run the complete `.\build.ps1 --target Test` locally; CI runs it on every PR. Locally, run only the fixtures covering the code you touched (`dotnet test … --filter`) and paste their pass/fail totals. A failure in those fixtures blocks everything.
+   2. **Coverage ≥95% — CI only.** Do NOT run `.\build.ps1 --target Coverage` locally and do not quote a local coverage number; the ≥95% line-coverage trend is tracked by the nightly CI job. Diff-scoped mutation (5.3) is what locally guarantees your changed code is actually tested.
    3. **Mutation testing — scoped to your local changes only, surviving mutants addressed. Running full Stryker is forbidden.** Stryker over the whole codebase takes far too long; never do it. Always run it scoped to your diff: `.\build.ps1 --target Mutate` `git diff`s against `HEAD` and mutates only those files, so it covers just the code you have changed since your last commit (your uncommitted working-tree changes). Run it **before you commit** — once your work is committed there is nothing left in the diff to mutate. Override the baseline only when you need a wider sweep (`.\build.ps1 --target Mutate --since <branch-or-commit>`). (`--since` is the git diff base, not Stryker's own `--since`, which LibGit2Sharp can't use in this relative-path worktree.) Stop the running Desktop app first (`Get-Process Collectary.UI.Desktop | Stop-Process -Force`) — a live instance locks `Collectary.UI.dll` and fails Stryker's build. Quote the mutation score and review survivors in the code you changed; kill them with tests or justify each explicitly.
    4. **Manual UI verification (for UI changes).** Ask the user to run the app with exact repro steps (see "Verifying UI Fixes"). Tests do not replace this; they are in addition to it.
 
-   If any gate cannot be completed (e.g. a pre-existing failure you did not introduce), STOP and surface it to the user with the evidence — do not quietly proceed as if it passed.
+   If a local gate cannot be completed (e.g. a pre-existing failure you did not introduce), STOP and surface it to the user with the evidence — do not quietly proceed as if it passed.
 6. **No test touches the developer's DB or filesystem.** In-memory SQLite (`Data Source=:memory:`) and `Path.GetTempPath()` temp dirs, disposed in teardown.
 7. **No empty catch blocks.** Log via `AppLogger.Log.Error` and surface via `IDialogService.ShowMessageAsync` for user-initiated operations.
 8. **New `FieldDefinition` subtype = zero changes outside its own file.** Virtual dispatch only; one keyed Autofac registration in `UiModule`, no type-switches. **The base `FieldDefinition` is FROZEN to universal domain state only — adding a capability-, feature-, or layer-specific member to it is ILLEGAL.** Anything that only some field types care about (import, search, list-display, UI, sync, …) lives on that concern's dedicated capability interface (`ITextImportable`, `ISearchableFieldDefinition`, `IListDisplayable`, …) as a default member (`=> false` / `{ }`), overridden only by the field types that opt in; the consumer checks `field is IXxx { Member: … }`, never a member on `FieldDefinition`. If the right interface doesn't exist yet, create it — do NOT hang the member off the base class. A member belongs on `FieldDefinition` only if it is meaningful for EVERY field type without exception.
@@ -41,8 +41,8 @@ A feature or fix is complete **only** when every box below is genuinely ticked, 
 
 - [ ] **Tests written first** (rule #3) — red output quoted before the production code existed.
 - [ ] **All three layers present** (rule #4) — unit + integration + headless, or an explicit note on why a layer doesn't apply.
-- [ ] **Tests run, scaled to the change** (rule #5) — small localized change: relevant fixtures green, totals quoted, classification stated. Big/multi-project change: full suite green (`.\build.ps1 --target Test`), totals quoted.
-- [ ] **Coverage ≥95% and not dropped** (rule #5.2) — *big changes only*; exact number quoted; regressions explained with a measured baseline.
+- [ ] **Tests run, scaled to the change** (rule #5) — changed-area fixtures green (`dotnet test … --filter`), totals quoted, classification stated. The full suite is CI-only — never run locally.
+- [ ] **Coverage — CI only** (rule #5.2) — not a local gate; the ≥95% trend is tracked by nightly CI. Nothing to run or quote locally.
 - [ ] **Mutation run scoped to local changes, survivors handled** (rule #5.3) — *big changes only*; run `.\build.ps1 --target Mutate` (diff vs `HEAD`, your uncommitted changes) **before** committing — never full Stryker; Desktop app stopped first; score quoted; new survivors killed or justified.
 - [ ] **Manual UI verification requested** (rule #5.4) — for any UI change, exact repro steps handed to the user.
 - [ ] **Docs updated** (rule #13).
@@ -61,10 +61,10 @@ try { Get-Process -Name "Collectary.UI.Desktop" | Stop-Process -Force } catch {}
 dotnet build "src\Collectary.UI.Desktop\Collectary.UI.Desktop.csproj"
 .\src\Collectary.UI.Desktop\bin\Debug\net8.0\Collectary.UI.Desktop.exe
 
-.\build.ps1 --target Test      # all tests (default)
-.\build.ps1 --target Coverage  # coverage gate ≥95%
+dotnet test "tests\Collectary.UI.Tests\..." --filter "FullyQualifiedName~MethodName"  # run only your changed-area fixtures locally
 .\build.ps1 --target Mutate    # mutation testing — scoped to your uncommitted changes since HEAD (full runs forbidden)
-dotnet test "tests\Collectary.UI.Tests\..." --filter "FullyQualifiedName~MethodName"
+.\build.ps1 --target Test      # CI ONLY (build.yml, every PR) — do not run locally
+.\build.ps1 --target Coverage  # CI ONLY (nightly.yml) — do not run locally
 dotnet ef migrations add <Name> --project src\Collectary.Infrastructure
 ```
 
