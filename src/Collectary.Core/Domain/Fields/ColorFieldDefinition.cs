@@ -4,7 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Color")]
 [FieldIcon(IconGlyphs.Color)]
-[FieldCatalog(0, FieldCategory.Visual)]
+[FieldCatalog(4, FieldCategory.MediaAndFiles)]
 public class ColorFieldDefinition : FieldDefinition<ColorFieldValue>, IListDisplayable, ITextImportable
 {
     public override int DefaultColumnSpan => 2;

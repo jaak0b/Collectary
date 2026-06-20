@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Collectary.Core.Domain.Fields;
+using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
 
 namespace Collectary.UI.Controls;
@@ -16,6 +17,8 @@ public class AddFieldMenuBuilder
         {
             if (previous is { } p && p != entry.Category)
                 items.Add(new Separator());
+            if (previous is null || previous != entry.Category)
+                items.Add(CategoryHeader(entry.Category));
             items.Add(new MenuItem
             {
                 Icon = new TextBlock { Text = entry.Icon, Classes = { "icon" } },
@@ -27,4 +30,11 @@ public class AddFieldMenuBuilder
         }
         return items;
     }
+
+    private MenuItem CategoryHeader(FieldCategory category) => new()
+    {
+        Header = category.ToLocalizedString(),
+        IsEnabled = false,
+        Classes = { "category-header" },
+    };
 }

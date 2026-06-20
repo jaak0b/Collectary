@@ -4,55 +4,67 @@ Each field has a type. The type decides how you enter the value (a calendar for 
 rating, a colour picker for a colour) and how it's shown in a list. Pick the type that matches the
 kind of information you're storing.
 
+When you add a field, the type picker groups the types under headers — **Text**, **Numbers**,
+**Date & Time**, **Choice**, **Media & Files**, and **Structure** — so related types sit together.
+The sections below follow the same grouping.
+
 ## Text
 
 - **Text** — a single line: a title, a name, a short note.
 - **Rich Text** — formatted text with bold, lists, and so on.
-- **Tags** — a set of keywords, each shown as a chip.
+- **URL** — a web link.
+- **Phone** — a phone number.
+- **Email** — an email address.
 
 ## Numbers
 
 - **Integer** — a whole number: a quantity, a year, a count.
-- **Auto Number** — a whole number that fills itself in: every new item gets the next free number, so
-  each train (or coin, or anything you number) ends up unique without you typing it.
 - **Decimal** — a number with fractions, shown to as many decimal places as you choose.
 - **Percentage** — 0–100, shown with a `%`.
 - **Currency** — an amount plus a currency symbol.
-- **Rating** — a row of stars.
-
-## Sizes and weights
-
 - **Measurement** — a size with its unit (a coin's diameter in mm, a watch case).
 - **Weight** — a weight in grams, ounces, kilograms, or pounds.
+- **Rating** — a row of stars.
+- **Auto Number** — a whole number that fills itself in: every new item gets the next free number, so
+  each train (or coin, or anything you number) ends up unique without you typing it.
 
-## Dates and time
+## Date & Time
 
 - **Date** — a calendar date.
+- **Date Range** — a from–to span, shown as "start – end".
 - **Time** — a clock time.
 - **Duration** — a length of time (a film's runtime, a game's playing time).
-- **Date Range** — a from–to span, shown as "start – end".
 
-## Choices
+## Choice
 
+- **Yes / No** — a yes/no toggle. By default it's a plain checkbox (ticked means yes, unticked means
+  no). Turn on **Allow unanswered** if you'd rather have three states — yes, no, or left blank — so an
+  item you haven't decided on yet stays empty instead of silently counting as "no".
 - **Single Choice** — a dropdown, pick one.
 - **Multi Choice** — checkboxes, pick any number.
-- **Bool** — a yes/no toggle. By default it's a plain checkbox (ticked means yes, unticked means no).
-  Turn on **Allow unanswered** if you'd rather have three states — yes, no, or left blank — so an
-  item you haven't decided on yet stays empty instead of silently counting as "no".
-
-## Links and contact
-
-- **URL** — a web link.
-- **Email** — an email address.
-- **Phone** — a phone number.
-
-## Origin
-
+- **Tags** — a set of keywords, each shown as a chip.
 - **Country** — pick a country from a list, shown with its flag. Because everyone records the same
   value, you can group or filter by country.
+- **Linked Item** — points one item at another (a minifig at its set, a lens at its camera body).
 
-## Codes
+## Media & Files
 
+- **Image** — one picture, for cover art or a photo of the item.
+- **Image Gallery** — several pictures in an order you choose (front and back of a coin, a few
+  angles).
+- **Audio Note** — a short clip you record straight into the item. Press **Record** (the microphone
+  button) to start and again to stop, then use the **Play/Pause** button to listen back. The button's
+  tooltip reminds you that the microphone and playback device are chosen once, app-wide, under
+  **Settings → Audio** — both default to your system's default device. A small **gear** button on the
+  control is a shortcut straight to those settings; it saves the item first so you don't lose edits.
+  Clips are saved with the item and travel with it through sync and backups. Recording works on the desktop and Android apps; in the
+  browser the field tells you recording isn't available there. On Android the microphone permission is
+  asked the first time you press **Record** — not at startup — so the app never prompts for the mic
+  unless you actually use this field; if you decline, the field says microphone access is needed and
+  records nothing.
+- **File Attachment** — keep documents with the item: manuals, warranties, certificates, receipts,
+  instructions. Add as many as you like.
+- **Color** — a colour value in ARGB, RGB, Hex, or CMYK.
 - **Barcode / QR** — scan a code with a camera or from a photo, or type it. Reads EAN-13, UPC, ISBN,
   QR, Data Matrix, PDF417, and more.
 
@@ -72,30 +84,12 @@ kind of information you're storing.
   tells you and steps back so nothing hangs. You can type or paste a code by hand at any time.
 - **QR Code** — turns text (a shelf code, a box number, a link) into a QR you can print.
 
-## Files and media
-
-- **File Attachment** — keep documents with the item: manuals, warranties, certificates, receipts,
-  instructions. Add as many as you like.
-- **Image** — one picture, for cover art or a photo of the item.
-- **Image Gallery** — several pictures in an order you choose (front and back of a coin, a few
-  angles).
-- **Color** — a colour value in ARGB, RGB, Hex, or CMYK.
-- **Audio Note** — a short clip you record straight into the item. Press **Record** (the microphone
-  button) to start and again to stop, then use the **Play/Pause** button to listen back. The button's
-  tooltip reminds you that the microphone and playback device are chosen once, app-wide, under
-  **Settings → Audio** — both default to your system's default device. A small **gear** button on the
-  control is a shortcut straight to those settings; it saves the item first so you don't lose edits.
-  Clips are saved with the item and travel with it through sync and backups. Recording works on the desktop and Android apps; in the
-  browser the field tells you recording isn't available there. On Android the microphone permission is
-  asked the first time you press **Record** — not at startup — so the app never prompts for the mic
-  unless you actually use this field; if you decline, the field says microphone access is needed and
-  records nothing.
-
 ## Structure
 
 - **List** — a repeating sub-list inside one item, where each entry has its own fields (an album's
   tracks, each with a title and length). **List Entry** describes those per-entry fields.
-- **Linked Item** — points one item at another (a minifig at its set, a lens at its camera body).
+- **+ Group** — not a field on its own, but a heading that boxes related fields together inside a
+  collection. You'll find it at the foot of the type picker, under **Structure**.
 - **Display Name** — every collection has exactly one. It points at the field used to label each
   item in lists. You set it when designing the collection.
 
@@ -115,7 +109,7 @@ the field panel:
   a clash: block saving, just warn, or allow it. A number, once given to an item, stays with it — the
   editor only ever picks a number for a brand-new item.
 - **Decimal** — choose how many **decimal places** to show, both while editing and in lists.
-- **Bool** — choose between a plain yes/no checkbox and the three-state **Allow unanswered** mode.
+- **Yes / No** — choose between a plain yes/no checkbox and the three-state **Allow unanswered** mode.
 - **Rating** — pick how many **stars** the scale runs to.
 - **Currency** — set the **symbol** shown beside the amount.
 - **Color** — pick the format (Hex, RGB, ARGB, CMYK).

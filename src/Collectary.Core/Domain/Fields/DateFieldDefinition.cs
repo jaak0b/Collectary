@@ -5,7 +5,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Date")]
 [FieldIcon(IconGlyphs.Calendar)]
-[FieldCatalog(6, FieldCategory.TextAndNumbers)]
+[FieldCatalog(0, FieldCategory.DateTime)]
 public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }

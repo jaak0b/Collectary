@@ -5,7 +5,7 @@ namespace Collectary.Core.Domain.Fields;
 /// <summary>Links this item to another item (a minifig to its set, a lens to its body, a card to its deck).</summary>
 [LocalizedName("FieldType_LinkedItem")]
 [FieldIcon(IconGlyphs.LinkMultiple)]
-[FieldCatalog(3, FieldCategory.Choice)]
+[FieldCatalog(5, FieldCategory.Choice)]
 public class LinkedItemFieldDefinition : FieldDefinition<LinkedItemFieldValue>, IListDisplayable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;

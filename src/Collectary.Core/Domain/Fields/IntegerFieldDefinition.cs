@@ -5,7 +5,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Integer")]
 [FieldIcon(IconGlyphs.NumberSymbol)]
-[FieldCatalog(2, FieldCategory.TextAndNumbers)]
+[FieldCatalog(0, FieldCategory.Numbers)]
 public class IntegerFieldDefinition : FieldDefinition<IntegerFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public int? Min { get; set; }

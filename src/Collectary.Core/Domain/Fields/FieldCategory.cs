@@ -6,8 +6,10 @@ namespace Collectary.Core.Domain.Fields;
 /// </summary>
 public enum FieldCategory
 {
-    TextAndNumbers,
-    Visual,
+    Text,
+    Numbers,
+    DateTime,
     Choice,
-    Structural,
+    MediaAndFiles,
+    Structure,
 }

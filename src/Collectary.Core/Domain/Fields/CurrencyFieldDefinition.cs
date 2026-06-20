@@ -5,7 +5,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Currency")]
 [FieldIcon(IconGlyphs.Money)]
-[FieldCatalog(5, FieldCategory.TextAndNumbers)]
+[FieldCatalog(4, FieldCategory.Numbers)]
 public class CurrencyFieldDefinition : FieldDefinition<CurrencyFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }

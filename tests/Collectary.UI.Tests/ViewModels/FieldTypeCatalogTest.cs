@@ -75,6 +75,38 @@ public class FieldTypeCatalogTest
     }
 
     [Test]
+    public void Entries_GroupFieldTypesByDataShape()
+    {
+        var byType = new FieldTypeCatalog().Entries.ToDictionary(e => e.Type, e => e.Category);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(byType[typeof(TextFieldDefinition)], Is.EqualTo(FieldCategory.Text));
+            Assert.That(byType[typeof(UrlFieldDefinition)], Is.EqualTo(FieldCategory.Text));
+            Assert.That(byType[typeof(IntegerFieldDefinition)], Is.EqualTo(FieldCategory.Numbers));
+            Assert.That(byType[typeof(RatingFieldDefinition)], Is.EqualTo(FieldCategory.Numbers));
+            Assert.That(byType[typeof(DateFieldDefinition)], Is.EqualTo(FieldCategory.DateTime));
+            Assert.That(byType[typeof(DurationFieldDefinition)], Is.EqualTo(FieldCategory.DateTime));
+            Assert.That(byType[typeof(TagsFieldDefinition)], Is.EqualTo(FieldCategory.Choice));
+            Assert.That(byType[typeof(LinkedItemFieldDefinition)], Is.EqualTo(FieldCategory.Choice));
+            Assert.That(byType[typeof(ImageFieldDefinition)], Is.EqualTo(FieldCategory.MediaAndFiles));
+            Assert.That(byType[typeof(BarcodeFieldDefinition)], Is.EqualTo(FieldCategory.MediaAndFiles));
+            Assert.That(byType[typeof(FileAttachmentFieldDefinition)], Is.EqualTo(FieldCategory.MediaAndFiles));
+            Assert.That(byType[typeof(ColorFieldDefinition)], Is.EqualTo(FieldCategory.MediaAndFiles));
+            Assert.That(byType[typeof(ListFieldDefinition)], Is.EqualTo(FieldCategory.Structure));
+        });
+    }
+
+    [Test]
+    public void Entries_PlaceAutoNumberWithTheOtherWholeNumbers()
+    {
+        var types = new FieldTypeCatalog().Entries.Select(e => e.Type).ToList();
+
+        Assert.That(types.IndexOf(typeof(AutoNumberFieldDefinition)),
+            Is.LessThan(types.IndexOf(typeof(PercentageFieldDefinition))));
+    }
+
+    [Test]
     public void Entries_PlaceImageGalleryImmediatelyAfterImage()
     {
         var types = new FieldTypeCatalog().Entries.Select(e => e.Type).ToList();

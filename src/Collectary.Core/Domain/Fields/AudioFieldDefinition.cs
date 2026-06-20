@@ -3,7 +3,7 @@ namespace Collectary.Core.Domain.Fields;
 /// <summary>A short recorded audio note — spoken tasting notes, condition narration, a sound sample.</summary>
 [LocalizedName("FieldType_Audio")]
 [FieldIcon(IconGlyphs.Microphone)]
-[FieldCatalog(7, FieldCategory.Visual)]
+[FieldCatalog(2, FieldCategory.MediaAndFiles)]
 public class AudioFieldDefinition : FieldDefinition<AudioFieldValue>
 {
     public override int DefaultColumnSpan => 2;

@@ -4,7 +4,7 @@ public enum ImageSizeMode { Fixed, Min, Max }
 
 [LocalizedName("FieldType_Image")]
 [FieldIcon(IconGlyphs.Image)]
-[FieldCatalog(3, FieldCategory.Visual)]
+[FieldCatalog(0, FieldCategory.MediaAndFiles)]
 public class ImageFieldDefinition : FieldDefinition<ImageFieldValue>
 {
     public override int DefaultColumnSpan => 2;

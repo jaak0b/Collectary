@@ -6,7 +6,7 @@ using Collectary.Search;
 /// <summary>A from–to date pair — an ownership period, a drink-window, a manufacturing era.</summary>
 [LocalizedName("FieldType_DateRange")]
 [FieldIcon(IconGlyphs.DateRange)]
-[FieldCatalog(7, FieldCategory.TextAndNumbers)]
+[FieldCatalog(1, FieldCategory.DateTime)]
 public class DateRangeFieldDefinition : FieldDefinition<DateRangeFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;

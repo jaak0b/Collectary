@@ -9,7 +9,7 @@ public enum DuplicateHandling { Error, Warn, Allow }
 
 [LocalizedName("FieldType_AutoNumber")]
 [FieldIcon(IconGlyphs.NumberSymbol)]
-[FieldCatalog(17, FieldCategory.TextAndNumbers)]
+[FieldCatalog(2, FieldCategory.Numbers)]
 public class AutoNumberFieldDefinition : FieldDefinition<AutoNumberFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool Editable { get; set; }

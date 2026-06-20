@@ -13,6 +13,9 @@ public static class FieldMetadataExtensions
         return LocalizationService.Instance[attr.Key];
     }
 
+    public static string ToLocalizedString(this FieldCategory category) =>
+        LocalizationService.Instance[$"FieldCategory_{category}"];
+
     public static string GetFieldIcon(this Type type)
     {
         var attr = type.GetCustomAttribute<FieldIconAttribute>()

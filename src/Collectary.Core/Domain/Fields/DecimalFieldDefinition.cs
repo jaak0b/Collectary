@@ -5,7 +5,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Decimal")]
 [FieldIcon(IconGlyphs.NumberSymbol)]
-[FieldCatalog(3, FieldCategory.TextAndNumbers)]
+[FieldCatalog(1, FieldCategory.Numbers)]
 public class DecimalFieldDefinition : FieldDefinition<DecimalFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public int DecimalPlaces { get; set; } = 2;
