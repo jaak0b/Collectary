@@ -1,51 +1,46 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:icons="using:Collectary.Core.Domain.Fields"
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              x:Class="Collectary.UI.Views.TagsFieldEditorView"
              x:DataType="vm:TagsFieldEditorViewModel">
 
+    <UserControl.Styles>
+        <Style Selector="TextBox.tag-entry">
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Padding" Value="4,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox.tag-entry /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox.tag-entry:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style Selector="TextBox.tag-entry:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+    </UserControl.Styles>
+
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Spacing="8" VerticalAlignment="Top">
-            <ItemsControl ItemsSource="{Binding Tags}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <Border Background="{DynamicResource PrimaryBrush}"
-                                CornerRadius="12"
-                                Margin="0,0,4,4"
-                                Padding="8,3">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="{Binding}"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                           VerticalAlignment="Center"
-                                           FontSize="12"/>
-                                <Button Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
-                                        Padding="2,0"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                        FontSize="10"
-                                        Command="{Binding $parent[ItemsControl].((vm:TagsFieldEditorViewModel)DataContext).RemoveTagCommand}"
-                                        CommandParameter="{Binding}"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <TextBox Text="{Binding NewTag}"
-                     PlaceholderText="Add tag, press Enter">
-                <TextBox.KeyBindings>
-                    <KeyBinding Gesture="Enter" Command="{Binding AddTagCommand}"/>
-                </TextBox.KeyBindings>
-            </TextBox>
-        </StackPanel>
+        <Border Name="FieldBorder"
+                Background="{DynamicResource SurfaceAltBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="{DynamicResource ControlBorderThickness}"
+                CornerRadius="{DynamicResource ControlCornerRadius}"
+                Padding="5,4"
+                VerticalAlignment="Top"
+                Cursor="Ibeam">
+            <WrapPanel Name="TagPanel" Orientation="Horizontal"/>
+        </Border>
     </controls:FieldEditorScaffold>
 </UserControl>

@@ -50,6 +50,22 @@ public class TagsFieldEditorViewModelTest
     }
 
     [Test]
+    public void RemoveLastTag_RemovesMostRecent()
+    {
+        var sut = new TagsFieldEditorViewModel(new TagsFieldDefinition(), new TagsFieldValue { Tags = { "a", "b", "c" } });
+        sut.RemoveLastTagCommand.Execute(null);
+        Assert.That(sut.Tags, Is.EqualTo(new[] { "a", "b" }));
+    }
+
+    [Test]
+    public void RemoveLastTag_NoOpWhenEmpty()
+    {
+        var sut = new TagsFieldEditorViewModel(new TagsFieldDefinition(), new TagsFieldValue());
+        Assert.DoesNotThrow(() => sut.RemoveLastTagCommand.Execute(null));
+        Assert.That(sut.Tags, Is.Empty);
+    }
+
+    [Test]
     public void PersistsCurrentTags()
     {
         var sut = new TagsFieldEditorViewModel(new TagsFieldDefinition(), new TagsFieldValue { Tags = { "a" } })

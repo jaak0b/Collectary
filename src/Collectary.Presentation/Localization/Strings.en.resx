@@ -329,6 +329,7 @@
   <data name="ImageSizeMode_Max" xml:space="preserve"><value>Maximum</value></data>
   <data name="MultiChoice_DisplayMode" xml:space="preserve"><value>Display</value></data>
   <data name="MultiChoice_SelectPlaceholder" xml:space="preserve"><value>Select…</value></data>
+  <data name="Tags_AddPlaceholder" xml:space="preserve"><value>Add tag…</value></data>
   <data name="MultiChoiceDisplayMode_Expanded" xml:space="preserve"><value>Checkboxes</value></data>
   <data name="MultiChoiceDisplayMode_Collapsed" xml:space="preserve"><value>Dropdown</value></data>
   <data name="FieldSettings" xml:space="preserve"><value>Field settings</value></data>
