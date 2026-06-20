@@ -73,6 +73,21 @@ public class SyncViewModelTest
     }
 
     [Test]
+    public void RequestSync_InvokesTheCommandThroughTheUiDispatcher_NotOnTheCallingThread()
+    {
+        var ui = new RecordingUiDispatcher();
+        var vm = Make(ui);
+
+        _ = vm.RequestSyncAsync();
+
+        A.CallTo(() => _sync.SyncAsync()).MustNotHaveHappened();
+
+        ui.Drain();
+
+        A.CallTo(() => _sync.SyncAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
     public void SyncNow_CompletesThroughTheUiDispatcher_SoCanExecuteChangedFiresOnTheUiThread()
     {
         var ui = new RecordingUiDispatcher();

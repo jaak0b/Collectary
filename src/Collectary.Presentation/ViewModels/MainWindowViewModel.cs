@@ -518,7 +518,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             SyncThenReloadAsync);
     }
 
-    private async Task SyncThenReloadAsync(CancellationToken cancellationToken) => await Sync.SyncNowCommand.ExecuteAsync(null);
+    private Task SyncThenReloadAsync(CancellationToken cancellationToken) => Sync.RequestSyncAsync();
 
     private void OnSyncTickFailed(Exception ex)
     {

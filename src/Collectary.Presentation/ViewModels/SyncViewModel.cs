@@ -110,6 +110,24 @@ public partial class SyncViewModel : ViewModelBase
         }
     }
 
+    public Task RequestSyncAsync()
+    {
+        var completion = new TaskCompletionSource();
+        _ui.Post(async () =>
+        {
+            try
+            {
+                await SyncNowCommand.ExecuteAsync(null);
+                completion.SetResult();
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+        return completion.Task;
+    }
+
     private Task OnUiAsync(Action action)
     {
         var completion = new TaskCompletionSource();
