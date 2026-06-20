@@ -2,7 +2,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_List")]
 [FieldIcon(IconGlyphs.BulletList)]
-[FieldCatalog(0, FieldCategory.Structural)]
+[FieldCatalog(0, FieldCategory.Structure)]
 public class ListFieldDefinition : FieldDefinition<ListFieldValue>
 {
     public override int DefaultColumnSpan => 2;

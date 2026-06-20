@@ -34,7 +34,7 @@ public class FieldCatalogAttributeTest
         var attr = typeof(TextFieldDefinition).GetCustomAttribute<FieldCatalogAttribute>()!;
         Assert.Multiple(() =>
         {
-            Assert.That(attr.Category, Is.EqualTo(FieldCategory.TextAndNumbers));
+            Assert.That(attr.Category, Is.EqualTo(FieldCategory.Text));
             Assert.That(attr.Order, Is.EqualTo(0));
         });
     }
@@ -44,10 +44,10 @@ public class FieldCatalogAttributeTest
     {
         Assert.Multiple(() =>
         {
-            Assert.That(Category(typeof(ListFieldDefinition)), Is.EqualTo(FieldCategory.Structural));
-            Assert.That(Category(typeof(ImageFieldDefinition)), Is.EqualTo(FieldCategory.Visual));
+            Assert.That(Category(typeof(ListFieldDefinition)), Is.EqualTo(FieldCategory.Structure));
+            Assert.That(Category(typeof(ImageFieldDefinition)), Is.EqualTo(FieldCategory.MediaAndFiles));
             Assert.That(Category(typeof(BoolFieldDefinition)), Is.EqualTo(FieldCategory.Choice));
-            Assert.That(Category(typeof(CurrencyFieldDefinition)), Is.EqualTo(FieldCategory.TextAndNumbers));
+            Assert.That(Category(typeof(CurrencyFieldDefinition)), Is.EqualTo(FieldCategory.Numbers));
         });
     }
 

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using CommunityToolkit.Mvvm.Messaging;
+using Collectary.Core.Domain.Fields;
 using Collectary.UI.Controls;
 using Collectary.Presentation.Localization;
 using Collectary.Presentation.ViewModels;
@@ -36,9 +37,9 @@ public partial class SharedFieldLibraryView : UserControl
 
         var items = _menuBuilder.BuildCatalogItems(vm.AddableFieldTypes, vm.AddFieldOfTypeCommand);
 
-        items.Add(new Separator());
         var addGroup = new MenuItem
         {
+            Icon = new TextBlock { Text = IconGlyphs.Folder, Classes = { "icon" } },
             Header = LocalizationService.Instance["AddGroup"],
             Command = vm.AddGroupCommand,
         };

@@ -16,11 +16,13 @@ public class AddFieldMenuBuilderTest
         return new AddFieldMenuBuilder().BuildCatalogItems(entries, A.Fake<ICommand>());
     }
 
+    private static bool IsCategoryHeader(MenuItem item) => item.Classes.Contains("category-header");
+
     [Test]
     public void EachEntry_RendersIconInIconFont_AndNameAsHeader()
     {
         var entries = new FieldTypeCatalog().Entries;
-        var menuItems = Build(entries).OfType<MenuItem>().ToList();
+        var menuItems = Build(entries).OfType<MenuItem>().Where(m => !IsCategoryHeader(m)).ToList();
 
         Assert.That(menuItems, Has.Count.EqualTo(entries.Count));
 
@@ -39,4 +41,17 @@ public class AddFieldMenuBuilderTest
     [Test]
     public void InsertsSeparators_BetweenCategories() =>
         Assert.That(Build(new FieldTypeCatalog().Entries).OfType<Separator>().Any(), Is.True);
+
+    [Test]
+    public void RendersDisabledLocalizedHeader_PerCategory()
+    {
+        var entries = new FieldTypeCatalog().Entries;
+        var headers = Build(entries).OfType<MenuItem>().Where(IsCategoryHeader).ToList();
+        var categories = entries.Select(e => e.Category).Distinct().ToList();
+
+        Assert.That(headers, Has.Count.EqualTo(categories.Count));
+        Assert.That(headers.Select(h => h.Header),
+            Is.EquivalentTo(categories.Select(c => LocalizationService.Instance[$"FieldCategory_{c}"])));
+        Assert.That(headers.All(h => !h.IsEnabled), Is.True);
+    }
 }

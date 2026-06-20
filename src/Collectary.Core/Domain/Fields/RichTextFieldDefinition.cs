@@ -4,7 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_RichText")]
 [FieldIcon(IconGlyphs.TextEditStyle)]
-[FieldCatalog(1, FieldCategory.TextAndNumbers)]
+[FieldCatalog(1, FieldCategory.Text)]
 public class RichTextFieldDefinition : FieldDefinition<RichTextFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;

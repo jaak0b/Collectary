@@ -81,6 +81,12 @@
   <data name="Barcode_Placeholder" xml:space="preserve"><value>Scan or type a code</value></data>
   <data name="Time_Watermark" xml:space="preserve"><value>HH:mm</value></data>
   <data name="Duration_Watermark" xml:space="preserve"><value>2h 30m</value></data>
+  <data name="FieldCategory_Text" xml:space="preserve"><value>Text</value></data>
+  <data name="FieldCategory_Numbers" xml:space="preserve"><value>Numbers</value></data>
+  <data name="FieldCategory_DateTime" xml:space="preserve"><value>Date &amp; Time</value></data>
+  <data name="FieldCategory_Choice" xml:space="preserve"><value>Choice</value></data>
+  <data name="FieldCategory_MediaAndFiles" xml:space="preserve"><value>Media &amp; Files</value></data>
+  <data name="FieldCategory_Structure" xml:space="preserve"><value>Structure</value></data>
   <data name="FieldType_QrCode" xml:space="preserve"><value>QR Code</value></data>
   <data name="QrCode_Placeholder" xml:space="preserve"><value>Text to encode as a QR code</value></data>
   <data name="FieldType_MultiImage" xml:space="preserve"><value>Image Gallery</value></data>
@@ -267,7 +273,7 @@
   <data name="NewListField" xml:space="preserve"><value>New List Field</value></data>
   <data name="NewGroup" xml:space="preserve"><value>New Group</value></data>
   <data name="Groups" xml:space="preserve"><value>Groups</value></data>
-  <data name="AddGroup" xml:space="preserve"><value>+ Group</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>Group</value></data>
   <data name="Group" xml:space="preserve"><value>Group</value></data>
   <data name="GroupDisplayMode" xml:space="preserve"><value>Display as</value></data>
   <data name="ColumnCount" xml:space="preserve"><value>Columns</value></data>

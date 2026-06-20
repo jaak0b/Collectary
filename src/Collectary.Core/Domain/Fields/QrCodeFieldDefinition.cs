@@ -8,7 +8,7 @@ namespace Collectary.Core.Domain.Fields;
 /// </summary>
 [LocalizedName("FieldType_QrCode")]
 [FieldIcon(IconGlyphs.QrCode)]
-[FieldCatalog(5, FieldCategory.Visual)]
+[FieldCatalog(6, FieldCategory.MediaAndFiles)]
 public class QrCodeFieldDefinition : FieldDefinition<QrCodeFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;

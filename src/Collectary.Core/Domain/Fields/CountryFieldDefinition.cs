@@ -6,7 +6,7 @@ namespace Collectary.Core.Domain.Fields;
 /// <summary>Stores a country as an ISO 3166-1 alpha-2 code (e.g. "DE"), shown with its flag and name.</summary>
 [LocalizedName("FieldType_Country")]
 [FieldIcon(IconGlyphs.Globe)]
-[FieldCatalog(2, FieldCategory.Choice)]
+[FieldCatalog(4, FieldCategory.Choice)]
 public class CountryFieldDefinition : FieldDefinition<CountryFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public bool ShowInList { get; set; }

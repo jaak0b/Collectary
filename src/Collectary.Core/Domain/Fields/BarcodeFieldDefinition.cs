@@ -23,7 +23,7 @@ public enum BarcodeSymbology
 
 [LocalizedName("FieldType_Barcode")]
 [FieldIcon(IconGlyphs.Barcode)]
-[FieldCatalog(13, FieldCategory.TextAndNumbers)]
+[FieldCatalog(5, FieldCategory.MediaAndFiles)]
 public class BarcodeFieldDefinition : FieldDefinition<BarcodeFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;

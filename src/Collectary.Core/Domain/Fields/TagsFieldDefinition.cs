@@ -4,7 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Tags")]
 [FieldIcon(IconGlyphs.Bookmark)]
-[FieldCatalog(2, FieldCategory.Visual)]
+[FieldCatalog(3, FieldCategory.Choice)]
 public class TagsFieldDefinition : FieldDefinition<TagsFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;

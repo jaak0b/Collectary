@@ -4,7 +4,7 @@ namespace Collectary.Core.Domain.Fields;
 
 [LocalizedName("FieldType_Text")]
 [FieldIcon(IconGlyphs.TextField)]
-[FieldCatalog(0, FieldCategory.TextAndNumbers)]
+[FieldCatalog(0, FieldCategory.Text)]
 public class TextFieldDefinition : FieldDefinition<TextFieldValue>, IListDisplayable, ITextImportable, ISearchableFieldDefinition
 {
     public override int DefaultColumnSpan => 2;
