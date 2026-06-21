@@ -104,7 +104,6 @@ public class UiModule : Module
         TextCell(nameof(IntegerFieldDefinition));
         TextCell(nameof(AutoNumberFieldDefinition));
         TextCell(nameof(DateFieldDefinition));
-        TextCell(nameof(RatingFieldDefinition));
         TextCell(nameof(UrlFieldDefinition));
         TextCell(nameof(SingleChoiceFieldDefinition));
         TextCell(nameof(MultiChoiceFieldDefinition));
@@ -112,6 +111,10 @@ public class UiModule : Module
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new ColorListCellViewModel(fv, fd))
             .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(ColorFieldDefinition));
+
+        builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
+                _ => (fv, fd) => new RatingListCellViewModel(fv, fd))
+            .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(RatingFieldDefinition));
 
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new RichTextListCellViewModel(fv, fd))

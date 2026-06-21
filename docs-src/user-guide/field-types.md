@@ -24,7 +24,9 @@ The sections below follow the same grouping.
 - **Currency** — an amount plus a currency symbol.
 - **Measurement** — a size with its unit (a coin's diameter in mm, a watch case).
 - **Weight** — a weight in grams, ounces, kilograms, or pounds.
-- **Rating** — a row of stars.
+- **Rating** — a row of stars you click to set the score; hover to preview, and click the star
+  you're already on to clear it back to empty. Lists show the rating as filled stars against the
+  empty ones, so you can read it against its maximum at a glance.
 - **Auto Number** — a whole number that fills itself in: every new item gets the next free number, so
   each train (or coin, or anything you number) ends up unique without you typing it.
 

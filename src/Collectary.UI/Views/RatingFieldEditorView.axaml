@@ -5,21 +5,56 @@
              x:Class="Collectary.UI.Views.RatingFieldEditorView"
              x:DataType="vm:RatingFieldEditorViewModel">
 
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="RatingLitBrush" Color="{DynamicResource SystemAccentColor}"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button.star">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.star:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Path.star">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="Fill" Value="Transparent"/>
+            <Setter Property="Stroke" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="StrokeThickness" Value="1.5"/>
+        </Style>
+        <Style Selector="Path.star.lit">
+            <Setter Property="Fill" Value="{DynamicResource RatingLitBrush}"/>
+            <Setter Property="Stroke" Value="{DynamicResource RatingLitBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Top">
-            <Slider Minimum="0"
-                    Maximum="{Binding MaxStars}"
-                    Value="{Binding Stars}"
-                    TickFrequency="1"
-                    IsSnapToTickEnabled="True"
-                    Width="160"
-                    VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding Stars}"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       VerticalAlignment="Center"
-                       MinWidth="16"/>
-        </StackPanel>
+        <ItemsControl ItemsSource="{Binding StarItems}"
+                      PointerExited="OnRowPointerExited"
+                      VerticalAlignment="Center">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="2"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:RatingStarViewModel">
+                    <Button Classes="star"
+                            Click="OnStarClick"
+                            PointerEntered="OnStarPointerEntered">
+                        <Path Classes="star"
+                              Classes.lit="{Binding IsLit}"
+                              Data="{DynamicResource StarGeometry}"/>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </controls:FieldEditorScaffold>
 </UserControl>
