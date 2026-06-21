@@ -9,8 +9,8 @@
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
         <Border HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="160"
+                Classes="input-shell"
                 Background="{DynamicResource SurfaceAltBrush}"
-                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="{DynamicResource ControlBorderThickness}"
                 CornerRadius="{DynamicResource ControlCornerRadius}"
                 MinHeight="{DynamicResource ControlHeight}">

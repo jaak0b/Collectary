@@ -157,6 +157,48 @@ public class SyncSerializerTest
     }
 
     [Test]
+    public void MultiImageField_RoundTrips_PicturesWithFileNames()
+    {
+        var value = new MultiImageFieldValue
+        {
+            Pictures = [new MultiImagePicture("g1_front.jpg", "front.jpg"), new MultiImagePicture("g2_back.png", "back.png")],
+        };
+        var item = new Item { DisplayName = "Card", Values = { value } };
+
+        var clone = _sut.Deserialize<Item>(_sut.Serialize(item));
+
+        var pictures = ((MultiImageFieldValue)clone.Values.Single()).Pictures;
+        Assert.Multiple(() =>
+        {
+            Assert.That(pictures.Select(p => p.Key), Is.EqualTo(new[] { "g1_front.jpg", "g2_back.png" }));
+            Assert.That(pictures.Select(p => p.FileName), Is.EqualTo(new[] { "front.jpg", "back.png" }));
+        });
+    }
+
+    [Test]
+    public void Deserialize_LegacyMultiImageImageKeys_RebuildsPictures()
+    {
+        // Documents already on users' cloud carry the legacy "ImageKeys" array, not "Pictures".
+        var json = """
+        {
+          "DisplayName": "legacy",
+          "Values": [
+            { "$type": "MultiImageFieldValue", "ImageKeys": ["guid-1_holiday.jpg"] }
+          ]
+        }
+        """;
+
+        var item = _sut.Deserialize<Item>(json);
+
+        var pictures = ((MultiImageFieldValue)item.Values.Single()).Pictures;
+        Assert.Multiple(() =>
+        {
+            Assert.That(pictures.Single().Key, Is.EqualTo("guid-1_holiday.jpg"));
+            Assert.That(pictures.Single().FileName, Is.EqualTo("holiday.jpg"));
+        });
+    }
+
+    [Test]
     public void Item_RoundTrips_TagsAndMultiChoiceCollections()
     {
         var tags = new TagsFieldValue();

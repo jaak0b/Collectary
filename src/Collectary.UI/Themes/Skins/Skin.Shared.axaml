@@ -125,6 +125,41 @@
     <Style Selector="NumericUpDown /template/ TextBox:pointerover /template/ Border#PART_BorderElement">
         <Setter Property="Background" Value="Transparent"/>
     </Style>
+    <Style Selector="NumericUpDown:disabled">
+        <Setter Property="ShowButtonSpinner" Value="False"/>
+    </Style>
+
+    <!-- Composite "shell" inputs (currency, percentage, …): one outer border wraps an affix + a
+         borderless numeric, so the embedded TextBox draws no inner border and the whole shell highlights. -->
+    <Style Selector="Border.input-shell">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+    <Style Selector="Border.input-shell:focus-within">
+        <Setter Property="BorderBrush" Value="{DynamicResource FocusRingBrush}"/>
+    </Style>
+    <Style Selector="Border.input-shell NumericUpDown">
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+    <Style Selector="Border.input-shell NumericUpDown /template/ TextBox">
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+    <Style Selector="Border.input-shell NumericUpDown /template/ TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Border.input-shell NumericUpDown /template/ TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Border.input-shell NumericUpDown /template/ TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
 
     <!-- ComboBox -->
     <Style Selector="ComboBox">
@@ -176,12 +211,21 @@
         <Setter Property="Background" Value="{DynamicResource SidebarSelectedBrush}"/>
     </Style>
 
+    <Style Selector="DataGridCell">
+        <Setter Property="Padding" Value="8,0"/>
+    </Style>
+
     <Style Selector="TabControl">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="{DynamicResource ControlBorderThickness}"/>
         <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+        </Setter>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}"
@@ -194,8 +238,12 @@
                                 Background="{DynamicResource SurfaceAltBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}"
                                 BorderThickness="0,0,0,1">
-                            <ItemsPresenter Name="PART_ItemsPresenter"
-                                            ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          AllowAutoHide="False">
+                                <ItemsPresenter Name="PART_ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                            </ScrollViewer>
                         </Border>
                         <ContentPresenter Name="PART_SelectedContentHost"
                                           Margin="16"

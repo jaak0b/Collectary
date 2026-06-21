@@ -10,16 +10,34 @@ namespace Collectary.Presentation.ViewModels;
 /// <summary>One picture within a <see cref="MultiImageFieldEditorViewModel"/> gallery.</summary>
 public partial class MultiImageEntryViewModel : ViewModelBase
 {
+    private readonly ItemEditingContext _context;
+    private readonly Func<MultiImageEntryViewModel, Task> _remove;
+
     public string Key { get; }
+    public string FileName { get; }
 
     [ObservableProperty]
     public partial Bitmap? Bitmap { get; set; }
 
-    public MultiImageEntryViewModel(string key, Bitmap? bitmap)
+    public MultiImageEntryViewModel(
+        string key,
+        string fileName,
+        Bitmap? bitmap,
+        ItemEditingContext context,
+        Func<MultiImageEntryViewModel, Task> remove)
     {
         Key = key;
+        FileName = fileName;
         Bitmap = bitmap;
+        _context = context;
+        _remove = remove;
     }
+
+    [RelayCommand]
+    private Task SaveAs() => _context.ExportImageAsync(Key, FileName);
+
+    [RelayCommand]
+    private Task Delete() => _remove(this);
 }
 
 public partial class MultiImageFieldEditorViewModel : FieldEditorViewModelBase
@@ -41,19 +59,22 @@ public partial class MultiImageFieldEditorViewModel : FieldEditorViewModelBase
         _value = value;
         _context = context;
 
-        foreach (var key in value.ImageKeys)
-            Images.Add(new MultiImageEntryViewModel(key, _context.LoadImageBitmap(key)));
+        foreach (var picture in value.Pictures)
+            Images.Add(CreateEntry(picture.Key, picture.FileName, _context.LoadImageBitmap(picture.Key)));
         Images.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasImages));
     }
 
     public override FieldDefinition Definition => _definition;
+
+    private MultiImageEntryViewModel CreateEntry(string key, string fileName, Bitmap? bitmap) =>
+        new(key, fileName, bitmap, _context, RemoveImageAsync);
 
     [RelayCommand]
     private async Task AddImageAsync()
     {
         var result = await _context.PickAndStoreImageAsync();
         if (result is null) return;
-        Images.Add(new MultiImageEntryViewModel(result.Value.Key, result.Value.Preview));
+        Images.Add(CreateEntry(result.Value.Key, result.Value.FileName, result.Value.Preview));
     }
 
     [RelayCommand]
@@ -72,7 +93,7 @@ public partial class MultiImageFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldValue GetCurrentValue()
     {
-        _value.ImageKeys = Images.Select(e => e.Key).ToList();
+        _value.Pictures = Images.Select(e => new MultiImagePicture(e.Key, e.FileName)).ToList();
         return _value;
     }
 }
