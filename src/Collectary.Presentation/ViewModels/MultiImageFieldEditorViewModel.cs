@@ -10,16 +10,42 @@ namespace Collectary.Presentation.ViewModels;
 /// <summary>One picture within a <see cref="MultiImageFieldEditorViewModel"/> gallery.</summary>
 public partial class MultiImageEntryViewModel : ViewModelBase
 {
+    private readonly ItemEditingContext _context;
+    private readonly Func<MultiImageEntryViewModel, Task> _remove;
+
     public string Key { get; }
 
     [ObservableProperty]
     public partial Bitmap? Bitmap { get; set; }
 
-    public MultiImageEntryViewModel(string key, Bitmap? bitmap)
+    public MultiImageEntryViewModel(
+        string key,
+        Bitmap? bitmap,
+        ItemEditingContext context,
+        Func<MultiImageEntryViewModel, Task> remove)
     {
         Key = key;
         Bitmap = bitmap;
+        _context = context;
+        _remove = remove;
     }
+
+    [RelayCommand]
+    private Task SaveAs() => _context.ExportImageAsync(Key, OriginalFileName);
+
+    // Stored image keys are "{guid}_{original file name}", so the part after the first underscore
+    // restores the user's filename (and its extension) for the export dialog.
+    private string OriginalFileName
+    {
+        get
+        {
+            var underscore = Key.IndexOf('_');
+            return underscore >= 0 && underscore < Key.Length - 1 ? Key[(underscore + 1)..] : Key;
+        }
+    }
+
+    [RelayCommand]
+    private Task Delete() => _remove(this);
 }
 
 public partial class MultiImageFieldEditorViewModel : FieldEditorViewModelBase
@@ -42,18 +68,21 @@ public partial class MultiImageFieldEditorViewModel : FieldEditorViewModelBase
         _context = context;
 
         foreach (var key in value.ImageKeys)
-            Images.Add(new MultiImageEntryViewModel(key, _context.LoadImageBitmap(key)));
+            Images.Add(CreateEntry(key, _context.LoadImageBitmap(key)));
         Images.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasImages));
     }
 
     public override FieldDefinition Definition => _definition;
+
+    private MultiImageEntryViewModel CreateEntry(string key, Bitmap? bitmap) =>
+        new(key, bitmap, _context, RemoveImageAsync);
 
     [RelayCommand]
     private async Task AddImageAsync()
     {
         var result = await _context.PickAndStoreImageAsync();
         if (result is null) return;
-        Images.Add(new MultiImageEntryViewModel(result.Value.Key, result.Value.Preview));
+        Images.Add(CreateEntry(result.Value.Key, result.Value.Preview));
     }
 
     [RelayCommand]

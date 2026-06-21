@@ -20,12 +20,15 @@
                     <StackPanel x:Name="PART_Label"
                                 Grid.Row="0" Grid.Column="0"
                                 Orientation="Horizontal" Spacing="4"
-                                VerticalAlignment="Top" Margin="0,4,16,0">
+                                VerticalAlignment="Top" Margin="0,0,16,0"
+                                MinHeight="{DynamicResource ControlHeight}">
                         <TextBlock Text="{TemplateBinding Label}"
                                    MaxWidth="160" TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextSecondaryBrush}"/>
                         <TextBlock Text="*"
                                    Foreground="Red"
+                                   VerticalAlignment="Center"
                                    IsVisible="{TemplateBinding IsRequired}"/>
                     </StackPanel>
 
@@ -43,6 +46,7 @@
         <Style Selector="^:above /template/ StackPanel#PART_Label">
             <Setter Property="Grid.ColumnSpan" Value="2"/>
             <Setter Property="Margin" Value="0,0,0,2"/>
+            <Setter Property="MinHeight" Value="0"/>
         </Style>
         <Style Selector="^:above /template/ ContentPresenter#PART_Content">
             <Setter Property="Grid.Row" Value="1"/>

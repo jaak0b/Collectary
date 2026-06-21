@@ -7,9 +7,9 @@
 
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
-                                  LabelAbove="{Binding LabelAbove}">
+                                  LabelAbove="False">
         <CheckBox IsChecked="{Binding IsChecked}"
                   IsThreeState="{Binding IsThreeState}"
-                  VerticalAlignment="Top"/>
+                  VerticalAlignment="Center"/>
     </controls:FieldEditorScaffold>
 </UserControl>

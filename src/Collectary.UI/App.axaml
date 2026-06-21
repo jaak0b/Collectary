@@ -32,9 +32,7 @@
         </DataTemplate>
 
         <DataTemplate DataType="vm:TabRegionViewModel">
-            <Panel Margin="0,4">
-                <TabControl ItemsSource="{Binding TabGroups}"
-                            IsVisible="{Binding !Context.IsNarrow}">
+            <TabControl ItemsSource="{Binding TabGroups}" Margin="0,4">
                     <TabControl.ItemTemplate>
                         <DataTemplate DataType="vm:FieldGroupViewModel">
                             <TextBlock Text="{Binding Name}"/>
@@ -59,11 +57,7 @@
                             </StackPanel>
                         </DataTemplate>
                     </TabControl.ContentTemplate>
-                </TabControl>
-
-                <ItemsControl ItemsSource="{Binding TabGroups}"
-                              IsVisible="{Binding Context.IsNarrow}"/>
-            </Panel>
+            </TabControl>
         </DataTemplate>
 
         <local:ViewLocator/>

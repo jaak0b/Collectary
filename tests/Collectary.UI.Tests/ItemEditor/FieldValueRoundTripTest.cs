@@ -1,5 +1,8 @@
+using Avalonia.Media.Imaging;
+using FakeItEasy;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
+using Collectary.Presentation.DI;
 using Collectary.Presentation.ViewModels;
 using Collectary.UI.Tests.Infrastructure;
 
@@ -8,6 +11,15 @@ namespace Collectary.UI.Tests.ItemEditor;
 [TestFixture]
 public class FieldValueRoundTripTest : FlowTestBase
 {
+    private static ItemEditingContext BareContext() => new(
+        editorRegistry: A.Fake<IFieldEditorRegistry>(),
+        listCellBuilder: A.Fake<IListCellBuilder>(),
+        goBack: () => { },
+        pickAndStoreImageAsync: () => Task.FromResult<(string, string, Bitmap)?>(null),
+        exportImageAsync: (_, _) => Task.CompletedTask,
+        loadImageBitmap: _ => null,
+        deleteImageAsync: _ => Task.CompletedTask);
+
     private async Task<TEditor> RoundTrip<TEditor>(
         FieldDefinition fieldDef,
         Action<TEditor> setValue)
@@ -183,8 +195,8 @@ public class FieldValueRoundTripTest : FlowTestBase
         var def = new MultiImageFieldDefinition { Label = "Photos" };
         var reloaded = await RoundTrip<MultiImageFieldEditorViewModel>(def, e =>
         {
-            e.Images.Add(new MultiImageEntryViewModel("img-1", null));
-            e.Images.Add(new MultiImageEntryViewModel("img-2", null));
+            e.Images.Add(new MultiImageEntryViewModel("img-1", null, BareContext(), _ => Task.CompletedTask));
+            e.Images.Add(new MultiImageEntryViewModel("img-2", null, BareContext(), _ => Task.CompletedTask));
         });
         Assert.That(reloaded.Images.Select(i => i.Key), Is.EqualTo(new[] { "img-1", "img-2" }));
     }

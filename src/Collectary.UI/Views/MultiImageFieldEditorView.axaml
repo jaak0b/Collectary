@@ -3,6 +3,7 @@
              xmlns:controls="using:Collectary.UI.Controls"
              xmlns:vm="using:Collectary.Presentation.ViewModels"
              xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
              x:Class="Collectary.UI.Views.MultiImageFieldEditorView"
              x:DataType="vm:MultiImageFieldEditorViewModel">
 
@@ -19,7 +20,30 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:MultiImageEntryViewModel">
                         <Border Margin="4" Padding="2" BorderThickness="1"
-                                BorderBrush="{DynamicResource BorderBrush}">
+                                BorderBrush="{DynamicResource BorderBrush}"
+                                Cursor="Hand">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Command="{Binding SaveAsCommand}">
+                                        <MenuItem.Header>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Static icons:IconGlyphs.Save}" Classes="icon" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding [SaveAs], Source={x:Static loc:LocalizationService.Instance}}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Command="{Binding DeleteCommand}">
+                                        <MenuItem.Header>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Static icons:IconGlyphs.Delete}" Classes="icon" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding [DeleteImage], Source={x:Static loc:LocalizationService.Instance}}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <StackPanel Spacing="2">
                                 <Image Source="{Binding Bitmap}" Width="96" Height="96"/>
                             </StackPanel>
