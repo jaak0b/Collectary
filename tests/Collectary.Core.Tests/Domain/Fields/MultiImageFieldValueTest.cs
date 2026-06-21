@@ -5,36 +5,70 @@ namespace Collectary.Core.Tests.Domain.Fields;
 [TestFixture]
 public class MultiImageFieldValueTest
 {
+    private static MultiImagePicture Pic(string key, string name) => new(key, name);
+
     [Test]
-    public void IsEmpty_WhenNoKeys()
+    public void IsEmpty_WhenNoPictures()
     {
         Assert.That(new MultiImageFieldValue().IsEmpty, Is.True);
-        Assert.That(new MultiImageFieldValue { ImageKeys = ["a"] }.IsEmpty, Is.False);
+        Assert.That(new MultiImageFieldValue { Pictures = [Pic("a", "a.jpg")] }.IsEmpty, Is.False);
     }
 
     [Test]
-    public void CopyFrom_CopiesKeysAsIndependentList()
+    public void CopyFrom_CopiesPicturesAsIndependentList()
     {
-        var source = new MultiImageFieldValue { ImageKeys = ["a", "b"] };
+        var source = new MultiImageFieldValue { Pictures = [Pic("a", "a.jpg"), Pic("b", "b.jpg")] };
         var target = new MultiImageFieldValue();
 
         target.CopyFrom(source);
-        source.ImageKeys.Add("c");
+        source.Pictures.Add(Pic("c", "c.jpg"));
 
-        Assert.That(target.ImageKeys, Is.EqualTo(new[] { "a", "b" }));
+        Assert.That(target.Pictures.Select(p => p.Key), Is.EqualTo(new[] { "a", "b" }));
     }
 
     [Test]
     public void ToString_ReportsCount()
     {
-        Assert.That(new MultiImageFieldValue { ImageKeys = ["a", "b"] }.ToString(), Is.EqualTo("2"));
+        Assert.That(new MultiImageFieldValue { Pictures = [Pic("a", "a.jpg"), Pic("b", "b.jpg")] }.ToString(), Is.EqualTo("2"));
         Assert.That(new MultiImageFieldValue().ToString(), Is.EqualTo("0"));
     }
 
     [Test]
     public void ReferencedBlobKeys_ReturnsAllKeys()
     {
-        Assert.That(new MultiImageFieldValue { ImageKeys = ["a", "b"] }.ReferencedBlobKeys(), Is.EqualTo(new[] { "a", "b" }));
+        Assert.That(new MultiImageFieldValue { Pictures = [Pic("a", "a.jpg"), Pic("b", "b.jpg")] }.ReferencedBlobKeys(),
+            Is.EqualTo(new[] { "a", "b" }));
         Assert.That(new MultiImageFieldValue().ReferencedBlobKeys(), Is.Empty);
+    }
+
+    [Test]
+    public void ImageKeys_Getter_MirrorsPictureKeys()
+    {
+        var value = new MultiImageFieldValue { Pictures = [Pic("g1_a.jpg", "a.jpg"), Pic("g2_b.png", "b.png")] };
+
+        Assert.That(value.ImageKeys, Is.EqualTo(new[] { "g1_a.jpg", "g2_b.png" }));
+    }
+
+    [TestCase("abc-123_photo.jpg", "photo.jpg")]
+    [TestCase("no-underscore", "no-underscore")]
+    [TestCase("_lead.jpg", "lead.jpg")]
+    [TestCase("trail_", "trail_")]
+    [TestCase("guid_part_photo.jpg", "part_photo.jpg")]
+    public void ImageKeys_Setter_DerivesFileNameFromLegacyKey(string key, string expectedName)
+    {
+        var value = new MultiImageFieldValue { ImageKeys = [key] };
+
+        Assert.That(value.Pictures.Single().Key, Is.EqualTo(key));
+        Assert.That(value.Pictures.Single().FileName, Is.EqualTo(expectedName));
+    }
+
+    [Test]
+    public void ImageKeys_Setter_DoesNotOverwriteExistingPictures()
+    {
+        var value = new MultiImageFieldValue { Pictures = [Pic("g_real.jpg", "ORIGINAL-NAME.jpg")] };
+
+        value.ImageKeys = ["g_real.jpg"];
+
+        Assert.That(value.Pictures.Single().FileName, Is.EqualTo("ORIGINAL-NAME.jpg"));
     }
 }

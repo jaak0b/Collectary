@@ -383,9 +383,15 @@ public class InventoryDbContext : DbContext
         {
             e.ToTable("MultiImageFieldValues");
             e.Ignore(v => v.Definition);
-            e.Property(v => v.ImageKeys).HasConversion(
-                v => string.Join('\n', v),
-                v => v.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList());
+            e.Ignore(v => v.ImageKeys);
+            e.OwnsMany(v => v.Pictures, b =>
+            {
+                b.ToTable("MultiImagePictures");
+                b.WithOwner().HasForeignKey("OwnerValueId");
+                b.Property(p => p.Key).IsRequired();
+                b.Property(p => p.FileName);
+                b.HasKey("OwnerValueId", "Key");
+            });
         });
         modelBuilder.Entity<FileAttachmentFieldValue>(e =>
         {

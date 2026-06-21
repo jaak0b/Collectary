@@ -195,10 +195,11 @@ public class FieldValueRoundTripTest : FlowTestBase
         var def = new MultiImageFieldDefinition { Label = "Photos" };
         var reloaded = await RoundTrip<MultiImageFieldEditorViewModel>(def, e =>
         {
-            e.Images.Add(new MultiImageEntryViewModel("img-1", null, BareContext(), _ => Task.CompletedTask));
-            e.Images.Add(new MultiImageEntryViewModel("img-2", null, BareContext(), _ => Task.CompletedTask));
+            e.Images.Add(new MultiImageEntryViewModel("img-1", "first.jpg", null, BareContext(), _ => Task.CompletedTask));
+            e.Images.Add(new MultiImageEntryViewModel("img-2", "second.png", null, BareContext(), _ => Task.CompletedTask));
         });
         Assert.That(reloaded.Images.Select(i => i.Key), Is.EqualTo(new[] { "img-1", "img-2" }));
+        Assert.That(reloaded.Images.Select(i => i.FileName), Is.EqualTo(new[] { "first.jpg", "second.png" }));
     }
 
     [Test]

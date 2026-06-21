@@ -84,7 +84,7 @@ public class EfSyncStoreTest : DbIntegrationTestBase
         var itemId = Guid.NewGuid();
         var item = new Item { Id = itemId, DisplayName = "X", PresetId = presetId, Revision = 1 };
         item.Values.Add(new ImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = imageId, ItemId = itemId, ImageKey = "img-key" });
-        item.Values.Add(new MultiImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = multiId, ItemId = itemId, ImageKeys = ["m1", "m2"] });
+        item.Values.Add(new MultiImageFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = multiId, ItemId = itemId, Pictures = [new("m1", "m1.jpg"), new("m2", "m2.jpg")] });
         item.Values.Add(new FileAttachmentFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = fileId, ItemId = itemId, Files = [new("doc-key", "manual.pdf")] });
         item.Values.Add(new AudioFieldValue { Id = Guid.NewGuid(), FieldDefinitionId = audioId, ItemId = itemId, AudioKey = "aud-key" });
         await _sut.ApplyItemAsync(item);
