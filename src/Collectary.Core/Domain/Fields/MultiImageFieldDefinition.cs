@@ -19,8 +19,8 @@ public class MultiImageFieldValue : FieldValue<MultiImageFieldDefinition>
     /// <summary>
     /// Legacy wire/storage shape. Documents already synced to users' clouds carry an "ImageKeys"
     /// array instead of "Pictures"; the getter keeps emitting it so older clients still resolve the
-    /// blobs, and the setter rebuilds <see cref="Pictures"/> (deriving a best-effort name from the
-    /// historical "{guid}_{name}" key) only when no richer Pictures data was supplied.
+    /// blobs, and the setter rebuilds <see cref="Pictures"/> using the key as the display name when no
+    /// richer Pictures data was supplied (the user can rename it afterwards).
     /// </summary>
     public List<string> ImageKeys
     {
@@ -28,14 +28,8 @@ public class MultiImageFieldValue : FieldValue<MultiImageFieldDefinition>
         set
         {
             if (Pictures.Count > 0) return;
-            Pictures = value.Select(key => new MultiImagePicture(key, NameFromLegacyKey(key))).ToList();
+            Pictures = value.Select(key => new MultiImagePicture(key, key)).ToList();
         }
-    }
-
-    private static string NameFromLegacyKey(string key)
-    {
-        var underscore = key.IndexOf('_');
-        return underscore >= 0 && underscore < key.Length - 1 ? key[(underscore + 1)..] : key;
     }
 
     public override bool IsEmpty => Pictures.Count == 0;

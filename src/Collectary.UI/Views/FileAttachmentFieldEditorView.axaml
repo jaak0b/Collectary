@@ -14,15 +14,46 @@
             <ItemsControl ItemsSource="{Binding Attachments}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:FileAttachmentEntryViewModel">
-                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                            <TextBlock Text="{x:Static icons:IconGlyphs.Attach}" Classes="icon" VerticalAlignment="Center"/>
-                            <Button Content="{Binding FileName}"
-                                    Command="{Binding $parent[ItemsControl].((vm:FileAttachmentFieldEditorViewModel)DataContext).OpenFileCommand}"
-                                    CommandParameter="{Binding}"/>
-                            <Button Content="{x:Static icons:IconGlyphs.Dismiss}" Classes="icon"
-                                    Command="{Binding $parent[ItemsControl].((vm:FileAttachmentFieldEditorViewModel)DataContext).RemoveFileCommand}"
-                                    CommandParameter="{Binding}"/>
-                        </StackPanel>
+                        <Border Margin="0,2" HorizontalAlignment="Left"
+                                Classes="input-shell"
+                                Background="{DynamicResource SurfaceAltBrush}"
+                                BorderThickness="{DynamicResource ControlBorderThickness}"
+                                CornerRadius="{DynamicResource ControlCornerRadius}"
+                                MinHeight="{DynamicResource ControlHeight}"
+                                ContextFlyout="{StaticResource ChipMenu}">
+                            <Border.Resources>
+                                <MenuFlyout x:Key="ChipMenu" x:CompileBindings="False">
+                                    <MenuItem Command="{Binding SaveAsCommand}">
+                                        <MenuItem.Header>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Static icons:IconGlyphs.Save}" Classes="icon" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding [SaveAs], Source={x:Static loc:LocalizationService.Instance}}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Command="{Binding DeleteCommand}">
+                                        <MenuItem.Header>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Static icons:IconGlyphs.Delete}" Classes="icon" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding [Delete], Source={x:Static loc:LocalizationService.Instance}}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                </MenuFlyout>
+                            </Border.Resources>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Static icons:IconGlyphs.Attach}" Classes="icon"
+                                           Margin="10,0,4,0" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding EditingName}" Padding="0" MinWidth="80"
+                                         VerticalAlignment="Center" VerticalContentAlignment="Center"
+                                         ContextFlyout="{StaticResource ChipMenu}"/>
+                                <TextBlock Text="{Binding Extension}"
+                                           Margin="2,0,10,0" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

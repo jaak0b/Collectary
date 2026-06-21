@@ -14,7 +14,7 @@ public class InMemoryImageStoreTest
     private static Stream Bytes(string content) => new MemoryStream(Encoding.UTF8.GetBytes(content));
 
     [Test]
-    public async Task SaveAsync_ThenOpen_RoundTripsContentAndKeepsFileName()
+    public async Task SaveAsync_ThenOpen_RoundTripsContentAndReturnsGuidKeyWithExtension()
     {
         var key = await _sut.SaveAsync(Bytes("hello"), "pic.png");
 
@@ -22,7 +22,9 @@ public class InMemoryImageStoreTest
         Assert.Multiple(() =>
         {
             Assert.That(reader.ReadToEnd(), Is.EqualTo("hello"));
-            Assert.That(key, Does.EndWith("_pic.png"));
+            Assert.That(key, Does.EndWith(".png"));
+            Assert.That(key, Does.Not.Contain("pic"));
+            Assert.That(key, Does.Not.Contain("_"));
             Assert.That(_sut.Exists(key), Is.True);
         });
     }

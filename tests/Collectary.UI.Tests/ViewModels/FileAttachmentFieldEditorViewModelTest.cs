@@ -79,15 +79,68 @@ public class FileAttachmentFieldEditorViewModelTest
     }
 
     [Test]
-    public async Task OpenFile_ExportsByKeyAndName()
+    public async Task SaveFile_ExportsByKeyAndName()
     {
         (string, string)? exported = null;
         var value = new FileAttachmentFieldValue { Files = [new("k1", "a.pdf")] };
         var sut = new FileAttachmentFieldEditorViewModel(new FileAttachmentFieldDefinition(), value,
             MakeContext(open: (k, n) => { exported = (k, n); return Task.CompletedTask; }));
 
-        await sut.OpenFileCommand.ExecuteAsync(sut.Attachments[0]);
+        await sut.Attachments[0].SaveAsCommand.ExecuteAsync(null);
 
         Assert.That(exported, Is.EqualTo(("k1", "a.pdf")));
+    }
+
+    [Test]
+    public void HasAttachments_IsFalse_WhenNoFiles()
+    {
+        var sut = new FileAttachmentFieldEditorViewModel(
+            new FileAttachmentFieldDefinition(), new FileAttachmentFieldValue(), MakeContext());
+
+        Assert.That(sut.HasAttachments, Is.False);
+    }
+
+    [Test]
+    public async Task AddFile_RaisesHasAttachmentsChanged()
+    {
+        var sut = new FileAttachmentFieldEditorViewModel(new FileAttachmentFieldDefinition(),
+            new FileAttachmentFieldValue(),
+            MakeContext(pick: () => Task.FromResult<(string, string)?>(("k9", "receipt.pdf"))));
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        await sut.AddFileCommand.ExecuteAsync(null);
+
+        Assert.That(raised, Does.Contain(nameof(FileAttachmentFieldEditorViewModel.HasAttachments)));
+    }
+
+    [Test]
+    public async Task RemoveFile_ForeignEntry_DoesNotDeleteBlob()
+    {
+        var deleted = new List<string>();
+        var value = new FileAttachmentFieldValue { Files = [new("k1", "a.pdf")] };
+        var sut = new FileAttachmentFieldEditorViewModel(new FileAttachmentFieldDefinition(), value,
+            MakeContext(delete: k => { deleted.Add(k); return Task.CompletedTask; }));
+        var foreign = new FileAttachmentEntryViewModel("zz", "other.pdf", MakeContext(), _ => Task.CompletedTask);
+
+        await sut.RemoveFileCommand.ExecuteAsync(foreign);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deleted, Is.Empty);
+            Assert.That(sut.Attachments, Has.Count.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public void GetCurrentValue_AfterEdit_ReflectsNewFileNameWithStableKey()
+    {
+        var value = new FileAttachmentFieldValue { Files = [new("k1", "a.pdf")] };
+        var sut = new FileAttachmentFieldEditorViewModel(new FileAttachmentFieldDefinition(), value, MakeContext());
+
+        sut.Attachments[0].EditingName = "final";
+
+        var persisted = (FileAttachmentFieldValue)sut.GetCurrentValue();
+        Assert.That(persisted.Files.Single(), Is.EqualTo(new FileAttachment("k1", "final.pdf")));
     }
 }

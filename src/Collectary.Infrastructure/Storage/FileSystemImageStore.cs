@@ -14,7 +14,7 @@ public class FileSystemImageStore : IImageStore
 
     public async Task<string> SaveAsync(Stream imageStream, string fileName)
     {
-        var key = $"{Guid.NewGuid()}_{Path.GetFileName(fileName)}";
+        var key = Guid.NewGuid().ToString("N") + Path.GetExtension(fileName);
         var fullPath = Path.Combine(_basePath, key);
         await using var file = File.Create(fullPath);
         await imageStream.CopyToAsync(file);

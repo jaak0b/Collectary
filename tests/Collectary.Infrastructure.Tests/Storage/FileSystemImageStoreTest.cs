@@ -15,13 +15,33 @@ public class FileSystemImageStoreTest : FileSystemTestBase
     }
 
     [Test]
-    public async Task SaveAsync_ReturnKeyContainsFileName()
+    public async Task SaveAsync_ReturnsGuidKeyWithExtension()
     {
         using var stream = new MemoryStream(new byte[] { 1, 2, 3 });
 
         var key = await _sut.SaveAsync(stream, "photo.jpg");
 
-        Assert.That(key, Does.EndWith("photo.jpg"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(key, Does.EndWith(".jpg"));
+            Assert.That(key, Does.Not.Contain("photo"));
+            Assert.That(key, Does.Not.Contain("_"));
+            Assert.That(Path.GetFileNameWithoutExtension(key), Has.Length.EqualTo(32));
+        });
+    }
+
+    [Test]
+    public async Task SaveAsync_ExtensionlessFile_ReturnsBareGuidKey()
+    {
+        using var stream = new MemoryStream(new byte[] { 1 });
+
+        var key = await _sut.SaveAsync(stream, "README");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(key, Does.Not.Contain("."));
+            Assert.That(key, Has.Length.EqualTo(32));
+        });
     }
 
     [Test]
