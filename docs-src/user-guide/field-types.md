@@ -33,7 +33,10 @@ The sections below follow the same grouping.
 ## Date & Time
 
 - **Date** — a calendar date.
-- **Date Range** — a from–to span, shown as "start – end".
+- **Date Range** — a from–to span. Open one calendar, click the start day, then move the mouse to
+  preview the span and click the end day. Once a start is set, earlier days grey out so you can't end
+  before you begin, the `«` `»` arrows jump a whole year at a time, and a **Clear** button empties it.
+  Lists show the span as "start → end" in your own date format.
 - **Time** — a clock time.
 - **Duration** — a length of time (a film's runtime, a game's playing time).
 

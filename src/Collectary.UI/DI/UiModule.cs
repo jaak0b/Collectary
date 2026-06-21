@@ -117,6 +117,10 @@ public class UiModule : Module
             .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(RatingFieldDefinition));
 
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
+                _ => (fv, fd) => new DateRangeListCellViewModel(fv, fd))
+            .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(DateRangeFieldDefinition));
+
+        builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new RichTextListCellViewModel(fv, fd))
             .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(RichTextFieldDefinition));
 
@@ -127,7 +131,6 @@ public class UiModule : Module
         TextCell(nameof(CountryFieldDefinition));
         TextCell(nameof(MeasurementFieldDefinition));
         TextCell(nameof(WeightFieldDefinition));
-        TextCell(nameof(DateRangeFieldDefinition));
         TextCell(nameof(LinkedItemFieldDefinition));
 
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(

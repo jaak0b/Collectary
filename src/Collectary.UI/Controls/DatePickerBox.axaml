@@ -1,0 +1,154 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
+             xmlns:loc="using:Collectary.Presentation.Localization"
+             xmlns:vm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Controls.DatePickerBox"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="DpAccentBrush" Color="{DynamicResource SystemAccentColor}"/>
+        <SolidColorBrush x:Key="DpRangeBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.35"/>
+        <SolidColorBrush x:Key="DpPreviewBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.22"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button.day">
+            <Setter Property="Width" Value="34"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        </Style>
+        <Style Selector="Button.day.outside">
+            <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}"/>
+        </Style>
+        <Style Selector="Button.day.range">
+            <Setter Property="Background" Value="{DynamicResource DpRangeBrush}"/>
+        </Style>
+        <Style Selector="Button.day.preview">
+            <Setter Property="Background" Value="{DynamicResource DpPreviewBrush}"/>
+        </Style>
+        <Style Selector="Button.day.start, Button.day.end">
+            <Setter Property="Background" Value="{DynamicResource DpAccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.day.blackout">
+            <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}"/>
+            <Setter Property="Opacity" Value="0.4"/>
+            <Setter Property="TextBlock.TextDecorations" Value="Strikethrough"/>
+            <Setter Property="Cursor" Value="Arrow"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Background="{DynamicResource SurfaceBrush}"
+            MinHeight="32">
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock x:Name="PART_Display"
+                       Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Margin="10,0"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <Button x:Name="PART_Button"
+                    Grid.Column="1"
+                    Classes="icon"
+                    Content="{x:Static icons:IconGlyphs.Calendar}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8,0"
+                    Cursor="Hand"
+                    FontSize="16"
+                    Foreground="{DynamicResource TextSecondaryBrush}"
+                    Click="OnButtonClick"/>
+
+            <Popup x:Name="PART_Popup"
+                   PlacementTarget="{Binding #Root}"
+                   Placement="BottomEdgeAlignedLeft"
+                   IsLightDismissEnabled="True">
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="8"
+                        MinWidth="266">
+                    <StackPanel x:Name="PART_PopupRoot" Spacing="6" x:DataType="vm:DatePickerCalendarViewModel">
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                            <Button Grid.Column="0" Content="«" FontSize="16"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6,0"
+                                    Foreground="{DynamicResource TextSecondaryBrush}" Click="OnPrevYear"
+                                    ToolTip.Tip="{Binding [DateRange_PreviousYear], Source={x:Static loc:LocalizationService.Instance}}"/>
+                            <Button Grid.Column="1" Classes="icon" Content="{x:Static icons:IconGlyphs.ChevronRight}"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    RenderTransform="scaleX(-1)"
+                                    Foreground="{DynamicResource TextSecondaryBrush}" Click="OnPrevMonth"/>
+                            <TextBlock Grid.Column="2" Text="{Binding MonthLabel}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontWeight="500" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <Button Grid.Column="3" Classes="icon" Content="{x:Static icons:IconGlyphs.ChevronRight}"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Foreground="{DynamicResource TextSecondaryBrush}" Click="OnNextMonth"/>
+                            <Button Grid.Column="4" Content="»" FontSize="16"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6,0"
+                                    Foreground="{DynamicResource TextSecondaryBrush}" Click="OnNextYear"
+                                    ToolTip.Tip="{Binding [DateRange_NextYear], Source={x:Static loc:LocalizationService.Instance}}"/>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding WeekdayHeaders}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="7"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{Binding}" Width="34" Margin="1"
+                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                               FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl x:Name="PART_Grid" ItemsSource="{Binding Days}" PointerExited="OnGridPointerExited">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="7"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DatePickerDayViewModel">
+                                    <Button Classes="day"
+                                            Classes.outside="{Binding !IsCurrentMonth}"
+                                            Classes.range="{Binding IsInRange}"
+                                            Classes.preview="{Binding IsPreview}"
+                                            Classes.start="{Binding IsStart}"
+                                            Classes.end="{Binding IsEnd}"
+                                            Classes.blackout="{Binding IsBlackedOut}"
+                                            IsEnabled="{Binding IsSelectable}"
+                                            Content="{Binding Label}"
+                                            Click="OnDayClick"
+                                            PointerEntered="OnDayPointerEntered"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Button HorizontalAlignment="Right"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                Foreground="{DynamicResource TextSecondaryBrush}"
+                                Content="{Binding [DateRange_Clear], Source={x:Static loc:LocalizationService.Instance}}"
+                                Click="OnClearClick"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </Border>
+</UserControl>

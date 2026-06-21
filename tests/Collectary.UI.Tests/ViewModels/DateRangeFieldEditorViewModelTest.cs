@@ -38,4 +38,35 @@ public class DateRangeFieldEditorViewModelTest
         Assert.That(v.To, Is.EqualTo(new DateTime(2020, 6, 30)));
         Assert.That(v.To!.Value.Kind, Is.EqualTo(DateTimeKind.Utc));
     }
+
+    [Test]
+    public void GetCurrentValue_OpenEnd_KeepsFromAndLeavesToNull()
+    {
+        var sut = new DateRangeFieldEditorViewModel(new DateRangeFieldDefinition(), new DateRangeFieldValue())
+        {
+            From = new DateTime(2018, 5, 1),
+            To = null
+        };
+
+        var v = (DateRangeFieldValue)sut.GetCurrentValue();
+
+        Assert.That(v.From, Is.EqualTo(new DateTime(2018, 5, 1)));
+        Assert.That(v.From!.Value.Kind, Is.EqualTo(DateTimeKind.Utc));
+        Assert.That(v.To, Is.Null);
+    }
+
+    [Test]
+    public void GetCurrentValue_NormalizesInvertedRange_SoEndIsNeverBeforeStart()
+    {
+        var sut = new DateRangeFieldEditorViewModel(new DateRangeFieldDefinition(), new DateRangeFieldValue())
+        {
+            From = new DateTime(2020, 6, 30),
+            To = new DateTime(2018, 5, 1)
+        };
+
+        var v = (DateRangeFieldValue)sut.GetCurrentValue();
+
+        Assert.That(v.From, Is.EqualTo(new DateTime(2018, 5, 1)));
+        Assert.That(v.To, Is.EqualTo(new DateTime(2020, 6, 30)));
+    }
 }
