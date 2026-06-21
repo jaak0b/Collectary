@@ -54,7 +54,7 @@
   <data name="FieldType_Decimal" xml:space="preserve"><value>Dezimalzahl</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Farbe</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Bild</value></data>
-  <data name="FieldType_Date" xml:space="preserve"><value>Datum</value></data>
+  <data name="FieldType_Date" xml:space="preserve"><value>Datum &amp; Uhrzeit</value></data>
   <data name="FieldType_Rating" xml:space="preserve"><value>Bewertung</value></data>
   <data name="FieldType_Bool" xml:space="preserve"><value>Ja / Nein</value></data>
   <data name="FieldType_Url" xml:space="preserve"><value>URL</value></data>

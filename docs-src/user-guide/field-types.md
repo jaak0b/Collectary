@@ -32,7 +32,7 @@ The sections below follow the same grouping.
 
 ## Date & Time
 
-- **Date** — a calendar date, optionally with a time. Turn on **Include a time** in the field's
+- **Date & Time** — a calendar date, optionally with a time. Turn on **With time** in the field's
   settings and each item also gets a clock: pick the hour on the dial, then the minute. Lists show
   the date (and time, when enabled) in your own format.
 - **Date Range** — a from–to span. Open one calendar, click the start day, then move the mouse to
@@ -125,7 +125,7 @@ the field panel:
 - **Decimal** — choose how many **decimal places** to show, both while editing and in lists.
 - **Yes / No** — choose between a plain yes/no checkbox and the three-state **Allow unanswered** mode.
 - **Rating** — pick how many **stars** the scale runs to.
-- **Date** — turn on **Include a time** to capture a time of day alongside the date (a clock picker
+- **Date & Time** — turn on **With time** to capture a time of day alongside the date (a clock picker
   appears on each item); leave it off for a plain date.
 - **Currency** — set the **symbol** shown beside the amount.
 - **Color** — pick the format (Hex, RGB, ARGB, CMYK).
