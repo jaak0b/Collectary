@@ -11,7 +11,7 @@ public class InMemoryImageStore : IImageStore
     {
         using var buffer = new MemoryStream();
         await imageStream.CopyToAsync(buffer);
-        var key = $"{Guid.NewGuid()}_{Path.GetFileName(fileName)}";
+        var key = Guid.NewGuid().ToString("N") + Path.GetExtension(fileName);
         _images[key] = buffer.ToArray();
         return key;
     }

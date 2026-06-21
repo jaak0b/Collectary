@@ -208,11 +208,25 @@ public class FieldValueRoundTripTest : FlowTestBase
         var def = new FileAttachmentFieldDefinition { Label = "Docs" };
         var reloaded = await RoundTrip<FileAttachmentFieldEditorViewModel>(def, e =>
         {
-            e.Attachments.Add(new FileAttachmentEntryViewModel("k1", "manual.pdf"));
-            e.Attachments.Add(new FileAttachmentEntryViewModel("k2", "warranty.pdf"));
+            e.Attachments.Add(new FileAttachmentEntryViewModel("k1", "manual.pdf", BareContext(), _ => Task.CompletedTask));
+            e.Attachments.Add(new FileAttachmentEntryViewModel("k2", "warranty.pdf", BareContext(), _ => Task.CompletedTask));
         });
         Assert.That(reloaded.Attachments.Select(a => a.FileName), Is.EqualTo(new[] { "manual.pdf", "warranty.pdf" }));
         Assert.That(reloaded.Attachments.Select(a => a.Key), Is.EqualTo(new[] { "k1", "k2" }));
+    }
+
+    [Test]
+    public async Task FileAttachmentField_EditedName_RoundTripsWithSameKey()
+    {
+        var def = new FileAttachmentFieldDefinition { Label = "Docs" };
+        var reloaded = await RoundTrip<FileAttachmentFieldEditorViewModel>(def, e =>
+        {
+            var entry = new FileAttachmentEntryViewModel("k1", "manual.pdf", BareContext(), _ => Task.CompletedTask);
+            entry.EditingName = "owner-handbook";
+            e.Attachments.Add(entry);
+        });
+        Assert.That(reloaded.Attachments.Single().Key, Is.EqualTo("k1"));
+        Assert.That(reloaded.Attachments.Single().FileName, Is.EqualTo("owner-handbook.pdf"));
     }
 
     [Test]

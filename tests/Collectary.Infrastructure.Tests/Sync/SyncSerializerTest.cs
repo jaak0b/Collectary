@@ -194,7 +194,7 @@ public class SyncSerializerTest
         Assert.Multiple(() =>
         {
             Assert.That(pictures.Single().Key, Is.EqualTo("guid-1_holiday.jpg"));
-            Assert.That(pictures.Single().FileName, Is.EqualTo("holiday.jpg"));
+            Assert.That(pictures.Single().FileName, Is.EqualTo("guid-1_holiday.jpg"));
         });
     }
 

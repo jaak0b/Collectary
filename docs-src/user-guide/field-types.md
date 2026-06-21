@@ -70,7 +70,10 @@ The sections below follow the same grouping.
   unless you actually use this field; if you decline, the field says microphone access is needed and
   records nothing.
 - **File Attachment** — keep documents with the item: manuals, warranties, certificates, receipts,
-  instructions. Add as many as you like.
+  instructions. Add as many as you like. Each file shows up as a small chip with its name and
+  extension. Click the name and type to rename it — the extension stays put, so you can't accidentally
+  break it. Right-click a chip for **Save As…** (write a copy somewhere of your choosing) and
+  **Delete**. Renaming only changes the label you see; the stored file itself is untouched.
 - **Color** — a colour value in ARGB, RGB, Hex, or CMYK.
 - **Barcode / QR** — scan a code with a camera or from a photo, or type it. Reads EAN-13, UPC, ISBN,
   QR, Data Matrix, PDF417, and more.

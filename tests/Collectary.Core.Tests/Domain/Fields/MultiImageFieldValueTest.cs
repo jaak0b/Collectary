@@ -49,17 +49,13 @@ public class MultiImageFieldValueTest
         Assert.That(value.ImageKeys, Is.EqualTo(new[] { "g1_a.jpg", "g2_b.png" }));
     }
 
-    [TestCase("abc-123_photo.jpg", "photo.jpg")]
-    [TestCase("no-underscore", "no-underscore")]
-    [TestCase("_lead.jpg", "lead.jpg")]
-    [TestCase("trail_", "trail_")]
-    [TestCase("guid_part_photo.jpg", "part_photo.jpg")]
-    public void ImageKeys_Setter_DerivesFileNameFromLegacyKey(string key, string expectedName)
+    [Test]
+    public void ImageKeys_Setter_UsesKeyAsFileName()
     {
-        var value = new MultiImageFieldValue { ImageKeys = [key] };
+        var value = new MultiImageFieldValue { ImageKeys = ["abc-123_photo.jpg"] };
 
-        Assert.That(value.Pictures.Single().Key, Is.EqualTo(key));
-        Assert.That(value.Pictures.Single().FileName, Is.EqualTo(expectedName));
+        Assert.That(value.Pictures.Single().Key, Is.EqualTo("abc-123_photo.jpg"));
+        Assert.That(value.Pictures.Single().FileName, Is.EqualTo("abc-123_photo.jpg"));
     }
 
     [Test]

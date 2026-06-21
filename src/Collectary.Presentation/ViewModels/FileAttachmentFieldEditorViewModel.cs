@@ -1,21 +1,47 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Collectary.Core.Domain;
 using Collectary.Core.Domain.Fields;
 
 namespace Collectary.Presentation.ViewModels;
 
-/// <summary>One attached document within a <see cref="FileAttachmentFieldEditorViewModel"/>.</summary>
-public class FileAttachmentEntryViewModel : ViewModelBase
+/// <summary>One attached document within a <see cref="FileAttachmentFieldEditorViewModel"/>. The user edits the base name freely; the extension is fixed.</summary>
+public partial class FileAttachmentEntryViewModel : ViewModelBase
 {
-    public string Key { get; }
-    public string FileName { get; }
+    private readonly ItemEditingContext _context;
+    private readonly Func<FileAttachmentEntryViewModel, Task> _remove;
+    private readonly string _originalFileName;
 
-    public FileAttachmentEntryViewModel(string key, string fileName)
+    public string Key { get; }
+    public string Extension { get; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FileName))]
+    public partial string EditingName { get; set; }
+
+    public string FileName =>
+        string.IsNullOrWhiteSpace(EditingName) ? _originalFileName : EditingName.Trim() + Extension;
+
+    public FileAttachmentEntryViewModel(
+        string key,
+        string fileName,
+        ItemEditingContext context,
+        Func<FileAttachmentEntryViewModel, Task> remove)
     {
         Key = key;
-        FileName = fileName;
+        _originalFileName = fileName;
+        Extension = Path.GetExtension(fileName);
+        EditingName = Path.GetFileNameWithoutExtension(fileName);
+        _context = context;
+        _remove = remove;
     }
+
+    [RelayCommand]
+    private Task SaveAs() => _context.ExportFileAsync(Key, FileName);
+
+    [RelayCommand]
+    private Task Delete() => _remove(this);
 }
 
 public partial class FileAttachmentFieldEditorViewModel : FieldEditorViewModelBase
@@ -38,25 +64,21 @@ public partial class FileAttachmentFieldEditorViewModel : FieldEditorViewModelBa
         _context = context;
 
         foreach (var file in value.Files)
-            Attachments.Add(new FileAttachmentEntryViewModel(file.Key, file.FileName));
+            Attachments.Add(CreateEntry(file.Key, file.FileName));
         Attachments.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasAttachments));
     }
 
     public override FieldDefinition Definition => _definition;
+
+    private FileAttachmentEntryViewModel CreateEntry(string key, string fileName) =>
+        new(key, fileName, _context, RemoveFileAsync);
 
     [RelayCommand]
     private async Task AddFileAsync()
     {
         var result = await _context.PickAndStoreFileAsync();
         if (result is null) return;
-        Attachments.Add(new FileAttachmentEntryViewModel(result.Value.Key, result.Value.FileName));
-    }
-
-    [RelayCommand]
-    private async Task OpenFileAsync(FileAttachmentEntryViewModel entry)
-    {
-        if (entry is null) return;
-        await _context.ExportFileAsync(entry.Key, entry.FileName);
+        Attachments.Add(CreateEntry(result.Value.Key, result.Value.FileName));
     }
 
     [RelayCommand]
