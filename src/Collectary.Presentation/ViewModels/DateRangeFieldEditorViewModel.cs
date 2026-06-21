@@ -33,8 +33,16 @@ public partial class DateRangeFieldEditorViewModel : FieldEditorViewModelBase
 
     public override FieldValue GetCurrentValue()
     {
-        _value.From = AsUtc(From);
-        _value.To = AsUtc(To);
+        var start = From;
+        var end = To;
+        if (start.HasValue && end.HasValue && end < start)
+        {
+            var earlier = end;
+            end = start;
+            start = earlier;
+        }
+        _value.From = AsUtc(start);
+        _value.To = AsUtc(end);
         return _value;
     }
 

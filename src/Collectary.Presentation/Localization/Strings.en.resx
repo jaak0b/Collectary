@@ -476,6 +476,15 @@
   <data name="SearchClear" xml:space="preserve">
     <value>Clear</value>
   </data>
+  <data name="DateRange_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="DateRange_PreviousYear" xml:space="preserve">
+    <value>Previous year</value>
+  </data>
+  <data name="DateRange_NextYear" xml:space="preserve">
+    <value>Next year</value>
+  </data>
   <data name="SearchRemoveFilter" xml:space="preserve">
     <value>Remove filter</value>
   </data>

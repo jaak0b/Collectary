@@ -9,10 +9,11 @@
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
-            <controls:DateBox SelectedDate="{Binding From, Mode=TwoWay}" MinWidth="160"/>
-            <TextBlock Text="–" VerticalAlignment="Center"/>
-            <controls:DateBox SelectedDate="{Binding To, Mode=TwoWay}" MinWidth="160"/>
-        </StackPanel>
+        <controls:DatePickerBox IsRange="True"
+                                From="{Binding From, Mode=TwoWay}"
+                                To="{Binding To, Mode=TwoWay}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                MinWidth="240"/>
     </controls:FieldEditorScaffold>
 </UserControl>
