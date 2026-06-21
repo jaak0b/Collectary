@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Collectary.Presentation.ViewModels.ListCells"
+             xmlns:rvm="using:Collectary.Presentation.ViewModels"
+             x:Class="Collectary.UI.Views.ListCells.RatingListCellView"
+             x:DataType="vm:RatingListCellViewModel">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="RatingLitBrush" Color="{DynamicResource SystemAccentColor}"/>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Path.star">
+            <Setter Property="Width" Value="14"/>
+            <Setter Property="Height" Value="14"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="Fill" Value="Transparent"/>
+            <Setter Property="Stroke" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="StrokeThickness" Value="1.5"/>
+        </Style>
+        <Style Selector="Path.star.lit">
+            <Setter Property="Fill" Value="{DynamicResource RatingLitBrush}"/>
+            <Setter Property="Stroke" Value="{DynamicResource RatingLitBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ItemsControl ItemsSource="{Binding Stars}" VerticalAlignment="Center">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="1"/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="rvm:RatingStarViewModel">
+                <Path Classes="star"
+                      Classes.lit="{Binding IsLit}"
+                      Data="{DynamicResource StarGeometry}"/>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>
