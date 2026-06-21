@@ -10,6 +10,13 @@ public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplay
 {
     public bool ShowInList { get; set; }
 
+    public bool WithTime { get; set; }
+
+    public override void ApplyTypeSpecificProperties(FieldDefinition source)
+    {
+        if (source is DateFieldDefinition src) WithTime = src.WithTime;
+    }
+
     public int ImportInferenceOrder => 70;
 
     public bool TryImportFromText(string raw, IFormatProvider culture, out FieldValue value)
@@ -21,7 +28,7 @@ public class DateFieldDefinition : FieldDefinition<DateFieldValue>, IListDisplay
     }
 
     private ComparableFieldSearch<DateFieldValue, DateTime> Search => new(
-        v => v.Value, v => v.Value,
+        v => v.Value?.Date, v => v.Value,
         raw => DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
             ? parsed.Date
             : null);

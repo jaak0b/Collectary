@@ -78,7 +78,6 @@ public class UiModule : Module
         builder.RegisterType<EmailFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(EmailFieldDefinition));
         builder.RegisterType<PercentageFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(PercentageFieldDefinition));
         builder.RegisterType<DurationFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(DurationFieldDefinition));
-        builder.RegisterType<TimeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(TimeFieldDefinition));
         builder.RegisterType<CurrencyFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(CurrencyFieldDefinition));
         builder.RegisterType<BarcodeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(BarcodeFieldDefinition));
         builder.RegisterType<QrCodeFieldEditorViewModel>().Named<FieldEditorViewModelBase>(nameof(QrCodeFieldDefinition));
@@ -103,7 +102,6 @@ public class UiModule : Module
         TextCell(nameof(TextFieldDefinition));
         TextCell(nameof(IntegerFieldDefinition));
         TextCell(nameof(AutoNumberFieldDefinition));
-        TextCell(nameof(DateFieldDefinition));
         TextCell(nameof(UrlFieldDefinition));
         TextCell(nameof(SingleChoiceFieldDefinition));
         TextCell(nameof(MultiChoiceFieldDefinition));
@@ -115,6 +113,10 @@ public class UiModule : Module
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new RatingListCellViewModel(fv, fd))
             .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(RatingFieldDefinition));
+
+        builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
+                _ => (fv, fd) => new DateListCellViewModel(fv, fd))
+            .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(DateFieldDefinition));
 
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new DateRangeListCellViewModel(fv, fd))
@@ -140,10 +142,6 @@ public class UiModule : Module
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new DurationListCellViewModel(fv, fd))
             .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(DurationFieldDefinition));
-
-        builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
-                _ => (fv, fd) => new TimeListCellViewModel(fv, fd))
-            .Keyed<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(nameof(TimeFieldDefinition));
 
         builder.Register<Func<FieldValue, FieldDefinition, ListCellViewModelBase>>(
                 _ => (fv, fd) => new CurrencyListCellViewModel(fv, fd))

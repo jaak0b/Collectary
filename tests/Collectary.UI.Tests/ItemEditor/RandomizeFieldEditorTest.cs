@@ -40,7 +40,6 @@ public class RandomizeFieldEditorTest : FlowTestBase
         new PercentageFieldDefinition { Label = "Pct" },
         new CurrencyFieldDefinition { Label = "Cur" },
         new DateFieldDefinition { Label = "Date" },
-        new TimeFieldDefinition { Label = "Time" },
         new DateRangeFieldDefinition { Label = "Range" },
         new DurationFieldDefinition { Label = "Dur" },
         new BoolFieldDefinition { Label = "Bool" },

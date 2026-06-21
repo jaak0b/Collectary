@@ -199,6 +199,17 @@ public class SyncSerializerTest
     }
 
     [Test]
+    public void Item_RoundTrips_DateValueWithTime()
+    {
+        var value = new DateFieldValue { Value = new DateTime(2024, 6, 1, 14, 30, 0, DateTimeKind.Utc) };
+        var item = new Item { DisplayName = "Logged", Values = { value } };
+
+        var clone = _sut.Deserialize<Item>(_sut.Serialize(item));
+
+        Assert.That(((DateFieldValue)clone.Values.Single()).Value, Is.EqualTo(new DateTime(2024, 6, 1, 14, 30, 0)));
+    }
+
+    [Test]
     public void Item_RoundTrips_TagsAndMultiChoiceCollections()
     {
         var tags = new TagsFieldValue();

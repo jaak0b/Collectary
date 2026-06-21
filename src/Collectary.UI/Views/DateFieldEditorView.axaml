@@ -8,9 +8,12 @@
     <controls:FieldEditorScaffold Label="{Binding Definition.Label}"
                                   IsRequired="{Binding Definition.IsRequired}"
                                   LabelAbove="{Binding LabelAbove}">
-        <controls:DatePickerBox SelectedDate="{Binding Date, Mode=TwoWay}"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                MinWidth="160"/>
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" HorizontalAlignment="Left">
+            <controls:DatePickerBox SelectedDate="{Binding Date, Mode=TwoWay}"
+                                    MinWidth="160"/>
+            <controls:TimeClockBox Time="{Binding Time, Mode=TwoWay}"
+                                   IsVisible="{Binding WithTime}"
+                                   MinWidth="96"/>
+        </StackPanel>
     </controls:FieldEditorScaffold>
 </UserControl>

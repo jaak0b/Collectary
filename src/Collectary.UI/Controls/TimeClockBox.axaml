@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:icons="using:Collectary.Core.Domain.Fields"
+             x:Class="Collectary.UI.Controls.TimeClockBox"
+             x:Name="Root">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="ClockAccentBrush" Color="{DynamicResource SystemAccentColor}"/>
+    </UserControl.Resources>
+
+    <Border BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Background="{DynamicResource SurfaceBrush}"
+            MinHeight="32">
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock x:Name="PART_Display"
+                       Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Margin="10,0"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <Button x:Name="PART_Button"
+                    Grid.Column="1"
+                    Classes="icon"
+                    Content="{x:Static icons:IconGlyphs.Clock}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8,0"
+                    Cursor="Hand"
+                    FontSize="16"
+                    Foreground="{DynamicResource TextSecondaryBrush}"
+                    Click="OnButtonClick"/>
+
+            <Popup x:Name="PART_Popup"
+                   PlacementTarget="{Binding #Root}"
+                   Placement="BottomEdgeAlignedLeft"
+                   IsLightDismissEnabled="True">
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="12">
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock x:Name="PART_StepLabel" HorizontalAlignment="Center"
+                                   FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="2">
+                            <TextBlock x:Name="PART_HourLabel" FontSize="30" FontWeight="500"
+                                       Cursor="Hand" Padding="4,0" PointerPressed="OnEditHour"/>
+                            <TextBlock Text=":" FontSize="30" FontWeight="500"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock x:Name="PART_MinuteLabel" FontSize="30" FontWeight="500"
+                                       Cursor="Hand" Padding="4,0" PointerPressed="OnEditMinute"/>
+                        </StackPanel>
+                        <Canvas x:Name="PART_Face" Width="240" Height="240"
+                                Background="Transparent"
+                                PointerPressed="OnFacePressed"
+                                PointerMoved="OnFaceHover"
+                                PointerExited="OnFaceExit"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </Border>
+</UserControl>
