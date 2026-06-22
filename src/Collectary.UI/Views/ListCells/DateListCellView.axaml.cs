@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Collectary.UI.Views.ListCells;
 
-public partial class TimeListCellView : UserControl
+public partial class DateListCellView : UserControl
 {
-    public TimeListCellView()
+    public DateListCellView()
     {
         InitializeComponent();
     }

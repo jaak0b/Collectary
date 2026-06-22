@@ -79,19 +79,6 @@ public class ListCellViewModelsExtraTest
         Assert.That(cell.Display, Is.EqualTo(""));
     }
 
-    [Test]
-    public void Time_WithValue_ReflectsValue()
-    {
-        var cell = new TimeListCellViewModel(new TimeFieldValue { Value = "14:30" }, new TimeFieldDefinition());
-        Assert.That(cell.Display, Is.EqualTo("14:30"));
-    }
-
-    [Test]
-    public void Time_NullValue_IsEmpty()
-    {
-        var cell = new TimeListCellViewModel(new TimeFieldValue { Value = null }, new TimeFieldDefinition());
-        Assert.That(cell.Display, Is.EqualTo(""));
-    }
 
     [Test]
     public void Tags_WithTags_JoinsThem()

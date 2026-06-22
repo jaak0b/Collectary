@@ -226,7 +226,6 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<EmailFieldDefinition>().ToTable("EmailFieldDefinitions");
         modelBuilder.Entity<PercentageFieldDefinition>().ToTable("PercentageFieldDefinitions");
         modelBuilder.Entity<DurationFieldDefinition>().ToTable("DurationFieldDefinitions");
-        modelBuilder.Entity<TimeFieldDefinition>().ToTable("TimeFieldDefinitions");
         modelBuilder.Entity<CurrencyFieldDefinition>().ToTable("CurrencyFieldDefinitions");
         modelBuilder.Entity<BarcodeFieldDefinition>().ToTable("BarcodeFieldDefinitions");
         modelBuilder.Entity<QrCodeFieldDefinition>().ToTable("QrCodeFieldDefinitions");
@@ -357,11 +356,6 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<DurationFieldValue>(e =>
         {
             e.ToTable("DurationFieldValues");
-            e.Ignore(v => v.Definition);
-        });
-        modelBuilder.Entity<TimeFieldValue>(e =>
-        {
-            e.ToTable("TimeFieldValues");
             e.Ignore(v => v.Definition);
         });
         modelBuilder.Entity<CurrencyFieldValue>(e =>

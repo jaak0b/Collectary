@@ -35,4 +35,49 @@ public class DateFieldEditorViewModelTest
         Assert.That(value, Is.EqualTo(new DateTime(2025, 7, 4)));
         Assert.That(value!.Value.Kind, Is.EqualTo(DateTimeKind.Utc));
     }
+
+    [Test]
+    public void WithTime_ComposesDateAndTime()
+    {
+        var sut = new DateFieldEditorViewModel(new DateFieldDefinition { WithTime = true }, new DateFieldValue())
+        {
+            Date = new DateTime(2025, 7, 4),
+            Time = new TimeSpan(14, 30, 0)
+        };
+
+        var value = ((DateFieldValue)sut.GetCurrentValue()).Value;
+        Assert.That(value, Is.EqualTo(new DateTime(2025, 7, 4, 14, 30, 0)));
+        Assert.That(value!.Value.Kind, Is.EqualTo(DateTimeKind.Utc));
+    }
+
+    [Test]
+    public void WithoutTime_StoresDateOnly_EvenIfADateCarriesTime()
+    {
+        var sut = new DateFieldEditorViewModel(new DateFieldDefinition { WithTime = false }, new DateFieldValue())
+        {
+            Date = new DateTime(2025, 7, 4, 9, 15, 0)
+        };
+
+        var value = ((DateFieldValue)sut.GetCurrentValue()).Value;
+        Assert.That(value, Is.EqualTo(new DateTime(2025, 7, 4)));
+    }
+
+    [Test]
+    public void Load_WithoutTime_LeavesTimeNull_EvenIfStoredValueHasATime()
+    {
+        var sut = new DateFieldEditorViewModel(new DateFieldDefinition { WithTime = false },
+            new DateFieldValue { Value = new DateTime(2025, 7, 4, 14, 30, 0) });
+
+        Assert.That(sut.Time, Is.Null);
+    }
+
+    [Test]
+    public void Load_WithTime_SplitsStoredValueIntoDateAndTime()
+    {
+        var sut = new DateFieldEditorViewModel(new DateFieldDefinition { WithTime = true },
+            new DateFieldValue { Value = new DateTime(2025, 7, 4, 14, 30, 0) });
+
+        Assert.That(sut.Date!.Value.Date, Is.EqualTo(new DateTime(2025, 7, 4)));
+        Assert.That(sut.Time, Is.EqualTo(new TimeSpan(14, 30, 0)));
+    }
 }

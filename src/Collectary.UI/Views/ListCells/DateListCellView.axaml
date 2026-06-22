@@ -1,11 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Collectary.Presentation.ViewModels.ListCells"
-             x:Class="Collectary.UI.Views.ListCells.TimeListCellView"
-             x:DataType="vm:TimeListCellViewModel">
+             x:Class="Collectary.UI.Views.ListCells.DateListCellView"
+             x:DataType="vm:DateListCellViewModel">
 
-    <TextBlock Text="{Binding Display}"
+    <TextBlock Text="{Binding Text}"
                FontSize="12"
                Foreground="{DynamicResource TextSecondaryBrush}"
                VerticalAlignment="Center"/>
+
 </UserControl>

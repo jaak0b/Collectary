@@ -58,6 +58,28 @@ public class DateFieldDefinitionTest
     }
 
     [Test]
+    public void ApplyTypeSpecificProperties_CopiesWithTime()
+    {
+        var source = new DateFieldDefinition { WithTime = true };
+        var target = new DateFieldDefinition();
+
+        target.ApplyTypeSpecificProperties(source);
+
+        Assert.That(target.WithTime, Is.True);
+    }
+
+    [Test]
+    public void TryCreateMatcher_Equals_MatchesByDate_EvenWhenValueCarriesATime()
+    {
+        var def = new DateFieldDefinition { WithTime = true };
+        ISearchableFieldDefinition search = def;
+        Assert.That(search.TryCreateMatcher(QueryOperatorKind.Equals, ["2024-12-31"], out var matcher, out _), Is.True);
+
+        var item = new Item { Values = [new DateFieldValue { FieldDefinitionId = def.Id, Value = new DateTime(2024, 12, 31, 14, 30, 0) }] };
+        Assert.That(matcher!.Matches(item, [def.Id]), Is.True);
+    }
+
+    [Test]
     public void SearchSurface_ExposesOperatorsSuggestionsAndSortKey()
     {
         ISearchableFieldDefinition search = new DateFieldDefinition();

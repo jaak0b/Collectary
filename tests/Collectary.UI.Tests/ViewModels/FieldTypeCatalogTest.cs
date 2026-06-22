@@ -60,7 +60,7 @@ public class FieldTypeCatalogTest
         Assert.That(types, Is.SupersetOf(new[]
         {
             typeof(RichTextFieldDefinition), typeof(PercentageFieldDefinition), typeof(CurrencyFieldDefinition),
-            typeof(TimeFieldDefinition), typeof(DurationFieldDefinition), typeof(PhoneFieldDefinition),
+            typeof(DurationFieldDefinition), typeof(PhoneFieldDefinition),
             typeof(EmailFieldDefinition), typeof(TagsFieldDefinition),
         }));
     }

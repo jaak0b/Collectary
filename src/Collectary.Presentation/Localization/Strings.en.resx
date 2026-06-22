@@ -54,7 +54,7 @@
   <data name="FieldType_Decimal" xml:space="preserve"><value>Decimal</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Color</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Image</value></data>
-  <data name="FieldType_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="FieldType_Date" xml:space="preserve"><value>Date &amp; Time</value></data>
   <data name="FieldType_Rating" xml:space="preserve"><value>Rating</value></data>
   <data name="FieldType_Bool" xml:space="preserve"><value>Yes / No</value></data>
   <data name="FieldType_Url" xml:space="preserve"><value>URL</value></data>
@@ -66,7 +66,6 @@
   <data name="FieldType_Email" xml:space="preserve"><value>Email</value></data>
   <data name="FieldType_Percentage" xml:space="preserve"><value>Percentage</value></data>
   <data name="FieldType_Duration" xml:space="preserve"><value>Duration</value></data>
-  <data name="FieldType_Time" xml:space="preserve"><value>Time</value></data>
   <data name="FieldType_Currency" xml:space="preserve"><value>Currency</value></data>
   <data name="FieldType_Tags" xml:space="preserve"><value>Tags</value></data>
   <data name="FieldType_Barcode" xml:space="preserve"><value>Barcode / QR</value></data>
@@ -79,7 +78,6 @@
   <data name="Barcode_CameraStartFailed" xml:space="preserve"><value>The camera couldn't be started.</value></data>
   <data name="Barcode_SwitchCamera" xml:space="preserve"><value>Switch camera</value></data>
   <data name="Barcode_Placeholder" xml:space="preserve"><value>Scan or type a code</value></data>
-  <data name="Time_Watermark" xml:space="preserve"><value>HH:mm</value></data>
   <data name="Duration_Watermark" xml:space="preserve"><value>2h 30m</value></data>
   <data name="FieldCategory_Text" xml:space="preserve"><value>Text</value></data>
   <data name="FieldCategory_Numbers" xml:space="preserve"><value>Numbers</value></data>
@@ -288,6 +286,9 @@
   <data name="MaxValue" xml:space="preserve"><value>Maximum</value></data>
   <data name="DecimalPlaces" xml:space="preserve"><value>Decimal places</value></data>
   <data name="AllowUnanswered" xml:space="preserve"><value>Allow unanswered (Yes / No / blank)</value></data>
+  <data name="FieldSetting_WithTime" xml:space="preserve"><value>With time</value></data>
+  <data name="Clock_SelectHour" xml:space="preserve"><value>Select hour</value></data>
+  <data name="Clock_SelectMinute" xml:space="preserve"><value>Select minute</value></data>
   <data name="Bool_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Bool_No" xml:space="preserve"><value>No</value></data>
   <data name="GroupCollapsedByDefault" xml:space="preserve"><value>Collapsed by default</value></data>

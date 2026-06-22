@@ -15,6 +15,26 @@ public class FieldDefinitionRowViewModelTest
     public void ResetLanguage() => LocalizationService.Instance.Apply("en");
 
     [Test]
+    public void DateRow_ExposesWithTime_AndMapsItBackToTheDefinition()
+    {
+        var row = new FieldDefinitionRowViewModel(new DateFieldDefinition { Label = "When", WithTime = true });
+        Assert.That(row.IsDate, Is.True);
+        Assert.That(row.WithTime, Is.True);
+
+        row.WithTime = false;
+        var def = (DateFieldDefinition)_mapper.ToDefinition(row);
+        Assert.That(def.WithTime, Is.False);
+    }
+
+    [Test]
+    public void NonDateRow_DefaultsWithTimeToFalse()
+    {
+        var row = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "L" });
+        Assert.That(row.IsDate, Is.False);
+        Assert.That(row.WithTime, Is.False);
+    }
+
+    [Test]
     public void IsDragging_TogglesAndRaisesPropertyChanged()
     {
         var row = new FieldDefinitionRowViewModel(new TextFieldDefinition { Label = "L" });
@@ -677,7 +697,11 @@ public class FieldDefinitionRowViewModelTest
 
     [Test]
     public void HasTypeSettings_FalseForPlainType() =>
-        Assert.That(new FieldDefinitionRowViewModel(new DateFieldDefinition()).HasTypeSettings, Is.False);
+        Assert.That(new FieldDefinitionRowViewModel(new PhoneFieldDefinition()).HasTypeSettings, Is.False);
+
+    [Test]
+    public void HasTypeSettings_TrueForDate() =>
+        Assert.That(new FieldDefinitionRowViewModel(new DateFieldDefinition()).HasTypeSettings, Is.True);
 
     [Test]
     public void BuildDefinition_Text_PreservesMaxLength()

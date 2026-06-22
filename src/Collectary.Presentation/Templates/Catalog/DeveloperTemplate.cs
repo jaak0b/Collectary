@@ -29,7 +29,6 @@ public sealed class DeveloperTemplate : PresetTemplateBase, IPresetTemplate
             Percentage("FieldType_Percentage"),
             Currency("FieldType_Currency"),
             Date("FieldType_Date"),
-            new TimeFieldDefinition { Label = L("FieldType_Time") },
             new DateRangeFieldDefinition { Label = L("FieldType_DateRange") },
             Duration("FieldType_Duration"),
             Bool("FieldType_Bool"),

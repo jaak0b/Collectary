@@ -32,12 +32,13 @@ The sections below follow the same grouping.
 
 ## Date & Time
 
-- **Date** — a calendar date.
+- **Date & Time** — a calendar date, optionally with a time. Turn on **With time** in the field's
+  settings and each item also gets a clock: pick the hour on the dial, then the minute. Lists show
+  the date (and time, when enabled) in your own format.
 - **Date Range** — a from–to span. Open one calendar, click the start day, then move the mouse to
   preview the span and click the end day. Once a start is set, earlier days grey out so you can't end
   before you begin, the `«` `»` arrows jump a whole year at a time, and a **Clear** button empties it.
   Lists show the span as "start → end" in your own date format.
-- **Time** — a clock time.
 - **Duration** — a length of time (a film's runtime, a game's playing time).
 
 ## Choice
@@ -124,6 +125,8 @@ the field panel:
 - **Decimal** — choose how many **decimal places** to show, both while editing and in lists.
 - **Yes / No** — choose between a plain yes/no checkbox and the three-state **Allow unanswered** mode.
 - **Rating** — pick how many **stars** the scale runs to.
+- **Date & Time** — turn on **With time** to capture a time of day alongside the date (a clock picker
+  appears on each item); leave it off for a plain date.
 - **Currency** — set the **symbol** shown beside the amount.
 - **Color** — pick the format (Hex, RGB, ARGB, CMYK).
 - **Image** — set the display size and how it scales.

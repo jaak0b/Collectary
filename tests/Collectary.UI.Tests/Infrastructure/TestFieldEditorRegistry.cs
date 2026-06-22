@@ -21,8 +21,6 @@ public class TestFieldEditorRegistry : IFieldEditorRegistry
                 new DecimalFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             DateFieldDefinition d =>
                 new DateFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
-            TimeFieldDefinition d =>
-                new TimeFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             DurationFieldDefinition d =>
                 new DurationFieldEditorViewModel(d, d.GetOrCreateEmptyValue(existing)),
             CurrencyFieldDefinition d =>

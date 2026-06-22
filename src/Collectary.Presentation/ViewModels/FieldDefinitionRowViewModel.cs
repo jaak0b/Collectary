@@ -100,9 +100,10 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     public bool IsDecimal => _definition is DecimalFieldDefinition;
     public bool IsBool => _definition is BoolFieldDefinition;
     public bool IsAutoNumber => _definition is AutoNumberFieldDefinition;
+    public bool IsDate => _definition is DateFieldDefinition;
     public bool HasTypeSettings =>
         IsCurrency || IsColor || IsRating || IsPicture || HasChoices || IsList
-        || IsText || IsInteger || IsDecimal || IsBool || IsAutoNumber;
+        || IsText || IsInteger || IsDecimal || IsBool || IsAutoNumber || IsDate;
     public bool IsGridInline => IsList && InlineStyle == ListInlineStyle.Grid;
     public IReadOnlyList<ColorFormat> ColorFormats { get; } = Enum.GetValues<ColorFormat>();
     public IReadOnlyList<ListInlineStyle> InlineStyles { get; } = Enum.GetValues<ListInlineStyle>();
@@ -164,6 +165,9 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
     public partial int MaxStars { get; set; } = 5;
 
     [ObservableProperty]
+    public partial bool WithTime { get; set; }
+
+    [ObservableProperty]
     public partial int? MaxLength { get; set; }
 
     [ObservableProperty]
@@ -209,6 +213,7 @@ public partial class FieldDefinitionRowViewModel : ViewModelBase, IEditorNode, I
         CurrencySymbol = (_definition as CurrencyFieldDefinition)?.CurrencySymbol ?? "€";
         ColumnSpan = definition.ColumnSpan > 1 ? definition.ColumnSpan : definition.DefaultColumnSpan;
         MaxStars = (_definition as RatingFieldDefinition)?.MaxStars ?? 5;
+        WithTime = (_definition as DateFieldDefinition)?.WithTime ?? false;
         ColumnCount = (_definition as ListFieldDefinition)?.ColumnCount ?? 1;
         MaxLength = (_definition as TextFieldDefinition)?.MaxLength;
         Min = (_definition as IntegerFieldDefinition)?.Min;

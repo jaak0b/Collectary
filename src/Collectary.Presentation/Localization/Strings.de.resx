@@ -54,7 +54,7 @@
   <data name="FieldType_Decimal" xml:space="preserve"><value>Dezimalzahl</value></data>
   <data name="FieldType_Color" xml:space="preserve"><value>Farbe</value></data>
   <data name="FieldType_Image" xml:space="preserve"><value>Bild</value></data>
-  <data name="FieldType_Date" xml:space="preserve"><value>Datum</value></data>
+  <data name="FieldType_Date" xml:space="preserve"><value>Datum &amp; Uhrzeit</value></data>
   <data name="FieldType_Rating" xml:space="preserve"><value>Bewertung</value></data>
   <data name="FieldType_Bool" xml:space="preserve"><value>Ja / Nein</value></data>
   <data name="FieldType_Url" xml:space="preserve"><value>URL</value></data>
@@ -66,7 +66,6 @@
   <data name="FieldType_Email" xml:space="preserve"><value>E-Mail</value></data>
   <data name="FieldType_Percentage" xml:space="preserve"><value>Prozentsatz</value></data>
   <data name="FieldType_Duration" xml:space="preserve"><value>Dauer</value></data>
-  <data name="FieldType_Time" xml:space="preserve"><value>Uhrzeit</value></data>
   <data name="FieldType_Currency" xml:space="preserve"><value>Währung</value></data>
   <data name="FieldType_Tags" xml:space="preserve"><value>Stichwörter</value></data>
   <data name="FieldType_Barcode" xml:space="preserve"><value>Barcode / QR</value></data>
@@ -79,7 +78,6 @@
   <data name="Barcode_CameraStartFailed" xml:space="preserve"><value>Die Kamera konnte nicht gestartet werden.</value></data>
   <data name="Barcode_SwitchCamera" xml:space="preserve"><value>Kamera wechseln</value></data>
   <data name="Barcode_Placeholder" xml:space="preserve"><value>Code scannen oder eingeben</value></data>
-  <data name="Time_Watermark" xml:space="preserve"><value>HH:mm</value></data>
   <data name="Duration_Watermark" xml:space="preserve"><value>2h 30m</value></data>
   <data name="FieldCategory_Text" xml:space="preserve"><value>Text</value></data>
   <data name="FieldCategory_Numbers" xml:space="preserve"><value>Zahlen</value></data>
@@ -288,6 +286,9 @@
   <data name="MaxValue" xml:space="preserve"><value>Maximum</value></data>
   <data name="DecimalPlaces" xml:space="preserve"><value>Dezimalstellen</value></data>
   <data name="AllowUnanswered" xml:space="preserve"><value>Unbeantwortet zulassen (Ja / Nein / leer)</value></data>
+  <data name="FieldSetting_WithTime" xml:space="preserve"><value>Uhrzeit einschließen</value></data>
+  <data name="Clock_SelectHour" xml:space="preserve"><value>Stunde wählen</value></data>
+  <data name="Clock_SelectMinute" xml:space="preserve"><value>Minute wählen</value></data>
   <data name="Bool_Yes" xml:space="preserve"><value>Ja</value></data>
   <data name="Bool_No" xml:space="preserve"><value>Nein</value></data>
   <data name="GroupCollapsedByDefault" xml:space="preserve"><value>Standardmäßig eingeklappt</value></data>

@@ -173,6 +173,11 @@
                                   Content="{Binding [AllowUnanswered], Source={x:Static loc:LocalizationService.Instance}}"/>
                     </StackPanel>
 
+                    <StackPanel IsVisible="{Binding IsDate}" Spacing="4">
+                        <CheckBox IsChecked="{Binding WithTime}"
+                                  Content="{Binding [FieldSetting_WithTime], Source={x:Static loc:LocalizationService.Instance}}"/>
+                    </StackPanel>
+
                     <!-- Auto-number config -->
                     <StackPanel IsVisible="{Binding IsAutoNumber}" Spacing="8">
                         <CheckBox IsChecked="{Binding Editable}"
