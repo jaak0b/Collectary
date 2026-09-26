@@ -65,6 +65,18 @@ public partial class App : Application
                     DropObsoleteColumns(db);
                     new OrphanedFieldDefinitionCleaner().CleanAsync(db).GetAwaiter().GetResult();
                 }
+
+#if DEBUG
+                if (!OperatingSystem.IsBrowser()
+                    && Environment.GetEnvironmentVariable("COLLECTARY_SEED_DEMO") == "1"
+                    && !db.Presets.Any(p => p.Name == "Board games"))
+                {
+                    new DemoDataSeeder(
+                        scope.Resolve<IPresetRepository>(),
+                        scope.Resolve<IItemRepository>())
+                        .SeedAsync().GetAwaiter().GetResult();
+                }
+#endif
             }
 
             AppLogger.Log.Information("Application started");
